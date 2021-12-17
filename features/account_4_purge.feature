@@ -17,7 +17,8 @@ And an event 'PurgedAccount' is emitted on event bus for one account
 -- implementation: workers running aws-nuke behind a SQS queue
 -- credit: https://www.1strategy.com/blog/2019/07/16/automated-clean-up-with-aws-nuke-in-multiple-accounts/
 -- how to protect resources created by Control Tower?
--- Use tag policy at organization level
+-- Enhance CloudFormation Stacksets with default tagging in AWS config
+-- For tag conformity, use tag policy at organization level
 -- credit: https://controltower.aws-management.tools/ops/tag/
 
 Scenario: where purged account is moved to next state
