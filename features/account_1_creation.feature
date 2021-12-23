@@ -18,7 +18,7 @@ And an OU Vanilla Accounts
 And an individual cloud account has been requested by an employee
 When a new individual cloud account is created from the Account Factory
 And the account is assigned the corporate e-mail address of the requesting employee
-And the account is tagged with key 'account:owner' and value is the e-mail address of requesting employee
+And the account is tagged with key 'account-owner' and value is the e-mail address of requesting employee
 Then the account is created into the OU Vanilla Accounts
 
 Scenario: where only one single account can be created for one e-mail address
