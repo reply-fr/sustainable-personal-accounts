@@ -7,16 +7,21 @@ so as to enforce corporate policies
 -- requirement: enforce observability policies in individual cloud accounts
 -- requirement: enforce cost management policies in individual cloud accounts
 
-Scenario: where assigned account is processed to next state
-Given an OU 'Released Accounts'
+Scenario: where assigned account is mentioned on event bus
 When an account lands in OU 'Assigned Accounts'
-Then runbook 'HandleAssignedAccount' is executed
+Then lambda function 'SignalAssignedAccount' is executed
 And an event 'AssignedAccount' is emitted on event bus for one account
-And the account is configured as per corporate policies
-And selected tools are deployed automatically
-And account is moved to OU 'Released Accounts'
-And an event 'ReleasedAccount' is emitted on event bus for one account
+
+Scenario: where assigned account is processed by SSM runbook
+When an event 'AssignedAccount' has been emitted on event bus for one account
+Then runbook 'PrepareAccount' is executed
+And an event 'PreparedAccount' is emitted on event bus for one account
 -- implementation: event rule and ssm automation
 -- ssm automation allow for customization of the runbook itself
--- event is emitted for observability and for system extension
 -- limit: those of ssm automation
+
+Scenario: where assigned account is moved to next state
+When an event 'PreparedAccount' has been emitted on event bus for one account
+Then lambda function 'MoveAssignedAccount' is executed
+And account is moved from OU 'Assigned Accounts' to OU 'Released Accounts'
+-- event is emitted for observability and for system extension

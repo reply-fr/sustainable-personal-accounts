@@ -15,8 +15,8 @@ And he can delete existing resources
 -- SCP of OU Released Accounts allow for resource creation and deletion, except for some operations
 
 Scenario: where released accounts are expired
-Given a queue 'ExpiredAccounts'
 When expiration time is reached
 Then lambda function 'ExpireReleasedAccounts' is executed
-And ids of expired accounts are posted to queue 'ExpiredAccounts'
+And accounts are moved from OU 'Released Accounts' to OU 'Expired Accounts'
 -- use case: hundreds of accounts are purged on Friday evening after 20:00 CET
+-- limit: there is a need to limit maximum events/second on bus
