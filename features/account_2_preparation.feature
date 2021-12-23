@@ -8,13 +8,13 @@ so as to enforce corporate policies
 -- requirement: enforce cost management policies in individual cloud accounts
 
 Scenario: where assigned account is processed to next state
-Given an OU Released Accounts
-When an account lands in OU Assigned Accounts
+Given an OU 'Released Accounts'
+When an account lands in OU 'Assigned Accounts'
 Then runbook 'HandleAssignedAccount' is executed
 And an event 'AssignedAccount' is emitted on event bus for one account
 And the account is configured as per corporate policies
 And selected tools are deployed automatically
-And account is moved to OU Released Accounts
+And account is moved to OU 'Released Accounts'
 And an event 'ReleasedAccount' is emitted on event bus for one account
 -- implementation: event rule and ssm automation
 -- ssm automation allow for customization of the runbook itself

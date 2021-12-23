@@ -14,7 +14,7 @@ Then the employee can request an individual cloud account
 
 Scenario: where a new individual cloud account is created and assigned
 Given a cloud environment managed with Control Tower
-And an OU Vanilla Accounts
+And an OU 'Vanilla Accounts'
 And an individual cloud account has been requested by an employee
 When a new individual cloud account is created from the Account Factory
 And the account is assigned the corporate e-mail address of the requesting employee
@@ -28,7 +28,7 @@ When a new individual cloud account is created
 Then an error is generated because an account with the same e-mail address already exists
 
 Scenario: where authenticated employee is prevented to handle resources in available account
-Given an individual cloud account in OU Vanilla Accounts
+Given an individual cloud account in OU 'Vanilla Accounts'
 When employee assigned to the account signs in using SSO
 Then he can not create new resources
 And he cannot delete existing resources
