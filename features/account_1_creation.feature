@@ -2,10 +2,10 @@ Feature: creation of an individual cloud account
 As an employee,
 I request an individual cloud account
 so as to learn, build, test and innovate on AWS services
--- requirement: enablement of individual software engineers, system engineers, data engineers
--- use case: personal exploration of cloud services, and code saved in git repositories
--- limit: not suited to collective deployments, that is covered by Dev/OAT/Prod environments
--- limit: no production data
+# requirement: enablement of individual software engineers, system engineers, data engineers
+# use case: personal exploration of cloud services, and code saved in git repositories
+# limit: not suited to collective deployments, that is covered by Dev/OAT/Prod environments
+# limit: no production data
 
 Scenario: where an employee is asking for an individual cloud account
 Given an employee
@@ -31,13 +31,13 @@ Given an individual cloud account in OU 'Vanilla Accounts'
 When employee assigned to the account signs in using SSO
 Then he can not create new resources
 And he cannot delete existing resources
--- implementation: SCP of OU Available Accounts only allow for moving accounts to a different OU
+# implementation: SCP of OU Available Accounts only allow for moving accounts to a different OU
 
 Scenario: where vanilla account is moved to next state
 When an account lands in OU 'Vanilla Accounts'
 Then lambda function 'MoveVanillaAccount' is executed
-And an event 'VanillaAccount' is emitted on event bus for one account
+And lambda function emits an event 'VanillaAccount' on event bus
 And account is moved from OU 'Vanilla Accounts' to OU 'Assigned Accounts'
--- implementation: event rule and lambda execution
--- event is emitted for observability and for system extension
--- limit: up to hundreds of accounts per second
+# implementation: event rule and lambda execution
+# event is emitted for observability and for system extension
+# limit: up to hundreds of accounts per second
