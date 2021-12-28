@@ -14,8 +14,7 @@ With this project we promote the idea that each AWS practitioner should have dir
 
 ## Cyclic life cycle for personal accounts
 
-Since we want to purge and to recycle accounts assigned to individuals, this can be represented as a state
-machine that features following states and transitions. With the Sustainable Personal Accounts project, states are implemented as Organisational Units (OU) within an AWS Organization.
+Since we want to purge and to recycle accounts assigned to individuals, this can be represented as a state machine that features following states and transitions. With the Sustainable Personal Accounts project, states are implemented as Organisational Units (OU) within an AWS Organization.
 
 - **OU Vanilla Accounts** - When an account has just been created by Control Tower, ServiceNow, or by any other mean, it is linked to a specific identity. Note that Control Tower does a pretty good job to create an identity in AWS Single Sign-On (SSO) before creating a new account. For accounts in this state, the most important activity is to add tags to the account itself. Then the tagged account can be moved to the next state.
 
@@ -24,6 +23,14 @@ machine that features following states and transitions. With the Sustainable Per
 - **OU Released Accounts** - This is the state where an account can be used almost freely by the person assigned to it. Guardrails can include: Service Control Policies (SCP) assigned to the Organisational Unit (OU) where the account is sitting, AWS CloudTrail for traceability, IAM policies to provide observability to third-party tools, Billing monitoring and alerting. Released Accounts can stay in this state as long as determined by corporate policy, but there is a need to set a limit anyway. We recommend to expire accounts at least once per month, since this preserves cloud resources for weeks, while providing a monthly window to roll out updated corporate policies or new guardrails and blueprints across personal accounts. Enterprises with strong Continuous Integration (CI) practice should adopt weekly expirations at least, or, if possible, daily expirations.
 
 - **OU Expired Accounts** - Released Accounts are expired at regular intervals (e.g., daily, weekly, or monthly). Activities on expired accounts consist of systematic deletion of resources. Some resources may be preserved though the process, either because they have been tagged for explicit deadline at a later date, or because they cannot be created again (e.g., CloudFormation stacks created by Control Tower). Once accounts have been purged, they can be moved to Assigned Accounts for a new cycle.
+
+```mermaid
+graph LR
+    B(Vanilla Accounts) --> C
+    C(Assigned Accounts) --> D
+    D(Released Accounts) --> E
+    E(Expired Accounts) --> C
+```
 
 ## Frequently asked questions
 
@@ -94,5 +101,3 @@ Sure. Sustainable Personal Accounts features following building blocks:
 - **PrepareAccount** and **PurgeAccount** - These templated Codebuild projects are actually deployed in personal accounts, and started asynchronously, by Lambda functions **SignalAssignedAccount** and **SignalExpiredAccount**.
 
 - **Parameter store** - Parameters used by SPA code, including templates for Codebuild projects, are placed in SSM Parameter Store of the Automation account.
-
-- 
