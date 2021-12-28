@@ -28,13 +28,9 @@ Since we want to purge and to recycle accounts assigned to individuals, this can
 
 The diagram below depicts the overall state machine implemented in Sustainable Personal Accounts:
 
-<!--- you can use mermaid live with following code and dark theme, and then save in ./media
+<!--- you can use mermaid live with following link, and then save in ./media
 
-      graph LR
-      A(Vanilla Accounts) --> B
-      B(Assigned Accounts) --> C
-      C(Released Accounts) --> D
-      D(Expired Accounts) --> B
+      https://mermaid.live/edit#eyJjb2RlIjoiZ3JhcGggTFJcbiAgICBBKFZhbmlsbGEgQWNjb3VudHMpIC0tPiBCXG4gICAgQihBc3NpZ25lZCBBY2NvdW50cykgLS0-IENcbiAgICBDKFJlbGVhc2VkIEFjY291bnRzKSAtLT4gRFxuICAgIEQoRXhwaXJlZCBBY2NvdW50cykgLS0-IEJcbiIsIm1lcm1haWQiOiJ7XG4gIFwidGhlbWVcIjogXCJkYXJrXCJcbn0iLCJ1cGRhdGVFZGl0b3IiOnRydWUsImF1dG9TeW5jIjp0cnVlLCJ1cGRhdGVEaWFncmFtIjp0cnVlfQ
 
 --->
 
