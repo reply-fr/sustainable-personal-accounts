@@ -27,7 +27,7 @@ help:
 PRESENTATION_NAME ?= PITCHME
 # example: $ PRESENTATION_NAME=my_file make presentation
 
-# ensure there is a shell
+# determine which shell is used for commands launched by make
 MAKESHELL ?= /bin/bash
 
 setup:
