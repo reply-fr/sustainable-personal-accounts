@@ -23,6 +23,10 @@ help:
 # ensure that child processes get variables set in this Makefile
 .EXPORT_ALL_VARIABLES:
 
+# use this presentation file by default
+PRESENTATION_NAME ?= PITCHME
+# example: $ PRESENTATION_NAME=my_file make presentation
+
 # ensure there is a shell
 MAKESHELL ?= /bin/bash
 
@@ -32,13 +36,13 @@ setup:
 
 presentation:
 	@echo "Hit <Ctl-D> to exit the presentation"
-	marp PITCHME.md --preview
+	marp ${PRESENTATION_NAME}.md --preview
 
 pdf:
-	marp PITCHME.md --pdf --allow-local-files
+	marp ${PRESENTATION_NAME}.md --pdf --allow-local-files
 
 pptx:
-	marp PITCHME.md --pptx --allow-local-files
+	marp ${PRESENTATION_NAME}.md --pptx --allow-local-files
 
 rebase:
 	git stash
@@ -46,6 +50,6 @@ rebase:
 	git stash pop
 
 clean:
-	rm -rf PITCHME.html
-	rm -rf PITCHME.pdf
-	rm -rf PITCHME.pptx
+	rm -rf ${PRESENTATION_NAME}.html
+	rm -rf ${PRESENTATION_NAME}.pdf
+	rm -rf ${PRESENTATION_NAME}.pptx
