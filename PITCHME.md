@@ -1,27 +1,49 @@
 ---
 theme: gaia
-_class: lead
 paginate: true
-backgroundColor: #fff
-backgroundImage: url('https://marp.app/assets/hero-background.svg')
+
+#References:
+#- emojis https://www.webfx.com/tools/emoji-cheat-sheet/
+#- icons https://icongr.am/
+
 ---
-<!-- paginate: false -->
+<!-- _paginate: false -->
+<!-- _class: lead -->
+
+<style>
+section {
+  background: #f2f2f2;
+  color: #393e46;
+}
+
+h1, h2 {
+  color: #222831;
+}
+
+h1 strong, h2 strong {
+  color: #f96d00;
+}
+
+p strong, li strong {
+  color: #f96d00;
+}
+
+section::after {
+  font-size: 0.5em;
+}
+
+</style>
 
 ![bg left:40% 80%](https://d2908q01vomqb2.cloudfront.net/fc074d501302eb2b93e2554793fcaf50b3bf7291/2021/06/02/Figure-1.-Example-of-a-basic-organization.jpg)
 
-## **Sustainable Personal Accounts**
+## __Sustainable Personal Accounts__
 
 :sparkles: Liberate AWS practitioners! :sparkles:
 Each of them deserves a full AWS account to innovate.
 
-<!--
-References:
-- emojis https://www.webfx.com/tools/emoji-cheat-sheet/
-- icons https://icongr.am/
--->
-
 ---
-## **Sustainable Personal Accounts**
+
+## Sustainable Personal Accounts
 
 __What?__ Provide an entire AWS account to every cloud practitioner of your enterprise. Yes, this can mean 1,000s of AWS accounts.
 
@@ -30,15 +52,15 @@ __Why?__ Because collective business agility depends on capability to build on c
 __How?__ Automate the management of AWS personal accounts at scale, including maintenance window to purge resources, to enforce corporate guardrails and to update shared blueprints. This is an open source package to be deployed within AWS Control Tower.
 
 ---
-## **Sustainable Personal Accounts**
-- Guiding Principles
-- State Machine
-- Event-driven Architecture
-- How to adapt the solution to your specific requirements?
-- Initial Release Plan
+## __Sustainable Personal Accounts__
+1. Guiding Principles
+2. State Machine
+3. Event-driven Architecture
+4. How to adapt the solution to your specific requirements?
+5. Initial Release Plan
 
 ---
-## **Guiding Principles**
+## Guiding Principles
 
 <!--
 What is making this project different?
@@ -46,35 +68,45 @@ What is making this project different?
 Let us explain the mental models that explain our terms of reference, and related Key Performance Indicators.
 -->
 
-**We drive innovation by experimentations** - A KPI is the number of AWS accounts assigned to individuals across the corporation.
+__We drive innovation with experimentations__ - A KPI is the number of AWS accounts assigned to individuals across the corporation.
 
-**We trust our employees and colleagues** - A KPI is the fraction of cloud accounts that go above budget and need corrective action.
+__We trust our employees and colleagues__ - A KPI is the fraction of cloud accounts that go above budget and need corrective action.
 
-**We influence corporate culture with recycling** - Maintenance windows enforce resource deletion (cost avoidance) and foster Continuous Integration (CI) at enterprise scale.
+__We influence corporate culture with recycling__ - Maintenance windows enforce resource deletion (cost avoidance) and foster Continuous Integration (CI) at enterprise scale.
 
-**We scale with automated guardrails and with insourced blueprints**
+__We scale with automated guardrails and with insourced blueprints__
 
 ---
 ![bg left 55%](./media/state-machine-vertical.svg)
 
-# **State Machine**
+## State Machine
 
-__Vanilla Accounts__ have just been created
+__Vanilla Accounts__ when they have just been created
 
 <!--
-The recommended way to create accounts is to leverage the factory that is created by AWS Control Tower in AWS Service Catalog.
-You can also integrate an existing AWS account into the system, however, this is adding a lot of manual work and should be avoided.
-In the end, you get vanilla accounts that can be checked and validated before they are moved to the next state.
+The recommended way to create accounts is to use the factory created by AWS Control Tower in AWS Service Catalog. You can also integrate an existing AWS account but this is adding a lot of manual work and should be avoided.
 -->
 
 __Assigned Accounts__ need guardrails and blueprints
 
+<!--
+When accounts have been assigned, they need to be prepared according to corporate policies and to automation practice. Security team will provide guardrails, such as IAM roles that can be used in corporate SIEM. DevOps team may provide a set of tools useful to developers, including automated CI/CD backend.
+-->
+
 __Released Accounts__ are available to individuals
+
+<!--
+Accounts are released once they have been duly prepared. This is the period in time where software engineers can leverage their personal account and achieve maximum innovation speed.
+-->
 
 __Expired Accounts__ need purge of resources
 
+<!--
+Maintenance window can very from one day to several months, depending of your corporate policy. On expiration, accounts are purged from existing and then considered as vanilla accounts again.
+-->
+
 ---
-## **Event-driven Architecture**
+## Event-driven Architecture
 
 * __Organisational Units (OU) store states of the machine__ and enforce scoped limitations with Service Control Policies (SCP).
 
@@ -89,16 +121,16 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 -->
 
 ---
-## <!--fit--> **How to adapt the solution to your specific requirements?**
+## <!--fit--> How to adapt the solution to your specific requirements?
 
-* __Serverless customization with SSM Parameter Store:__ Add script shell commands of your choice to CodeBuild projects.
+__1. Serverless customization with SSM Parameter Store:__ Add script shell commands of your choice to CodeBuild projects.
 
-* __Fork this open source project:__ If you have python competencies with AWS CDK and boto3, then feel free to fork this project and to taylor it to your specific needs.
+__2. Fork this open source project:__ If you have python competencies with AWS CDK and boto3, then feel free to fork this project and to taylor it to your specific needs.
 
-* __Reply can help!__ We are using the system for ourselves. And we have developed it, before sharing it with the community. [![Contact Reply](https://d11wkw82a69pyn.cloudfront.net/siteassets/images/logos/companies/reply-corporate-logo.png)](https://www.reply.com/)
+__3. Reply can help!__ We are using the system for ourselves. And we have developed it, before sharing it with the community. [![Contact Reply](https://d11wkw82a69pyn.cloudfront.net/siteassets/images/logos/companies/reply-corporate-logo.png)](https://www.reply.com/)
 
 ---
-## **Initial Release Plan**
+## Initial Release Plan
 
 🟢 🚩 Get idea validation from AWS Control Tower specialists (Dec)
 
@@ -114,8 +146,13 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 
 ---
 <!-- _class: lead -->
-![](https://icongr.am/octicons/git-pull-request.svg?size=256&color=eedd20)
+![](https://icongr.am/octicons/git-pull-request.svg?size=256&color=f96d00)
 
-## Thank you!
+# Thank you!
 
 https://github.com/reply-fr/sustainable-personal-accounts
+
+---
+<!-- _paginate: false -->
+<!-- _class: lead -->
+![bg w:800](./media/reply-logo.png)
