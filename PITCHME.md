@@ -24,7 +24,7 @@ style: |
     font-size: 0.5em;
   }
 
-#References:
+# Useful cheat sets if needed:
 #- emojis https://www.webfx.com/tools/emoji-cheat-sheet/
 #- icons https://icongr.am/
 
@@ -36,8 +36,8 @@ style: |
 
 ## __Sustainable Personal Accounts__
 
-:sparkles: Liberate AWS practitioners! :sparkles:
-Each of them deserves a full AWS account to innovate.
+:sparkles: Liberate Software Engineers! :sparkles:
+Each of them deserves a full AWS account to innovate fastly.
 
 ---
 
