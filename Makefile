@@ -32,7 +32,7 @@ MAKESHELL ?= /bin/bash
 
 setup:
 	@echo "Installing MARP locally..."
-	npm install --save-dev @marp-team/marp-cli
+	npm install -g @marp-team/marp-cli
 
 presentation:
 	@echo "Hit <Ctl-D> to exit the presentation"
