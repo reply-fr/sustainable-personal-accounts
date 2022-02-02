@@ -2,6 +2,28 @@
 theme: gaia
 paginate: true
 
+style: |
+  section {
+    background: #f2f2f2;
+    color: #393e46;
+  }
+
+  h1, h2 {
+    color: #222831;
+  }
+
+  h1 strong, h2 strong {
+    color: #f96d00;
+  }
+
+  p strong, li strong {
+    color: #f96d00;
+  }
+
+  section::after {
+    font-size: 0.5em;
+  }
+
 #References:
 #- emojis https://www.webfx.com/tools/emoji-cheat-sheet/
 #- icons https://icongr.am/
@@ -9,30 +31,6 @@ paginate: true
 ---
 <!-- _paginate: false -->
 <!-- _class: lead -->
-
-<style>
-section {
-  background: #f2f2f2;
-  color: #393e46;
-}
-
-h1, h2 {
-  color: #222831;
-}
-
-h1 strong, h2 strong {
-  color: #f96d00;
-}
-
-p strong, li strong {
-  color: #f96d00;
-}
-
-section::after {
-  font-size: 0.5em;
-}
-
-</style>
 
 ![bg left:40% 80%](https://d2908q01vomqb2.cloudfront.net/fc074d501302eb2b93e2554793fcaf50b3bf7291/2021/06/02/Figure-1.-Example-of-a-basic-organization.jpg)
 
