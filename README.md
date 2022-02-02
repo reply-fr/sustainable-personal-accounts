@@ -69,6 +69,23 @@ If you do need to export overview slides, then following will produce a file tha
 $ make pptx
 ```
 
+### Q. How to demonstrate this project within Cloud9?
+
+If you have access to the AWS Console, then you are encouraged to work within a Cloud9 environment for this project. Here are the steps to upload and run the presentation:
+- Got to AWS Cloud9 Console
+- Create a new Cloud9 environment for yourself
+- Open the Cloud9 environment
+- From the menu bar, click on Files and then on Upload Local Files...
+- Select the zip file of this project (possibly, compressed from your local workstation)
+- In the terminal window, unzip the file
+- Go into the project directory and run command `$ make setup` - this will install MARP CLI
+- From the menu bar, select Run, then Run Configurations, then new Run Configuration - this will open a new panel
+- In the new panel at the bottom of the screen, click on CWD and select the directory of the project
+- In the Command placeholder, type `make serve` and hit enter - this will start web server
+- In the menu bar, select Preview, then Preview Running Application - this will open a new panel
+- In the preview panel, click on the icon to expand it to a separate tab of your browser
+- Click on PITCHME.html file to navigate the presentation - make it full screen
+
 ### Q. How many accounts do we want to support in a single SPA state machine?
 
 Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. As a rule of thumb, the basic requirement is that up to 10,000 AWS accounts are purged and recycled on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.

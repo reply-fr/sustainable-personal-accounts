@@ -17,6 +17,7 @@ help:
 	@echo "make presentation - present the overview deck interactively"
 	@echo "make pdf - produce a PDF copy of the overview presentation"
 	@echo "make pptx - produce an editable file of the overview presentation"
+	@echo "make serve - run local web server on port 8082"
 	@echo "make rebase - rebase current code from origin main branch"
 	@echo "make clean - delete transient files in this project"
 
@@ -32,16 +33,29 @@ MAKESHELL ?= /bin/bash
 
 setup:
 	@echo "Installing MARP locally..."
-	npm install --save-dev @marp-team/marp-cli
+	npm install -g @marp-team/marp-cli
 
 presentation:
 	@echo "Hit <Ctl-D> to exit the presentation"
 	marp ${PRESENTATION_NAME}.md --preview
 
-pdf:
+serve: ${PRESENTATION_NAME}.html
+	@echo "Hit <Ctl-D> to stop the service"
+	python3 -m http.server 8080
+
+html: ${PRESENTATION_NAME}.html
+
+${PRESENTATION_NAME}.html: ${PRESENTATION_NAME}.md
+	marp ${PRESENTATION_NAME}.md
+
+pdf: ${PRESENTATION_NAME}.pdf
+
+${PRESENTATION_NAME}.pdf: ${PRESENTATION_NAME}.md
 	marp ${PRESENTATION_NAME}.md --pdf --allow-local-files
 
-pptx:
+pptx: ${PRESENTATION_NAME}.pptx
+
+${PRESENTATION_NAME}.pptx: ${PRESENTATION_NAME}.md
 	marp ${PRESENTATION_NAME}.md --pptx --allow-local-files
 
 rebase:
