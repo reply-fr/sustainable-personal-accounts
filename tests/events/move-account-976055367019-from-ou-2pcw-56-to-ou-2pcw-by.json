@@ -38,8 +38,8 @@
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
         "requestParameters": {
             "accountId": "976055367019",
-            "destinationParentId": "ou-2pcw-byzizq1q",
-            "sourceParentId": "ou-2pcw-56n2rgox"
+            "destinationParentId": "ou-2pcw-byxxxxxx",
+            "sourceParentId": "ou-2pcw-56xxxxxx"
         },
         "responseElements": null,
         "requestID": "05be9029-1893-49c5-8d2a-c255ef9b6706",

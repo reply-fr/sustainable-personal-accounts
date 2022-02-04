@@ -15,28 +15,23 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import os
-import logging
-from types import SimpleNamespace
+import json
 
-from aws_cdk import App
+def handler(event, context):
+    print('request: {}'.format(json.dumps(event)))
+    account = event['detail']['requestParameters']['accountId']
+    print(f'we are handling account {account}')
+            # print("Source:" + event['source'])
+            # print("Event Name:" + event['detail']['eventName'])
+            # print("Account Id:" + event['detail']['requestParameters']['accountId'])
+            # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'])
+            # print("Source OU Id:" + event['detail']['requestParameters']['sourceParentId'])
+            # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'] + "\n")
 
-from code.configuration import Configuration
-from code.move_vanilla_account_stack import MoveVanillaAccountStack
-
-
-def build_templates(dry_run=False):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(dry_run=dry_run)
-
-    app = App()
-    MoveVanillaAccountStack(app, "move-vanilla-account-stack")
-    app.synth()
-
-
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_templates()
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'text/plain'
+        },
+        'body': f'processing {account}'
+    }

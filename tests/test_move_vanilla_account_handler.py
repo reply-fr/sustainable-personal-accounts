@@ -15,28 +15,26 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import os
 import logging
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+
+import builtins
+from io import BytesIO
+import json
+import os
+import pytest
 from types import SimpleNamespace
 
-from aws_cdk import App
-
-from code.configuration import Configuration
-from code.move_vanilla_account_stack import MoveVanillaAccountStack
+from code.move_vanilla_account_handler import handler
 
 
-def build_templates(dry_run=False):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(dry_run=dry_run)
-
-    app = App()
-    MoveVanillaAccountStack(app, "move-vanilla-account-stack")
-    app.synth()
+pytestmark = pytest.mark.wip
 
 
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_templates()
+def test_handler():
+    with open("tests/events/move-account-976055367019-from-ou-2pcw-56-to-ou-2pcw-by.json") as stream:
+        event = json.load(stream)
+
+    result = handler(event=event, context=None)
+    assert result['body'] == 'processing 976055367019'
