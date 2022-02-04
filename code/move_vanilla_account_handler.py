@@ -19,6 +19,8 @@ import json
 
 def handler(event, context):
     print('request: {}'.format(json.dumps(event)))
+    destination = event['detail']['requestParameters']['destinationParentId']
+    print(f'account has arrived on ou {destination}')
     account = event['detail']['requestParameters']['accountId']
     print(f'we are handling account {account}')
             # print("Source:" + event['source'])

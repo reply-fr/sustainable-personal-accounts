@@ -34,6 +34,8 @@ class MoveVanillaAccountStack(Stack):
             self, "move-vanilla-account",
             code=InlineCode(handler_code),
             handler="index.handler",
+            environment=dict(VANILLA_ACCOUNTS_OU='1234',
+                             ASSIGNED_ACCOUNTS_OU='5678'),
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
