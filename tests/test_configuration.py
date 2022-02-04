@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Copyright Reply.com or its affiliates. All Rights Reserved.
-SPDX-License-Identifier: MIT-0
+SPDX-License-Identifier: Apache-2.0
 Permission is hereby granted, free of charge, to any person obtaining a copy of this
 software and associated documentation files (the "Software"), to deal in the Software
 without restriction, including without limitation the rights to use, copy, modify,
