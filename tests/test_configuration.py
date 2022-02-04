@@ -61,23 +61,6 @@ def test_initialize():
 
 def test_set_default_values(toggles):
     Configuration.set_default_values()
-    assert toggles.application_ami_id is None
-    assert toggles.application_disk_size is None
-    assert toggles.application_inbound_ports == [443]
-    assert toggles.application_instance_type == 't3.large'
-    assert toggles.application_internet_facing is False
-    assert toggles.application_operating_system is None
-    assert toggles.application_setup_document == 'install_application_server'
-    assert toggles.application_trusted_peer == '0.0.0.0/0'
-    assert toggles.bucket_name is None
-    assert toggles.bucket_encryption_key is None
-    assert toggles.cockpit_text_label == 'Cluster Monitoring'
-    assert toggles.database_ami_id is None
-    assert toggles.database_disk_size is None
-    assert toggles.database_instance_type == 't3.large'
-    assert toggles.database_operating_system is None
-    assert toggles.database_setup_document == 'install_database_server'
-    assert toggles.infrastructure_vpc_id is None
 
 
 def test_set_from_environment(toggles):
@@ -90,7 +73,6 @@ def test_set_from_environment(toggles):
 
     Configuration.set_from_environment(environ=environ)
     assert toggles.__dict__.get('active_directory_domain_credentials') is None
-    assert toggles.application_trusted_peer == '4.3.2.1/32'
 
     mapping = dict(
         active_directory_domain_credentials='active_directory_domain_credentials',
@@ -116,39 +98,12 @@ def test_set_from_settings(toggles):
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
-    os.environ.pop('TRUSTED_PEER', None)
-
     Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))
     assert toggles.a == 'b'  # 1
     assert toggles.c == 'd'  # 2
 
-    Configuration.set_from_yaml('settings_sample.yaml')
-    assert toggles.application_inbound_ports == [80, 443]
-    assert len(toggles.__dict__.keys()) < 10  # assets are not listed
-
-    Configuration.set_from_yaml('tests/settings/assets_fixture.yaml')
-    assert toggles.bucket_name == 'name-of-an-existing-bucket'
-    assert toggles.bucket_encryption_key == 'alias/EncryptionOperationKey'
-
-    Configuration.set_from_yaml('tests/settings/infrastructure_fixture_default.yaml')
-    assert toggles.infrastructure_vpc_id == 'default'
-
-    Configuration.set_from_yaml('tests/settings/infrastructure_fixture.yaml')
-    assert toggles.infrastructure_vpc_id == 'id-of-existing-vpc'
-    assert toggles.infrastructure_private_production_subnet_id == 'id-of-existing-subnet-2'
-
-    Configuration.set_from_yaml('tests/settings/servers.yaml')
-    assert toggles.application_ami_id == 'ami-0e4ec44f0007f4ab2'
-    assert toggles.application_disk_size == 10
-    assert toggles.application_inbound_ports == [12, 34]
-    assert toggles.application_instance_type == 'c5.large'
-    assert toggles.application_internet_facing is False
-    assert toggles.application_setup_document == '../tests/documents/custom_application_server_setup'
-    assert toggles.database_ami_id == 'ami-0e4ec44f0007f4ab2'
-    assert toggles.database_disk_size == 10
-    assert toggles.database_instance_type == 'c5.large'
-    assert toggles.database_setup_document == '../tests/documents/custom_database_server_setup'
-
-    Configuration.set_from_yaml('tests/settings/servers_pl.yaml')
-    assert toggles.application_trusted_peer == 'pl-1234'
-    assert toggles.application_internet_facing is True
+    Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
+    assert toggles.organisational_units_assigned_accounts_identifier == 'ou-5678'
+    assert toggles.organisational_units_expired_accounts_identifier == 'ou-efghij'
+    assert toggles.organisational_units_released_accounts_identifier == 'ou-90abcd'
+    assert toggles.organisational_units_vanilla_accounts_identifier == 'ou-1234'

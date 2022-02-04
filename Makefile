@@ -69,6 +69,7 @@ setup:
 	cdk --version
 	@echo "Installing MARP locally..."
 	npm install -g @marp-team/marp-cli --force
+	marp --version
 
 presentation:
 	@echo "Hit <Ctl-D> to exit the presentation"

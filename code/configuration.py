@@ -64,38 +64,11 @@ class Configuration:
 
         # identifier for this specific environment
         toggles.environment_identifier = "{}-{}".format(
-            os.environ.get('STACK_PREFIX', 'versatile-cluster'),
+            os.environ.get('STACK_PREFIX', 'spa'),
             os.environ.get('ENVIRONMENT', 'experimental'))
 
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
-
-        # default settings for application server
-        toggles.application_ami_id = None
-        toggles.application_disk_size = None
-        toggles.application_inbound_ports = [443]
-        toggles.application_instance_type = 't3.large'
-        toggles.application_internet_facing = False
-        toggles.application_operating_system = None
-        toggles.application_setup_document = 'install_application_server'
-        toggles.application_trusted_peer = '0.0.0.0/0'
-
-        # default settings for bucket used for digital artefacts and database backups
-        toggles.bucket_name = None
-        toggles.bucket_encryption_key = None
-
-        # default settings for monitoring cockpit
-        toggles.cockpit_text_label = 'Cluster Monitoring'
-
-        # default settings for database server
-        toggles.database_ami_id = None
-        toggles.database_disk_size = None
-        toggles.database_instance_type = 't3.large'
-        toggles.database_operating_system = None
-        toggles.database_setup_document = 'install_database_server'
-
-        # VPC, etc.
-        toggles.infrastructure_vpc_id = None
 
     @staticmethod
     def set_from_environment(environ=None, mapping=None):
@@ -103,8 +76,7 @@ class Configuration:
         environ = os.environ if environ is None else environ  # allow test injection
 
         if mapping is None:  # allow test injection
-            mapping = dict(
-                application_trusted_peer='TRUSTED_PEER')
+            mapping = dict()
 
         for key in mapping.keys():  # we only accept mapped environment variables
             value = environ.get(mapping[key])
@@ -114,8 +86,6 @@ class Configuration:
     @staticmethod
     def set_from_settings(settings={}):
         for key in settings.keys():
-            if key in ['assets']:  # managed in assets.py
-                continue
             if type(settings[key]) == dict:
                 for subkey in settings[key].keys():
                     flatten = "{0}_{1}".format(key, subkey)
