@@ -17,7 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from constructs import Construct
 from aws_cdk import Duration, Stack
-from aws_cdk.aws_events import (Rule, Schedule)
+from aws_cdk.aws_events import (EventPattern, Rule)
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import (Function, InlineCode, Runtime)
 
@@ -41,5 +41,10 @@ class MoveVanillaAccountStack(Stack):
 
         rule = Rule(
             self, "Rule",
-            schedule=Schedule.rate(Duration.days(1)))
-        rule.add_target(LambdaFunction(lambdaFn))
+            event_pattern=EventPattern(
+                source=['aws.organization'],
+                detail_type=['AWS API Call via CloudTrail'],
+                detail=dict(
+                    eventName=['MoveAccount'],
+                    requestParameters=dict(destinationParentId=['ou-2pcw-56n2rgox']))),
+            targets=[LambdaFunction(lambdaFn)])
