@@ -20,7 +20,6 @@ from aws_cdk import Duration, Stack
 from aws_cdk.aws_events import (Rule, Schedule)
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import (Function, InlineCode, Runtime)
-from aws_cdk.aws_apigateway import LambdaRestApi
 
 
 class MoveVanillaAccountStack(Stack):
@@ -42,5 +41,3 @@ class MoveVanillaAccountStack(Stack):
             self, "Rule",
             schedule=Schedule.rate(Duration.days(1)))
         rule.add_target(LambdaFunction(lambdaFn))
-
-        gateway = LambdaRestApi(self, 'endpoint',handler=lambdaFn)
