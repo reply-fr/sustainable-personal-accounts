@@ -1,0 +1,11 @@
+bandit
+coverage
+flake8
+mccabe
+mock
+pygount
+pytest
+pytest-cov
+setuptools>=38.6.0
+tox
+-e .

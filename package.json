@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@aws-cdk/assert": "^2.0.0-rc.1",
+    "aws-cdk-lib": "^2.0.0-rc.1",
+    "constructs": "^10.0.0",
+    "@marp-team/marp-cli": "^1.5.2"
+  }
+}
