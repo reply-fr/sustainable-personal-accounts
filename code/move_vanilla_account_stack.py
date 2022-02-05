@@ -17,9 +17,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from constructs import Construct
 from aws_cdk import Duration, Stack
-from aws_cdk.aws_events import (EventPattern, Rule)
+from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_lambda import (Function, InlineCode, Runtime)
+from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 
 
 class MoveVanillaAccountStack(Stack):
@@ -27,13 +27,10 @@ class MoveVanillaAccountStack(Stack):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
-        with open("code/move_vanilla_account_handler.py", encoding="utf8") as stream:
-            handler_code = stream.read()
-
         lambdaFn = Function(
             self, "move-vanilla-account",
-            code=InlineCode(handler_code),
-            handler="index.handler",
+            code=AssetCode("code"),
+            handler="move_vanilla_account_handler.handler",
             environment=dict(VANILLA_ACCOUNTS_OU='1234',
                              ASSIGNED_ACCOUNTS_OU='5678'),
             timeout=Duration.seconds(900),
