@@ -16,16 +16,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
+import os
+import logging
+logging.getLogger().setLevel(logging.DEBUG)
 
-from account import get_account
+from event_bus import EventFactory
 
 
 def handler(event, context):
-    print('request: {}'.format(json.dumps(event)))
-    print(f'here you go {get_account()}')
-    destination = event['detail']['requestParameters']['destinationParentId']
+    logging.debug(f'request: {event}')
+    try:
+        account = event['detail']['requestParameters']['accountId']
+    except KeyError:
+        account = '1234567890'
+    EventFactory.emit('VanillaAccount', account)
+    try:
+        destination = event['detail']['requestParameters']['destinationParentId']
+    except KeyError:
+        destination = 'ou-alpha-omega'
     print(f'account has arrived on ou {destination}')
-    account = event['detail']['requestParameters']['accountId']
     print(f'we are handling account {account}')
     # print("Source:" + event['source'])
     # print("Event Name:" + event['detail']['eventName'])
