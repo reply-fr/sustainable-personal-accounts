@@ -17,18 +17,22 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 
+from account import get_account
+
+
 def handler(event, context):
     print('request: {}'.format(json.dumps(event)))
+    print(f'here you go {get_account()}')
     destination = event['detail']['requestParameters']['destinationParentId']
     print(f'account has arrived on ou {destination}')
     account = event['detail']['requestParameters']['accountId']
     print(f'we are handling account {account}')
-            # print("Source:" + event['source'])
-            # print("Event Name:" + event['detail']['eventName'])
-            # print("Account Id:" + event['detail']['requestParameters']['accountId'])
-            # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'])
-            # print("Source OU Id:" + event['detail']['requestParameters']['sourceParentId'])
-            # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'] + "\n")
+    # print("Source:" + event['source'])
+    # print("Event Name:" + event['detail']['eventName'])
+    # print("Account Id:" + event['detail']['requestParameters']['accountId'])
+    # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'])
+    # print("Source OU Id:" + event['detail']['requestParameters']['sourceParentId'])
+    # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'] + "\n")
 
     return {
         'statusCode': 200,
