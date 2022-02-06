@@ -27,17 +27,10 @@ from event_bus import EventFactory
 
 def handler(event, context):
     logging.debug(f'request: {event}')
-    try:
-        account = event['detail']['requestParameters']['accountId']
-    except KeyError:
-        account = '1234567890'
-    EventFactory.emit('CreatedAccount', account)
-    try:
-        destination = event['detail']['requestParameters']['destinationParentId']
-    except KeyError:
-        destination = 'ou-alpha-omega'
-    print(f'account has arrived on ou {destination}')
-    print(f'we are handling account {account}')
+    input = EventFactory.decode_aws_organizations_event(event)
+    EventFactory.emit('CreatedAccount', input.account)
+    print(f'account has arrived on ou {input.organizational_unit}')
+    print(f'we are handling account {input.account}')
     # print("Source:" + event['source'])
     # print("Event Name:" + event['detail']['eventName'])
     # print("Account Id:" + event['detail']['requestParameters']['accountId'])

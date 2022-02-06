@@ -54,3 +54,20 @@ def test_put_event():
     client = Mock()
     EventFactory.put_event(event='hello', client=client)
     client.put_events.assert_called_with(Entries=['hello'])
+
+
+def test_decode_aws_organizations_event():
+
+    parameters = dict(account="1234567890",
+                      destination_organizational_unit="ou-destination",
+                      source_organizational_unit="ou-source")
+
+    with open("tests/events/move-account-template.json") as stream:
+        text = stream.read()
+        for key, value in parameters.items():
+            text = text.replace('{' + key + '}', value)
+        event = json.loads(text)
+
+    decoded = EventFactory.decode_aws_organizations_event(event)
+    assert decoded.account == "1234567890"
+    assert decoded.organizational_unit == "ou-destination"

@@ -28,7 +28,7 @@ from types import SimpleNamespace
 from code.configuration import Configuration
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture

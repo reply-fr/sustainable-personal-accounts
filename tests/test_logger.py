@@ -25,7 +25,7 @@ import pytest
 from code.logger import setup_logging
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def write_to(log):

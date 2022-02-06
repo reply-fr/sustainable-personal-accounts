@@ -33,8 +33,16 @@ pytestmark = pytest.mark.wip
 
 
 def test_handler():
-    with open("tests/events/move-account-976055367019-from-ou-2pcw-56-to-ou-2pcw-by.json") as stream:
-        event = json.load(stream)
+
+    parameters = dict(account="1234567890",
+                      destination_organizational_unit="ou-destination",
+                      source_organizational_unit="ou-source")
+
+    with open("tests/events/move-account-template.json") as stream:
+        text = stream.read()
+        for key, value in parameters.items():
+            text = text.replace('{' + key + '}', value)
+        event = json.loads(text)
 
     result = handler(event=event, context=None)
     assert result['body'] == 'processing 976055367019'

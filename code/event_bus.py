@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+from types import SimpleNamespace
 
 import boto3
 
@@ -24,11 +25,11 @@ import boto3
 class EventFactory:
     ACCEPTED_LABELS = [
         'AssignedAccount',
+        'CreatedAccount',
         'ExpiredAccount',
         'PreparedAccount',
         'PurgedAccount',
-        'ReleasedAccount',
-        'CreatedAccount']
+        'ReleasedAccount']
 
     @classmethod
     def emit(cls, label, account, client=None):
@@ -48,3 +49,10 @@ class EventFactory:
         logging.info(f'put_event: {event}')
         client = client if client else boto3.client('events')
         client.put_events(Entries=[event])
+
+    @classmethod
+    def decode_aws_organizations_event(cls, event):
+        decoded = SimpleNamespace()
+        decoded.account = event['detail']['requestParameters']['accountId']
+        decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
+        return decoded

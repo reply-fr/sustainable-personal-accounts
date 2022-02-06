@@ -11,17 +11,17 @@
         "eventVersion": "1.08",
         "userIdentity": {
             "type": "AssumedRole",
-            "principalId": "AROAVYNQ7SM5JUP26DQHT:b.gauchon@reply.com",
-            "arn": "arn:aws:sts::396045030202:assumed-role/AWSReservedSSO_AWSAdministratorAccess_d6c68c953432ae4c/b.gauchon@reply.com",
-            "accountId": "396045030202",
+            "principalId": "AR2BVZNR7SMSKUP3XWQIX:john.foo@acme.com",
+            "arn": "arn:aws:sts::111111111111:assumed-role/AWSAdministratorAccess/john.foo@acme.com",
+            "accountId": "111111111111",
             "accessKeyId": "ASIAVYNQ7SM5ABPVTVVR",
             "sessionContext": {
                 "sessionIssuer": {
                     "type": "Role",
-                    "principalId": "AROAVYNQ7SM5JUP26DQHT",
-                    "arn": "arn:aws:iam::396045030202:role/aws-reserved/sso.amazonaws.com/eu-west-1/AWSReservedSSO_AWSAdministratorAccess_d6c68c953432ae4c",
-                    "accountId": "396045030202",
-                    "userName": "AWSReservedSSO_AWSAdministratorAccess_d6c68c953432ae4c"
+                    "principalId": "AR2BVZNR7SMSKUP3XWQIX",
+                    "arn": "arn:aws:iam::111111111111:role/aws-reserved/sso.amazonaws.com/us-east-1/AWSAdministratorAccess",
+                    "accountId": "111111111111",
+                    "userName": "AWSAdministratorAccess"
                 },
                 "webIdFederationData": {},
                 "attributes": {
@@ -37,17 +37,17 @@
         "sourceIPAddress": "90.16.51.156",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
         "requestParameters": {
-            "accountId": "976055367019",
-            "destinationParentId": "ou-2pcw-byxxxxxx",
-            "sourceParentId": "ou-2pcw-56xxxxxx"
+            "accountId": "{account}",
+            "destinationParentId": "{destination_organizational_unit}",
+            "sourceParentId": "{source_organizational_unit}"
         },
         "responseElements": null,
-        "requestID": "05be9029-1893-49c5-8d2a-c255ef9b6706",
-        "eventID": "7a02f1e1-3b05-45a5-a489-9d8c7a3d73ed",
+        "requestID": "05be9129-YxYx-ZZZZ-xYxY-c255zzzz6706",
+        "eventID": "7a72f1e2-YxYx-ZZZZ-xYxY-9d8czzzz73ed",
         "readOnly": false,
         "eventType": "AwsApiCall",
         "managementEvent": true,
-        "recipientAccountId": "396045030202",
+        "recipientAccountId": "111111111111",
         "eventCategory": "Management"
     }
 }
