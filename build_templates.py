@@ -21,6 +21,7 @@ import logging
 from aws_cdk import App
 
 from code.configuration import Configuration
+from code.listen_account_events_stack import ListenAccountEventsStack
 from code.move_vanilla_account_stack import MoveVanillaAccountStack
 
 
@@ -30,6 +31,7 @@ def build_templates(settings=None, dry_run=False):
     Configuration.initialize(stream=settings, dry_run=dry_run)
 
     app = App()
+    ListenAccountEventsStack(app, "listen-account-events-stack")
     MoveVanillaAccountStack(app, "move-vanilla-account-stack")
     app.synth()
 
