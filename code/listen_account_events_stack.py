@@ -20,6 +20,7 @@ from aws_cdk import Duration, Stack
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
+from aws_cdk.aws_logs import RetentionDays
 
 
 class ListenAccountEventsStack(Stack):
@@ -31,6 +32,7 @@ class ListenAccountEventsStack(Stack):
             self, "listen-account-events",
             code=AssetCode("code"),
             handler="listen_account_events_handler.handler",
+            log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 

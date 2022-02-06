@@ -20,6 +20,7 @@ from aws_cdk import Duration, Stack
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
+from aws_cdk.aws_logs import RetentionDays
 
 
 class MoveVanillaAccountStack(Stack):
@@ -33,6 +34,7 @@ class MoveVanillaAccountStack(Stack):
             handler="move_vanilla_account_handler.handler",
             environment=dict(VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.vanilla_accounts_organisational_unit,
                              ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit),
+            log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
