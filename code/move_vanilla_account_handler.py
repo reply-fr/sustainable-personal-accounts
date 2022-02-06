@@ -18,7 +18,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import os
 import logging
-logging.getLogger().setLevel(logging.DEBUG)
+
+from logger import setup_logging
+setup_logging()
 
 from event_bus import EventFactory
 
