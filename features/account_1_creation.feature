@@ -36,7 +36,7 @@ And he cannot delete existing resources
 Scenario: where vanilla account is moved to next state
 When an account lands in OU 'Vanilla Accounts'
 Then lambda function 'MoveVanillaAccount' is executed
-And lambda function emits an event 'VanillaAccount' on event bus
+And lambda function emits an event 'CreatedAccount' on event bus
 And account is moved from OU 'Vanilla Accounts' to OU 'Assigned Accounts'
 # implementation: event rule and lambda execution
 # event is emitted for observability and for system extension

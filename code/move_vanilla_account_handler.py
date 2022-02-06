@@ -31,7 +31,7 @@ def handler(event, context):
         account = event['detail']['requestParameters']['accountId']
     except KeyError:
         account = '1234567890'
-    EventFactory.emit('VanillaAccount', account)
+    EventFactory.emit('CreatedAccount', account)
     try:
         destination = event['detail']['requestParameters']['destinationParentId']
     except KeyError:
