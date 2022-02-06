@@ -19,7 +19,6 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import os
 import pytest
 
 from build_templates import build_templates
@@ -30,4 +29,4 @@ from build_templates import build_templates
 
 @pytest.mark.slow
 def test_build_templates():
-    build_templates(dry_run=True)
+    build_templates(settings='tests/settings/sample_settings.yaml', dry_run=True)

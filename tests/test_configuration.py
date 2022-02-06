@@ -21,14 +21,13 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import builtins
 from io import BytesIO
-import os
 import pytest
 from types import SimpleNamespace
 
 from code.configuration import Configuration
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -65,7 +64,7 @@ def test_set_default_values(toggles):
 
 def test_set_from_environment(toggles):
     environ = dict(
-        active_directory_domain_credentials="where-my-secret-is",
+        VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT="ou-vanilla-accounts",
         TRUSTED_PEER='4.3.2.1/32',
         NOT_MAPPED_VARIABLE="what'up Doc?",
         NONE_VARIABLE=None,
@@ -75,35 +74,27 @@ def test_set_from_environment(toggles):
     assert toggles.__dict__.get('active_directory_domain_credentials') is None
 
     mapping = dict(
-        active_directory_domain_credentials='active_directory_domain_credentials',
-        inexistant_variable="*THIS*DOES*NOT*EXIST*IN*ENVIRONMENT",
-        none_variable='NONE_VARIABLE',
-        null_variable='NULL_VARIABLE')
+        vanilla_accounts_organisational_unit='VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'
+    )
     Configuration.set_from_environment(environ=environ, mapping=mapping)
-    assert toggles.active_directory_domain_credentials == "where-my-secret-is"
-    with pytest.raises(Exception):
-        assert toggles.inexistant_variable is None
-    with pytest.raises(Exception):
-        assert toggles.none_variable is None
-    assert toggles.null_variable == ''
+    assert toggles.vanilla_accounts_organisational_unit == "ou-vanilla-accounts"
 
 
 def test_set_from_settings(toggles):
-    settings = dict(active_directory=dict(specific_parameter="foo bar"))
+    settings = dict(vanilla_accounts=dict(organisational_unit="foo bar"))
     Configuration.set_from_settings(settings)
-    assert toggles.active_directory_specific_parameter == "foo bar"
-    with pytest.raises(Exception):
-        assert toggles.inexistant_toggle is None
+    assert toggles.vanilla_accounts_organisational_unit == "foo bar"
 
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
-    Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))
-    assert toggles.a == 'b'  # 1
-    assert toggles.c == 'd'  # 2
-
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
-    assert toggles.organisational_units_assigned_accounts_identifier == 'ou-5678'
-    assert toggles.organisational_units_expired_accounts_identifier == 'ou-efghij'
-    assert toggles.organisational_units_released_accounts_identifier == 'ou-90abcd'
-    assert toggles.organisational_units_vanilla_accounts_identifier == 'ou-1234'
+    assert toggles.assigned_accounts_organisational_unit == 'ou-5678'
+    assert toggles.expired_accounts_organisational_unit == 'ou-efghij'
+    assert toggles.released_accounts_organisational_unit == 'ou-90abcd'
+    assert toggles.vanilla_accounts_organisational_unit == 'ou-1234'
+
+
+def test_set_from_yaml_invalid(toggles):
+    with pytest.raises(AttributeError):
+        Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))

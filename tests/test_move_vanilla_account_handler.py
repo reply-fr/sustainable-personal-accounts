@@ -19,12 +19,10 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import builtins
-from io import BytesIO
 import json
+from unittest.mock import patch
 import os
 import pytest
-from types import SimpleNamespace
 
 from code.move_vanilla_account_handler import handler
 
@@ -44,5 +42,10 @@ def test_handler():
             text = text.replace('{' + key + '}', value)
         event = json.loads(text)
 
-    result = handler(event=event, context=None)
-    assert result['body'] == 'processing 976055367019'
+    with patch.dict(os.environ, {"VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
+        result = handler(event=event, context=None)
+    assert result['body'] == 'processing 1234567890'
+
+    with patch.dict(os.environ, {"VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-unexpected"}):
+        with pytest.raises(ValueError):
+            handler(event=event, context=None)

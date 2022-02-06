@@ -20,7 +20,6 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from io import StringIO
-import pytest
 
 from code.logger import setup_logging
 

@@ -3,8 +3,15 @@
 # and rename it settings.yaml or another name.
 # Note that some settings can be overriden by environment variables, if set.
 
-organisational_units:
-  vanilla_accounts_identifier: ou-1234
-  assigned_accounts_identifier: ou-5678
-  released_accounts_identifier: ou-90abcd
-  expired_accounts_identifier: ou-efghij
+
+vanilla_accounts:
+  organisational_unit: ou-1234
+
+assigned_accounts:
+  organisational_unit: ou-5678
+
+released_accounts:
+  organisational_unit: ou-90abcd
+
+expired_accounts:
+  organisational_unit: ou-efghij

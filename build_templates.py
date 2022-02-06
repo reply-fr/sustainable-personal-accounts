@@ -17,7 +17,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import os
 import logging
-from types import SimpleNamespace
 
 from aws_cdk import App
 
@@ -25,10 +24,10 @@ from code.configuration import Configuration
 from code.move_vanilla_account_stack import MoveVanillaAccountStack
 
 
-def build_templates(dry_run=False):
+def build_templates(settings=None, dry_run=False):
     ''' generate CloudFormation templates '''
 
-    Configuration.initialize(dry_run=dry_run)
+    Configuration.initialize(stream=settings, dry_run=dry_run)
 
     app = App()
     MoveVanillaAccountStack(app, "move-vanilla-account-stack")

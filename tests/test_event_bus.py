@@ -22,7 +22,7 @@ import pytest
 from code.event_bus import EventFactory
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_emit():

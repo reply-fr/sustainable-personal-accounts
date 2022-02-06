@@ -15,7 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import os
 import logging
 
@@ -29,8 +28,10 @@ def handler(event, context):
     logging.debug(f'request: {event}')
     input = EventFactory.decode_aws_organizations_event(event)
     EventFactory.emit('CreatedAccount', input.account)
-    print(f'account has arrived on ou {input.organizational_unit}')
     print(f'we are handling account {input.account}')
+    print(f'account has arrived on OU {input.organizational_unit}')
+    if os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'] != input.organizational_unit:
+        raise ValueError(f"We do not handle events for OU '{input.organizational_unit}'")
     # print("Source:" + event['source'])
     # print("Event Name:" + event['detail']['eventName'])
     # print("Account Id:" + event['detail']['requestParameters']['accountId'])
@@ -43,5 +44,5 @@ def handler(event, context):
         'headers': {
             'Content-Type': 'text/plain'
         },
-        'body': f'processing {account}'
+        'body': f'processing {input.account}'
     }

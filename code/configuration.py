@@ -70,10 +70,10 @@ class Configuration:
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
 
-    @staticmethod
-    def set_from_environment(environ=None, mapping=None):
+    @classmethod
+    def set_from_environment(cls, environ=None, mapping=None):
 
-        environ = os.environ if environ is None else environ  # allow test injection
+        environ = environ if environ else os.environ  # allow test injection
 
         if mapping is None:  # allow test injection
             mapping = dict()
@@ -81,18 +81,18 @@ class Configuration:
         for key in mapping.keys():  # we only accept mapped environment variables
             value = environ.get(mapping[key])
             if value is not None:  # override only if environment variable has been set
-                setattr(toggles, key, value)
+                cls.set_attribute(key, value)
 
-    @staticmethod
-    def set_from_settings(settings={}):
+    @classmethod
+    def set_from_settings(cls, settings={}):
         for key in settings.keys():
             if type(settings[key]) == dict:
                 for subkey in settings[key].keys():
                     flatten = "{0}_{1}".format(key, subkey)
                     value = settings[key].get(subkey)
-                    setattr(toggles, flatten, value)
+                    cls.set_attribute(flatten, value)
             else:
-                setattr(toggles, key, settings[key])
+                cls.set_attribute(key, settings[key])
 
     @classmethod
     def set_from_yaml(cls, stream):
@@ -104,6 +104,26 @@ class Configuration:
         else:
             settings = yaml.safe_load(stream)
             cls.set_from_settings(settings)
+
+    @classmethod
+    def set_attribute(cls, key, value):
+        cls.validate_attribute(key, value)
+        setattr(toggles, key, value)
+
+    ALLOWED_ATTRIBUTES = dict(
+        assigned_accounts_organisational_unit='str',
+        expired_accounts_organisational_unit='str',
+        released_accounts_organisational_unit='str',
+        vanilla_accounts_organisational_unit='str'
+    )
+
+    @classmethod
+    def validate_attribute(cls, key, value):
+        if kind := cls.ALLOWED_ATTRIBUTES.get(key):
+            if (kind == 'str') and not isinstance(value, str):
+                raise AttributeError(f"invalid value for configuration attribute '{key}'")
+        else:
+            raise AttributeError(f"unknown configuration attribute '{key}'")
 
     @staticmethod
     def set_aws_environment():
