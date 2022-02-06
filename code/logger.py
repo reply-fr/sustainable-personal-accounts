@@ -24,7 +24,7 @@ import sys
 
 
 def setup_logging(environ=None,
-                  format="%(asctime)s - %(message)s",
+                  format="%(message)s",
                   name=None,
                   stream=sys.stdout):
     logger = logging.getLogger(name)
