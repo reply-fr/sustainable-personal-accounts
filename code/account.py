@@ -16,26 +16,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-import os
 import logging
+from types import SimpleNamespace
 
-from logger import setup_logging
-setup_logging()
-
-from code import Account, EventFactory
+import boto3
 
 
-def handler(event, context):
-    logging.debug(json.dumps(event))
+class Account:
 
-    input = EventFactory.decode_aws_organizations_event(
-        event=event,
-        match=os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'])
-
-    EventFactory.emit('CreatedAccount', input.account)
-
-    Account.move(account=input.account,
-                 source=os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                 destination=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
-
-    return f"CreatedAccount {input.account}"
+    @classmethod
+    def move(cls, account, source, destination):
+        pass

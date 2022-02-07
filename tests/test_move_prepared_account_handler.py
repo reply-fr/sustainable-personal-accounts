@@ -39,13 +39,13 @@ def test_handler():
     with patch.dict(os.environ, context):
 
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                        context=dict(account="1234567890",
+                                        context=dict(account="123456789012",
                                                      state="PreparedAccount"))
         result = handler(event=event, context=None)
-        assert result['body'] == 'processing 1234567890'
+        assert result == 'ReleasedAccount 123456789012'
 
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                        context=dict(account="1234567890",
+                                        context=dict(account="123456789012",
                                                      state="CreatedAccount"))
         with pytest.raises(ValueError):
             handler(event=event, context=None)

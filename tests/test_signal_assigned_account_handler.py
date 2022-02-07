@@ -33,13 +33,13 @@ pytestmark = pytest.mark.wip
 def test_handler():
 
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="1234567890",
+                                    context=dict(account="123456789012",
                                                  destination_organizational_unit="ou-destination",
                                                  source_organizational_unit="ou-source"))
 
     with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
         result = handler(event=event, context=None)
-    assert result['body'] == 'processing 1234567890'
+    assert result == 'AssignedAccount 123456789012'
 
     with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-unexpected"}):
         with pytest.raises(ValueError):

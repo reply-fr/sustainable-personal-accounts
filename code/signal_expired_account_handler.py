@@ -27,23 +27,11 @@ from code import EventFactory
 
 def handler(event, context):
     logging.debug(json.dumps(event))
-    input = EventFactory.decode_aws_organizations_event(event)
-    EventFactory.emit('PurgedAccount', input.account)
-    print(f'we are handling account {input.account}')
-    print(f'account has arrived on OU {input.organizational_unit}')
-    if os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'] != input.organizational_unit:
-        raise ValueError(f"We do not handle events for OU '{input.organizational_unit}'")
-    # print("Source:" + event['source'])
-    # print("Event Name:" + event['detail']['eventName'])
-    # print("Account Id:" + event['detail']['requestParameters']['accountId'])
-    # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'])
-    # print("Source OU Id:" + event['detail']['requestParameters']['sourceParentId'])
-    # print("Destination OU Id:" + event['detail']['requestParameters']['destinationParentId'] + "\n")
 
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': f'processing {input.account}'
-    }
+    input = EventFactory.decode_aws_organizations_event(
+        event=event,
+        match=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
+
+    EventFactory.emit('PurgedAccount', input.account)
+
+    return f"ExpiredAccount {input.account}"

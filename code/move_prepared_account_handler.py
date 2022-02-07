@@ -22,20 +22,18 @@ import logging
 from logger import setup_logging
 setup_logging()
 
-from code import EventFactory
+from code import Account, EventFactory
 
 
 def handler(event, context):
     logging.debug(json.dumps(event))
-    input = EventFactory.decode_local_event(event)
-    print(f'we are handling account {input.account}')
-    if input.state != 'PreparedAccount':
-        raise ValueError(f"We do not handle events in state '{input.state}'")
 
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': f'processing {input.account}'
-    }
+    input = EventFactory.decode_local_event(event, match="PreparedAccount")
+
+    EventFactory.emit('ReleasedAccount', input.account)
+
+    Account.move(account=input.account,
+                 source=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
+                 destination=os.environ['RELEASED_ACCOUNTS_ORGANISATIONAL_UNIT'])
+
+    return f"ReleasedAccount {input.account}"

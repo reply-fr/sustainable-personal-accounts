@@ -51,17 +51,31 @@ class EventFactory:
         client.put_events(Entries=[event])
 
     @classmethod
-    def decode_local_event(cls, event):
+    def decode_local_event(cls, event, match=None):
         decoded = SimpleNamespace()
+
         decoded.account = json.loads(event['detail'])['Account']
+        if len(decoded.account) != 12:
+            raise ValueError(f"Invalid account identifier '{decoded.account}'")
+
         decoded.state = event['detail-type']
+        if match and match != decoded.state:
+            raise ValueError(f"Unexpected state '{decoded.state}'")
+
         return decoded
 
     @classmethod
-    def decode_aws_organizations_event(cls, event):
+    def decode_aws_organizations_event(cls, event, match=None):
         decoded = SimpleNamespace()
+
         decoded.account = event['detail']['requestParameters']['accountId']
+        if len(decoded.account) != 12:
+            raise ValueError(f"Invalid account identifier '{decoded.account}'")
+
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
+        if match and match != decoded.organizational_unit:
+            raise ValueError(f"Unexpected event source '{decoded.organizational_unit}' for this function")
+
         return decoded
 
     @classmethod

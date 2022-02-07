@@ -27,27 +27,27 @@ from code import EventFactory
 
 def test_emit():
     client = Mock()
-    EventFactory.emit(label='CreatedAccount', account='1234567890', client=client)
+    EventFactory.emit(label='CreatedAccount', account='123456789012', client=client)
     client.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Account": "1234567890"}',
+        {'Detail': '{"Account": "123456789012"}',
          'DetailType': 'CreatedAccount',
          'Source': 'SustainablePersonalAccounts'}])
 
 
 def test_build_event():
-    event = EventFactory.build_event(label='CreatedAccount', account='1234567890')
-    assert json.loads(event['Detail'])['Account'] == '1234567890'
+    event = EventFactory.build_event(label='CreatedAccount', account='123456789012')
+    assert json.loads(event['Detail'])['Account'] == '123456789012'
     assert event['DetailType'] == 'CreatedAccount'
     assert event['Source'] == 'SustainablePersonalAccounts'
 
 
 def test_accepted_labels():
     for label in EventFactory.ACCEPTED_LABELS:
-        event = EventFactory.build_event(label=label, account='1234567890')
+        event = EventFactory.build_event(label=label, account='123456789012')
         assert event['DetailType'] == label
 
     with pytest.raises(AttributeError):
-        EventFactory.build_event(label='*perfectly*unknown*', account='1234567890')
+        EventFactory.build_event(label='*perfectly*unknown*', account='123456789012')
 
 
 def test_put_event():
@@ -59,21 +59,21 @@ def test_put_event():
 def test_decode_local_event():
 
     event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="1234567890",
+                                    context=dict(account="123456789012",
                                                  state="AccountCreated"))
 
     decoded = EventFactory.decode_local_event(event)
-    assert decoded.account == "1234567890"
+    assert decoded.account == "123456789012"
     assert decoded.state == "AccountCreated"
 
 
 def test_decode_aws_organizations_event():
 
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="1234567890",
+                                    context=dict(account="123456789012",
                                                  destination_organizational_unit="ou-destination",
                                                  source_organizational_unit="ou-source"))
 
     decoded = EventFactory.decode_aws_organizations_event(event)
-    assert decoded.account == "1234567890"
+    assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
