@@ -19,7 +19,7 @@ import json
 from unittest.mock import Mock
 import pytest
 
-from code.event_bus import EventFactory
+from code import EventFactory
 
 
 # pytestmark = pytest.mark.wip

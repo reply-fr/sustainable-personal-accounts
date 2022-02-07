@@ -20,11 +20,11 @@ import logging
 
 from aws_cdk import App
 
-from code.configuration import Configuration
-from code.listen_account_events_stack import ListenAccountEventsStack
-from code.move_vanilla_account_stack import MoveVanillaAccountStack
-from code.signal_assigned_account_stack import SignalAssignedAccountStack
-from code.move_assigned_account_stack import MoveAssignedAccountStack
+from code import (Configuration,
+                  ListenAccountEventsStack,
+                  MoveAssignedAccountStack,
+                  MoveVanillaAccountStack,
+                  SignalAssignedAccountStack)
 
 
 def build_templates(settings=None, dry_run=False):

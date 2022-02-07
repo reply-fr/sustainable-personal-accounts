@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from io import StringIO
 
-from code.logger import setup_logging
+from code import setup_logging
 
 
 # pytestmark = pytest.mark.wip
