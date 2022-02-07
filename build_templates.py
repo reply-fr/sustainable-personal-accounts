@@ -22,8 +22,8 @@ from aws_cdk import App
 
 from code import (Configuration,
                   ListenAccountEventsStack,
-                  MoveAssignedAccountStack,
-                  MoveExpiredAccountStack,
+                  MovePreparedAccountStack,
+                  MovePurgedAccountStack,
                   MoveVanillaAccountStack,
                   SignalAssignedAccountStack,
                   SignalExpiredAccountStack)
@@ -38,9 +38,9 @@ def build_templates(settings=None, dry_run=False):
     ListenAccountEventsStack(app, "listen-account-events-stack")
     MoveVanillaAccountStack(app, "move-vanilla-account-stack")
     SignalAssignedAccountStack(app, "signal-assigned-account-stack")
-    MoveAssignedAccountStack(app, "move-assigned-account-stack")
+    MovePreparedAccountStack(app, "move-prepared-account-stack")
     SignalExpiredAccountStack(app, "signal-expired-account-stack")
-    MoveExpiredAccountStack(app, "move-expired-account-stack")
+    MovePurgedAccountStack(app, "move-purged-account-stack")
     app.synth()
 
 

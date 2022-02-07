@@ -23,15 +23,15 @@ from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class MoveAssignedAccountStack(Stack):
+class MovePreparedAccountStack(Stack):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
         lambdaFn = Function(
-            self, "move-assigned-account",
+            self, "move-prepared-account",
             code=AssetCode("code"),
-            handler="move_assigned_account_handler.handler",
+            handler="move_prepared_account_handler.handler",
             environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit,
                              RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.released_accounts_organisational_unit),
             log_retention=RetentionDays.THREE_MONTHS,

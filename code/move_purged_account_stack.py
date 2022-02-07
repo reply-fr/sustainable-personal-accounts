@@ -23,15 +23,15 @@ from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class MoveExpiredAccountStack(Stack):
+class MovePurgedAccountStack(Stack):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
         lambdaFn = Function(
-            self, "move-expired-account",
+            self, "move-purged-account",
             code=AssetCode("code"),
-            handler="move_expired_account_handler.handler",
+            handler="move_purged_account_handler.handler",
             environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit,
                              EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organisational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
