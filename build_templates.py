@@ -23,6 +23,7 @@ from aws_cdk import App
 from code.configuration import Configuration
 from code.listen_account_events_stack import ListenAccountEventsStack
 from code.move_vanilla_account_stack import MoveVanillaAccountStack
+from code.signal_assigned_account_stack import SignalAssignedAccountStack
 
 
 def build_templates(settings=None, dry_run=False):
@@ -33,6 +34,7 @@ def build_templates(settings=None, dry_run=False):
     app = App()
     ListenAccountEventsStack(app, "listen-account-events-stack")
     MoveVanillaAccountStack(app, "move-vanilla-account-stack")
+    SignalAssignedAccountStack(app, "signal-assigned-account-stack")
     app.synth()
 
 
