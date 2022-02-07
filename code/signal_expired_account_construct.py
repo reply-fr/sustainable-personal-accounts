@@ -16,14 +16,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Duration, Stack
+from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class SignalExpiredAccountStack(Stack):
+class SignalExpiredAccountConstruct(Construct):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
@@ -31,6 +31,7 @@ class SignalExpiredAccountStack(Stack):
         lambdaFn = Function(
             self, "signal-expired-account",
             code=AssetCode("code"),
+            description="Start the purge of an expired account",
             handler="signal_expired_account_handler.handler",
             environment=dict(EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organisational_unit),
             log_retention=RetentionDays.THREE_MONTHS,

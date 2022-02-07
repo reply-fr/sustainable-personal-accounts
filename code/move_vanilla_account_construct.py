@@ -16,29 +16,34 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Duration, Stack
-from aws_cdk.aws_events import Rule, Schedule
+from aws_cdk import Duration
+from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class MoveExpiredAccountsStack(Stack):
+class MoveVanillaAccountConstruct(Construct):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
         lambdaFn = Function(
-            self, "move-expired-accounts",
+            self, "move-vanilla-account",
             code=AssetCode("code"),
-            handler="move_expired_accounts_handler.handler",
-            environment=dict(EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organisational_unit,
-                             RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.released_accounts_organisational_unit),
+            description="Move created accounts to assigned state",
+            handler="move_vanilla_account_handler.handler",
+            environment=dict(VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.vanilla_accounts_organisational_unit,
+                             ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
         rule = Rule(
             self, "Rule",
-            schedule=Schedule.expression(toggles.expiration_expression),
+            event_pattern=EventPattern(
+                source=['aws.organization'],
+                detail=dict(
+                    eventName=['MoveAccount'],
+                    requestParameters=dict(destinationParentId=[toggles.vanilla_accounts_organisational_unit]))),
             targets=[LambdaFunction(lambdaFn)])

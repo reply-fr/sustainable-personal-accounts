@@ -20,14 +20,7 @@ import logging
 
 from aws_cdk import App
 
-from code import (Configuration,
-                  ListenAccountEventsStack,
-                  MoveExpiredAccountsStack,
-                  MovePreparedAccountStack,
-                  MovePurgedAccountStack,
-                  MoveVanillaAccountStack,
-                  SignalAssignedAccountStack,
-                  SignalExpiredAccountStack)
+from code import Configuration, FunctionsStack
 
 
 def build_templates(settings=None, dry_run=False):
@@ -36,13 +29,7 @@ def build_templates(settings=None, dry_run=False):
     Configuration.initialize(stream=settings, dry_run=dry_run)
 
     app = App()
-    ListenAccountEventsStack(app, "listen-account-events-stack")
-    MoveVanillaAccountStack(app, "move-vanilla-account-stack")
-    SignalAssignedAccountStack(app, "signal-assigned-account-stack")
-    MovePreparedAccountStack(app, "move-prepared-account-stack")
-    MoveExpiredAccountsStack(app, "move-expired-accounts-stack")
-    SignalExpiredAccountStack(app, "signal-expired-account-stack")
-    MovePurgedAccountStack(app, "move-purged-account-stack")
+    FunctionsStack(app, "functions-stack")
     app.synth()
 
 

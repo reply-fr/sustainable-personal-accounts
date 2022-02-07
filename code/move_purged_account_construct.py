@@ -16,24 +16,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Duration, Stack
+from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class MovePreparedAccountStack(Stack):
+class MovePurgedAccountConstruct(Construct):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
         lambdaFn = Function(
-            self, "move-prepared-account",
+            self, "move-purged-account",
             code=AssetCode("code"),
-            handler="move_prepared_account_handler.handler",
+            description="Move purged accounts to assigned state",
+            handler="move_purged_account_handler.handler",
             environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit,
-                             RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.released_accounts_organisational_unit),
+                             EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organisational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
@@ -42,5 +43,5 @@ class MovePreparedAccountStack(Stack):
             self, "Rule",
             event_pattern=EventPattern(
                 source=['SustainablePersonalAccounts'],
-                detail_type=['PreparedAccount']),
+                detail_type=['PurgedAccount']),
             targets=[LambdaFunction(lambdaFn)])

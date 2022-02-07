@@ -16,24 +16,24 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Duration, Stack
+from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class MoveVanillaAccountStack(Stack):
+class SignalAssignedAccountConstruct(Construct):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
         lambdaFn = Function(
-            self, "move-vanilla-account",
+            self, "signal-assigned-account",
             code=AssetCode("code"),
-            handler="move_vanilla_account_handler.handler",
-            environment=dict(VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.vanilla_accounts_organisational_unit,
-                             ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit),
+            description="Start preparation of an assigned account",
+            handler="signal_assigned_account_handler.handler",
+            environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
@@ -44,5 +44,5 @@ class MoveVanillaAccountStack(Stack):
                 source=['aws.organization'],
                 detail=dict(
                     eventName=['MoveAccount'],
-                    requestParameters=dict(destinationParentId=[toggles.vanilla_accounts_organisational_unit]))),
+                    requestParameters=dict(destinationParentId=[toggles.assigned_accounts_organisational_unit]))),
             targets=[LambdaFunction(lambdaFn)])

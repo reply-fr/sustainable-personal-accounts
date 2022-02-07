@@ -16,31 +16,28 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Duration, Stack
+from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class MovePurgedAccountStack(Stack):
+class ListenAccountEventsConstruct(Construct):
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
         lambdaFn = Function(
-            self, "move-purged-account",
+            self, "listen-account-events",
             code=AssetCode("code"),
-            handler="move_purged_account_handler.handler",
-            environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit,
-                             EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organisational_unit),
+            description="Listen events from the bus",
+            handler="listen_account_events_handler.handler",
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
         rule = Rule(
             self, "Rule",
-            event_pattern=EventPattern(
-                source=['SustainablePersonalAccounts'],
-                detail_type=['PurgedAccount']),
+            event_pattern=EventPattern(source=['SustainablePersonalAccounts']),
             targets=[LambdaFunction(lambdaFn)])
