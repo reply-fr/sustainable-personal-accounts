@@ -23,7 +23,7 @@ from unittest.mock import patch
 import os
 import pytest
 
-from event_bus import EventFactory
+from code import EventFactory
 from code.move_vanilla_account_handler import handler
 
 

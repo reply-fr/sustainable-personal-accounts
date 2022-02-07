@@ -24,7 +24,7 @@ import os
 import pytest
 
 from code import EventFactory
-from code.signal_assigned_account_handler import handler
+from code.move_expired_account_handler import handler
 
 
 pytestmark = pytest.mark.wip
@@ -32,15 +32,20 @@ pytestmark = pytest.mark.wip
 
 def test_handler():
 
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="1234567890",
-                                                 destination_organizational_unit="ou-destination",
-                                                 source_organizational_unit="ou-source"))
+    context = {
+        "EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-source",
+        "ASSIGNED_ACCOUNTS_ORGANISATIONAL_UNIT": "ou-destination"}
 
-    with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
+    with patch.dict(os.environ, context):
+
+        event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                        context=dict(account="1234567890",
+                                                     state="PurgedAccount"))
         result = handler(event=event, context=None)
-    assert result['body'] == 'processing 1234567890'
+        assert result['body'] == 'processing 1234567890'
 
-    with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-unexpected"}):
+        event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                        context=dict(account="1234567890",
+                                                     state="CreatedAccount"))
         with pytest.raises(ValueError):
             handler(event=event, context=None)

@@ -24,7 +24,7 @@ import os
 import pytest
 
 from code import EventFactory
-from code.signal_assigned_account_handler import handler
+from code.signal_expired_account_handler import handler
 
 
 pytestmark = pytest.mark.wip
@@ -37,10 +37,10 @@ def test_handler():
                                                  destination_organizational_unit="ou-destination",
                                                  source_organizational_unit="ou-source"))
 
-    with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
+    with patch.dict(os.environ, {"EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
         result = handler(event=event, context=None)
     assert result['body'] == 'processing 1234567890'
 
-    with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-unexpected"}):
+    with patch.dict(os.environ, {"EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-unexpected"}):
         with pytest.raises(ValueError):
             handler(event=event, context=None)
