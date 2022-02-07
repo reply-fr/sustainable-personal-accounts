@@ -165,6 +165,9 @@ destroy: venv/bin/activate
 	@echo "Destroying environment '${ENVIRONMENT}'..."
 	cdk destroy --all
 
+put-events:
+	aws events put-events --cli-input-json file://tests/events/cli-put-events.json
+
 clean:
 	rm -rf ${PRESENTATION_NAME}.html
 	rm -rf ${PRESENTATION_NAME}.pdf
