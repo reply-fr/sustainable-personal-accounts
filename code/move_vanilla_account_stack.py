@@ -42,8 +42,7 @@ class MoveVanillaAccountStack(Stack):
             self, "Rule",
             event_pattern=EventPattern(
                 source=['aws.organization'],
-                detail_type=['AWS API Call via CloudTrail'],
                 detail=dict(
                     eventName=['MoveAccount'],
-                    requestParameters=dict(destinationParentId=['ou-2pcw-56n2rgox']))),
+                    requestParameters=dict(destinationParentId=[toggles.vanilla_accounts_organisational_unit]))),
             targets=[LambdaFunction(lambdaFn)])
