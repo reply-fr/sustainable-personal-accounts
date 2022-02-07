@@ -40,10 +40,5 @@ class MoveExpiredAccountsStack(Stack):
 
         rule = Rule(
             self, "Rule",
-            schedule=Schedule.cron(
-                minute='0',
-                hour='18',
-                month='*',
-                week_day='SAT',
-                year='*'),
+            schedule=Schedule.expression(toggles.expiration_expression),
             targets=[LambdaFunction(lambdaFn)])
