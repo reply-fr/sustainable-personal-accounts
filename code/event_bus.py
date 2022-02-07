@@ -51,8 +51,24 @@ class EventFactory:
         client.put_events(Entries=[event])
 
     @classmethod
+    def decode_local_event(cls, event):
+        decoded = SimpleNamespace()
+        decoded.account = json.loads(event['detail'])['Account']
+        decoded.state = event['detail-type']
+        return decoded
+
+    @classmethod
     def decode_aws_organizations_event(cls, event):
         decoded = SimpleNamespace()
         decoded.account = event['detail']['requestParameters']['accountId']
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
         return decoded
+
+    @classmethod
+    def make_event(cls, template, context):
+
+        with open(template) as stream:
+            text = stream.read()
+            for key, value in context.items():
+                text = text.replace('___' + key + '___', value)
+            return json.loads(text)

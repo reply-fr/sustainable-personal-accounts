@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import json
 import logging
 
 from logger import setup_logging
@@ -22,4 +23,4 @@ setup_logging()
 
 
 def handler(event, context):
-    logging.info(f'request: {event}')
+    logging.info(json.dumps(event))

@@ -19,11 +19,11 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import json
 from unittest.mock import patch
 import os
 import pytest
 
+from event_bus import EventFactory
 from code.move_vanilla_account_handler import handler
 
 
@@ -32,15 +32,10 @@ pytestmark = pytest.mark.wip
 
 def test_handler():
 
-    parameters = dict(account="1234567890",
-                      destination_organizational_unit="ou-destination",
-                      source_organizational_unit="ou-source")
-
-    with open("tests/events/move-account-template.json") as stream:
-        text = stream.read()
-        for key, value in parameters.items():
-            text = text.replace('{' + key + '}', value)
-        event = json.loads(text)
+    event = EventFactory.make_event(template="tests/events/move-account-template.json",
+                                    context=dict(account="1234567890",
+                                                 destination_organizational_unit="ou-destination",
+                                                 source_organizational_unit="ou-source"))
 
     with patch.dict(os.environ, {"VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
         result = handler(event=event, context=None)

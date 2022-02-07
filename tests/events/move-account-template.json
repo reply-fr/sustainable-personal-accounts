@@ -37,9 +37,9 @@
         "sourceIPAddress": "90.16.51.156",
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
         "requestParameters": {
-            "accountId": "{account}",
-            "destinationParentId": "{destination_organizational_unit}",
-            "sourceParentId": "{source_organizational_unit}"
+            "accountId": "___account___",
+            "destinationParentId": "___destination_organizational_unit___",
+            "sourceParentId": "___source_organizational_unit___"
         },
         "responseElements": null,
         "requestID": "05be9129-YxYx-ZZZZ-xYxY-c255zzzz6706",
