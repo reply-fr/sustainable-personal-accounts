@@ -15,27 +15,20 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
-import os
 import logging
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from logger import setup_logging
-setup_logging()
+import json
+from unittest.mock import patch
+import os
+import pytest
 
-from code import EventFactory
+from code.move_expired_accounts_handler import handler
 
 
-def handler(event, context):
-    logging.debug(json.dumps(event))
-    input = EventFactory.decode_local_event(event)
-    print(f'we are handling account {input.account}')
-    if input.state != 'PreparedAccount':
-        raise ValueError(f"We do not handle events in state '{input.state}'")
+pytestmark = pytest.mark.wip
 
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': f'processing {input.account}'
-    }
+
+def test_handler():
+    handler(event=dict(hello='world!'), context=None)

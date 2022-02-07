@@ -112,6 +112,7 @@ class Configuration:
 
     ALLOWED_ATTRIBUTES = dict(
         assigned_accounts_organisational_unit='str',
+        expiration_expression='str',
         expired_accounts_organisational_unit='str',
         released_accounts_organisational_unit='str',
         vanilla_accounts_organisational_unit='str'

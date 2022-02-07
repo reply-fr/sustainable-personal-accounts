@@ -15,3 +15,8 @@ released_accounts:
 
 expired_accounts:
   organisational_unit: ou-efghij
+
+# Reference:
+# - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
+#
+expiration_expression: "cron(0 18 ? * SAT *)"

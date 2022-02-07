@@ -91,6 +91,7 @@ def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
     assert toggles.assigned_accounts_organisational_unit == 'ou-5678'
     assert toggles.expired_accounts_organisational_unit == 'ou-efghij'
+    assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.released_accounts_organisational_unit == 'ou-90abcd'
     assert toggles.vanilla_accounts_organisational_unit == 'ou-1234'
 

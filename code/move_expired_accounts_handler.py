@@ -16,7 +16,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-import os
 import logging
 
 from logger import setup_logging
@@ -27,15 +26,3 @@ from code import EventFactory
 
 def handler(event, context):
     logging.debug(json.dumps(event))
-    input = EventFactory.decode_local_event(event)
-    print(f'we are handling account {input.account}')
-    if input.state != 'PreparedAccount':
-        raise ValueError(f"We do not handle events in state '{input.state}'")
-
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/plain'
-        },
-        'body': f'processing {input.account}'
-    }
