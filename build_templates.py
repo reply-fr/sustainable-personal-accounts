@@ -24,6 +24,7 @@ from code.configuration import Configuration
 from code.listen_account_events_stack import ListenAccountEventsStack
 from code.move_vanilla_account_stack import MoveVanillaAccountStack
 from code.signal_assigned_account_stack import SignalAssignedAccountStack
+from code.move_assigned_account_stack import MoveAssignedAccountStack
 
 
 def build_templates(settings=None, dry_run=False):
@@ -35,6 +36,7 @@ def build_templates(settings=None, dry_run=False):
     ListenAccountEventsStack(app, "listen-account-events-stack")
     MoveVanillaAccountStack(app, "move-vanilla-account-stack")
     SignalAssignedAccountStack(app, "signal-assigned-account-stack")
+    MoveAssignedAccountStack(app, "move-assigned-account-stack")
     app.synth()
 
 
