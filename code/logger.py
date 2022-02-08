@@ -19,6 +19,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # - https://towardsdatascience.com/the-reusable-python-logging-template-for-all-your-data-science-apps-551697c8540
 
 import logging
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+
 import os
 import sys
 
