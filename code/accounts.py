@@ -23,13 +23,13 @@ import boto3
 
 class Accounts:
 
-    @classmethod
-    def list(cls, parent, client=None):
+    @staticmethod
+    def list(parent, client=None):
         client = client if client else boto3.client('organizations')
 
         token = None
         while True:
-            logging.info("listing accounts in parent '{parent}'")
+            logging.info(f"listing accounts in parent '{parent}'")
             parameters = dict(ParentId=parent,
                               MaxResults=50)
             if token:

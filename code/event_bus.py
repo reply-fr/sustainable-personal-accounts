@@ -50,8 +50,8 @@ class EventFactory:
         client = client if client else boto3.client('events')
         client.put_events(Entries=[event])
 
-    @classmethod
-    def decode_local_event(cls, event, match=None):
+    @staticmethod
+    def decode_local_event(event, match=None):
         decoded = SimpleNamespace()
 
         decoded.account = json.loads(event['detail'])['Account']
@@ -64,8 +64,8 @@ class EventFactory:
 
         return decoded
 
-    @classmethod
-    def decode_aws_organizations_event(cls, event, match=None):
+    @staticmethod
+    def decode_aws_organizations_event(event, match=None):
         decoded = SimpleNamespace()
 
         decoded.account = event['detail']['requestParameters']['accountId']
@@ -78,8 +78,8 @@ class EventFactory:
 
         return decoded
 
-    @classmethod
-    def make_event(cls, template, context):
+    @staticmethod
+    def make_event(template, context):
         with open(template) as stream:
             text = stream.read()
             for key, value in context.items():
