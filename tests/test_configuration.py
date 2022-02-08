@@ -74,26 +74,26 @@ def test_set_from_environment(toggles):
     assert toggles.__dict__.get('active_directory_domain_credentials') is None
 
     mapping = dict(
-        vanilla_accounts_organisational_unit='VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'
+        vanilla_accounts_organizational_unit='VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'
     )
     Configuration.set_from_environment(environ=environ, mapping=mapping)
-    assert toggles.vanilla_accounts_organisational_unit == "ou-vanilla-accounts"
+    assert toggles.vanilla_accounts_organizational_unit == "ou-vanilla-accounts"
 
 
 def test_set_from_settings(toggles):
-    settings = dict(vanilla_accounts=dict(organisational_unit="foo bar"))
+    settings = dict(vanilla_accounts=dict(organizational_unit="foo bar"))
     Configuration.set_from_settings(settings)
-    assert toggles.vanilla_accounts_organisational_unit == "foo bar"
+    assert toggles.vanilla_accounts_organizational_unit == "foo bar"
 
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
-    assert toggles.assigned_accounts_organisational_unit == 'ou-5678'
-    assert toggles.expired_accounts_organisational_unit == 'ou-efghij'
+    assert toggles.assigned_accounts_organizational_unit == 'ou-5678'
+    assert toggles.expired_accounts_organizational_unit == 'ou-efghij'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
-    assert toggles.released_accounts_organisational_unit == 'ou-90abcd'
-    assert toggles.vanilla_accounts_organisational_unit == 'ou-1234'
+    assert toggles.released_accounts_organizational_unit == 'ou-90abcd'
+    assert toggles.vanilla_accounts_organizational_unit == 'ou-1234'
 
 
 def test_set_from_yaml_invalid(toggles):

@@ -5,16 +5,16 @@
 
 
 vanilla_accounts:
-  organisational_unit: ou-1234
+  organizational_unit: ou-1234
 
 assigned_accounts:
-  organisational_unit: ou-5678
+  organizational_unit: ou-5678
 
 released_accounts:
-  organisational_unit: ou-90abcd
+  organizational_unit: ou-90abcd
 
 expired_accounts:
-  organisational_unit: ou-efghij
+  organizational_unit: ou-efghij
 
 # Reference:
 # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html

@@ -33,7 +33,7 @@ class SignalAssignedAccountConstruct(Construct):
             code=AssetCode("code"),
             description="Start preparation of an assigned account",
             handler="signal_assigned_account_handler.handler",
-            environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organisational_unit),
+            environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organizational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
@@ -44,5 +44,5 @@ class SignalAssignedAccountConstruct(Construct):
                 source=['aws.organization'],
                 detail=dict(
                     eventName=['MoveAccount'],
-                    requestParameters=dict(destinationParentId=[toggles.assigned_accounts_organisational_unit]))),
+                    requestParameters=dict(destinationParentId=[toggles.assigned_accounts_organizational_unit]))),
             targets=[LambdaFunction(lambdaFn)])

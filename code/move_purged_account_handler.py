@@ -33,7 +33,7 @@ def handler(event, context):
     EventFactory.emit('PurgedAccount', input.account)
 
     Account.move(account=input.account,
-                 source=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                 destination=os.environ['ASSIGNED_ACCOUNTS_ORGANISATIONAL_UNIT'])
+                 origin=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
+                 destination=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
 
     return f"PurgedAccount {input.account}"

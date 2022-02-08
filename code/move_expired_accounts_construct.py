@@ -33,8 +33,8 @@ class MoveExpiredAccountsConstruct(Construct):
             code=AssetCode("code"),
             description="Move expired accounts",
             handler="move_expired_accounts_handler.handler",
-            environment=dict(EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organisational_unit,
-                             RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.released_accounts_organisational_unit),
+            environment=dict(EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organizational_unit,
+                             RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.released_accounts_organizational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)

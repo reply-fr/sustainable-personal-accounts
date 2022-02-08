@@ -41,8 +41,8 @@ def test_build_event():
     assert event['Source'] == 'SustainablePersonalAccounts'
 
 
-def test_accepted_labels():
-    for label in EventFactory.ACCEPTED_LABELS:
+def test_state_labels():
+    for label in EventFactory.STATE_LABELS:
         event = EventFactory.build_event(label=label, account='123456789012')
         assert event['DetailType'] == label
 
@@ -57,23 +57,19 @@ def test_put_event():
 
 
 def test_decode_local_event():
-
     event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                     context=dict(account="123456789012",
                                                  state="AccountCreated"))
-
     decoded = EventFactory.decode_local_event(event)
     assert decoded.account == "123456789012"
     assert decoded.state == "AccountCreated"
 
 
 def test_decode_aws_organizations_event():
-
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
                                     context=dict(account="123456789012",
                                                  destination_organizational_unit="ou-destination",
                                                  source_organizational_unit="ou-source"))
-
     decoded = EventFactory.decode_aws_organizations_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"

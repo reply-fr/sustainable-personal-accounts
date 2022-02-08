@@ -39,7 +39,7 @@
         "requestParameters": {
             "accountId": "___account___",
             "destinationParentId": "___destination_organizational_unit___",
-            "sourceParentId": "___source_organizational_unit___"
+            "sourceParentId": "___origin_organizational_unit___"
         },
         "responseElements": null,
         "requestID": "05be9129-YxYx-ZZZZ-xYxY-c255zzzz6706",

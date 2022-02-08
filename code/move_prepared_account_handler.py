@@ -33,7 +33,7 @@ def handler(event, context):
     EventFactory.emit('ReleasedAccount', input.account)
 
     Account.move(account=input.account,
-                 source=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                 destination=os.environ['RELEASED_ACCOUNTS_ORGANISATIONAL_UNIT'])
+                 origin=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
+                 destination=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
 
     return f"ReleasedAccount {input.account}"

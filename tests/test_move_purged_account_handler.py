@@ -33,12 +33,10 @@ pytestmark = pytest.mark.wip
 def test_handler():
 
     context = {
-        "EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-source",
-        "ASSIGNED_ACCOUNTS_ORGANISATIONAL_UNIT": "ou-destination"}
+        "EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-origin",
+        "ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}
 
     with patch.dict(os.environ, context):
-
-        print(os.environ.keys())
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                         context=dict(account="123456789012",
                                                      state="PurgedAccount"))

@@ -33,11 +33,10 @@ pytestmark = pytest.mark.wip
 def test_handler():
 
     context = {
-        "ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-source",
-        "RELEASED_ACCOUNTS_ORGANISATIONAL_UNIT": "ou-destination"}
+        "ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-origin",
+        "RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}
 
     with patch.dict(os.environ, context):
-
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                         context=dict(account="123456789012",
                                                      state="PreparedAccount"))

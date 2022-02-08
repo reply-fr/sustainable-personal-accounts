@@ -35,7 +35,7 @@ def test_handler():
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
                                     context=dict(account="123456789012",
                                                  destination_organizational_unit="ou-destination",
-                                                 source_organizational_unit="ou-source"))
+                                                 origin_organizational_unit="ou-origin"))
 
     with patch.dict(os.environ, {"ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
         result = handler(event=event, context=None)

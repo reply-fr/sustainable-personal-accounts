@@ -35,7 +35,7 @@ def handler(event, context):
     EventFactory.emit('CreatedAccount', input.account)
 
     Account.move(account=input.account,
-                 source=os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'],
+                 origin=os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'],
                  destination=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
 
     return f"CreatedAccount {input.account}"

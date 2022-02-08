@@ -23,7 +23,7 @@ import boto3
 
 
 class EventFactory:
-    ACCEPTED_LABELS = [
+    STATE_LABELS = [
         'AssignedAccount',
         'CreatedAccount',
         'ExpiredAccount',
@@ -38,8 +38,8 @@ class EventFactory:
 
     @classmethod
     def build_event(cls, label, account):
-        if label not in cls.ACCEPTED_LABELS:
-            raise AttributeError(f'Invalid event type {label}')
+        if label not in cls.STATE_LABELS:
+            raise AttributeError(f'Invalid state type {label}')
         return dict(Detail=json.dumps(dict(Account=account)),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
@@ -80,7 +80,6 @@ class EventFactory:
 
     @classmethod
     def make_event(cls, template, context):
-
         with open(template) as stream:
             text = stream.read()
             for key, value in context.items():
