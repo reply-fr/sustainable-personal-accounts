@@ -25,11 +25,11 @@ from aws_cdk.aws_logs import RetentionDays
 
 class MovePurgedAccountConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "move-purged-account",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Move purged accounts to assigned state",
             handler="move_purged_account_handler.handler",
@@ -39,9 +39,12 @@ class MovePurgedAccountConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
                 source=['SustainablePersonalAccounts'],
                 detail_type=['PurgedAccount']),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])

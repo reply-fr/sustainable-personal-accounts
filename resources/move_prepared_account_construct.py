@@ -25,11 +25,11 @@ from aws_cdk.aws_logs import RetentionDays
 
 class MovePreparedAccountConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "move-prepared-account",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Move prepared accounts to released state",
             handler="move_prepared_account_handler.handler",
@@ -39,9 +39,12 @@ class MovePreparedAccountConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
                 source=['SustainablePersonalAccounts'],
                 detail_type=['PreparedAccount']),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])

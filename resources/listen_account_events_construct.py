@@ -19,17 +19,18 @@ from constructs import Construct
 from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
+from aws_cdk.aws_iam import Effect, PolicyStatement
 from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
 class ListenAccountEventsConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "listen-account-events",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Listen events from the bus",
             handler="listen_account_events_handler.handler",
@@ -37,7 +38,10 @@ class ListenAccountEventsConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(source=['SustainablePersonalAccounts']),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])

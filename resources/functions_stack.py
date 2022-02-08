@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from constructs import Construct
 from aws_cdk import Stack
+from aws_cdk.aws_iam import Effect, PolicyStatement
 
 from .listen_account_events_construct import ListenAccountEventsConstruct
 from .move_expired_accounts_construct import MoveExpiredAccountsConstruct
@@ -32,10 +33,40 @@ class FunctionsStack(Stack):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
-        ListenAccountEventsConstruct(self, "listen-account-events-construct")
-        MoveVanillaAccountConstruct(self, "move-vanilla-account-construct")
-        SignalAssignedAccountConstruct(self, "signal-assigned-account-construct")
-        MovePreparedAccountConstruct(self, "move-prepared-account-construct")
-        MoveExpiredAccountsConstruct(self, "move-expired-accounts-construct")
-        SignalExpiredAccountConstruct(self, "signal-expired-account-construct")
-        MovePurgedAccountConstruct(self, "move-purged-account-construct")
+        statements = [
+
+            PolicyStatement(  # allow to put events
+                effect=Effect.ALLOW,
+                actions=['events:PutEvents'],
+                resources=['*']
+            ),
+
+            PolicyStatement(  # allow to put metrics
+                effect=Effect.ALLOW,
+                actions=['cloudwatch:PutMetricData'],
+                resources=['*']
+            )
+
+        ]
+
+        ListenAccountEventsConstruct(
+            self, "ListenAccountEvents",
+            statements=statements)
+        MoveVanillaAccountConstruct(
+            self, "MoveVanillaAccount",
+            statements=statements)
+        SignalAssignedAccountConstruct(
+            self, "SignalAssignedAccount",
+            statements=statements)
+        MovePreparedAccountConstruct(
+            self, "MovePreparedAccount",
+            statements=statements)
+        MoveExpiredAccountsConstruct(
+            self, "MoveExpiredAccounts",
+            statements=statements)
+        SignalExpiredAccountConstruct(
+            self, "SignalExpiredAccount",
+            statements=statements)
+        MovePurgedAccountConstruct(
+            self, "MovePurgedAccount",
+            statements=statements)

@@ -25,11 +25,11 @@ from aws_cdk.aws_logs import RetentionDays
 
 class SignalAssignedAccountConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "signal-assigned-account",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Start preparation of an assigned account",
             handler="signal_assigned_account_handler.handler",
@@ -38,6 +38,9 @@ class SignalAssignedAccountConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
@@ -45,4 +48,4 @@ class SignalAssignedAccountConstruct(Construct):
                 detail=dict(
                     eventName=['MoveAccount'],
                     requestParameters=dict(destinationParentId=[toggles.assigned_accounts_organizational_unit]))),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])

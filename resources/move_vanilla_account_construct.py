@@ -25,11 +25,11 @@ from aws_cdk.aws_logs import RetentionDays
 
 class MoveVanillaAccountConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "move-vanilla-account",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Move created accounts to assigned state",
             handler="move_vanilla_account_handler.handler",
@@ -39,6 +39,9 @@ class MoveVanillaAccountConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
@@ -46,4 +49,4 @@ class MoveVanillaAccountConstruct(Construct):
                 detail=dict(
                     eventName=['MoveAccount'],
                     requestParameters=dict(destinationParentId=[toggles.vanilla_accounts_organizational_unit]))),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])

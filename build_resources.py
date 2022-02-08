@@ -29,7 +29,7 @@ def build_resources(settings=None, dry_run=False):
     Configuration.initialize(stream=settings, dry_run=dry_run)
 
     app = App()
-    FunctionsStack(app, "functions-stack")
+    FunctionsStack(app, "SPA")
     app.synth()
 
 

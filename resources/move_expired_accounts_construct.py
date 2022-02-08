@@ -25,11 +25,11 @@ from aws_cdk.aws_logs import RetentionDays
 
 class MoveExpiredAccountsConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "move-expired-accounts",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Move expired accounts",
             handler="move_expired_accounts_handler.handler",
@@ -39,7 +39,10 @@ class MoveExpiredAccountsConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             schedule=Schedule.expression(toggles.expiration_expression),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])

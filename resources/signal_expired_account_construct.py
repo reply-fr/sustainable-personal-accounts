@@ -25,11 +25,11 @@ from aws_cdk.aws_logs import RetentionDays
 
 class SignalExpiredAccountConstruct(Construct):
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        lambdaFn = Function(
-            self, "signal-expired-account",
+        function = Function(
+            self, "Function",
             code=AssetCode("code"),
             description="Start the purge of an expired account",
             handler="signal_expired_account_handler.handler",
@@ -38,6 +38,9 @@ class SignalExpiredAccountConstruct(Construct):
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
+        for statement in statements:
+            function.add_to_role_policy(statement)
+
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
@@ -45,4 +48,4 @@ class SignalExpiredAccountConstruct(Construct):
                 detail=dict(
                     eventName=['MoveAccount'],
                     requestParameters=dict(destinationParentId=[toggles.expired_accounts_organizational_unit]))),
-            targets=[LambdaFunction(lambdaFn)])
+            targets=[LambdaFunction(function)])
