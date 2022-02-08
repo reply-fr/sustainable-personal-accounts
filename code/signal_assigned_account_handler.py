@@ -22,7 +22,7 @@ import logging
 from logger import setup_logging
 setup_logging()
 
-from code import EventFactory
+from code import Worker, EventFactory
 
 
 def handler(event, context):
@@ -32,6 +32,8 @@ def handler(event, context):
         event=event,
         match=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
 
-    EventFactory.emit('PreparedAccount', input.account)
+    EventFactory.emit('AssignedAccount', input.account)
+
+    Worker.prepare(input.account)
 
     return f"AssignedAccount {input.account}"

@@ -21,14 +21,31 @@ from types import SimpleNamespace
 
 import boto3
 
+from code.event_bus import EventFactory
 
-class Account:
+
+class Worker:
 
     @classmethod
-    def move(cls, account, source, destination):
+    def prepare(cls, account, client=None):
 
-        # here we lookup for provisioned product in Service Catalog
+        client = client if client else boto3.client('codebuild')  # allow code injection
 
-        # here we ask Service Catalog to change the OU for this account
+        # client.create_project( ... )
 
-        pass
+        # client.start_build( ... )
+
+        # to be moved to the end of the Codebuild buildspec
+        EventFactory.emit('PreparedAccount', account)
+
+    @classmethod
+    def purge(cls, account, client=None):
+
+        client = client if client else boto3.client('codebuild')  # allow code injection
+
+        # client.create_project( ... )
+
+        # client.start_build( ... )
+
+        # to be moved to the end of the Codebuild buildspec
+        EventFactory.emit('PurgedAccount', account)
