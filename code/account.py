@@ -25,7 +25,8 @@ import boto3
 class Account:
 
     @classmethod
-    def move(cls, account, source, destination):
+    def move(cls, account, origin, destination, client=None):
+        client = client if client else boto3.client('servicecatalog')
 
         # here we lookup for provisioned product in Service Catalog
 

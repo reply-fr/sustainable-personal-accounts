@@ -19,13 +19,9 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import json
-from unittest.mock import patch
-import os
 import pytest
 
-from code.move_expired_accounts_handler import handler
-
+from code import Accounts
 
 pytestmark = pytest.mark.wip
 
@@ -68,10 +64,11 @@ class BotoMock:
         }
 
 
-def test_handler():
-    context = {
-        "RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-origin",
-        "EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}
-
-    with patch.dict(os.environ, context):
-        handler(event=dict(hello='world!'), context=None, client=BotoMock())
+def test_list():
+    iterator = Accounts.list(parent='ou-parent',
+                             client=BotoMock())
+    assert next(iterator) == '123456789012'
+    assert next(iterator) == '234567890123'
+    assert next(iterator) == '345678901234'
+    with pytest.raises(StopIteration):
+        next(iterator)

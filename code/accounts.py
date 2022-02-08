@@ -17,19 +17,29 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
-import os
 
-from logger import setup_logging
-setup_logging()
-
-from code import Account, Accounts
+import boto3
 
 
-def handler(event, context, client=None):
-    logging.debug(json.dumps(event))
+class Accounts:
 
-    for account in Accounts.list(parent=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'], client=client):
-        Account.move(account=account,
-                     origin=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                     destination=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                     client=client)
+    @classmethod
+    def list(cls, parent, client=None):
+        client = client if client else boto3.client('organizations')
+
+        token = None
+        while True:
+            logging.info("listing accounts in parent '{parent}'")
+            parameters = dict(ParentId=parent,
+                              MaxResults=50)
+            if token:
+                parameters['NextToken'] = token
+            chunk = client.list_accounts_for_parent(**parameters)
+
+            for item in chunk['Accounts']:
+                logging.info(json.dumps(item))
+                yield item['Id']
+
+            token = chunk.get('NextToken')
+            if not token:
+                break

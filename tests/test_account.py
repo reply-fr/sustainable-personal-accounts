@@ -15,21 +15,18 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import logging
-import os
-
-from logger import setup_logging
-setup_logging()
-
-from code import Account, Accounts
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 
-def handler(event, context, client=None):
-    logging.debug(json.dumps(event))
+from code import Account
 
-    for account in Accounts.list(parent=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'], client=client):
-        Account.move(account=account,
-                     origin=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                     destination=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                     client=client)
+
+# pytestmark = pytest.mark.wip
+
+
+def test_move():
+    Account.move(account='0123456789012',
+                 origin='ou-origin',
+                 destination='ou-destination')
