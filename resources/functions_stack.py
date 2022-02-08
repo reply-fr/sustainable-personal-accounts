@@ -19,54 +19,43 @@ from constructs import Construct
 from aws_cdk import Stack
 from aws_cdk.aws_iam import Effect, PolicyStatement
 
-from .listen_account_events_construct import ListenAccountEventsConstruct
-from .move_expired_accounts_construct import MoveExpiredAccountsConstruct
-from .move_prepared_account_construct import MovePreparedAccountConstruct
-from .move_purged_account_construct import MovePurgedAccountConstruct
-from .move_vanilla_account_construct import MoveVanillaAccountConstruct
-from .signal_assigned_account_construct import SignalAssignedAccountConstruct
-from .signal_expired_account_construct import SignalExpiredAccountConstruct
+from .cockpit_construct import Cockpit
+from .listen_account_events_construct import ListenAccountEvents
+from .move_expired_accounts_construct import MoveExpiredAccounts
+from .move_prepared_account_construct import MovePreparedAccount
+from .move_purged_account_construct import MovePurgedAccount
+from .move_vanilla_account_construct import MoveVanillaAccount
+from .signal_assigned_account_construct import SignalAssignedAccount
+from .signal_expired_account_construct import SignalExpiredAccount
 
 
 class FunctionsStack(Stack):
 
-    def __init__(self, scope: Construct, id: str) -> None:
-        super().__init__(scope, id)
+    def __init__(self, scope: Construct, id: str, **kwargs) -> None:
+        super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
 
-        statements = [
+        statements = [  # permissions given to all functions
 
-            PolicyStatement(  # allow to put events
-                effect=Effect.ALLOW,
-                actions=['events:PutEvents'],
-                resources=['*']
-            ),
+            PolicyStatement(effect=Effect.ALLOW,
+                            actions=['events:PutEvents'],
+                            resources=['*']),
 
-            PolicyStatement(  # allow to put metrics
-                effect=Effect.ALLOW,
-                actions=['cloudwatch:PutMetricData'],
-                resources=['*']
-            )
+            PolicyStatement(effect=Effect.ALLOW,
+                            actions=['cloudwatch:PutMetricData'],
+                            resources=['*'])
 
         ]
 
-        ListenAccountEventsConstruct(
-            self, "ListenAccountEvents",
-            statements=statements)
-        MoveVanillaAccountConstruct(
-            self, "MoveVanillaAccount",
-            statements=statements)
-        SignalAssignedAccountConstruct(
-            self, "SignalAssignedAccount",
-            statements=statements)
-        MovePreparedAccountConstruct(
-            self, "MovePreparedAccount",
-            statements=statements)
-        MoveExpiredAccountsConstruct(
-            self, "MoveExpiredAccounts",
-            statements=statements)
-        SignalExpiredAccountConstruct(
-            self, "SignalExpiredAccount",
-            statements=statements)
-        MovePurgedAccountConstruct(
-            self, "MovePurgedAccount",
-            statements=statements)
+        functions = [
+            ListenAccountEvents(self, "ListenAccountEvents", statements=statements),
+            MoveVanillaAccount(self, "MoveVanillaAccount", statements=statements),
+            SignalAssignedAccount(self, "SignalAssignedAccount", statements=statements),
+            MovePreparedAccount(self, "MovePreparedAccount", statements=statements),
+            MoveExpiredAccounts(self, "MoveExpiredAccounts", statements=statements),
+            SignalExpiredAccount(self, "SignalExpiredAccount", statements=statements),
+            MovePurgedAccount(self, "MovePurgedAccount", statements=statements)
+        ]
+
+        Cockpit(self,
+                "{}Cockpit".format(toggles.environment_identifier),
+                functions=[x.function for x in functions])

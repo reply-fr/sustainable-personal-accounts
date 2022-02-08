@@ -24,12 +24,12 @@ from aws_cdk.aws_lambda import AssetCode, Function, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 
-class ListenAccountEventsConstruct(Construct):
+class ListenAccountEvents(Construct):
 
     def __init__(self, scope: Construct, id: str, statements=[]) -> None:
         super().__init__(scope, id)
 
-        function = Function(
+        self.function = Function(
             self, "Function",
             code=AssetCode("code"),
             description="Listen events from the bus",
@@ -39,9 +39,9 @@ class ListenAccountEventsConstruct(Construct):
             runtime=Runtime.PYTHON_3_9)
 
         for statement in statements:
-            function.add_to_role_policy(statement)
+            self.function.add_to_role_policy(statement)
 
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(source=['SustainablePersonalAccounts']),
-            targets=[LambdaFunction(function)])
+            targets=[LambdaFunction(self.function)])
