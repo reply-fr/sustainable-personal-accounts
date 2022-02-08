@@ -21,8 +21,25 @@ import logging
 from logger import setup_logging
 setup_logging()
 
+import boto3
 
-def handler(event, context):
+from code import EventFactory
+
+
+def handler(event, context, client=None):
+    client = client if client else boto3.client('cloudwatch')  # allow code injection
+
     logging.info(json.dumps(event))
 
-# https://tutorials.releaseworksacademy.com/learn/push-custom-metrics-cloudwatch.html
+    input = EventFactory.decode_local_event(event)
+
+    dimensions = [dict(Name='Account', Value=input.account),
+                  dict(Name='State', Value=input.state)]
+
+    client.put_metric_data(MetricData=[dict(Dimensions=dimensions,
+                                       MetricName='State transition',
+                                       Unit='Count',
+                                       Value=1)],
+                           Namespace="SustainablePersonalAccount")
+
+    return f"{input.state} {input.account}"
