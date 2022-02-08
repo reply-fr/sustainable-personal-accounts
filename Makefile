@@ -38,7 +38,7 @@ help:
 .EXPORT_ALL_VARIABLES:
 
 # by default, target this environment
-ENVIRONMENT ?= experimental
+ENVIRONMENT ?= Alpha
 
 # determine which shell is used for commands launched by make
 MAKESHELL ?= /bin/bash
@@ -51,14 +51,14 @@ PRESENTATION_NAME ?= PITCHME
 SETTINGS ?= settings.yaml
 
 # by default, prefix for stacks created in AWS CloudFormation
-STACK_PREFIX ?= linux-cluster
+STACK_PREFIX ?= Spa
 
 # by default, limit verbosity to informational messages -- DEBUG, INFO, WARNING
 # for example, you can run: VERBOSITY=DEBUG make diff
 VERBOSITY ?= INFO
 
 # locate python code for static analysis
-CODE_PATH := code ./build_resources.py
+CODE_PATH := code resources ./build_resources.py
 
 setup:
 	@echo "Installing python virtual environment..."

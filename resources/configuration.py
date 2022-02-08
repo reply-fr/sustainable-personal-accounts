@@ -63,9 +63,9 @@ class Configuration:
     def set_default_values():
 
         # identifier for this specific environment
-        toggles.environment_identifier = "{}-{}".format(
-            os.environ.get('STACK_PREFIX', 'spa'),
-            os.environ.get('ENVIRONMENT', 'experimental'))
+        toggles.environment_identifier = "{}{}".format(
+            os.environ.get('STACK_PREFIX', 'Spa'),
+            os.environ.get('ENVIRONMENT', 'Alpha'))
 
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
