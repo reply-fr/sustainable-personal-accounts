@@ -22,7 +22,7 @@ import pytest
 from code import EventFactory
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 def test_emit():
@@ -57,15 +57,32 @@ def test_put_event():
 
 
 def test_decode_local_event():
+
+    # where we accept any event with valid account identifier
     event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                     context=dict(account="123456789012",
-                                                 state="AccountCreated"))
+                                                 state="CreatedAccount"))
     decoded = EventFactory.decode_local_event(event)
     assert decoded.account == "123456789012"
-    assert decoded.state == "AccountCreated"
+    assert decoded.state == "CreatedAccount"
 
+    # where we reject events with malformed account identifier
+    event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                    context=dict(account="short",
+                                                 state="CreatedAccount"))
+    with pytest.raises(ValueError):
+        EventFactory.decode_local_event(event)
+
+    # where we reject events with unexpected state
+    event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                    context=dict(account="123456789012",
+                                                 state="CreatedAccount"))
+    with pytest.raises(ValueError):
+        EventFactory.decode_local_event(event, match='PurgedAccount')
 
 def test_decode_aws_organizations_event():
+
+    # where we accept any event with valid account identifier
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
                                     context=dict(account="123456789012",
                                                  destination_organizational_unit="ou-destination",
@@ -73,3 +90,19 @@ def test_decode_aws_organizations_event():
     decoded = EventFactory.decode_aws_organizations_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
+
+    # where we reject events with malformed account identifier
+    event = EventFactory.make_event(template="tests/events/move-account-template.json",
+                                    context=dict(account="short",
+                                                 destination_organizational_unit="ou-destination",
+                                                 source_organizational_unit="ou-source"))
+    with pytest.raises(ValueError):
+        EventFactory.decode_aws_organizations_event(event)
+
+    # where we reject events with unexpected destination
+    event = EventFactory.make_event(template="tests/events/move-account-template.json",
+                                    context=dict(account="123456789012",
+                                                 destination_organizational_unit="ou-expected",
+                                                 source_organizational_unit="ou-source"))
+    with pytest.raises(ValueError):
+        EventFactory.decode_aws_organizations_event(event, match="ou-destination")

@@ -29,39 +29,47 @@ pytestmark = pytest.mark.wip
 class BotoMock:
 
     def list_accounts_for_parent(self, *args, **kwargs):
-        return {
-            'Accounts': [
-                {
-                    'Id': '123456789012',
-                    'Arn': 'arn:aws:some-arn',
-                    'Email': 'string',
-                    'Name': 'account-one',
-                    'Status': 'ACTIVE',
-                    'JoinedMethod': 'CREATED',
-                    'JoinedTimestamp': '20150101'
-                },
 
-                {
-                    'Id': '234567890123',
-                    'Arn': 'arn:aws:some-arn',
-                    'Email': 'string',
-                    'Name': 'account-two',
-                    'Status': 'ACTIVE',
-                    'JoinedMethod': 'CREATED',
-                    'JoinedTimestamp': '20150101'
-                },
+        if not kwargs.get('NextToken'):
+            return {
+                'Accounts': [
+                    {
+                        'Id': '123456789012',
+                        'Arn': 'arn:aws:some-arn',
+                        'Email': 'string',
+                        'Name': 'account-one',
+                        'Status': 'ACTIVE',
+                        'JoinedMethod': 'CREATED',
+                        'JoinedTimestamp': '20150101'
+                    },
 
-                {
-                    'Id': '345678901234',
-                    'Arn': 'arn:aws:some-arn',
-                    'Email': 'string',
-                    'Name': 'account-three',
-                    'Status': 'ACTIVE',
-                    'JoinedMethod': 'CREATED',
-                    'JoinedTimestamp': '20150101'
-                },
-            ]
-        }
+                    {
+                        'Id': '234567890123',
+                        'Arn': 'arn:aws:some-arn',
+                        'Email': 'string',
+                        'Name': 'account-two',
+                        'Status': 'ACTIVE',
+                        'JoinedMethod': 'CREATED',
+                        'JoinedTimestamp': '20150101'
+                    }
+                ],
+                'NextToken': 'token'
+            }
+
+        else:
+            return {
+                'Accounts': [
+                    {
+                        'Id': '345678901234',
+                        'Arn': 'arn:aws:some-arn',
+                        'Email': 'string',
+                        'Name': 'account-three',
+                        'Status': 'ACTIVE',
+                        'JoinedMethod': 'CREATED',
+                        'JoinedTimestamp': '20150101'
+                    }
+                ]
+            }
 
 
 def test_list():
