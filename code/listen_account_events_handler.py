@@ -23,7 +23,7 @@ setup_logging()
 
 import boto3
 
-from code import EventFactory
+from event_bus import EventFactory
 
 
 def handler(event, context, client=None):

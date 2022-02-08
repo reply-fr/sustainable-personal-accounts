@@ -54,7 +54,7 @@ class EventFactory:
     def decode_local_event(event, match=None):
         decoded = SimpleNamespace()
 
-        decoded.account = json.loads(event['detail'])['Account']
+        decoded.account = event['detail']['Account']
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 

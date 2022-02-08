@@ -22,7 +22,8 @@ import logging
 from logger import setup_logging
 setup_logging()
 
-from code import Account, EventFactory
+from account import Account
+from event_bus import EventFactory
 
 
 def handler(event, context):

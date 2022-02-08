@@ -22,7 +22,8 @@ import os
 from logger import setup_logging
 setup_logging()
 
-from code import Account, Accounts
+from account import Account
+from accounts import Accounts
 
 
 def handler(event, context, client=None):
