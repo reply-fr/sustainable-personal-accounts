@@ -20,7 +20,7 @@ import logging
 
 from aws_cdk import App
 
-from resources import Configuration, FunctionsStack
+from resources import Configuration, ServerlessStack
 
 
 def build_resources(settings=None, dry_run=False):
@@ -29,7 +29,7 @@ def build_resources(settings=None, dry_run=False):
     Configuration.initialize(stream=settings, dry_run=dry_run)
 
     app = App()
-    FunctionsStack(app, toggles.environment_identifier)
+    ServerlessStack(app, toggles.environment_identifier)
     app.synth()
 
 

@@ -1,5 +1,5 @@
 from .configuration import Configuration
-from .functions_stack import FunctionsStack
+from .serverless_stack import ServerlessStack
 
 __all__ = ['Configuration',
-           'FunctionsStack']
+           'ServerlessStack']

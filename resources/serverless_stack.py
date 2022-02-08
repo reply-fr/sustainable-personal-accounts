@@ -29,7 +29,7 @@ from .signal_assigned_account_construct import SignalAssignedAccount
 from .signal_expired_account_construct import SignalExpiredAccount
 
 
-class FunctionsStack(Stack):
+class ServerlessStack(Stack):
 
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
