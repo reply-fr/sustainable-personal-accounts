@@ -20,10 +20,10 @@ import logging
 
 from aws_cdk import App
 
-from code import Configuration, FunctionsStack
+from resources import Configuration, FunctionsStack
 
 
-def build_templates(settings=None, dry_run=False):
+def build_resources(settings=None, dry_run=False):
     ''' generate CloudFormation templates '''
 
     Configuration.initialize(stream=settings, dry_run=dry_run)
@@ -37,4 +37,4 @@ if __name__ == '__main__':
     verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
     logging.basicConfig(format='%(message)s', level=verbosity)
     logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_templates()
+    build_resources()

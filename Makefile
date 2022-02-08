@@ -58,7 +58,7 @@ STACK_PREFIX ?= linux-cluster
 VERBOSITY ?= INFO
 
 # locate python code for static analysis
-CODE_PATH := code ./build_templates.py
+CODE_PATH := code ./build_resources.py
 
 setup:
 	@echo "Installing python virtual environment..."

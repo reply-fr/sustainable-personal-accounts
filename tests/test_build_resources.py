@@ -21,12 +21,12 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import pytest
 
-from build_templates import build_templates
+from build_resources import build_resources
 
 
 # pytestmark = pytest.mark.wip
 
 
 @pytest.mark.slow
-def test_build_templates():
-    build_templates(settings='tests/settings/sample_settings.yaml', dry_run=True)
+def test_build_resources():
+    build_resources(settings='tests/settings/sample_settings.yaml', dry_run=True)

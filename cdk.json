@@ -1,4 +1,4 @@
 {
-    "app": "python build_templates.py",
+    "app": "python build_resources.py",
     "requireApproval": "never"
 }

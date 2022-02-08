@@ -24,7 +24,7 @@ from io import BytesIO
 import pytest
 from types import SimpleNamespace
 
-from code import Configuration
+from resources import Configuration
 
 
 pytestmark = pytest.mark.wip

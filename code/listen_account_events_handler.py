@@ -24,3 +24,5 @@ setup_logging()
 
 def handler(event, context):
     logging.info(json.dumps(event))
+
+# https://tutorials.releaseworksacademy.com/learn/push-custom-metrics-cloudwatch.html

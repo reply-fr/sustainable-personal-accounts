@@ -80,6 +80,7 @@ def test_decode_local_event():
     with pytest.raises(ValueError):
         EventFactory.decode_local_event(event, match='PurgedAccount')
 
+
 def test_decode_aws_organizations_event():
 
     # where we accept any event with valid account identifier
