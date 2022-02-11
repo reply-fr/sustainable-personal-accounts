@@ -70,6 +70,9 @@ class Configuration:
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
 
+        # other default values
+        toggles.cockpit_text_label = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
+
     @classmethod
     def set_from_environment(cls, environ=None, mapping=None):
 

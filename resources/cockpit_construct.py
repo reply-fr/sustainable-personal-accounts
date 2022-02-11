@@ -15,6 +15,12 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+# credit:
+# - https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.Metric.html
+# - https://medium.com/dtlpub/custom-cloudwatch-dashboard-to-monitor-lambdas-e399ef251f07
+# - https://github.com/cdk-patterns/serverless/blob/main/the-cloudwatch-dashboard/python/the_cloudwatch_dashboard/the_cloudwatch_dashboard_stack.py
+
+
 from constructs import Construct
 from aws_cdk.aws_cloudwatch import (ComparisonOperator,
                                     Dashboard,
@@ -26,7 +32,6 @@ from aws_cdk.aws_cloudwatch import (ComparisonOperator,
 
 
 class Cockpit(Construct):
-    ''' consolidate metrics and alarms into one convenient dashboard in CloudWatch '''
 
     def __init__(self, scope: Construct, id: str, functions):
         super().__init__(scope, id)
@@ -36,6 +41,9 @@ class Cockpit(Construct):
             id=id,
             dashboard_name=id)
 
+        self.cockpit.add_widgets(
+            self.get_text_label_widget())
+
     #     self.cockpit.add_widgets(
     #         self.get_text_label_widget(),
     #         self.get_ec2_statuscheckfailed_widget(servers))
@@ -44,23 +52,14 @@ class Cockpit(Construct):
     #         self.get_ec2_cpuutilization_widget(servers),
     #         self.get_ec2_networkout_widget(servers))
     #
-    # def add_application_insights(self, servers):
-    #
-    #     self.application_insights = CfnApplication(
-    #         self,
-    #         id='application-insights',
-    #         resource_group_name=servers.resource_group.ref,
-    #         auto_configuration_enabled=True,
-    #         cwe_monitor_enabled=True,
-    #         ops_center_enabled=True)
-    #
-    # def get_text_label_widget(self):
-    #     ''' show static banner that has been configured for this dashboard '''
-    #
-    #     return TextWidget(markdown=toggles.cockpit_text_label,
-    #                       height=3,
-    #                       width=18)
-    #
+
+    def get_text_label_widget(self):
+        ''' show static banner that has been configured for this dashboard '''
+
+        return TextWidget(markdown=toggles.cockpit_text_label,
+                          height=3,
+                          width=18)
+
     # def get_ec2_statuscheckfailed_widget(self, servers):
     #     ''' show the total number of EC2 status check that have failed '''
     #
