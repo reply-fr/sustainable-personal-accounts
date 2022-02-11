@@ -16,6 +16,10 @@ Note that alternate projects are available if SPA does not suit your specific ne
 
 **We scale with automated guardrails and with insourced blueprints** - Jeff Bezos has a saying: “Good intentions don't work. Mechanisms do.” In the context of this project, guardrails mean that corporate policies should apply automatically to personal cloud accounts. In addition, these accounts are recycled periodically. These cycles are giving security teams periodic opportunities to update security controls and, therefore, to adapt continuously to cyber-threats. On the other hand, the tooling provided to employees working on the cloud is specific to each enterprise. Also, this tooling is evolving over time. In the context of this project, we provide complete freedom regarding the execution of custom software on each personal cloud account. In addition, with periodic recycling of these accounts there is an opportunity to continuously update the toolbox provided to employees.
 
+## Event-driven architecture
+
+![architecture](./media/event-driven-architecture.png)
+
 ## Cyclic life cycle for personal accounts
 
 Since we want to purge and to recycle accounts assigned to individuals, this can be represented as a state machine that features following states and transitions. With the Sustainable Personal Accounts project, states are implemented as Organisational Units (OU) within an AWS Organization.
