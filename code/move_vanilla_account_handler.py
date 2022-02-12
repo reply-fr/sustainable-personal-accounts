@@ -22,21 +22,19 @@ import logging
 from logger import setup_logging
 setup_logging()
 
-from account import Account
+from account import Account, State
 from event_bus import EventFactory
 
 
 def handler(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_aws_organizations_event(
+    input = EventFactory.decode_move_account_event(
         event=event,
-        match=os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'])
+        match=os.environ['ORGANIZATIONAL_UNIT'])
 
     EventFactory.emit('CreatedAccount', input.account)
 
-    Account.move(account=input.account,
-                 origin=os.environ['VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                 destination=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
+    Account.move(account=input.account, state=State.ASSIGNED)
 
     return f"CreatedAccount {input.account}"

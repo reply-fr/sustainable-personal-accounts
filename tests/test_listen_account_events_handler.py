@@ -19,20 +19,22 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import Mock
+from unittest.mock import patch
+import os
 import pytest
 
 from code import EventFactory
 from code.listen_account_events_handler import handler
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_handler():
-    event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="123456789012",
-                                                 state="CreatedAccount"))
-    mock = Mock()
-    handler(event=event, context=None, client=mock)
-    mock.put_metric_data.assert_called()
+
+    with patch.dict(os.environ, dict(DRY_RUN="true")):
+
+        event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                        context=dict(account="123456789012",
+                                                     state="CreatedAccount"))
+        handler(event=event, context=None)

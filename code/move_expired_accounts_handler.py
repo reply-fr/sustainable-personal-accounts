@@ -22,15 +22,15 @@ import os
 from logger import setup_logging
 setup_logging()
 
-from account import Account
+from account import Account, State
 from accounts import Accounts
 
 
 def handler(event, context, client=None):
     logging.debug(json.dumps(event))
 
-    for account in Accounts.list(parent=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'], client=client):
-        Account.move(account=account,
-                     origin=os.environ['RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                     destination=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                     client=client)
+    for account in Accounts.list(parent=os.environ['ORGANIZATIONAL_UNIT'], client=client):
+
+        # ensure tag 'account:state' is State.RELEASED
+
+        Account.move(account=account, state=State.EXPIRED)

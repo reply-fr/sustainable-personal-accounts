@@ -22,7 +22,7 @@ import logging
 from logger import setup_logging
 setup_logging()
 
-from account import Account
+from account import Account, State
 from event_bus import EventFactory
 
 
@@ -33,8 +33,6 @@ def handler(event, context):
 
     EventFactory.emit('PurgedAccount', input.account)
 
-    Account.move(account=input.account,
-                 origin=os.environ['EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT'],
-                 destination=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
+    Account.move(account=input.account, state=State.ASSIGNED)
 
     return f"PurgedAccount {input.account}"

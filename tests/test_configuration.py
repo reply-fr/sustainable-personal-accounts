@@ -21,13 +21,15 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import builtins
 from io import BytesIO
+from unittest.mock import patch
+import os
 import pytest
 from types import SimpleNamespace
 
 from resources import Configuration
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -45,17 +47,20 @@ def test_expand_text(toggles):
 
 @pytest.mark.slow
 def test_initialize():
-    Configuration.initialize()
-    assert builtins.toggles.dry_run is False
-    assert builtins.toggles.aws_account is not None
-    assert builtins.toggles.aws_environment is not None
-    assert builtins.toggles.aws_region is not None
 
-    Configuration.initialize(dry_run=True)
-    assert builtins.toggles.dry_run is True
+    with patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1")):
 
-    with pytest.raises(FileNotFoundError):
-        Configuration.initialize(stream='this*file*does*not*exist')
+        Configuration.initialize()
+        assert builtins.toggles.dry_run is False
+        assert builtins.toggles.aws_account is not None
+        assert builtins.toggles.aws_environment is not None
+        assert builtins.toggles.aws_region is not None
+
+        Configuration.initialize(dry_run=True)
+        assert builtins.toggles.dry_run is True
+
+        with pytest.raises(FileNotFoundError):
+            Configuration.initialize(stream='this*file*does*not*exist')
 
 
 def test_set_default_values(toggles):
@@ -64,7 +69,7 @@ def test_set_default_values(toggles):
 
 def test_set_from_environment(toggles):
     environ = dict(
-        VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT="ou-vanilla-accounts",
+        ORGANIZATIONAL_UNIT="ou-0987",
         TRUSTED_PEER='4.3.2.1/32',
         NOT_MAPPED_VARIABLE="what'up Doc?",
         NONE_VARIABLE=None,
@@ -74,26 +79,23 @@ def test_set_from_environment(toggles):
     assert toggles.__dict__.get('active_directory_domain_credentials') is None
 
     mapping = dict(
-        vanilla_accounts_organizational_unit='VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT'
+        organizational_unit='ORGANIZATIONAL_UNIT'
     )
     Configuration.set_from_environment(environ=environ, mapping=mapping)
-    assert toggles.vanilla_accounts_organizational_unit == "ou-vanilla-accounts"
+    assert toggles.organizational_unit == "ou-0987"
 
 
 def test_set_from_settings(toggles):
-    settings = dict(vanilla_accounts=dict(organizational_unit="foo bar"))
+    settings = dict(organizational_unit="foo bar")
     Configuration.set_from_settings(settings)
-    assert toggles.vanilla_accounts_organizational_unit == "foo bar"
+    assert toggles.organizational_unit == "foo bar"
 
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
-    assert toggles.assigned_accounts_organizational_unit == 'ou-5678'
-    assert toggles.expired_accounts_organizational_unit == 'ou-efghij'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
-    assert toggles.released_accounts_organizational_unit == 'ou-90abcd'
-    assert toggles.vanilla_accounts_organizational_unit == 'ou-1234'
+    assert toggles.organizational_unit == 'ou-1234'
 
 
 def test_set_from_yaml_invalid(toggles):

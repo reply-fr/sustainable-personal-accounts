@@ -81,14 +81,14 @@ def test_decode_local_event():
         EventFactory.decode_local_event(event, match='PurgedAccount')
 
 
-def test_decode_aws_organizations_event():
+def test_decode_move_account_event():
 
     # where we accept any event with valid account identifier
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
                                     context=dict(account="123456789012",
                                                  destination_organizational_unit="ou-destination",
                                                  source_organizational_unit="ou-source"))
-    decoded = EventFactory.decode_aws_organizations_event(event)
+    decoded = EventFactory.decode_move_account_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
 
@@ -98,7 +98,7 @@ def test_decode_aws_organizations_event():
                                                  destination_organizational_unit="ou-destination",
                                                  source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        EventFactory.decode_aws_organizations_event(event)
+        EventFactory.decode_move_account_event(event)
 
     # where we reject events with unexpected destination
     event = EventFactory.make_event(template="tests/events/move-account-template.json",
@@ -106,4 +106,4 @@ def test_decode_aws_organizations_event():
                                                  destination_organizational_unit="ou-expected",
                                                  source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        EventFactory.decode_aws_organizations_event(event, match="ou-destination")
+        EventFactory.decode_move_account_event(event, match="ou-destination")

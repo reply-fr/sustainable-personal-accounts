@@ -33,8 +33,6 @@ class MoveExpiredAccounts(Construct):
             code=AssetCode("code"),
             description="Move expired accounts",
             handler="move_expired_accounts_handler.handler",
-            environment=dict(EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organizational_unit,
-                             RELEASED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.released_accounts_organizational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
@@ -42,7 +40,6 @@ class MoveExpiredAccounts(Construct):
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        rule = Rule(
-            self, "Rule",
-            schedule=Schedule.expression(toggles.expiration_expression),
-            targets=[LambdaFunction(self.function)])
+        Rule(self, "Rule",
+             schedule=Schedule.expression(toggles.expiration_expression),
+             targets=[LambdaFunction(self.function)])

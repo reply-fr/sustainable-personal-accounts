@@ -19,6 +19,8 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from unittest.mock import patch
+import os
 import pytest
 
 from build_resources import build_resources
@@ -29,4 +31,6 @@ from build_resources import build_resources
 
 @pytest.mark.slow
 def test_build_resources():
-    build_resources(settings='tests/settings/sample_settings.yaml', dry_run=True)
+
+    with patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1")):
+        build_resources(settings='tests/settings/sample_settings.yaml', dry_run=True)

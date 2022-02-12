@@ -33,8 +33,7 @@ class MoveVanillaAccount(Construct):
             code=AssetCode("code"),
             description="Move created accounts to assigned state",
             handler="move_vanilla_account_handler.handler",
-            environment=dict(VANILLA_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.vanilla_accounts_organizational_unit,
-                             ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organizational_unit),
+            environment=dict(ORGANIZATIONAL_UNIT=toggles.organizational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
@@ -45,8 +44,8 @@ class MoveVanillaAccount(Construct):
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
-                source=['aws.organization'],
+                source=['aws.organizations'],
                 detail=dict(
                     eventName=['MoveAccount'],
-                    requestParameters=dict(destinationParentId=[toggles.vanilla_accounts_organizational_unit]))),
+                    requestParameters=dict(destinationParentId=[toggles.organizational_unit]))),
             targets=[LambdaFunction(self.function)])

@@ -33,7 +33,6 @@ class SignalAssignedAccount(Construct):
             code=AssetCode("code"),
             description="Start preparation of an assigned account",
             handler="signal_assigned_account_handler.handler",
-            environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organizational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
@@ -44,8 +43,11 @@ class SignalAssignedAccount(Construct):
         rule = Rule(
             self, "Rule",
             event_pattern=EventPattern(
-                source=['aws.organization'],
+                source=['aws.organizations'],
                 detail=dict(
-                    eventName=['MoveAccount'],
-                    requestParameters=dict(destinationParentId=[toggles.assigned_accounts_organizational_unit]))),
+                    errorCode=[{"exists": False}],
+                    eventName=["TagResource"],
+                    eventSource=["organizations.amazonaws.com"],
+                    # requestParameters=dict()
+            )),
             targets=[LambdaFunction(self.function)])

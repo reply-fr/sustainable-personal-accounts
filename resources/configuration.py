@@ -114,11 +114,8 @@ class Configuration:
         setattr(toggles, key, value)
 
     ALLOWED_ATTRIBUTES = dict(
-        assigned_accounts_organizational_unit='str',
-        expiration_expression='str',
-        expired_accounts_organizational_unit='str',
-        released_accounts_organizational_unit='str',
-        vanilla_accounts_organizational_unit='str'
+        organizational_unit='str',
+        expiration_expression='str'
     )
 
     @classmethod

@@ -33,8 +33,6 @@ class MovePurgedAccount(Construct):
             code=AssetCode("code"),
             description="Move purged accounts to assigned state",
             handler="move_purged_account_handler.handler",
-            environment=dict(ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.assigned_accounts_organizational_unit,
-                             EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT=toggles.expired_accounts_organizational_unit),
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)

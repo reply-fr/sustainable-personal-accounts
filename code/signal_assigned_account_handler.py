@@ -22,6 +22,7 @@ import logging
 from logger import setup_logging
 setup_logging()
 
+from account import State
 from event_bus import EventFactory
 from worker import Worker
 
@@ -29,9 +30,7 @@ from worker import Worker
 def handler(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_aws_organizations_event(
-        event=event,
-        match=os.environ['ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT'])
+    input = EventFactory.decode_tag_account_event(event=event, match=State.ASSIGNED.value)
 
     EventFactory.emit('AssignedAccount', input.account)
 

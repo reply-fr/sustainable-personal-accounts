@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 
 from logger import setup_logging
 setup_logging()
@@ -27,19 +28,19 @@ from event_bus import EventFactory
 
 
 def handler(event, context, client=None):
-    client = client if client else boto3.client('cloudwatch')  # allow code injection
-
     logging.info(json.dumps(event))
 
     input = EventFactory.decode_local_event(event)
 
+    client = client if client else boto3.client('cloudwatch')  # allow code injection
     dimensions = [dict(Name='Account', Value=input.account),
                   dict(Name='State', Value=input.state)]
 
-    client.put_metric_data(MetricData=[dict(Dimensions=dimensions,
-                                       MetricName='State transition',
-                                       Unit='Count',
-                                       Value=1)],
-                           Namespace="SustainablePersonalAccount")
+    # if os.environ.get("DRY_RUN") != "true":
+    #     client.put_metric_data(MetricData=[dict(Dimensions=dimensions,
+    #                                        MetricName='State transition',
+    #                                        Unit='Count',
+    #                                        Value=1)],
+    #                            Namespace="SustainablePersonalAccount")
 
     return f"{input.state} {input.account}"

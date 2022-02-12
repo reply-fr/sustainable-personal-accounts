@@ -23,7 +23,7 @@ from unittest.mock import patch
 import os
 import pytest
 
-from code import EventFactory
+from code import EventFactory, State
 from code.signal_expired_account_handler import handler
 
 
@@ -32,15 +32,16 @@ pytestmark = pytest.mark.wip
 
 def test_handler():
 
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 destination_organizational_unit="ou-destination",
-                                                 origin_organizational_unit="ou-origin"))
+    with patch.dict(os.environ, dict(DRY_RUN="true")):
 
-    with patch.dict(os.environ, {"EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}):
+        event = EventFactory.make_event(template="tests/events/tag-account-template.json",
+                                        context=dict(account="123456789012",
+                                                     new_state=State.EXPIRED.value))
         result = handler(event=event, context=None)
-    assert result == 'ExpiredAccount 123456789012'
+        assert result == 'ExpiredAccount 123456789012'
 
-    with patch.dict(os.environ, {"EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-unexpected"}):
+        event = EventFactory.make_event(template="tests/events/tag-account-template.json",
+                                        context=dict(account="123456789012",
+                                                     new_state=State.VANILLA.value))
         with pytest.raises(ValueError):
             handler(event=event, context=None)

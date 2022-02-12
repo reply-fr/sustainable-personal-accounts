@@ -19,14 +19,50 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-
-from code import Account
-
-
-# pytestmark = pytest.mark.wip
+import pytest
+from unittest.mock import Mock
+from types import SimpleNamespace
 
 
-def test_move():
+from code import Account, State
+
+
+pytestmark = pytest.mark.wip
+
+
+def test_move_to_vanilla():
+    client = Mock()
     Account.move(account='0123456789012',
-                 origin='ou-origin',
-                 destination='ou-destination')
+                 state=State.VANILLA,
+                 client=client)
+    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'vanilla'}])
+
+
+def test_move_to_assigned():
+    client = Mock()
+    Account.move(account='0123456789012',
+                 state=State.ASSIGNED,
+                 client=client)
+    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'assigned'}])
+
+
+def test_move_to_released():
+    client = Mock()
+    Account.move(account='0123456789012',
+                 state=State.RELEASED,
+                 client=client)
+    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'released'}])
+
+
+def test_move_to_expired():
+    client = Mock()
+    Account.move(account='0123456789012',
+                 state=State.EXPIRED,
+                 client=client)
+    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'expired'}])
+
+
+def test_move_with_exception():
+    with pytest.raises(ValueError):
+        Account.move(account='0123456789012',
+                     state=SimpleNamespace(value='*something*'))

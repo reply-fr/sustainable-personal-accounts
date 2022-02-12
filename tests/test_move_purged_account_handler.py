@@ -27,16 +27,13 @@ from code import EventFactory
 from code.move_purged_account_handler import handler
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_handler():
 
-    context = {
-        "EXPIRED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-origin",
-        "ASSIGNED_ACCOUNTS_ORGANIZATIONAL_UNIT": "ou-destination"}
+    with patch.dict(os.environ, dict(DRY_RUN="true")):
 
-    with patch.dict(os.environ, context):
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                         context=dict(account="123456789012",
                                                      state="PurgedAccount"))

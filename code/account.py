@@ -15,21 +15,33 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from enum import Enum, unique
 import json
 import logging
-from types import SimpleNamespace
+import os
 
 import boto3
+
+
+@unique
+class State(Enum):
+    VANILLA = 'vanilla'
+    ASSIGNED = 'assigned'
+    RELEASED = 'released'
+    EXPIRED = 'expired'
 
 
 class Account:
 
     @classmethod
-    def move(cls, account, origin, destination, client=None):
-        client = client if client else boto3.client('servicecatalog')
+    def move(cls, account, state: State, client=None):
+        client = client if client else boto3.client('organizations')
 
-        # here we lookup for provisioned product in Service Catalog
+        if not isinstance(state, State):
+            raise ValueError(f"Unexpected state type {state}")
 
-        # here we ask Service Catalog to change the OU for this account
+        if os.environ.get("DRY_RUN") == "true":
+            return
 
-        pass
+        client.tag_resource(ResourceId=account,
+                            Tags=[dict(Key='account:state', Value=state.value)])

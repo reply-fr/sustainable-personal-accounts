@@ -37,11 +37,15 @@ class ServerlessStack(Stack):
         statements = [  # permissions given to all functions
 
             PolicyStatement(effect=Effect.ALLOW,
+                            actions=['cloudwatch:PutMetricData'],
+                            resources=['*']),
+
+            PolicyStatement(effect=Effect.ALLOW,
                             actions=['events:PutEvents'],
                             resources=['*']),
 
             PolicyStatement(effect=Effect.ALLOW,
-                            actions=['cloudwatch:PutMetricData'],
+                            actions=['organizations:TagResource'],
                             resources=['*'])
 
         ]

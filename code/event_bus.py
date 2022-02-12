@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 from types import SimpleNamespace
 
 import boto3
@@ -47,6 +48,8 @@ class EventFactory:
     @classmethod
     def put_event(cls, event, client=None):
         logging.info(f'put_event: {event}')
+        if os.environ.get("DRY_RUN") == "true":
+            return
         client = client if client else boto3.client('events')
         client.put_events(Entries=[event])
 
@@ -65,7 +68,7 @@ class EventFactory:
         return decoded
 
     @staticmethod
-    def decode_aws_organizations_event(event, match=None):
+    def decode_move_account_event(event, match=None):
         decoded = SimpleNamespace()
 
         decoded.account = event['detail']['requestParameters']['accountId']
@@ -75,6 +78,24 @@ class EventFactory:
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
         if match and match != decoded.organizational_unit:
             raise ValueError(f"Unexpected event source '{decoded.organizational_unit}' for this function")
+
+        return decoded
+
+    @staticmethod
+    def decode_tag_account_event(event, match=None):
+        decoded = SimpleNamespace()
+
+        decoded.account = event['requestParameters']['resourceId']
+        if len(decoded.account) != 12:
+            raise ValueError(f"Invalid account identifier '{decoded.account}'")
+
+        for item in event['requestParameters']['tags']:
+            if item['key'] == 'account:state':
+                decoded.state = item['value']
+                if match and match != decoded.state:
+                    raise ValueError(f"Unexpected state '{decoded.state}' for this function")
+                return decoded
+        raise ValueError("Missing tag 'account:state' in this event")
 
         return decoded
 
