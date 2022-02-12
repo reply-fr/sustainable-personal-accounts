@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import builtins
 import os
+import json
 import logging
 from types import SimpleNamespace
 import yaml
@@ -84,7 +85,7 @@ class Configuration:
         for key in mapping.keys():  # we only accept mapped environment variables
             value = environ.get(mapping[key])
             if value is not None:  # override only if environment variable has been set
-                cls.set_attribute(key, value)
+                cls.set_attribute(key, json.loads(value))
 
     @classmethod
     def set_from_settings(cls, settings={}):

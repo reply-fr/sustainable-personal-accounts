@@ -29,8 +29,10 @@ from accounts import Accounts
 def handler(event, context, session=None):
     logging.debug(json.dumps(event))
 
-    for account in Accounts.list(parent=os.environ['ORGANIZATIONAL_UNIT'], session=session):
+    containers = json.loads(os.environ['ORGANIZATIONAL_UNITS'])
+    for container in containers:
+        for account in Accounts.list(parent=container, session=session):
 
-        # ensure tag 'account:state' is State.RELEASED
+            # ensure tag 'account:state' is State.RELEASED
 
-        Account.move(account=account, state=State.EXPIRED)
+            Account.move(account=account, state=State.EXPIRED)

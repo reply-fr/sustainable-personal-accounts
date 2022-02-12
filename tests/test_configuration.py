@@ -69,7 +69,7 @@ def test_set_default_values(toggles):
 
 def test_set_from_environment(toggles):
     environ = dict(
-        ORGANIZATIONAL_UNIT="ou-0987",
+        ORGANIZATIONAL_UNITS="[\"ou-0987\"]",
         TRUSTED_PEER='4.3.2.1/32',
         NOT_MAPPED_VARIABLE="what'up Doc?",
         NONE_VARIABLE=None,
@@ -79,16 +79,16 @@ def test_set_from_environment(toggles):
     assert toggles.__dict__.get('active_directory_domain_credentials') is None
 
     mapping = dict(
-        organizational_unit='ORGANIZATIONAL_UNIT'
+        organizational_units='ORGANIZATIONAL_UNITS'
     )
     Configuration.set_from_environment(environ=environ, mapping=mapping)
-    assert toggles.organizational_unit == "ou-0987"
+    assert toggles.organizational_units == ['ou-0987']
 
 
 def test_set_from_settings(toggles):
-    settings = dict(organizational_unit="foo bar")
+    settings = dict(organizational_units=["foo bar"])
     Configuration.set_from_settings(settings)
-    assert toggles.organizational_unit == "foo bar"
+    assert toggles.organizational_units == ["foo bar"]
 
 
 @pytest.mark.slow

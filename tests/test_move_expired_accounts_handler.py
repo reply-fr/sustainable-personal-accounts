@@ -24,12 +24,16 @@ from unittest.mock import patch, Mock
 import os
 import pytest
 
+from boto3.session import Session
+
 from code.move_expired_accounts_handler import handler
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
+@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS="[\"ou-1234\"]"))
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler():
 
     chunk = {
@@ -68,9 +72,5 @@ def test_handler():
 
     mock = Mock()
     mock.client.return_value.list_accounts_for_parent.return_value = chunk
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
 
-        context = {"ORGANIZATIONAL_UNIT": "ou-1234"}
-
-        with patch.dict(os.environ, context):
-            handler(event=dict(hello='world!'), context=None, session=mock)
+    handler(event=dict(hello='world!'), context=None, session=mock)
