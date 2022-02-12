@@ -85,11 +85,11 @@ class EventFactory:
     def decode_tag_account_event(event, match=None):
         decoded = SimpleNamespace()
 
-        decoded.account = event['requestParameters']['resourceId']
+        decoded.account = event['detail']['requestParameters']['resourceId']
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
-        for item in event['requestParameters']['tags']:
+        for item in event['detail']['requestParameters']['tags']:
             if item['key'] == 'account:state':
                 decoded.state = item['value']
                 if match and match != decoded.state:
