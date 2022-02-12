@@ -1,12 +1,21 @@
-# This is a sample configuration file that demonstrates settings available.
-# If you want to set your own settings you will have to duplicate this file
-# and rename it settings.yaml or another name.
-# Note that some settings can be overriden by environment variables, if set.
+# this is displayed in the monitoring dashboard
+cockpit_markdown_text: |
+  # Sustainable Personal Accounts Dashboard
+  Currently under active development (alpha)
 
-
-organizational_unit: ou-1234
-
+# this expression defines when accounts are expired
 # Reference:
 # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
 #
 expiration_expression: "cron(0 18 ? * SAT *)"
+
+# these are organizational units where all accounts are located
+organizational_units:
+- ou-1234
+
+# this role is assumed by Lambda functions either to list AWS accounts in the OU,
+# or to tag AWS accounts
+role_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+
+# this role is assumed by Lambda functions to put events
+role_to_put_events: 'arn:aws:iam::333333333333:role/SpaPutEventsRole'

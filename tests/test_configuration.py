@@ -94,8 +94,11 @@ def test_set_from_settings(toggles):
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
+    assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
-    assert toggles.organizational_unit == 'ou-1234'
+    assert toggles.organizational_units == ['ou-1234']
+    assert toggles.role_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+    assert toggles.role_to_put_events == 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
 
 
 def test_set_from_yaml_invalid(toggles):

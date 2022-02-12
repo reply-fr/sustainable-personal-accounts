@@ -71,7 +71,7 @@ class Configuration:
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
 
         # other default values
-        toggles.cockpit_text_label = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
+        toggles.cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
 
     @classmethod
     def set_from_environment(cls, environ=None, mapping=None):
@@ -114,14 +114,19 @@ class Configuration:
         setattr(toggles, key, value)
 
     ALLOWED_ATTRIBUTES = dict(
-        organizational_unit='str',
-        expiration_expression='str'
+        cockpit_markdown_text='str',
+        expiration_expression='str',
+        organizational_units='list',
+        role_to_manage_accounts='str',
+        role_to_put_events='str'
     )
 
     @classmethod
     def validate_attribute(cls, key, value):
         if kind := cls.ALLOWED_ATTRIBUTES.get(key):
             if (kind == 'str') and not isinstance(value, str):
+                raise AttributeError(f"invalid value for configuration attribute '{key}'")
+            if (kind == 'list') and not isinstance(value, list):
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
         else:
             raise AttributeError(f"unknown configuration attribute '{key}'")

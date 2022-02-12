@@ -15,28 +15,25 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import json
+
 from constructs import Construct
-from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_lambda import AssetCode, Function, Runtime
-from aws_cdk.aws_logs import RetentionDays
+from aws_cdk.aws_lambda import Function
 
 
 class MoveVanillaAccount(Construct):
 
-    def __init__(self, scope: Construct, id: str, statements=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
         super().__init__(scope, id)
 
+        parameters['environment']['ORGANIZATIONAL_UNITS'] = json.dumps(toggles.organizational_units)
         self.function = Function(
             self, "Function",
-            code=AssetCode("code"),
             description="Move created accounts to assigned state",
             handler="move_vanilla_account_handler.handler",
-            environment=dict(ORGANIZATIONAL_UNIT=toggles.organizational_unit),
-            log_retention=RetentionDays.THREE_MONTHS,
-            timeout=Duration.seconds(900),
-            runtime=Runtime.PYTHON_3_9)
+            **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
@@ -47,5 +44,5 @@ class MoveVanillaAccount(Construct):
                 source=['aws.organizations'],
                 detail=dict(
                     eventName=['MoveAccount'],
-                    requestParameters=dict(destinationParentId=[toggles.organizational_unit]))),
+                    requestParameters=dict(destinationParentId=toggles.organizational_units))),
             targets=[LambdaFunction(self.function)])

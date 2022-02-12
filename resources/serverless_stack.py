@@ -16,8 +16,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Stack
+from aws_cdk import Duration, Stack
 from aws_cdk.aws_iam import Effect, PolicyStatement
+from aws_cdk.aws_lambda import AssetCode, Runtime
+from aws_cdk.aws_logs import RetentionDays
 
 from .cockpit_construct import Cockpit
 from .listen_account_events_construct import ListenAccountEvents
@@ -33,6 +35,15 @@ class ServerlessStack(Stack):
 
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
+
+        parameters = dict(  # passed to all functions
+            code=AssetCode("code"),
+            environment=dict(
+                ROLE_TO_MANAGE_ACCOUNTS=toggles.role_to_manage_accounts,
+                ROLE_TO_PUT_EVENTS=toggles.role_to_put_events),
+            log_retention=RetentionDays.THREE_MONTHS,
+            timeout=Duration.seconds(900),
+            runtime=Runtime.PYTHON_3_9)
 
         statements = [  # permissions given to all functions
 
@@ -51,13 +62,13 @@ class ServerlessStack(Stack):
         ]
 
         functions = [
-            ListenAccountEvents(self, "ListenAccountEvents", statements=statements),
-            MoveVanillaAccount(self, "MoveVanillaAccount", statements=statements),
-            SignalAssignedAccount(self, "SignalAssignedAccount", statements=statements),
-            MovePreparedAccount(self, "MovePreparedAccount", statements=statements),
-            MoveExpiredAccounts(self, "MoveExpiredAccounts", statements=statements),
-            SignalExpiredAccount(self, "SignalExpiredAccount", statements=statements),
-            MovePurgedAccount(self, "MovePurgedAccount", statements=statements)
+            ListenAccountEvents(self, "ListenAccountEvents", parameters=parameters, statements=statements),
+            MoveVanillaAccount(self, "MoveVanillaAccount", parameters=parameters, statements=statements),
+            SignalAssignedAccount(self, "SignalAssignedAccount", parameters=parameters, statements=statements),
+            MovePreparedAccount(self, "MovePreparedAccount", parameters=parameters, statements=statements),
+            MoveExpiredAccounts(self, "MoveExpiredAccounts", parameters=parameters, statements=statements),
+            SignalExpiredAccount(self, "SignalExpiredAccount", parameters=parameters, statements=statements),
+            MovePurgedAccount(self, "MovePurgedAccount", parameters=parameters, statements=statements)
         ]
 
         Cockpit(self,
