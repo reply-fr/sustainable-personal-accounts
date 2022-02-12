@@ -31,18 +31,22 @@ pytestmark = pytest.mark.wip
 
 
 def test_handler():
-
     with patch.dict(os.environ, dict(DRY_RUN="true")):
-
         event = EventFactory.make_event(template="tests/events/move-account-template.json",
                                         context=dict(account="123456789012",
                                                      destination_organizational_unit="ou-landing",
                                                      origin_organizational_unit="ou-origin"))
-
         with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
             result = handler(event=event, context=None)
-        assert result == 'CreatedAccount 123456789012'
+        assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
-        with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-unexpected")):
+
+def test_handler_on_unexpected_event():
+    with patch.dict(os.environ, dict(DRY_RUN="true")):
+        event = EventFactory.make_event(template="tests/events/move-account-template.json",
+                                        context=dict(account="123456789012",
+                                                     destination_organizational_unit="ou-unexpected",
+                                                     origin_organizational_unit="ou-origin"))
+        with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
             with pytest.raises(ValueError):
                 handler(event=event, context=None)

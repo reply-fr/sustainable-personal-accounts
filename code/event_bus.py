@@ -36,6 +36,7 @@ class EventFactory:
     def emit(cls, label, account, client=None):
         event = cls.build_event(label=label, account=account)
         cls.put_event(event=event, client=client)
+        return event
 
     @classmethod
     def build_event(cls, label, account):

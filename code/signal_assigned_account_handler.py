@@ -31,9 +31,5 @@ def handler(event, context):
     logging.debug(json.dumps(event))
 
     input = EventFactory.decode_tag_account_event(event=event, match=State.ASSIGNED.value)
-
-    EventFactory.emit('AssignedAccount', input.account)
-
     Worker.prepare(input.account)
-
-    return f"AssignedAccount {input.account}"
+    return EventFactory.emit('AssignedAccount', input.account)

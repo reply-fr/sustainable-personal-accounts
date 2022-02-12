@@ -31,9 +31,5 @@ def handler(event, context):
     logging.debug(json.dumps(event))
 
     input = EventFactory.decode_tag_account_event(event=event, match=State.EXPIRED.value)
-
-    EventFactory.emit('ExpiredAccount', input.account)
-
     Worker.purge(input.account)
-
-    return f"ExpiredAccount {input.account}"
+    return EventFactory.emit('ExpiredAccount', input.account)

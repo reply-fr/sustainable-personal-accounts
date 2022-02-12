@@ -32,9 +32,5 @@ def handler(event, context):
     input = EventFactory.decode_move_account_event(
         event=event,
         match=os.environ['ORGANIZATIONAL_UNIT'])
-
-    EventFactory.emit('CreatedAccount', input.account)
-
     Account.move(account=input.account, state=State.ASSIGNED)
-
-    return f"CreatedAccount {input.account}"
+    return EventFactory.emit('CreatedAccount', input.account)

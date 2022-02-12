@@ -30,9 +30,5 @@ def handler(event, context):
     logging.debug(json.dumps(event))
 
     input = EventFactory.decode_local_event(event, match="PreparedAccount")
-
-    EventFactory.emit('ReleasedAccount', input.account)
-
     Account.move(account=input.account, state=State.RELEASED)
-
-    return f"ReleasedAccount {input.account}"
+    return EventFactory.emit('ReleasedAccount', input.account)

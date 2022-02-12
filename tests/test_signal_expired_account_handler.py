@@ -31,15 +31,16 @@ pytestmark = pytest.mark.wip
 
 
 def test_handler():
-
     with patch.dict(os.environ, dict(DRY_RUN="true")):
-
         event = EventFactory.make_event(template="tests/events/tag-account-template.json",
                                         context=dict(account="123456789012",
                                                      new_state=State.EXPIRED.value))
         result = handler(event=event, context=None)
-        assert result == 'ExpiredAccount 123456789012'
+        assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
 
+
+def test_handler_on_unexpected_event():
+    with patch.dict(os.environ, dict(DRY_RUN="true")):
         event = EventFactory.make_event(template="tests/events/tag-account-template.json",
                                         context=dict(account="123456789012",
                                                      new_state=State.VANILLA.value))

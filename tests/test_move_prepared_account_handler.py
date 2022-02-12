@@ -31,15 +31,16 @@ from code.move_prepared_account_handler import handler
 
 
 def test_handler():
-
     with patch.dict(os.environ, dict(DRY_RUN="true")):
-
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                         context=dict(account="123456789012",
                                                      state="PreparedAccount"))
         result = handler(event=event, context=None)
-        assert result == 'ReleasedAccount 123456789012'
+        assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
 
+
+def test_handler_on_unexpected_event():
+    with patch.dict(os.environ, dict(DRY_RUN="true")):
         event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                         context=dict(account="123456789012",
                                                      state="CreatedAccount"))
