@@ -22,13 +22,14 @@ import pytest
 from code import EventFactory
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 def test_emit():
-    client = Mock()
-    EventFactory.emit(label='CreatedAccount', account='123456789012', client=client)
-    client.put_events.assert_called_with(Entries=[
+    mock = Mock()
+    EventFactory.emit(label='CreatedAccount', account='123456789012', session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=[
         {'Detail': '{"Account": "123456789012"}',
          'DetailType': 'CreatedAccount',
          'Source': 'SustainablePersonalAccounts'}])
@@ -51,9 +52,10 @@ def test_state_labels():
 
 
 def test_put_event():
-    client = Mock()
-    EventFactory.put_event(event='hello', client=client)
-    client.put_events.assert_called_with(Entries=['hello'])
+    mock = Mock()
+    EventFactory.put_event(event='hello', session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=['hello'])
 
 
 def test_decode_local_event():

@@ -35,7 +35,7 @@ class Accounts:
             if token:
                 parameters['NextToken'] = token
             chunk = session.client('organizations').list_accounts_for_parent(**parameters)
-            print(chunk)
+
             for item in chunk['Accounts']:
                 logging.debug(json.dumps(item))
                 yield item['Id']

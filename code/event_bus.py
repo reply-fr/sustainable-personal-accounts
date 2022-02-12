@@ -20,7 +20,7 @@ import logging
 import os
 from types import SimpleNamespace
 
-import boto3
+from boto3.session import Session
 
 
 class EventFactory:
@@ -33,9 +33,9 @@ class EventFactory:
         'ReleasedAccount']
 
     @classmethod
-    def emit(cls, label, account, client=None):
+    def emit(cls, label, account, session=None):
         event = cls.build_event(label=label, account=account)
-        cls.put_event(event=event, client=client)
+        cls.put_event(event=event, session=session)
         return event
 
     @classmethod
@@ -47,12 +47,12 @@ class EventFactory:
                     Source='SustainablePersonalAccounts')
 
     @classmethod
-    def put_event(cls, event, client=None):
+    def put_event(cls, event, session=None):
         logging.info(f'put_event: {event}')
         if os.environ.get("DRY_RUN") == "true":
             return
-        client = client if client else boto3.client('events')
-        client.put_events(Entries=[event])
+        session = session if session else Session()
+        session.client('events').put_events(Entries=[event])
 
     @staticmethod
     def decode_local_event(event, match=None):
