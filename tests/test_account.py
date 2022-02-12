@@ -27,39 +27,51 @@ from types import SimpleNamespace
 from code import Account, State
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 def test_move_to_vanilla():
-    client = Mock()
+    session = Mock()
     Account.move(account='0123456789012',
                  state=State.VANILLA,
-                 client=client)
-    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'vanilla'}])
+                 session=session)
+    session.client.assert_called_with('organizations')
+    session.client.return_value.tag_resource.assert_called_with(
+        ResourceId='0123456789012',
+        Tags=[{'Key': 'account:state', 'Value': 'vanilla'}])
 
 
 def test_move_to_assigned():
-    client = Mock()
+    session = Mock()
     Account.move(account='0123456789012',
                  state=State.ASSIGNED,
-                 client=client)
-    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'assigned'}])
+                 session=session)
+    session.client.assert_called_with('organizations')
+    session.client.return_value.tag_resource.assert_called_with(
+        ResourceId='0123456789012',
+        Tags=[{'Key': 'account:state', 'Value': 'assigned'}])
 
 
 def test_move_to_released():
-    client = Mock()
+    session = Mock()
     Account.move(account='0123456789012',
                  state=State.RELEASED,
-                 client=client)
-    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'released'}])
+                 session=session)
+    session.client.assert_called_with('organizations')
+    session.client.return_value.tag_resource.assert_called_with(
+        ResourceId='0123456789012',
+        Tags=[{'Key': 'account:state', 'Value': 'released'}])
 
 
 def test_move_to_expired():
-    client = Mock()
+    session = Mock()
     Account.move(account='0123456789012',
                  state=State.EXPIRED,
-                 client=client)
-    client.tag_resource.assert_called_with(ResourceId='0123456789012', Tags=[{'Key': 'account:state', 'Value': 'expired'}])
+                 session=session)
+    session.client.assert_called_with('organizations')
+    session.client.return_value.tag_resource.assert_called_with(
+        ResourceId='0123456789012',
+        Tags=[{'Key': 'account:state', 'Value': 'expired'}])
 
 
 def test_move_with_exception():

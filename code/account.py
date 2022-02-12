@@ -16,11 +16,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from enum import Enum, unique
-import json
-import logging
 import os
 
-import boto3
+from boto3.session import Session
 
 
 @unique
@@ -34,14 +32,14 @@ class State(Enum):
 class Account:
 
     @classmethod
-    def move(cls, account, state: State, client=None):
-        client = client if client else boto3.client('organizations')
-
+    def move(cls, account, state: State, session=None):
         if not isinstance(state, State):
             raise ValueError(f"Unexpected state type {state}")
 
         if os.environ.get("DRY_RUN") == "true":
             return
 
-        client.tag_resource(ResourceId=account,
-                            Tags=[dict(Key='account:state', Value=state.value)])
+        session = session if session else Session()
+        session.client('organizations').tag_resource(
+            ResourceId=account,
+            Tags=[dict(Key='account:state', Value=state.value)])
