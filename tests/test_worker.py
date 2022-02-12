@@ -15,37 +15,27 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import logging
-from types import SimpleNamespace
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from boto3.session import Session
+from unittest.mock import Mock
+import pytest
 
-from code.event_bus import EventFactory
+from code import Worker
 
 
-class Worker:
+pytestmark = pytest.mark.wip
 
-    @classmethod
-    def prepare(cls, account, session=None):
 
-        session = session if session else Session()
+@pytest.fixture
+def mock():
+    return Mock()
 
-        # session.client('codebuild').create_project( ... )
 
-        # session.client('codebuild').start_build( ... )
+def test_prepare(mock):
+    Worker.prepare(account='123456789012', session=mock)
 
-        # to be moved to the end of the Codebuild buildspec
-        EventFactory.emit('PreparedAccount', account)
 
-    @classmethod
-    def purge(cls, account, session=None):
-
-        session = session if session else Session()
-
-        # session.client('codebuild').create_project( ... )
-
-        # session.client('codebuild').start_build( ... )
-
-        # to be moved to the end of the Codebuild buildspec
-        EventFactory.emit('PurgedAccount', account)
+def test_purge(mock):
+    Worker.purge(account='123456789012', session=mock)
