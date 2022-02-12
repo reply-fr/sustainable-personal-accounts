@@ -30,19 +30,19 @@ from code.move_prepared_account_handler import handler
 # pytestmark = pytest.mark.wip
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler():
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-        event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                        context=dict(account="123456789012",
-                                                     state="PreparedAccount"))
-        result = handler(event=event, context=None)
-        assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
+    event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                    context=dict(account="123456789012",
+                                                 state="PreparedAccount"))
+    result = handler(event=event, context=None)
+    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler_on_unexpected_event():
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-        event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                        context=dict(account="123456789012",
-                                                     state="CreatedAccount"))
-        with pytest.raises(ValueError):
-            handler(event=event, context=None)
+    event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                    context=dict(account="123456789012",
+                                                 state="CreatedAccount"))
+    with pytest.raises(ValueError):
+        handler(event=event, context=None)

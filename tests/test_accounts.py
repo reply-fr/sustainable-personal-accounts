@@ -24,7 +24,7 @@ import pytest
 
 from code import Accounts
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_list():

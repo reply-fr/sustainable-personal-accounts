@@ -21,8 +21,7 @@ import pytest
 
 from code import EventFactory
 
-
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_emit():

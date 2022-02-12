@@ -30,11 +30,9 @@ from code.listen_account_events_handler import handler
 # pytestmark = pytest.mark.wip
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler():
-
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-
-        event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                        context=dict(account="123456789012",
-                                                     state="CreatedAccount"))
-        handler(event=event, context=None)
+    event = EventFactory.make_event(template="tests/events/local-event-template.json",
+                                    context=dict(account="123456789012",
+                                                 state="CreatedAccount"))
+    handler(event=event, context=None)

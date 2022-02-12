@@ -19,7 +19,8 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import Mock
+import os
+from unittest.mock import patch
 import pytest
 
 from code import Worker
@@ -28,14 +29,11 @@ from code import Worker
 pytestmark = pytest.mark.wip
 
 
-@pytest.fixture
-def mock():
-    return Mock()
+@patch.dict(os.environ, dict(DRY_RUN="true"))
+def test_prepare():
+    Worker.prepare(account='123456789012')
 
 
-def test_prepare(mock):
-    Worker.prepare(account='123456789012', session=mock)
-
-
-def test_purge(mock):
-    Worker.purge(account='123456789012', session=mock)
+@patch.dict(os.environ, dict(DRY_RUN="true"))
+def test_purge():
+    Worker.purge(account='123456789012')

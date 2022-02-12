@@ -27,26 +27,26 @@ from code import EventFactory
 from code.move_vanilla_account_handler import handler
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler():
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-        event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                        context=dict(account="123456789012",
-                                                     destination_organizational_unit="ou-landing",
-                                                     origin_organizational_unit="ou-origin"))
-        with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
-            result = handler(event=event, context=None)
-        assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    event = EventFactory.make_event(template="tests/events/move-account-template.json",
+                                    context=dict(account="123456789012",
+                                                 destination_organizational_unit="ou-landing",
+                                                 origin_organizational_unit="ou-origin"))
+    with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
+        result = handler(event=event, context=None)
+    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler_on_unexpected_event():
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-        event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                        context=dict(account="123456789012",
-                                                     destination_organizational_unit="ou-unexpected",
-                                                     origin_organizational_unit="ou-origin"))
-        with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
-            with pytest.raises(ValueError):
-                handler(event=event, context=None)
+    event = EventFactory.make_event(template="tests/events/move-account-template.json",
+                                    context=dict(account="123456789012",
+                                                 destination_organizational_unit="ou-unexpected",
+                                                 origin_organizational_unit="ou-origin"))
+    with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
+        with pytest.raises(ValueError):
+            handler(event=event, context=None)

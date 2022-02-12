@@ -27,22 +27,22 @@ from code import EventFactory, State
 from code.signal_expired_account_handler import handler
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler():
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-        event = EventFactory.make_event(template="tests/events/tag-account-template.json",
-                                        context=dict(account="123456789012",
-                                                     new_state=State.EXPIRED.value))
-        result = handler(event=event, context=None)
-        assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
+    event = EventFactory.make_event(template="tests/events/tag-account-template.json",
+                                    context=dict(account="123456789012",
+                                                 new_state=State.EXPIRED.value))
+    result = handler(event=event, context=None)
+    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handler_on_unexpected_event():
-    with patch.dict(os.environ, dict(DRY_RUN="true")):
-        event = EventFactory.make_event(template="tests/events/tag-account-template.json",
-                                        context=dict(account="123456789012",
-                                                     new_state=State.VANILLA.value))
-        with pytest.raises(ValueError):
-            handler(event=event, context=None)
+    event = EventFactory.make_event(template="tests/events/tag-account-template.json",
+                                    context=dict(account="123456789012",
+                                                 new_state=State.VANILLA.value))
+    with pytest.raises(ValueError):
+        handler(event=event, context=None)
