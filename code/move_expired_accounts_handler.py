@@ -26,10 +26,10 @@ from account import Account, State
 from accounts import Accounts
 
 
-def handler(event, context, client=None):
+def handler(event, context, session=None):
     logging.debug(json.dumps(event))
 
-    for account in Accounts.list(parent=os.environ['ORGANIZATIONAL_UNIT'], client=client):
+    for account in Accounts.list(parent=os.environ['ORGANIZATIONAL_UNIT'], session=session):
 
         # ensure tag 'account:state' is State.RELEASED
 

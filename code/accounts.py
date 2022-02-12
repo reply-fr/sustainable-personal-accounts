@@ -18,26 +18,26 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import logging
 
-import boto3
+from boto3.session import Session
 
 
 class Accounts:
 
     @staticmethod
-    def list(parent, client=None):
-        client = client if client else boto3.client('organizations')
+    def list(parent, session=None):
+        session = session if session else Session()
 
         token = None
         while True:
-            logging.info(f"listing accounts in parent '{parent}'")
+            logging.debug(f"listing accounts in parent '{parent}'")
             parameters = dict(ParentId=parent,
                               MaxResults=50)
             if token:
                 parameters['NextToken'] = token
-            chunk = client.list_accounts_for_parent(**parameters)
-
+            chunk = session.client('organizations').list_accounts_for_parent(**parameters)
+            print(chunk)
             for item in chunk['Accounts']:
-                logging.info(json.dumps(item))
+                logging.debug(json.dumps(item))
                 yield item['Id']
 
             token = chunk.get('NextToken')

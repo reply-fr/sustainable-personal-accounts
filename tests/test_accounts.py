@@ -19,62 +19,59 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from unittest.mock import Mock
 import pytest
 
 from code import Accounts
 
-# pytestmark = pytest.mark.wip
-
-
-class BotoMock:
-
-    def list_accounts_for_parent(self, *args, **kwargs):
-
-        if not kwargs.get('NextToken'):
-            return {
-                'Accounts': [
-                    {
-                        'Id': '123456789012',
-                        'Arn': 'arn:aws:some-arn',
-                        'Email': 'string',
-                        'Name': 'account-one',
-                        'Status': 'ACTIVE',
-                        'JoinedMethod': 'CREATED',
-                        'JoinedTimestamp': '20150101'
-                    },
-
-                    {
-                        'Id': '234567890123',
-                        'Arn': 'arn:aws:some-arn',
-                        'Email': 'string',
-                        'Name': 'account-two',
-                        'Status': 'ACTIVE',
-                        'JoinedMethod': 'CREATED',
-                        'JoinedTimestamp': '20150101'
-                    }
-                ],
-                'NextToken': 'token'
-            }
-
-        else:
-            return {
-                'Accounts': [
-                    {
-                        'Id': '345678901234',
-                        'Arn': 'arn:aws:some-arn',
-                        'Email': 'string',
-                        'Name': 'account-three',
-                        'Status': 'ACTIVE',
-                        'JoinedMethod': 'CREATED',
-                        'JoinedTimestamp': '20150101'
-                    }
-                ]
-            }
+pytestmark = pytest.mark.wip
 
 
 def test_list():
+
+    chunk_1 = {
+        'Accounts': [
+            {
+                'Id': '123456789012',
+                'Arn': 'arn:aws:some-arn',
+                'Email': 'string',
+                'Name': 'account-one',
+                'Status': 'ACTIVE',
+                'JoinedMethod': 'CREATED',
+                'JoinedTimestamp': '20150101'
+            },
+
+            {
+                'Id': '234567890123',
+                'Arn': 'arn:aws:some-arn',
+                'Email': 'string',
+                'Name': 'account-two',
+                'Status': 'ACTIVE',
+                'JoinedMethod': 'CREATED',
+                'JoinedTimestamp': '20150101'
+            }
+        ],
+        'NextToken': 'token'
+    }
+
+    chunk_2 = {
+        'Accounts': [
+            {
+                'Id': '345678901234',
+                'Arn': 'arn:aws:some-arn',
+                'Email': 'string',
+                'Name': 'account-three',
+                'Status': 'ACTIVE',
+                'JoinedMethod': 'CREATED',
+                'JoinedTimestamp': '20150101'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_accounts_for_parent.side_effect = [chunk_1, chunk_2]
     iterator = Accounts.list(parent='ou-parent',
-                             client=BotoMock())
+                             session=mock)
     assert next(iterator) == '123456789012'
     assert next(iterator) == '234567890123'
     assert next(iterator) == '345678901234'
