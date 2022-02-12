@@ -27,7 +27,7 @@ from types import SimpleNamespace
 from code import Account, State
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_move_to_vanilla():
