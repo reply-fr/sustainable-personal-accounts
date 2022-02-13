@@ -98,9 +98,9 @@ def test_set_from_yaml(toggles):
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.maximum_concurrent_executions == 50
     assert toggles.organizational_units == ['ou-1234']
+    assert toggles.role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+    assert toggles.role_arn_to_put_events == 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
     assert toggles.role_name_to_manage_codebuild == 'SpaCodebuildManagementRole'
-    assert toggles.role_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
-    assert toggles.role_to_put_events == 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
 
 
 def test_set_from_yaml_invalid(toggles):

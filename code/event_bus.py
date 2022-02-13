@@ -54,7 +54,7 @@ class EventFactory:
         if os.environ.get("DRY_RUN") == "true":
             return
 
-        role = os.environ.get('ROLE_TO_PUT_EVENTS')
+        role = os.environ.get('ROLE_ARN_TO_PUT_EVENTS')
         empowered = make_session(role_arn=role) if role else Session()
 
         session = session if session else empowered

@@ -19,12 +19,12 @@ maximum_concurrent_executions: 50
 organizational_units:
 - ou-1234
 
-# this role is assumed by Lambda functions to create CodeBuild projects and to start them
-role_name_to_manage_codebuild: 'SpaCodebuildManagementRole'
-
 # this role is assumed by Lambda functions either to list AWS accounts in the OU,
 # or to tag AWS accounts
-role_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
 
 # this role is assumed by Lambda functions to put events
-role_to_put_events: 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
+role_arn_to_put_events: 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
+
+# this role is assumed by Lambda functions to create CodeBuild projects and to start them
+role_name_to_manage_codebuild: 'SpaCodebuildManagementRole'

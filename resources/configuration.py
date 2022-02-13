@@ -119,9 +119,9 @@ class Configuration:
         expiration_expression='str',
         maximum_concurrent_executions='int',
         organizational_units='list',
+        role_arn_to_manage_accounts='str',
+        role_arn_to_put_events='str',
         role_name_to_manage_codebuild='str',
-        role_to_manage_accounts='str',
-        role_to_put_events='str'
     )
 
     @classmethod
