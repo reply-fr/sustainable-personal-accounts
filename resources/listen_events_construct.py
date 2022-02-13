@@ -28,15 +28,15 @@ class ListenEvents(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
         super().__init__(scope, id)
 
-        self.function = Function(self, "Function",
+        self.function = Function(self, "OnEvent",
                                  description="Listen events from the bus",
-                                 handler="listen_events_handler.handler",
+                                 handler="listen_events_handler.handle_event",
                                  **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
+        Rule(self, "EventRule",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail_type=EventFactory.STATE_LABELS),

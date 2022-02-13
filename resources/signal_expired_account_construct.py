@@ -28,15 +28,15 @@ class SignalExpiredAccount(Construct):
 
         parameters['environment']['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
         self.function = Function(
-            self, "Function",
+            self, "OnTag",
             description="Start the purge of an expired account",
-            handler="signal_expired_account_handler.handler",
+            handler="signal_expired_account_handler.handle_event",
             **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
+        Rule(self, "TagRule",
              event_pattern=EventPattern(
                  source=['aws.organizations'],
                  detail=dict(

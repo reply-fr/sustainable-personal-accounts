@@ -27,14 +27,14 @@ class MoveExpiredAccounts(Construct):
         super().__init__(scope, id)
 
         self.function = Function(
-            self, "Function",
+            self, "OnSchedule",
             description="Move expired accounts",
-            handler="move_expired_accounts_handler.handler",
+            handler="move_expired_accounts_handler.handle_event",
             **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
+        Rule(self, "TriggerRule",
              schedule=Schedule.expression(toggles.expiration_expression),
              targets=[LambdaFunction(self.function)])

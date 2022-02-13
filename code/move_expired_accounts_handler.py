@@ -26,7 +26,7 @@ from account import Account, State
 from accounts import Accounts
 
 
-def handler(event, context, session=None):
+def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
     containers = json.loads(os.environ['ORGANIZATIONAL_UNITS'])

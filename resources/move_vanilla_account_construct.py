@@ -28,20 +28,42 @@ class MoveVanillaAccount(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
         super().__init__(scope, id)
 
+        # First handler is for MoveAccount events generated during account creation, or afterwards
+        #
         parameters['environment']['ORGANIZATIONAL_UNITS'] = json.dumps(toggles.organizational_units)
         self.function = Function(
-            self, "Function",
+            self, "OnMove",
             description="Move created accounts to assigned state",
-            handler="move_vanilla_account_handler.handler",
+            handler="move_vanilla_account_handler.handle_move_event",
             **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
+        Rule(self, "MoveRule",
              event_pattern=EventPattern(
                  source=['aws.organizations'],
                  detail=dict(
                      eventName=['MoveAccount'],
                      requestParameters=dict(destinationParentId=toggles.organizational_units))),
+             targets=[LambdaFunction(self.function)])
+
+        # Second handler is for TagResource events generated manually on an account
+        #
+        self.function = Function(
+            self, "OnTag",
+            description="Move created accounts to assigned state",
+            handler="move_vanilla_account_handler.handle_tag_event",
+            **parameters)
+
+        for statement in statements:
+            self.function.add_to_role_policy(statement)
+
+        Rule(self, "TagRule",
+             event_pattern=EventPattern(
+                 source=['aws.organizations'],
+                 detail=dict(
+                     errorCode=[{"exists": False}],
+                     eventName=["TagResource"],
+                     eventSource=["organizations.amazonaws.com"])),
              targets=[LambdaFunction(self.function)])

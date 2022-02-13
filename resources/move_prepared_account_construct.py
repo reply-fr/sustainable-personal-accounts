@@ -27,15 +27,15 @@ class MovePreparedAccount(Construct):
         super().__init__(scope, id)
 
         self.function = Function(
-            self, "Function",
+            self, "OnEvent",
             description="Move prepared accounts to released state",
-            handler="move_prepared_account_handler.handler",
+            handler="move_prepared_account_handler.handle_event",
             **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
+        Rule(self, "EventRule",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail_type=['PreparedAccount']),

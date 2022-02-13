@@ -24,15 +24,15 @@ import os
 import pytest
 
 from code import EventFactory
-from code.listen_events_handler import handler
+from code.listen_events_handler import handle_event
 
 
 # pytestmark = pytest.mark.wip
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handler():
+def test_handle_event():
     event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                     context=dict(account="123456789012",
                                                  state="CreatedAccount"))
-    handler(event=event, context=None)
+    handle_event(event=event, context=None)

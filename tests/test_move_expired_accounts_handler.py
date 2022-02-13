@@ -26,7 +26,7 @@ import pytest
 
 from boto3.session import Session
 
-from code.move_expired_accounts_handler import handler
+from code.move_expired_accounts_handler import handle_event
 
 
 pytestmark = pytest.mark.wip
@@ -34,7 +34,7 @@ pytestmark = pytest.mark.wip
 
 @patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS="[\"ou-1234\"]"))
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handler():
+def test_handle_event():
 
     chunk = {
         'Accounts': [
@@ -73,4 +73,4 @@ def test_handler():
     mock = Mock()
     mock.client.return_value.list_accounts_for_parent.return_value = chunk
 
-    handler(event=dict(hello='world!'), context=None, session=mock)
+    handle_event(event=dict(hello='world!'), context=None, session=mock)

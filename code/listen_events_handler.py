@@ -22,25 +22,25 @@ import os
 from logger import setup_logging
 setup_logging()
 
-import boto3
+from boto3.session import Session
 
 from event_bus import EventFactory
 
 
-def handler(event, context, client=None):
+def handle_event(event, context, session=None):
     logging.info(json.dumps(event))
 
     input = EventFactory.decode_local_event(event)
 
-    client = client if client else boto3.client('cloudwatch')  # allow code injection
     dimensions = [dict(Name='Account', Value=input.account),
                   dict(Name='State', Value=input.state)]
 
-    # if os.environ.get("DRY_RUN") != "true":
-    #     client.put_metric_data(MetricData=[dict(Dimensions=dimensions,
-    #                                        MetricName='State transition',
-    #                                        Unit='Count',
-    #                                        Value=1)],
-    #                            Namespace="SustainablePersonalAccount")
+    if os.environ.get("DRY_RUN") != "true":
+        session = session if session else Session()
+        session.client('cloudwatch').put_metric_data(MetricData=[dict(Dimensions=dimensions,
+                                                                      MetricName='State transition',
+                                                                      Unit='Count',
+                                                                      Value=1)],
+                                                     Namespace="SustainablePersonalAccount")
 
     return f"{input.state} {input.account}"

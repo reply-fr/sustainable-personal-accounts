@@ -27,7 +27,7 @@ from event_bus import EventFactory
 from worker import Worker
 
 
-def handler(event, context):
+def handle_event(event, context):
     logging.debug(json.dumps(event))
 
     input = EventFactory.decode_tag_account_event(event=event, match=State.ASSIGNED.value)

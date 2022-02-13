@@ -27,15 +27,15 @@ class MovePurgedAccount(Construct):
         super().__init__(scope, id)
 
         self.function = Function(
-            self, "Function",
+            self, "OnEvent",
             description="Move purged accounts to assigned state",
-            handler="move_purged_account_handler.handler",
+            handler="move_purged_account_handler.handle_event",
             **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
+        Rule(self, "EventRule",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail_type=['PurgedAccount']),

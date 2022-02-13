@@ -13,7 +13,7 @@ expiration_expression: "cron(0 18 ? * SAT *)"
 # Reference:
 # - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
 #
-maximum_concurrent_executions: 100
+maximum_concurrent_executions: 50
 
 # these are organizational units where all accounts are located
 organizational_units:

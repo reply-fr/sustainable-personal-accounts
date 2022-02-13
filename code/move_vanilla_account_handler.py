@@ -26,11 +26,21 @@ from account import Account, State
 from event_bus import EventFactory
 
 
-def handler(event, context):
+def handle_move_event(event, context):
     logging.debug(json.dumps(event))
 
     input = EventFactory.decode_move_account_event(
         event=event,
         match=os.environ['ORGANIZATIONAL_UNIT'])
+    Account.move(account=input.account, state=State.ASSIGNED)
+    return EventFactory.emit('CreatedAccount', input.account)
+
+
+def handle_tag_event(event, context):
+    logging.debug(json.dumps(event))
+
+    input = EventFactory.decode_tag_account_event(
+        event=event,
+        match=State.VANILLA.value)
     Account.move(account=input.account, state=State.ASSIGNED)
     return EventFactory.emit('CreatedAccount', input.account)

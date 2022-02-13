@@ -19,6 +19,16 @@
             "Source": "SustainablePersonalAccounts",
             "DetailType": "ReleasedAccount",
             "Detail": "{\"Account\": \"123456789012\"}"
-        }
+          },
+          {
+              "Source": "SustainablePersonalAccounts",
+              "DetailType": "ExpiredAccount",
+              "Detail": "{\"Account\": \"123456789012\"}"
+          },
+          {
+              "Source": "SustainablePersonalAccounts",
+              "DetailType": "PurgedAccount",
+              "Detail": "{\"Account\": \"123456789012\"}"
+          }
     ]
 }

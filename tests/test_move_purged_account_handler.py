@@ -24,25 +24,25 @@ import os
 import pytest
 
 from code import EventFactory
-from code.move_purged_account_handler import handler
+from code.move_purged_account_handler import handle_event
 
 
 # pytestmark = pytest.mark.wip
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handler():
+def test_handle_event():
     event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                     context=dict(account="123456789012",
                                                  state="PurgedAccount"))
-    result = handler(event=event, context=None)
+    result = handle_event(event=event, context=None)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handler_on_unexpected_event():
+def test_handle_event_on_unexpected_event():
     event = EventFactory.make_event(template="tests/events/local-event-template.json",
                                     context=dict(account="123456789012",
                                                  state="CreatedAccount"))
     with pytest.raises(ValueError):
-        handler(event=event, context=None)
+        handle_event(event=event, context=None)
