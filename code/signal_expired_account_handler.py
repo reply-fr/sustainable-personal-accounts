@@ -23,13 +23,13 @@ from logger import setup_logging
 setup_logging()
 
 from account import State
-from event_bus import EventFactory
+from events import Events
 from worker import Worker
 
 
 def handle_event(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_tag_account_event(event=event, match=State.EXPIRED.value)
+    input = Events.decode_tag_account_event(event=event, match=State.EXPIRED.value)
     Worker.purge(input.account)
-    return EventFactory.emit('ExpiredAccount', input.account)
+    return Events.emit('ExpiredAccount', input.account)

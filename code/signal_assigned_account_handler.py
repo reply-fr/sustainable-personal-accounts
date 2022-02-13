@@ -23,13 +23,13 @@ from logger import setup_logging
 setup_logging()
 
 from account import State
-from event_bus import EventFactory
+from events import Events
 from worker import Worker
 
 
 def handle_event(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_tag_account_event(event=event, match=State.ASSIGNED.value)
+    input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED.value)
     Worker.prepare(input.account)
-    return EventFactory.emit('AssignedAccount', input.account)
+    return Events.emit('AssignedAccount', input.account)

@@ -23,24 +23,24 @@ from logger import setup_logging
 setup_logging()
 
 from account import Account, State
-from event_bus import EventFactory
+from events import Events
 
 
 def handle_move_event(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_move_account_event(
+    input = Events.decode_move_account_event(
         event=event,
         match=os.environ['ORGANIZATIONAL_UNIT'])
     Account.move(account=input.account, state=State.ASSIGNED)
-    return EventFactory.emit('CreatedAccount', input.account)
+    return Events.emit('CreatedAccount', input.account)
 
 
 def handle_tag_event(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_tag_account_event(
+    input = Events.decode_tag_account_event(
         event=event,
         match=State.VANILLA.value)
     Account.move(account=input.account, state=State.ASSIGNED)
-    return EventFactory.emit('CreatedAccount', input.account)
+    return Events.emit('CreatedAccount', input.account)

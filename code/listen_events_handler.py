@@ -24,13 +24,13 @@ setup_logging()
 
 from boto3.session import Session
 
-from event_bus import EventFactory
+from events import Events
 
 
 def handle_event(event, context, session=None):
     logging.info(json.dumps(event))
 
-    input = EventFactory.decode_local_event(event)
+    input = Events.decode_local_event(event)
 
     dimensions = [dict(Name='Account', Value=input.account),
                   dict(Name='State', Value=input.state)]

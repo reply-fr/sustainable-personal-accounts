@@ -20,7 +20,7 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
-from code import EventFactory
+from code import Events
 
 
 class ListenEvents(Construct):
@@ -39,5 +39,5 @@ class ListenEvents(Construct):
         Rule(self, "EventRule",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
-                 detail_type=EventFactory.STATE_LABELS),
+                 detail_type=Events.EVENT_LABELS),
              targets=[LambdaFunction(self.function)])

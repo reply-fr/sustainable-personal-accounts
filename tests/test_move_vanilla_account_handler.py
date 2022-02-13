@@ -23,7 +23,7 @@ from unittest.mock import patch
 import os
 import pytest
 
-from code import EventFactory, State
+from code import Events, State
 from code.move_vanilla_account_handler import handle_move_event, handle_tag_event
 
 
@@ -32,10 +32,10 @@ from code.move_vanilla_account_handler import handle_move_event, handle_tag_even
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_move_event():
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 destination_organizational_unit="ou-landing",
-                                                 origin_organizational_unit="ou-origin"))
+    event = Events.make_event(template="tests/events/move-account-template.json",
+                              context=dict(account="123456789012",
+                                           destination_organizational_unit="ou-landing",
+                                           origin_organizational_unit="ou-origin"))
     with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
         result = handle_move_event(event=event, context=None)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
@@ -43,10 +43,10 @@ def test_handle_move_event():
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_move_event_on_unexpected_event():
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 destination_organizational_unit="ou-unexpected",
-                                                 origin_organizational_unit="ou-origin"))
+    event = Events.make_event(template="tests/events/move-account-template.json",
+                              context=dict(account="123456789012",
+                                           destination_organizational_unit="ou-unexpected",
+                                           origin_organizational_unit="ou-origin"))
     with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
         with pytest.raises(ValueError):
             handle_move_event(event=event, context=None)
@@ -54,17 +54,17 @@ def test_handle_move_event_on_unexpected_event():
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_tag_event():
-    event = EventFactory.make_event(template="tests/events/tag-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 new_state=State.VANILLA.value))
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012",
+                                           new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_tag_event_on_unexpected_event():
-    event = EventFactory.make_event(template="tests/events/tag-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 new_state=State.ASSIGNED.value))
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012",
+                                           new_state=State.ASSIGNED.value))
     with pytest.raises(ValueError):
         handle_tag_event(event=event, context=None)

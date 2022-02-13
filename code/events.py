@@ -25,14 +25,20 @@ from boto3.session import Session
 from session import make_session
 
 
-class EventFactory:
-    STATE_LABELS = [
+class Events:
+
+    EVENT_LABELS = [
         'AssignedAccount',
         'CreatedAccount',
         'ExpiredAccount',
         'PreparedAccount',
         'PurgedAccount',
         'ReleasedAccount']
+
+    @classmethod
+    def get_session(cls):
+        role = os.environ.get('ROLE_ARN_TO_PUT_EVENTS')
+        return make_session(role_arn=role) if role else Session()
 
     @classmethod
     def emit(cls, label, account, session=None):
@@ -42,7 +48,7 @@ class EventFactory:
 
     @classmethod
     def build_event(cls, label, account):
-        if label not in cls.STATE_LABELS:
+        if label not in cls.EVENT_LABELS:
             raise AttributeError(f'Invalid state type {label}')
         return dict(Detail=json.dumps(dict(Account=account)),
                     DetailType=label,
@@ -54,10 +60,7 @@ class EventFactory:
         if os.environ.get("DRY_RUN") == "true":
             return
 
-        role = os.environ.get('ROLE_ARN_TO_PUT_EVENTS')
-        empowered = make_session(role_arn=role) if role else Session()
-
-        session = session if session else empowered
+        session = session if session else cls.get_session()
         session.client('events').put_events(Entries=[event])
 
     @staticmethod

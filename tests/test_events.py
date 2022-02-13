@@ -19,14 +19,14 @@ import json
 from unittest.mock import Mock
 import pytest
 
-from code import EventFactory
+from code import Events
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 def test_emit():
     mock = Mock()
-    EventFactory.emit(label='CreatedAccount', account='123456789012', session=mock)
+    Events.emit(label='CreatedAccount', account='123456789012', session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[
         {'Detail': '{"Account": "123456789012"}',
@@ -35,24 +35,24 @@ def test_emit():
 
 
 def test_build_event():
-    event = EventFactory.build_event(label='CreatedAccount', account='123456789012')
+    event = Events.build_event(label='CreatedAccount', account='123456789012')
     assert json.loads(event['Detail'])['Account'] == '123456789012'
     assert event['DetailType'] == 'CreatedAccount'
     assert event['Source'] == 'SustainablePersonalAccounts'
 
 
 def test_state_labels():
-    for label in EventFactory.STATE_LABELS:
-        event = EventFactory.build_event(label=label, account='123456789012')
+    for label in Events.EVENT_LABELS:
+        event = Events.build_event(label=label, account='123456789012')
         assert event['DetailType'] == label
 
     with pytest.raises(AttributeError):
-        EventFactory.build_event(label='*perfectly*unknown*', account='123456789012')
+        Events.build_event(label='*perfectly*unknown*', account='123456789012')
 
 
 def test_put_event():
     mock = Mock()
-    EventFactory.put_event(event='hello', session=mock)
+    Events.put_event(event='hello', session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=['hello'])
 
@@ -60,51 +60,51 @@ def test_put_event():
 def test_decode_local_event():
 
     # where we accept any event with valid account identifier
-    event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="123456789012",
-                                                 state="CreatedAccount"))
-    decoded = EventFactory.decode_local_event(event)
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="123456789012",
+                                           state="CreatedAccount"))
+    decoded = Events.decode_local_event(event)
     assert decoded.account == "123456789012"
     assert decoded.state == "CreatedAccount"
 
     # where we reject events with malformed account identifier
-    event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="short",
-                                                 state="CreatedAccount"))
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="short",
+                                           state="CreatedAccount"))
     with pytest.raises(ValueError):
-        EventFactory.decode_local_event(event)
+        Events.decode_local_event(event)
 
     # where we reject events with unexpected state
-    event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="123456789012",
-                                                 state="CreatedAccount"))
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="123456789012",
+                                           state="CreatedAccount"))
     with pytest.raises(ValueError):
-        EventFactory.decode_local_event(event, match='PurgedAccount')
+        Events.decode_local_event(event, match='PurgedAccount')
 
 
 def test_decode_move_account_event():
 
     # where we accept any event with valid account identifier
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 destination_organizational_unit="ou-destination",
-                                                 source_organizational_unit="ou-source"))
-    decoded = EventFactory.decode_move_account_event(event)
+    event = Events.make_event(template="tests/events/move-account-template.json",
+                              context=dict(account="123456789012",
+                                           destination_organizational_unit="ou-destination",
+                                           source_organizational_unit="ou-source"))
+    decoded = Events.decode_move_account_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
 
     # where we reject events with malformed account identifier
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="short",
-                                                 destination_organizational_unit="ou-destination",
-                                                 source_organizational_unit="ou-source"))
+    event = Events.make_event(template="tests/events/move-account-template.json",
+                              context=dict(account="short",
+                                           destination_organizational_unit="ou-destination",
+                                           source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        EventFactory.decode_move_account_event(event)
+        Events.decode_move_account_event(event)
 
     # where we reject events with unexpected destination
-    event = EventFactory.make_event(template="tests/events/move-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 destination_organizational_unit="ou-expected",
-                                                 source_organizational_unit="ou-source"))
+    event = Events.make_event(template="tests/events/move-account-template.json",
+                              context=dict(account="123456789012",
+                                           destination_organizational_unit="ou-expected",
+                                           source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        EventFactory.decode_move_account_event(event, match="ou-destination")
+        Events.decode_move_account_event(event, match="ou-destination")

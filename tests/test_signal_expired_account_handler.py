@@ -23,7 +23,7 @@ from unittest.mock import patch
 import os
 import pytest
 
-from code import EventFactory, State
+from code import Events, State
 from code.signal_expired_account_handler import handle_event
 
 
@@ -32,17 +32,17 @@ from code.signal_expired_account_handler import handle_event
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_event():
-    event = EventFactory.make_event(template="tests/events/tag-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 new_state=State.EXPIRED.value))
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012",
+                                           new_state=State.EXPIRED.value))
     result = handle_event(event=event, context=None)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_event_on_unexpected_event():
-    event = EventFactory.make_event(template="tests/events/tag-account-template.json",
-                                    context=dict(account="123456789012",
-                                                 new_state=State.VANILLA.value))
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012",
+                                           new_state=State.VANILLA.value))
     with pytest.raises(ValueError):
         handle_event(event=event, context=None)

@@ -21,7 +21,7 @@ import os
 
 from boto3.session import Session
 
-from code.event_bus import EventFactory
+from code.events import Events
 from session import make_session
 
 
@@ -41,7 +41,7 @@ class Worker:
         # session.client('codebuild').start_build( ... )
 
         # to be moved to the end of the Codebuild buildspec
-        EventFactory.emit('PreparedAccount', account)
+        Events.emit('PreparedAccount', account)
 
     @classmethod
     def purge(cls, account, session=None):
@@ -52,4 +52,4 @@ class Worker:
         # session.client('codebuild').start_build( ... )
 
         # to be moved to the end of the Codebuild buildspec
-        EventFactory.emit('PurgedAccount', account)
+        Events.emit('PurgedAccount', account)

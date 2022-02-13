@@ -23,12 +23,12 @@ from logger import setup_logging
 setup_logging()
 
 from account import Account, State
-from event_bus import EventFactory
+from events import Events
 
 
 def handle_event(event, context):
     logging.debug(json.dumps(event))
 
-    input = EventFactory.decode_local_event(event, match="PreparedAccount")
+    input = Events.decode_local_event(event, match="PreparedAccount")
     Account.move(account=input.account, state=State.RELEASED)
-    return EventFactory.emit('ReleasedAccount', input.account)
+    return Events.emit('ReleasedAccount', input.account)

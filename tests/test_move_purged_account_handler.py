@@ -23,7 +23,7 @@ from unittest.mock import patch
 import os
 import pytest
 
-from code import EventFactory
+from code import Events
 from code.move_purged_account_handler import handle_event
 
 
@@ -32,17 +32,17 @@ from code.move_purged_account_handler import handle_event
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_event():
-    event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="123456789012",
-                                                 state="PurgedAccount"))
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="123456789012",
+                                           state="PurgedAccount"))
     result = handle_event(event=event, context=None)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_handle_event_on_unexpected_event():
-    event = EventFactory.make_event(template="tests/events/local-event-template.json",
-                                    context=dict(account="123456789012",
-                                                 state="CreatedAccount"))
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="123456789012",
+                                           state="CreatedAccount"))
     with pytest.raises(ValueError):
         handle_event(event=event, context=None)
