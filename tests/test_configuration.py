@@ -29,7 +29,7 @@ from types import SimpleNamespace
 from resources import Configuration
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -46,21 +46,17 @@ def test_expand_text(toggles):
 
 
 @pytest.mark.slow
+@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1"))
 def test_initialize():
 
-    with patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1")):
+    Configuration.initialize(stream='tests/settings/sample_settings.yaml')
+    assert builtins.toggles.dry_run is False
+    assert builtins.toggles.aws_account is not None
+    assert builtins.toggles.aws_environment is not None
+    assert builtins.toggles.aws_region is not None
 
-        Configuration.initialize()
-        assert builtins.toggles.dry_run is False
-        assert builtins.toggles.aws_account is not None
-        assert builtins.toggles.aws_environment is not None
-        assert builtins.toggles.aws_region is not None
-
-        Configuration.initialize(dry_run=True)
-        assert builtins.toggles.dry_run is True
-
-        with pytest.raises(FileNotFoundError):
-            Configuration.initialize(stream='this*file*does*not*exist')
+    with pytest.raises(FileNotFoundError):
+        Configuration.initialize(stream='this*file*does*not*exist')
 
 
 def test_set_default_values(toggles):
@@ -95,6 +91,7 @@ def test_set_from_settings(toggles):
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
     assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
+    assert toggles.dry_run is False
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.maximum_concurrent_executions == 50
     assert toggles.organizational_units == ['ou-1234']

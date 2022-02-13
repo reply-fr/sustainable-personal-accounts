@@ -3,6 +3,10 @@ cockpit_markdown_text: |
   # Sustainable Personal Accounts Dashboard
   Currently under active development (alpha)
 
+# this is required to actually modify accounts and create codebuild workers
+# if you comment this out, then organizations and accounts will be read, but not modified
+dry_run: False
+
 # this expression defines when accounts are expired
 # Reference:
 # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html

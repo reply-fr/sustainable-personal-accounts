@@ -23,10 +23,10 @@ from aws_cdk import App
 from resources import Configuration, ServerlessStack
 
 
-def build_resources(settings=None, dry_run=False):
+def build_resources(settings=None):
     ''' generate CloudFormation templates '''
 
-    Configuration.initialize(stream=settings, dry_run=dry_run)
+    Configuration.initialize(stream=settings)
 
     app = App()
     ServerlessStack(app, toggles.environment_identifier)

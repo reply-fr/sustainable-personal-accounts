@@ -41,16 +41,13 @@ class Configuration:
         return text
 
     @classmethod
-    def initialize(cls, stream=None, dry_run=False, features: SimpleNamespace = None):
-        builtins.toggles = SimpleNamespace(dry_run=dry_run)
+    def initialize(cls, stream=None, features: SimpleNamespace = None):
+        builtins.toggles = SimpleNamespace()
         cls.set_default_values()
         if stream:
             cls.set_from_yaml(stream=stream)
         else:
-            try:  # load settings silently if file exists
-                cls.set_from_yaml(stream=toggles.settings_file)
-            except FileNotFoundError:
-                logging.debug("Could not load settings from file '{}'".format(toggles.settings_file))
+            cls.set_from_yaml(stream=toggles.settings_file)
         cls.set_from_environment()
         if features:  # allow test injection
             for key in features.__dict__.keys():
@@ -73,6 +70,7 @@ class Configuration:
 
         # other default values
         toggles.cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
+        toggles.dry_run = True
 
     @classmethod
     def set_from_environment(cls, environ=None, mapping=None):
@@ -116,6 +114,7 @@ class Configuration:
 
     ALLOWED_ATTRIBUTES = dict(
         cockpit_markdown_text='str',
+        dry_run='bool',
         expiration_expression='str',
         maximum_concurrent_executions='int',
         organizational_units='list',
@@ -127,11 +126,13 @@ class Configuration:
     @classmethod
     def validate_attribute(cls, key, value):
         if kind := cls.ALLOWED_ATTRIBUTES.get(key):
-            if (kind == 'int') and not isinstance(value, int):
+            if (kind == 'bool') and not isinstance(value, bool):
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
-            elif (kind == 'str') and not isinstance(value, str):
+            elif (kind == 'int') and not isinstance(value, int):
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
             elif (kind == 'list') and not isinstance(value, list):
+                raise AttributeError(f"invalid value for configuration attribute '{key}'")
+            elif (kind == 'str') and not isinstance(value, str):
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
         else:
             raise AttributeError(f"unknown configuration attribute '{key}'")
