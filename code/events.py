@@ -103,7 +103,7 @@ class Events:
         for item in event['detail']['requestParameters']['tags']:
             if item['key'] == 'account:state':
                 decoded.state = item['value']
-                if match and match != decoded.state:
+                if match and match.value != decoded.state:
                     raise ValueError(f"Unexpected state '{decoded.state}' for this function")
                 return decoded
         raise ValueError("Missing tag 'account:state' in this event")

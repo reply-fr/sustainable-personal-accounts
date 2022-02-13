@@ -41,6 +41,6 @@ def handle_tag_event(event, context):
 
     input = Events.decode_tag_account_event(
         event=event,
-        match=State.VANILLA.value)
+        match=State.VANILLA)
     Account.move(account=input.account, state=State.ASSIGNED)
     return Events.emit('CreatedAccount', input.account)
