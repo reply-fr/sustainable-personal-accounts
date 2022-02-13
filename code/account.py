@@ -19,6 +19,7 @@ from enum import Enum, unique
 import json
 import logging
 import os
+import re
 
 from boto3.session import Session
 
@@ -26,7 +27,7 @@ from session import make_session
 
 
 @unique
-class State(Enum):
+class State(Enum):  # value is given to tag 'account:state'
     VANILLA = 'vanilla'
     ASSIGNED = 'assigned'
     RELEASED = 'released'
@@ -34,11 +35,59 @@ class State(Enum):
 
 
 class Account:
+    VALID_EMAIL = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 
     @classmethod
     def get_session(cls):
         role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
         return make_session(role_arn=role) if role else Session()
+
+    @classmethod
+    def validate_tags(cls, account, session=None):
+        tags = cls.list_tags(account, session=session)
+        if 'account:owner' not in tags.keys():
+            raise ValueError(f"missing tag 'account:owner' on account '{account}' - this account can not be assigned")
+        if not cls.validate_owner(tags['account:owner']):
+            raise ValueError(f"invalid value for tag 'account:owner' on account '{account}' - this account can not be assigned")
+        if 'account:state' not in tags.keys():
+            raise ValueError(f"missing tag 'account:state' on account '{account}' - this account can not be assigned")
+        if not cls.validate_state(tags['account:state']):
+            raise ValueError(f"invalid value for tag 'account:state' on account '{account}' - this account can not be assigned")
+
+    @classmethod
+    def validate_owner(cls, text):
+        return re.fullmatch(cls.VALID_EMAIL, text)
+
+    @classmethod
+    def validate_state(cls, text):
+        return text in [state.value for state in State]
+
+    @classmethod
+    def list_tags(cls, account, session=None):
+        tags = {}
+        for item in cls.iterate_tags(account, session):
+            tags[item.get('Key')] = item.get('Value')
+        return tags
+
+    @classmethod
+    def iterate_tags(cls, account, session=None):
+        session = session if session else cls.get_session()
+
+        token = None
+        while True:
+            logging.debug(f"listing tags for account '{account}'")
+            parameters = dict(ResourceId=account)
+            if token:
+                parameters['NextToken'] = token
+            chunk = session.client('organizations').list_tags_for_resource(**parameters)
+
+            for item in chunk['Tags']:
+                logging.debug(json.dumps(item))
+                yield item
+
+            token = chunk.get('NextToken')
+            if not token:
+                break
 
     @classmethod
     def move(cls, account, state: State, session=None):

@@ -29,7 +29,7 @@ from boto3.session import Session
 from code.move_expired_accounts_handler import handle_event
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS="[\"ou-1234\"]"))

@@ -19,7 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import os
 import pytest
 
@@ -30,41 +30,71 @@ from code.move_vanilla_account_handler import handle_move_event, handle_tag_even
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_move_event():
+@pytest.fixture
+def valid_tags():
+
+    chunk_1 = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'a@b.com'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ],
+        'NextToken': 'token'
+    }
+
+    chunk_2 = {
+        'Tags': [
+            {
+                'Key': 'another_tag',
+                'Value': 'another_value'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_tags_for_resource.side_effect = [chunk_1, chunk_2]
+    return mock
+
+
+@patch.dict(os.environ, dict(DRY_RUN="true", ORGANIZATIONAL_UNIT="ou-landing"))
+def test_handle_move_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
                                            destination_organizational_unit="ou-landing",
                                            origin_organizational_unit="ou-origin"))
-    with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
-        result = handle_move_event(event=event, context=None)
+    result = handle_move_event(event=event, context=None, session=valid_tags)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_move_event_on_unexpected_event():
+@patch.dict(os.environ, dict(DRY_RUN="true", ORGANIZATIONAL_UNIT="ou-landing"))
+def test_handle_move_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
                                            destination_organizational_unit="ou-unexpected",
                                            origin_organizational_unit="ou-origin"))
-    with patch.dict(os.environ, dict(ORGANIZATIONAL_UNIT="ou-landing")):
-        with pytest.raises(ValueError):
-            handle_move_event(event=event, context=None)
+    with pytest.raises(ValueError):
+        handle_move_event(event=event, context=None, session=valid_tags)
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_tag_event():
+def test_handle_tag_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.VANILLA.value))
-    result = handle_tag_event(event=event, context=None)
+    result = handle_tag_event(event=event, context=None, session=valid_tags)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_tag_event_on_unexpected_event():
+def test_handle_tag_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.ASSIGNED.value))
     with pytest.raises(ValueError):
-        handle_tag_event(event=event, context=None)
+        handle_tag_event(event=event, context=None, session=valid_tags)

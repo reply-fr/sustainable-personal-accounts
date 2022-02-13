@@ -28,7 +28,162 @@ from types import SimpleNamespace
 from code import Account, State
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
+
+
+@pytest.fixture
+def valid_tags():
+
+    chunk_1 = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'a@b.com'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ],
+        'NextToken': 'token'
+    }
+
+    chunk_2 = {
+        'Tags': [
+            {
+                'Key': 'another_tag',
+                'Value': 'another_value'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_tags_for_resource.side_effect = [chunk_1, chunk_2]
+    return mock
+
+
+@pytest.fixture
+def absent_owner():
+
+    chunk = {
+        'Tags': [
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_tags_for_resource.return_value = chunk
+    return mock
+
+
+@pytest.fixture
+def invalid_owner():
+
+    chunk = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'John Snow'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_tags_for_resource.return_value = chunk
+    return mock
+
+
+@pytest.fixture
+def absent_state():
+
+    chunk = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'a@b.com'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_tags_for_resource.return_value = chunk
+    return mock
+
+
+@pytest.fixture
+def invalid_state():
+
+    chunk = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'a@b.com'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': '*alien*'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_tags_for_resource.return_value = chunk
+    return mock
+
+
+def test_validate_tags(valid_tags):
+    Account.validate_tags(account='123456789012',
+                          session=valid_tags)
+
+
+def test_validate_tags_on_absent_owner(absent_owner):
+    with pytest.raises(ValueError):
+        Account.validate_tags(account='123456789012',
+                              session=absent_owner)
+
+
+def test_validate_tags_on_invalid_owner(invalid_owner):
+    with pytest.raises(ValueError):
+        Account.validate_tags(account='123456789012',
+                              session=invalid_owner)
+
+
+def test_validate_tags_on_absent_state(absent_state):
+    with pytest.raises(ValueError):
+        Account.validate_tags(account='123456789012',
+                              session=absent_state)
+
+
+def test_validate_tags_on_invalid_state(invalid_state):
+    with pytest.raises(ValueError):
+        Account.validate_tags(account='123456789012',
+                              session=invalid_state)
+
+
+def test_list_tags(valid_tags):
+    tags = Account.list_tags(account='123456789012',
+                             session=valid_tags)
+    assert tags == {'account:owner': 'a@b.com', 'account:state': 'vanilla', 'another_tag': 'another_value'}
+
+
+def test_iterate_tags(valid_tags):
+    iterator = Account.iterate_tags(account='123456789012',
+                                    session=valid_tags)
+    assert next(iterator) == {'Key': 'account:owner', 'Value': 'a@b.com'}
+    assert next(iterator) == {'Key': 'account:state', 'Value': 'vanilla'}
+    assert next(iterator) == {"Key": "another_tag", "Value": "another_value"}
+    with pytest.raises(StopIteration):
+        next(iterator)
 
 
 def test_move_to_vanilla():
