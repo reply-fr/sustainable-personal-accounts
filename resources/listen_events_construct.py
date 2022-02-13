@@ -20,21 +20,24 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
+from code import EventFactory
 
-class ListenAccountEvents(Construct):
+
+class ListenEvents(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
         super().__init__(scope, id)
 
-        self.function = Function(
-            self, "Function",
-            description="Listen events from the bus",
-            handler="listen_account_events_handler.handler",
-            **parameters)
+        self.function = Function(self, "Function",
+                                 description="Listen events from the bus",
+                                 handler="listen_events_handler.handler",
+                                 **parameters)
 
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        # Rule(self, "Rule",
-        #      event_pattern=EventPattern(source=['SustainablePersonalAccounts']),
-        #      targets=[LambdaFunction(self.function)])
+        Rule(self, "Rule",
+             event_pattern=EventPattern(
+                 source=['SustainablePersonalAccounts'],
+                 detail_type=EventFactory.STATE_LABELS),
+             targets=[LambdaFunction(self.function)])

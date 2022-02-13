@@ -22,7 +22,7 @@ from aws_cdk.aws_lambda import AssetCode, Runtime
 # from aws_cdk.aws_logs import RetentionDays
 
 from .cockpit_construct import Cockpit
-from .listen_account_events_construct import ListenAccountEvents
+from .listen_events_construct import ListenEvents
 from .move_expired_accounts_construct import MoveExpiredAccounts
 from .move_prepared_account_construct import MovePreparedAccount
 from .move_purged_account_construct import MovePurgedAccount
@@ -63,7 +63,7 @@ class ServerlessStack(Stack):
         ]
 
         functions = [
-            ListenAccountEvents(self, "ListenAccountEvents", parameters=parameters, statements=statements),
+            ListenEvents(self, "ListenEvents", parameters=parameters, statements=statements),
             MoveVanillaAccount(self, "MoveVanillaAccount", parameters=parameters, statements=statements),
             SignalAssignedAccount(self, "SignalAssignedAccount", parameters=parameters, statements=statements),
             MovePreparedAccount(self, "MovePreparedAccount", parameters=parameters, statements=statements),

@@ -24,7 +24,7 @@ import os
 import pytest
 
 from code import EventFactory
-from code.listen_account_events_handler import handler
+from code.listen_events_handler import handler
 
 
 # pytestmark = pytest.mark.wip
