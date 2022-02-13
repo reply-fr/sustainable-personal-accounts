@@ -72,6 +72,9 @@ class Configuration:
         toggles.cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
         toggles.dry_run = True
 
+        # can be absent from settings file
+        toggles.role_arn_to_put_events = None
+
     @classmethod
     def set_from_environment(cls, environ=None, mapping=None):
 

@@ -36,12 +36,15 @@ class ServerlessStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
 
+        environment = dict(
+            DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
+            ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.role_arn_to_manage_accounts)
+        if toggles.role_arn_to_put_events:
+            environment['ROLE_ARN_TO_PUT_EVENTS'] = toggles.role_arn_to_put_events
+
         parameters = dict(  # passed to all functions
             code=AssetCode("code"),
-            environment=dict(
-                DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
-                ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.role_arn_to_manage_accounts,
-                ROLE_ARN_TO_PUT_EVENTS=toggles.role_arn_to_put_events),
+            environment=environment,
             # log_retention=RetentionDays.THREE_MONTHS,
             reserved_concurrent_executions=toggles.maximum_concurrent_executions,
             timeout=Duration.seconds(900),

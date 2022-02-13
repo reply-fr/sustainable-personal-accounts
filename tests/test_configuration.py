@@ -61,6 +61,7 @@ def test_initialize():
 
 def test_set_default_values(toggles):
     Configuration.set_default_values()
+    assert toggles.role_arn_to_put_events is None
 
 
 def test_set_from_environment(toggles):
