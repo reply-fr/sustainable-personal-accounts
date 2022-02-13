@@ -21,7 +21,7 @@ import os
 
 from boto3.session import Session
 
-from code.events import Events
+from events import Events
 from session import make_session
 
 
