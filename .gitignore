@@ -7,5 +7,6 @@
 /code/sustainable_personal_accounts.egg-info
 /node_modules
 /package-lock.json
+/settings
 /venv
 settings.yaml
