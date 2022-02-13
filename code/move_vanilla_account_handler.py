@@ -19,13 +19,14 @@ import json
 import os
 import logging
 
-from logger import setup_logging
+from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
 from events import Events
 
 
+@trap_exception
 def handle_move_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_move_account_event(event=event,
@@ -33,6 +34,7 @@ def handle_move_event(event, context, session=None):
     return handle_account(input.account, session=session)
 
 
+@trap_exception
 def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event,

@@ -19,12 +19,13 @@ import json
 import logging
 import os
 
-from logger import setup_logging
+from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
 
 
+@trap_exception
 def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 

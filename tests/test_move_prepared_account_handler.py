@@ -27,7 +27,7 @@ from code import Events
 from code.move_prepared_account_handler import handle_event
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
@@ -44,5 +44,6 @@ def test_handle_event_on_unexpected_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
                                            label="CreatedAccount"))
-    with pytest.raises(ValueError):
-        handle_event(event=event, context=None)
+
+    result = handle_event(event=event, context=None)
+    assert result == "[ERROR] Unexpected event label 'CreatedAccount'"

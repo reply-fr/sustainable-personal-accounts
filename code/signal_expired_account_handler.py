@@ -19,7 +19,7 @@ import json
 import os
 import logging
 
-from logger import setup_logging
+from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import State
@@ -27,6 +27,7 @@ from events import Events
 from worker import Worker
 
 
+@trap_exception
 def handle_event(event, context):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event, match=State.EXPIRED)

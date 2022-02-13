@@ -19,7 +19,7 @@ import json
 import logging
 import os
 
-from logger import setup_logging
+from logger import setup_logging, trap_exception
 setup_logging()
 
 from boto3.session import Session
@@ -27,6 +27,7 @@ from boto3.session import Session
 from events import Events
 
 
+@trap_exception
 def handle_event(event, context, session=None):
     logging.info(json.dumps(event))
 

@@ -62,6 +62,10 @@ class ServerlessStack(Stack):
 
             PolicyStatement(effect=Effect.ALLOW,
                             actions=['organizations:TagResource'],
+                            resources=['*']),
+
+            PolicyStatement(effect=Effect.ALLOW,
+                            actions=['sts:AssumeRole'],
                             resources=['*'])
 
         ]

@@ -19,13 +19,14 @@ import json
 import os
 import logging
 
-from logger import setup_logging
+from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
 from events import Events
 
 
+@trap_exception
 def handle_event(event, context):
     logging.debug(json.dumps(event))
     input = Events.decode_local_event(event, match="PreparedAccount")

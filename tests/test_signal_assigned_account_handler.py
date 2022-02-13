@@ -44,5 +44,5 @@ def test_handle_event_on_unexpected_event():
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.VANILLA.value))
-    with pytest.raises(ValueError):
-        handle_event(event=event, context=None)
+    result = handle_event(event=event, context=None)
+    assert result == "[ERROR] Unexpected state 'vanilla' for this function"

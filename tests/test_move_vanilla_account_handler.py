@@ -78,8 +78,8 @@ def test_handle_move_event_on_unexpected_event(valid_tags):
                               context=dict(account="123456789012",
                                            destination_organizational_unit="ou-unexpected",
                                            origin_organizational_unit="ou-origin"))
-    with pytest.raises(ValueError):
-        handle_move_event(event=event, context=None, session=valid_tags)
+    result = handle_move_event(event=event, context=None, session=valid_tags)
+    assert result == "[ERROR] Unexpected event source 'ou-unexpected' for this function"
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
@@ -96,5 +96,5 @@ def test_handle_tag_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.ASSIGNED.value))
-    with pytest.raises(ValueError):
-        handle_tag_event(event=event, context=None, session=valid_tags)
+    result = handle_tag_event(event=event, context=None, session=valid_tags)
+    assert result == "[ERROR] Unexpected state 'assigned' for this function"

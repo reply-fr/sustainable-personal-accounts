@@ -22,6 +22,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import functools
 import os
 import sys
 
@@ -39,3 +40,16 @@ def setup_logging(environ=None,
     logger.handlers.clear()
     logger.addHandler(handler)
     return logger
+
+
+def trap_exception(function):
+
+    @functools.wraps(function)
+    def safe_function(*args, **kwargs):
+        try:
+            return function(*args, **kwargs)
+        except Exception as error:
+            print(f"[ERROR] {error}")
+            return f"[ERROR] {error}"
+
+    return safe_function
