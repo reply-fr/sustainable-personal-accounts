@@ -34,6 +34,11 @@ class State(Enum):
 class Account:
 
     @classmethod
+    def get_session(cls):
+        role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
+        return make_session(role_arn=role) if role else Session()
+
+    @classmethod
     def move(cls, account, state: State, session=None):
         if not isinstance(state, State):
             raise ValueError(f"Unexpected state type {state}")
@@ -41,10 +46,7 @@ class Account:
         if os.environ.get("DRY_RUN") == "true":
             return
 
-        role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-        empowered = make_session(role_arn=role) if role else Session()
-
-        session = session if session else empowered
+        session = session if session else cls.get_session()
         session.client('organizations').tag_resource(
             ResourceId=account,
             Tags=[dict(Key='account:state', Value=state.value)])
