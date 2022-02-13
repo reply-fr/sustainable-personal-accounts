@@ -35,8 +35,8 @@ class MovePurgedAccount(Construct):
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        # Rule(self, "Rule",
-        #      event_pattern=EventPattern(
-        #          source=['SustainablePersonalAccounts'],
-        #          detail_type=['PurgedAccount']),
-        #      targets=[LambdaFunction(self.function)])
+        Rule(self, "Rule",
+             event_pattern=EventPattern(
+                 source=['SustainablePersonalAccounts'],
+                 detail_type=['PurgedAccount']),
+             targets=[LambdaFunction(self.function)])

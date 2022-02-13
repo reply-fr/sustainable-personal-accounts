@@ -38,10 +38,10 @@ class MoveVanillaAccount(Construct):
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        # Rule(self, "Rule",
-        #      event_pattern=EventPattern(
-        #          source=['aws.organizations'],
-        #          detail=dict(
-        #              eventName=['MoveAccount'],
-        #              requestParameters=dict(destinationParentId=toggles.organizational_units))),
-        #      targets=[LambdaFunction(self.function)])
+        Rule(self, "Rule",
+             event_pattern=EventPattern(
+                 source=['aws.organizations'],
+                 detail=dict(
+                     eventName=['MoveAccount'],
+                     requestParameters=dict(destinationParentId=toggles.organizational_units))),
+             targets=[LambdaFunction(self.function)])
