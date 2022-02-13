@@ -35,6 +35,6 @@ class MoveExpiredAccounts(Construct):
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        Rule(self, "Rule",
-             schedule=Schedule.expression(toggles.expiration_expression),
-             targets=[LambdaFunction(self.function)])
+        # Rule(self, "Rule",
+        #      schedule=Schedule.expression(toggles.expiration_expression),
+        #      targets=[LambdaFunction(self.function)])

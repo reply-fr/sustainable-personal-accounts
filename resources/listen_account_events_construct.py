@@ -35,7 +35,6 @@ class ListenAccountEvents(Construct):
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        rule = Rule(
-            self, "Rule",
-            event_pattern=EventPattern(source=['SustainablePersonalAccounts']),
-            targets=[LambdaFunction(self.function)])
+        # Rule(self, "Rule",
+        #      event_pattern=EventPattern(source=['SustainablePersonalAccounts']),
+        #      targets=[LambdaFunction(self.function)])

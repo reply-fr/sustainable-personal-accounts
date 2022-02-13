@@ -36,14 +36,11 @@ class SignalExpiredAccount(Construct):
         for statement in statements:
             self.function.add_to_role_policy(statement)
 
-        rule = Rule(
-            self, "Rule",
-            event_pattern=EventPattern(
-                source=['aws.organizations'],
-                detail=dict(
-                    errorCode=[{"exists": False}],
-                    eventName=["TagResource"],
-                    eventSource=["organizations.amazonaws.com"],
-                    # requestParameters=dict()
-            )),
-            targets=[LambdaFunction(self.function)])
+        # Rule(self, "Rule",
+        #      event_pattern=EventPattern(
+        #          source=['aws.organizations'],
+        #          detail=dict(
+        #              errorCode=[{"exists": False}],
+        #              eventName=["TagResource"],
+        #              eventSource=["organizations.amazonaws.com"])),
+        #      targets=[LambdaFunction(self.function)])
