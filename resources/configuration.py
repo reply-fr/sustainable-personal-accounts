@@ -118,6 +118,7 @@ class Configuration:
         cockpit_markdown_text='str',
         expiration_expression='str',
         organizational_units='list',
+        role_name_to_manage_codebuild='str',
         role_to_manage_accounts='str',
         role_to_put_events='str'
     )

@@ -22,6 +22,8 @@ from types import SimpleNamespace
 
 from boto3.session import Session
 
+from session import make_session
+
 
 class EventFactory:
     STATE_LABELS = [

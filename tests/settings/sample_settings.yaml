@@ -13,6 +13,9 @@ expiration_expression: "cron(0 18 ? * SAT *)"
 organizational_units:
 - ou-1234
 
+# this role is assumed by Lambda functions to create CodeBuild projects and to start them
+role_name_to_manage_codebuild: 'SpaCodebuildManagementRole'
+
 # this role is assumed by Lambda functions either to list AWS accounts in the OU,
 # or to tag AWS accounts
 role_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'

@@ -21,14 +21,19 @@ import logging
 from boto3.session import Session
 
 from code.event_bus import EventFactory
+from session import make_session
 
 
 class Worker:
 
     @classmethod
-    def prepare(cls, account, session=None):
+    def get_session(cls, account):
+        role = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD')
+        return make_session(role_arn=f'arn:aws:iam::{account}:role/{role}') if role else Session()
 
-        session = session if session else Session()
+    @classmethod
+    def prepare(cls, account, session=None):
+        session = session if session else cls.get_session(account)
 
         # session.client('codebuild').create_project( ... )
 
@@ -39,8 +44,7 @@ class Worker:
 
     @classmethod
     def purge(cls, account, session=None):
-
-        session = session if session else Session()
+        session = session if session else cls.get_session(account)
 
         # session.client('codebuild').create_project( ... )
 

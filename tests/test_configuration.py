@@ -97,6 +97,7 @@ def test_set_from_yaml(toggles):
     assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.organizational_units == ['ou-1234']
+    assert toggles.role_name_to_manage_codebuild == 'SpaCodebuildManagementRole'
     assert toggles.role_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.role_to_put_events == 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
 
