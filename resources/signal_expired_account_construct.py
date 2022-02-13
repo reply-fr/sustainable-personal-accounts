@@ -26,6 +26,7 @@ class SignalExpiredAccount(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
         super().__init__(scope, id)
 
+        parameters['environment']['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
         self.function = Function(
             self, "Function",
             description="Start the purge of an expired account",

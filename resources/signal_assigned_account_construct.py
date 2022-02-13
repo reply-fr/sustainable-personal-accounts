@@ -26,6 +26,7 @@ class SignalAssignedAccount(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
         super().__init__(scope, id)
 
+        parameters['environment']['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
         self.function = Function(
             self, "Function",
             description="Start preparation of an assigned account",
@@ -42,7 +43,5 @@ class SignalAssignedAccount(Construct):
                 detail=dict(
                     errorCode=[{"exists": False}],
                     eventName=["TagResource"],
-                    eventSource=["organizations.amazonaws.com"],
-                    # requestParameters=dict()
-            )),
+                    eventSource=["organizations.amazonaws.com"])),
             targets=[LambdaFunction(self.function)])
