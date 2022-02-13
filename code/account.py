@@ -97,6 +97,7 @@ class Account:
         if os.environ.get("DRY_RUN") != "FALSE":
             return
 
+        logging.info(f"moving account {account} to state {state.value}")
         session = session if session else cls.get_session()
         session.client('organizations').tag_resource(
             ResourceId=account,
