@@ -117,6 +117,7 @@ class Configuration:
     ALLOWED_ATTRIBUTES = dict(
         cockpit_markdown_text='str',
         expiration_expression='str',
+        maximum_concurrent_executions='int',
         organizational_units='list',
         role_name_to_manage_codebuild='str',
         role_to_manage_accounts='str',
@@ -126,9 +127,11 @@ class Configuration:
     @classmethod
     def validate_attribute(cls, key, value):
         if kind := cls.ALLOWED_ATTRIBUTES.get(key):
-            if (kind == 'str') and not isinstance(value, str):
+            if (kind == 'int') and not isinstance(value, int):
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
-            if (kind == 'list') and not isinstance(value, list):
+            elif (kind == 'str') and not isinstance(value, str):
+                raise AttributeError(f"invalid value for configuration attribute '{key}'")
+            elif (kind == 'list') and not isinstance(value, list):
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
         else:
             raise AttributeError(f"unknown configuration attribute '{key}'")

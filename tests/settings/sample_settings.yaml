@@ -9,6 +9,12 @@ cockpit_markdown_text: |
 #
 expiration_expression: "cron(0 18 ? * SAT *)"
 
+# this is the maximum rate of invocations for each individual lambda function
+# Reference:
+# - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
+#
+maximum_concurrent_executions: 100
+
 # these are organizational units where all accounts are located
 organizational_units:
 - ou-1234

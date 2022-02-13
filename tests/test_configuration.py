@@ -96,6 +96,7 @@ def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
     assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
+    assert toggles.maximum_concurrent_executions == 100
     assert toggles.organizational_units == ['ou-1234']
     assert toggles.role_name_to_manage_codebuild == 'SpaCodebuildManagementRole'
     assert toggles.role_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'

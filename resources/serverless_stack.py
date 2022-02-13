@@ -42,6 +42,7 @@ class ServerlessStack(Stack):
                 ROLE_TO_MANAGE_ACCOUNTS=toggles.role_to_manage_accounts,
                 ROLE_TO_PUT_EVENTS=toggles.role_to_put_events),
             log_retention=RetentionDays.THREE_MONTHS,
+            reserved_concurrent_executions=toggles.maximum_concurrent_executions,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
 
