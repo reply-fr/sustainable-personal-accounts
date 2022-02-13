@@ -35,7 +35,7 @@ def handle_event(event, context, session=None):
     dimensions = [dict(Name='Account', Value=input.account),
                   dict(Name='State', Value=input.state)]
 
-    if os.environ.get("DRY_RUN") != "true":
+    if os.environ.get("DRY_RUN") == "FALSE":
         session = session if session else Session()
         session.client('cloudwatch').put_metric_data(MetricData=[dict(Dimensions=dimensions,
                                                                       MetricName='State transition',

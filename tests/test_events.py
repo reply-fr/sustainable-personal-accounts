@@ -16,7 +16,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
+import os
 import pytest
 
 from code import Events
@@ -24,6 +25,7 @@ from code import Events
 # pytestmark = pytest.mark.wip
 
 
+@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_emit():
     mock = Mock()
     Events.emit(label='CreatedAccount', account='123456789012', session=mock)
@@ -50,6 +52,7 @@ def test_state_labels():
         Events.build_event(label='*perfectly*unknown*', account='123456789012')
 
 
+@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_put_event():
     mock = Mock()
     Events.put_event(event='hello', session=mock)

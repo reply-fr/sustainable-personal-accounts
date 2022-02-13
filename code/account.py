@@ -94,7 +94,7 @@ class Account:
         if not isinstance(state, State):
             raise ValueError(f"Unexpected state type {state}")
 
-        if os.environ.get("DRY_RUN") == "true":
+        if os.environ.get("DRY_RUN") != "FALSE":
             return
 
         session = session if session else cls.get_session()

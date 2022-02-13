@@ -58,7 +58,7 @@ class Events:
     def put_event(cls, event, session=None):
         logging.info(f'put_event: {event}')
 
-        if os.environ.get("DRY_RUN") == "true":
+        if os.environ.get("DRY_RUN") != "FALSE":
             return
 
         session = session if session else cls.get_session()

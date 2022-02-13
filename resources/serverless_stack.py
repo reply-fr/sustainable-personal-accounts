@@ -39,6 +39,7 @@ class ServerlessStack(Stack):
         parameters = dict(  # passed to all functions
             code=AssetCode("code"),
             environment=dict(
+                DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
                 ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.role_arn_to_manage_accounts,
                 ROLE_ARN_TO_PUT_EVENTS=toggles.role_arn_to_put_events),
             # log_retention=RetentionDays.THREE_MONTHS,

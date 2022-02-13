@@ -28,7 +28,6 @@ from events import Events
 
 def handle_event(event, context):
     logging.debug(json.dumps(event))
-
     input = Events.decode_local_event(event, match="PreparedAccount")
     Account.move(account=input.account, state=State.RELEASED)
     return Events.emit('ReleasedAccount', input.account)

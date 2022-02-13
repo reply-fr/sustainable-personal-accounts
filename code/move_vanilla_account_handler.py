@@ -28,7 +28,6 @@ from events import Events
 
 def handle_move_event(event, context, session=None):
     logging.debug(json.dumps(event))
-
     input = Events.decode_move_account_event(event=event,
                                              match=os.environ['ORGANIZATIONAL_UNIT'])
     return handle_account(input.account, session=session)
@@ -36,7 +35,6 @@ def handle_move_event(event, context, session=None):
 
 def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
-
     input = Events.decode_tag_account_event(event=event,
                                             match=State.VANILLA)
     return handle_account(input.account, session=session)
