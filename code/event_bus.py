@@ -51,7 +51,11 @@ class EventFactory:
         logging.info(f'put_event: {event}')
         if os.environ.get("DRY_RUN") == "true":
             return
-        session = session if session else Session()
+
+        role = os.environ.get('ROLE_TO_PUT_EVENTS')
+        empowered = make_session(role_arn=role) if role else Session()
+
+        session = session if session else empowered
         session.client('events').put_events(Entries=[event])
 
     @staticmethod
@@ -97,8 +101,6 @@ class EventFactory:
                     raise ValueError(f"Unexpected state '{decoded.state}' for this function")
                 return decoded
         raise ValueError("Missing tag 'account:state' in this event")
-
-        return decoded
 
     @staticmethod
     def make_event(template, context):

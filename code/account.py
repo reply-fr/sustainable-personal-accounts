@@ -20,6 +20,8 @@ import os
 
 from boto3.session import Session
 
+from session import make_session
+
 
 @unique
 class State(Enum):
@@ -39,7 +41,10 @@ class Account:
         if os.environ.get("DRY_RUN") == "true":
             return
 
-        session = session if session else Session()
+        role = os.environ.get('ROLE_TO_MANAGE_ACCOUNTS')
+        empowered = make_session(role_arn=role) if role else Session()
+
+        session = session if session else empowered
         session.client('organizations').tag_resource(
             ResourceId=account,
             Tags=[dict(Key='account:state', Value=state.value)])
