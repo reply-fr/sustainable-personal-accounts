@@ -16,6 +16,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from enum import Enum, unique
+import json
+import logging
 import os
 
 from boto3.session import Session
@@ -50,3 +52,24 @@ class Account:
         session.client('organizations').tag_resource(
             ResourceId=account,
             Tags=[dict(Key='account:state', Value=state.value)])
+
+    @classmethod
+    def list(cls, parent, session=None):
+        session = session if session else cls.get_session()
+
+        token = None
+        while True:
+            logging.debug(f"listing accounts in parent '{parent}'")
+            parameters = dict(ParentId=parent,
+                              MaxResults=50)
+            if token:
+                parameters['NextToken'] = token
+            chunk = session.client('organizations').list_accounts_for_parent(**parameters)
+
+            for item in chunk['Accounts']:
+                logging.debug(json.dumps(item))
+                yield item['Id']
+
+            token = chunk.get('NextToken')
+            if not token:
+                break

@@ -23,7 +23,6 @@ from logger import setup_logging
 setup_logging()
 
 from account import Account, State
-from accounts import Accounts
 
 
 def handle_event(event, context, session=None):
@@ -31,7 +30,7 @@ def handle_event(event, context, session=None):
 
     containers = json.loads(os.environ['ORGANIZATIONAL_UNITS'])
     for container in containers:
-        for account in Accounts.list(parent=container, session=session):
+        for account in Account.list(parent=container, session=session):
 
             # ensure tag 'account:state' is State.RELEASED
 

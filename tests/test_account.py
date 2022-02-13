@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 import pytest
 from unittest.mock import Mock
 from types import SimpleNamespace
@@ -78,3 +79,55 @@ def test_move_with_exception():
     with pytest.raises(ValueError):
         Account.move(account='0123456789012',
                      state=SimpleNamespace(value='*something*'))
+
+
+def test_list():
+
+    chunk_1 = {
+        'Accounts': [
+            {
+                'Id': '123456789012',
+                'Arn': 'arn:aws:some-arn',
+                'Email': 'string',
+                'Name': 'account-one',
+                'Status': 'ACTIVE',
+                'JoinedMethod': 'CREATED',
+                'JoinedTimestamp': '20150101'
+            },
+
+            {
+                'Id': '234567890123',
+                'Arn': 'arn:aws:some-arn',
+                'Email': 'string',
+                'Name': 'account-two',
+                'Status': 'ACTIVE',
+                'JoinedMethod': 'CREATED',
+                'JoinedTimestamp': '20150101'
+            }
+        ],
+        'NextToken': 'token'
+    }
+
+    chunk_2 = {
+        'Accounts': [
+            {
+                'Id': '345678901234',
+                'Arn': 'arn:aws:some-arn',
+                'Email': 'string',
+                'Name': 'account-three',
+                'Status': 'ACTIVE',
+                'JoinedMethod': 'CREATED',
+                'JoinedTimestamp': '20150101'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.list_accounts_for_parent.side_effect = [chunk_1, chunk_2]
+    iterator = Account.list(parent='ou-parent',
+                            session=mock)
+    assert next(iterator) == '123456789012'
+    assert next(iterator) == '234567890123'
+    assert next(iterator) == '345678901234'
+    with pytest.raises(StopIteration):
+        next(iterator)

@@ -57,6 +57,7 @@ class Events:
     @classmethod
     def put_event(cls, event, session=None):
         logging.info(f'put_event: {event}')
+
         if os.environ.get("DRY_RUN") == "true":
             return
 
