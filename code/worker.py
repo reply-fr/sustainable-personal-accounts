@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 
 from boto3.session import Session
 
