@@ -49,7 +49,9 @@ class Events:
     @classmethod
     def build_event(cls, label, account):
         if label not in cls.EVENT_LABELS:
-            raise AttributeError(f'Invalid state type {label}')
+            raise ValueError(f'Invalid event label {label}')
+        if len(account) != 12:
+            raise ValueError(f"Invalid account identifier '{account}'")
         return dict(Detail=json.dumps(dict(Account=account)),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
@@ -57,12 +59,9 @@ class Events:
     @classmethod
     def put_event(cls, event, session=None):
         logging.info(f'put_event: {event}')
-
-        if os.environ.get("DRY_RUN") != "FALSE":
-            return
-
-        session = session if session else cls.get_session()
-        session.client('events').put_events(Entries=[event])
+        if os.environ.get("DRY_RUN") == "FALSE":
+            session = session if session else cls.get_session()
+            session.client('events').put_events(Entries=[event])
 
     @staticmethod
     def decode_local_event(event, match=None):
@@ -72,9 +71,9 @@ class Events:
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
-        decoded.state = event['detail-type']
-        if match and match != decoded.state:
-            raise ValueError(f"Unexpected state '{decoded.state}'")
+        decoded.label = event['detail-type']
+        if match and match != decoded.label:
+            raise ValueError(f"Unexpected event label '{decoded.label}'")
 
         return decoded
 

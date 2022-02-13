@@ -34,7 +34,7 @@ from code.move_purged_account_handler import handle_event
 def test_handle_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           state="PurgedAccount"))
+                                           label="PurgedAccount"))
     result = handle_event(event=event, context=None)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
 
@@ -43,6 +43,6 @@ def test_handle_event():
 def test_handle_event_on_unexpected_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           state="CreatedAccount"))
+                                           label="CreatedAccount"))
     with pytest.raises(ValueError):
         handle_event(event=event, context=None)

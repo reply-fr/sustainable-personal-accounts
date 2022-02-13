@@ -43,12 +43,12 @@ def test_build_event():
     assert event['Source'] == 'SustainablePersonalAccounts'
 
 
-def test_state_labels():
+def test_build_events_with_labels():
     for label in Events.EVENT_LABELS:
         event = Events.build_event(label=label, account='123456789012')
         assert event['DetailType'] == label
 
-    with pytest.raises(AttributeError):
+    with pytest.raises(ValueError):
         Events.build_event(label='*perfectly*unknown*', account='123456789012')
 
 
@@ -61,33 +61,31 @@ def test_put_event():
 
 
 def test_decode_local_event():
-
-    # where we accept any event with valid account identifier
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           state="CreatedAccount"))
+                                           label="CreatedAccount"))
     decoded = Events.decode_local_event(event)
     assert decoded.account == "123456789012"
-    assert decoded.state == "CreatedAccount"
+    assert decoded.label == "CreatedAccount"
 
-    # where we reject events with malformed account identifier
+
+def test_decode_local_event_on_malformed_account():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="short",
-                                           state="CreatedAccount"))
+                                           label="CreatedAccount"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event)
 
-    # where we reject events with unexpected state
+
+def test_decode_local_event_on_unexpected_label():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           state="CreatedAccount"))
+                                           label="CreatedAccount"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event, match='PurgedAccount')
 
 
 def test_decode_move_account_event():
-
-    # where we accept any event with valid account identifier
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
                                            destination_organizational_unit="ou-destination",
@@ -96,7 +94,8 @@ def test_decode_move_account_event():
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
 
-    # where we reject events with malformed account identifier
+
+def test_decode_move_account_event_on_malformed_account():
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="short",
                                            destination_organizational_unit="ou-destination",
@@ -104,7 +103,8 @@ def test_decode_move_account_event():
     with pytest.raises(ValueError):
         Events.decode_move_account_event(event)
 
-    # where we reject events with unexpected destination
+
+def test_decode_move_account_event_on_unexpected_organizational_unit():
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
                                            destination_organizational_unit="ou-expected",

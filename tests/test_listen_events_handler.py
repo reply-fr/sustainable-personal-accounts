@@ -30,7 +30,7 @@ from code.listen_events_handler import handle_event
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
 def test_handle_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
