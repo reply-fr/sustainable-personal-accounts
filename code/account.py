@@ -46,13 +46,13 @@ class Account:
     def validate_tags(cls, account, session=None):
         tags = cls.list_tags(account, session=session)
         if 'account:owner' not in tags.keys():
-            raise ValueError(f"missing tag 'account:owner' on account '{account}' - this account can not be assigned")
+            raise ValueError(f"Missing tag 'account:owner' on account '{account}' - this account can not be assigned")
         if not cls.validate_owner(tags['account:owner']):
-            raise ValueError(f"invalid value for tag 'account:owner' on account '{account}' - this account can not be assigned")
+            raise ValueError(f"Invalid value for tag 'account:owner' on account '{account}' - this account can not be assigned")
         if 'account:state' not in tags.keys():
-            raise ValueError(f"missing tag 'account:state' on account '{account}' - this account can not be assigned")
+            raise ValueError(f"Missing tag 'account:state' on account '{account}' - this account can not be assigned")
         if not cls.validate_state(tags['account:state']):
-            raise ValueError(f"invalid value for tag 'account:state' on account '{account}' - this account can not be assigned")
+            raise ValueError(f"Invalid value for tag 'account:state' on account '{account}' - this account can not be assigned")
 
     @classmethod
     def validate_owner(cls, text):
@@ -75,7 +75,7 @@ class Account:
 
         token = None
         while True:
-            logging.debug(f"listing tags for account '{account}'")
+            logging.debug(f"Listing tags for account '{account}'")
             parameters = dict(ResourceId=account)
             if token:
                 parameters['NextToken'] = token
@@ -94,14 +94,15 @@ class Account:
         if not isinstance(state, State):
             raise ValueError(f"Unexpected state type {state}")
 
-        if os.environ.get("DRY_RUN") != "FALSE":
-            return
-
-        logging.info(f"moving account {account} to state {state.value}")
-        session = session if session else cls.get_session()
-        session.client('organizations').tag_resource(
-            ResourceId=account,
-            Tags=[dict(Key='account:state', Value=state.value)])
+        logging.info(f"Tagging account '{account}' with state '{state.value}'...")
+        if os.environ.get("DRY_RUN") == "FALSE":
+            session = session if session else cls.get_session()
+            session.client('organizations').tag_resource(
+                ResourceId=account,
+                Tags=[dict(Key='account:state', Value=state.value)])
+            logging.info("Done")
+        else:
+            logging.warning("Dry-run mode - account has not been tagged")
 
     @classmethod
     def list(cls, parent, session=None):
@@ -109,7 +110,7 @@ class Account:
 
         token = None
         while True:
-            logging.debug(f"listing accounts in parent '{parent}'")
+            logging.debug(f"Listing accounts in parent '{parent}'")
             parameters = dict(ParentId=parent,
                               MaxResults=50)
             if token:

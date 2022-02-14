@@ -20,9 +20,9 @@ from unittest.mock import Mock, patch
 import os
 import pytest
 
-from code import Events
+from code import Events, State
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @patch.dict(os.environ, dict(DRY_RUN="FALSE"))
@@ -43,7 +43,12 @@ def test_build_event():
     assert event['Source'] == 'SustainablePersonalAccounts'
 
 
-def test_build_events_with_labels():
+def test_build_event_on_invalid_account():
+    with pytest.raises(ValueError):
+        Events.build_event(label='CreatedAccount', account='short')
+
+
+def test_build_event_with_labels():
     for label in Events.EVENT_LABELS:
         event = Events.build_event(label=label, account='123456789012')
         assert event['DetailType'] == label
@@ -111,3 +116,42 @@ def test_decode_move_account_event_on_unexpected_organizational_unit():
                                            source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
         Events.decode_move_account_event(event, match="ou-destination")
+
+
+def test_decode_tag_account_event():
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012",
+                                           new_state="assigned"))
+    decoded = Events.decode_tag_account_event(event)
+    assert decoded.account == "123456789012"
+    assert decoded.state == "assigned"
+
+
+def test_decode_tag_account_event_on_malformed_account():
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="short",
+                                           new_state="assigned"))
+    with pytest.raises(ValueError):
+        Events.decode_tag_account_event(event)
+
+
+def test_decode_tag_account_event_on_unexpected_state():
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012",
+                                           new_state="assigned"))
+    with pytest.raises(ValueError):
+        Events.decode_tag_account_event(event, match=State.EXPIRED)
+
+
+def test_decode_tag_account_event_on_missing_state():
+    event = Events.make_event(template="tests/events/tag-account-template.json",
+                              context=dict(account="123456789012"))
+    tags = event["detail"]["requestParameters"]["tags"]
+    tags = [item for item in tags if item['key'] != 'account:state']
+    event["detail"]["requestParameters"]["tags"] = tags
+    with pytest.raises(ValueError):
+        Events.decode_tag_account_event(event)
+
+
+def test_get_session():
+    assert Events.get_session() is not None

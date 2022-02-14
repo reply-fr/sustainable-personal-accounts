@@ -36,12 +36,11 @@ def handle_event(event, context, session=None):
     dimensions = [dict(Name='Account', Value=input.account),
                   dict(Name='Label', Value=input.label)]
 
-    if os.environ.get("DRY_RUN") == "FALSE":
-        session = session if session else Session()
-        session.client('cloudwatch').put_metric_data(MetricData=[dict(Dimensions=dimensions,
-                                                                      MetricName='Account Event',
-                                                                      Unit='Count',
-                                                                      Value=1)],
-                                                     Namespace="SustainablePersonalAccount")
+    session = session if session else Session()
+    session.client('cloudwatch').put_metric_data(MetricData=[dict(Dimensions=dimensions,
+                                                                  MetricName='Account Event',
+                                                                  Unit='Count',
+                                                                  Value=1)],
+                                                 Namespace="SustainablePersonalAccount")
 
     return f"{input.label} {input.account}"

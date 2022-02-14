@@ -49,7 +49,7 @@ class Events:
     @classmethod
     def build_event(cls, label, account):
         if label not in cls.EVENT_LABELS:
-            raise ValueError(f'Invalid event label {label}')
+            raise ValueError(f"Invalid event label '{label}'")
         if len(account) != 12:
             raise ValueError(f"Invalid account identifier '{account}'")
         return dict(Detail=json.dumps(dict(Account=account)),
@@ -58,10 +58,13 @@ class Events:
 
     @classmethod
     def put_event(cls, event, session=None):
-        logging.info(f"putting event {event}")
+        logging.info(f"Putting event {event}")
         if os.environ.get("DRY_RUN") == "FALSE":
             session = session if session else cls.get_session()
             session.client('events').put_events(Entries=[event])
+            logging.info("Done")
+        else:
+            logging.warning("Dry-run mode - no event has been put")
 
     @staticmethod
     def decode_local_event(event, match=None):

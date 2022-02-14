@@ -36,6 +36,8 @@ class Worker:
     def prepare(cls, account, session=None):
         session = session if session else cls.get_session(account)
 
+        logging.info(f"Preparing account '{account}'")
+
         # session.client('codebuild').create_project( ... )
 
         # session.client('codebuild').start_build( ... )
@@ -46,6 +48,8 @@ class Worker:
     @classmethod
     def purge(cls, account, session=None):
         session = session if session else cls.get_session(account)
+
+        logging.info(f"Purging account '{account}'")
 
         # session.client('codebuild').create_project( ... )
 

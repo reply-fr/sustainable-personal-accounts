@@ -23,7 +23,7 @@ from io import StringIO
 from unittest.mock import Mock
 import pytest
 
-from code import setup_logging, trap_exception, LOGGING_FORMAT
+from code import setup_logging, trap_exception
 
 
 pytestmark = pytest.mark.wip

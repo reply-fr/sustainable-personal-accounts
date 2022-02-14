@@ -292,3 +292,7 @@ def test_list():
     assert next(iterator) == '345678901234'
     with pytest.raises(StopIteration):
         next(iterator)
+
+
+def test_get_session():
+    assert Account.get_session() is not None
