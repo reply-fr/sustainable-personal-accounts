@@ -31,5 +31,6 @@ from worker import Worker
 def handle_event(event, context):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED)
+    result = Events.emit('AssignedAccount', input.account)
     Worker.prepare(input.account)
-    return Events.emit('AssignedAccount', input.account)
+    return result
