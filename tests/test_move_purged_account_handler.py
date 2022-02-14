@@ -45,4 +45,4 @@ def test_handle_event_on_unexpected_event():
                               context=dict(account="123456789012",
                                            label="CreatedAccount"))
     result = handle_event(event=event, context=None)
-    assert result == "[ERROR] Unexpected event label 'CreatedAccount'"
+    assert result == "[DEBUG] Unexpected event label 'CreatedAccount'"

@@ -26,9 +26,11 @@ import functools
 import os
 import sys
 
+LOGGING_FORMAT = "[%(levelname)s] %(message)s"
+
 
 def setup_logging(environ=None,
-                  format="%(message)s",
+                  format=LOGGING_FORMAT,
                   name=None,
                   stream=sys.stdout):
     logger = logging.getLogger(name)
@@ -48,8 +50,13 @@ def trap_exception(function):
     def safe_function(*args, **kwargs):
         try:
             return function(*args, **kwargs)
-        except Exception as error:
-            print(f"[ERROR] {error}")
-            return f"[ERROR] {error}"
+
+        except ValueError as error:  # for regular code breaks, e.g., event is not for this specific function
+            logging.debug(error)
+            return f"[DEBUG] {error}"
+
+        except Exception as error:  # prevent lambda retries on internal errors
+            logging.error(error)
+            return f"[ERROR] {type(error).__name__}: {error}"
 
     return safe_function

@@ -20,11 +20,13 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from io import StringIO
+from unittest.mock import Mock
+import pytest
 
-from code import setup_logging
+from code import setup_logging, trap_exception, LOGGING_FORMAT
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 def write_to(log):
@@ -37,64 +39,82 @@ def write_to(log):
 
 def test_setup_logging():
     stream = StringIO()
-    log = setup_logging(format="%(message)s",
-                        name='logger_for_critical',
+    log = setup_logging(name='logger_for_critical',
                         stream=stream)
     log.critical('critical')
     stream.seek(0)
-    assert stream.read() == 'critical\n'
+    assert stream.read() == '[CRITICAL] critical\n'
 
 
 def test_setup_logging_for_critical():
     stream = StringIO()
     log = setup_logging(environ=dict(VERBOSITY='CRITICAL'),
-                        format="%(message)s",
                         name='logger_for_critical',
                         stream=stream)
     write_to(log)
     stream.seek(0)
-    assert stream.read() == 'critical\n'
+    assert stream.read() == '[CRITICAL] critical\n'
 
 
 def test_setup_logging_for_error():
     stream = StringIO()
     log = setup_logging(environ=dict(VERBOSITY='ERROR'),
-                        format="%(message)s",
                         name='logger_for_error',
                         stream=stream)
     write_to(log)
     stream.seek(0)
-    assert stream.read() == 'critical\nerror\n'
+    assert stream.read() == '[CRITICAL] critical\n[ERROR] error\n'
 
 
 def test_setup_logging_for_warning():
     stream = StringIO()
     log = setup_logging(environ=dict(VERBOSITY='WARNING'),
-                        format="%(message)s",
                         name='logger_for_warning',
                         stream=stream)
     write_to(log)
     stream.seek(0)
-    assert stream.read() == 'critical\nerror\nwarning\n'
+    assert stream.read() == '[CRITICAL] critical\n[ERROR] error\n[WARNING] warning\n'
 
 
 def test_setup_logging_for_info():
     stream = StringIO()
     log = setup_logging(environ=dict(VERBOSITY='INFO'),
-                        format="%(message)s",
                         name='logger_for_info',
                         stream=stream)
     write_to(log)
     stream.seek(0)
-    assert stream.read() == 'critical\nerror\nwarning\ninfo\n'
+    assert stream.read() == '[CRITICAL] critical\n[ERROR] error\n[WARNING] warning\n[INFO] info\n'
 
 
 def test_setup_logging_for_debug():
     stream = StringIO()
     log = setup_logging(environ=dict(VERBOSITY='DEBUG'),
-                        format="%(message)s",
                         name='logger_for_debug',
                         stream=stream)
     write_to(log)
     stream.seek(0)
-    assert stream.read() == 'critical\nerror\nwarning\ninfo\ndebug\n'
+    assert stream.read() == '[CRITICAL] critical\n[ERROR] error\n[WARNING] warning\n[INFO] info\n[DEBUG] debug\n'
+
+
+def test_trap_exception_on_no_error():
+    mock = Mock(return_value='ok')
+    decorated = trap_exception(mock)
+    result = decorated(1, 2, a='b', c='d')
+    mock.assert_called_with(1, 2, a='b', c='d')
+    assert result == 'ok'
+
+
+def test_trap_exception_on_value_error():
+    mock = Mock(side_effect=ValueError('boom'))
+    decorated = trap_exception(mock)
+    result = decorated(1, 2, a='b', c='d')
+    mock.assert_called_with(1, 2, a='b', c='d')
+    assert result == "[DEBUG] boom"
+
+
+def test_trap_exception_on_internal_error():
+    mock = Mock(side_effect=RuntimeError('boom'))
+    decorated = trap_exception(mock)
+    result = decorated(1, 2, a='b', c='d')
+    mock.assert_called_with(1, 2, a='b', c='d')
+    assert result == "[ERROR] RuntimeError: boom"

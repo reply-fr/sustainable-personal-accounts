@@ -79,7 +79,7 @@ def test_handle_move_event_on_unexpected_event(valid_tags):
                                            destination_organizational_unit="ou-unexpected",
                                            origin_organizational_unit="ou-origin"))
     result = handle_move_event(event=event, context=None, session=valid_tags)
-    assert result == "[ERROR] Unexpected event source 'ou-unexpected' for this function"
+    assert result == "[DEBUG] Unexpected event source 'ou-unexpected' for this function"
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
@@ -97,4 +97,4 @@ def test_handle_tag_event_on_unexpected_event(valid_tags):
                               context=dict(account="123456789012",
                                            new_state=State.ASSIGNED.value))
     result = handle_tag_event(event=event, context=None, session=valid_tags)
-    assert result == "[ERROR] Unexpected state 'assigned' for this function"
+    assert result == "[DEBUG] Unexpected state 'assigned' for this function"
