@@ -74,6 +74,7 @@ class Configuration:
 
         # can be absent from settings file
         toggles.role_arn_to_put_events = None
+        toggles.role_name_to_manage_codebuild = None
 
     @classmethod
     def set_from_environment(cls, environ=None, mapping=None):
