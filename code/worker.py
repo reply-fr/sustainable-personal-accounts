@@ -35,15 +35,15 @@ phases:
   pre_build:
     commands:
       - apt-get install -y wget
-      - echo Nothing to do in the pre_build phase...
+      - echo "Nothing to do in the pre_build phase..."
   build:
     commands:
-      - echo Build started on `date`
+      - echo "Build started on `date`"
       - python --version
       - aws --version
   post_build:
     commands:
-      - echo Build completed on `date`
+      - echo "Build completed on `date`"
 """
 
 
