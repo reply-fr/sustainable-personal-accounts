@@ -25,22 +25,68 @@ from events import Events
 from session import make_session
 
 
+BUILDSPEC_PREPARE = """
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+  pre_build:
+    commands:
+      - apt-get install -y wget
+      - echo Nothing to do in the pre_build phase...
+  build:
+    commands:
+      - echo Build started on `date`
+      - python --version
+      - aws --version
+  post_build:
+    commands:
+      - echo Build completed on `date`
+"""
+
 class Worker:
 
     @classmethod
     def get_session(cls, account):
-        role = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD')
-        return make_session(role_arn=f'arn:aws:iam::{account}:role/{role}') if role else Session()
+        arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
+        master = make_session(role_arn=arn) if arn else Session()
+
+        name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
+        return make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
+                            session=master)
+
+    @classmethod
+    def deploy_project(cls, buildspec, session=None):
+        session = session if session else Session()
+        session.client('codebuild').create_project(
+            name='test',
+            description="Fancy project",
+            source=dict(type='NO_SOURCE'),
+            buildspec=buildspec,
+            artifacts=dict(type='NO_ARTIFACTS'),
+            cache=dict(type='NO_CACHE'),
+            environment=dict(type='ARM_CONTAINER',
+                             image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
+                             computeType='BUILD_GENERAL1_SMALL'),
+            serviceRole='',
+            timeoutInMinutes=480,
+            tags=[dict(key='origin', value='SustainablePersonalAccounts')],
+            logsConfig=dict(cloudWatchLogs=dict(status='ENABLED')),
+            concurrentBuildLimit=1)
 
     @classmethod
     def prepare(cls, account, session=None):
         session = session if session else cls.get_session(account)
 
-        logging.info(f"Preparing account '{account}'")
+        logging.info(f"Preparing account '{account}'...")
 
-        # session.client('codebuild').create_project( ... )
+        id = cls.deploy_project(stream='test', session=session)
 
         # session.client('codebuild').start_build( ... )
+
+        logging.info("Done")
 
         # to be moved to the end of the Codebuild buildspec
         Events.emit('PreparedAccount', account)
@@ -49,11 +95,13 @@ class Worker:
     def purge(cls, account, session=None):
         session = session if session else cls.get_session(account)
 
-        logging.info(f"Purging account '{account}'")
+        logging.info(f"Purging account '{account}'...")
 
         # session.client('codebuild').create_project( ... )
 
         # session.client('codebuild').start_build( ... )
+
+        logging.info("Done")
 
         # to be moved to the end of the Codebuild buildspec
         Events.emit('PurgedAccount', account)

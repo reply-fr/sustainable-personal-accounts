@@ -36,7 +36,7 @@ def test_handle_event():
                               context=dict(account="123456789012",
                                            label="PurgedAccount"))
     result = handle_event(event=event, context=None)
-    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == 'PurgedAccount 123456789012'
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))

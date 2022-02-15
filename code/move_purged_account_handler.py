@@ -31,4 +31,4 @@ def handle_event(event, context):
     logging.debug(json.dumps(event))
     input = Events.decode_local_event(event, match="PurgedAccount")
     Account.move(account=input.account, state=State.ASSIGNED)
-    return Events.emit('PurgedAccount', input.account)
+    return f"{input.label} {input.account}"
