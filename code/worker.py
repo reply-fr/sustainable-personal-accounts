@@ -109,6 +109,9 @@ class Worker:
             logging.error(error)
             return
 
+        waiter = iam.get_waiter('role_exists')
+        waiter.wait(RoleName=name)
+
         role = iam.get_role(RoleName=name)
         logging.info("Done")
         return role['Role']['Arn']
