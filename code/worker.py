@@ -19,6 +19,7 @@ import json
 import logging
 import os
 
+from botocore.exceptions import ClientError
 from boto3.session import Session
 
 from events import Events
@@ -55,12 +56,62 @@ class Worker:
         master = make_session(role_arn=arn, session=session) if arn else Session()
 
         name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
-        return make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
-                            session=master)
+        target = make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
+                              session=master)
+        identity = target.client('sts').get_caller_identity()
+        logging.debug(f"identity {identity}")
+        return target
 
     @classmethod
-    def deploy_role(cls, name, session=None):
-        return 'some_role'
+    def get_trusting_policy_document(cls):
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {
+                        "Service": "codebuild.amazonaws.com"
+                    },
+                    "Action": "sts:AssumeRole"
+                }
+            ]
+        }
+        return json.dumps(policy)
+
+    @classmethod
+    def deploy_role(cls, name, policy="AdministratorAccess", session=None):
+        session = session if session else Session()
+        iam = session.client('iam')
+
+        logging.info(f"Deploying role '{name}' for projects")
+
+        try:
+            iam.create_role(
+                RoleName=name,
+                AssumeRolePolicyDocument=cls.get_trusting_policy_document(),
+                Description='This is a test role',
+                MaxSessionDuration=12 * 60 * 60,
+                Tags=[dict(Key='owner', Value='SPA')])
+            logging.debug(f"Role '{name}' has been created")
+        except ClientError as error:
+            if error.response['Error']['Code'] == 'EntityAlreadyExists':
+                logging.debug(f"Role '{name}' already exists")
+            else:
+                logging.error(error)
+                return
+
+        try:
+            iam.attach_role_policy(
+                RoleName=name,
+                PolicyArn=f"arn:aws:iam::aws:policy/{policy}")
+            logging.debug(f"Policy '{policy}' has been attached to the role")
+        except ClientError as error:
+            logging.error(error)
+            return
+
+        role = iam.get_role(RoleName=name)
+        logging.info("Done")
+        return role['Role']['Arn']
 
     @classmethod
     def get_buildspec_for_prepare(cls):

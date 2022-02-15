@@ -34,6 +34,7 @@ pytestmark = pytest.mark.wip
 def session():
     mock = Mock()
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
     return mock
 
 

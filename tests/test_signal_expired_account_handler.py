@@ -34,6 +34,7 @@ from code.signal_expired_account_handler import handle_event
 def session():
     mock = Mock()
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
     return mock
 
 
