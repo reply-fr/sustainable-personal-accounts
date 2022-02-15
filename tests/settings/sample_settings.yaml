@@ -1,0 +1,34 @@
+# this is displayed in the monitoring dashboard
+cockpit_markdown_text: |
+  # Sustainable Personal Accounts Dashboard
+  Currently under active development (alpha)
+
+# this is required to actually modify accounts and create codebuild workers
+# if you comment this out, then organizations and accounts will be read, but not modified
+dry_run: False
+
+# this expression defines when accounts are expired
+# Reference:
+# - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
+#
+expiration_expression: "cron(0 18 ? * SAT *)"
+
+# this is the maximum rate of invocations for each individual lambda function
+# Reference:
+# - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
+#
+maximum_concurrent_executions: 50
+
+# these are organizational units where all accounts are located
+organizational_units:
+- ou-1234
+
+# this role is assumed by Lambda functions either to list AWS accounts in the OU,
+# or to tag AWS accounts
+role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+
+# this role is assumed by Lambda functions to put events
+role_arn_to_put_events: 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
+
+# this role is assumed by Lambda functions to create CodeBuild projects and to start them
+role_name_to_manage_codebuild: 'SpaCodebuildManagementRole'

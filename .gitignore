@@ -1,7 +1,12 @@
 .DS_Store
+.coverage
 /PITCHME.html
 /PITCHME.pdf
 /PITCHME.pptx
+/cdk.out
+/code/sustainable_personal_accounts.egg-info
 /node_modules
-/package.json
 /package-lock.json
+/settings
+/venv
+settings.yaml

@@ -1,0 +1,4 @@
+{
+    "app": "python build_resources.py",
+    "requireApproval": "never"
+}
