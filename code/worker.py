@@ -60,7 +60,7 @@ class Worker:
 
     @classmethod
     def deploy_role(cls, name, session=None):
-        pass
+        return 'some_role'
 
     @classmethod
     def get_buildspec_for_prepare(cls):
@@ -80,8 +80,8 @@ class Worker:
         result = session.client('codebuild').create_project(
             name=name,
             description=description,
-            source=dict(type='NO_SOURCE'),
-            buildspec=buildspec,
+            source=dict(type='NO_SOURCE',
+                        buildspec=buildspec),
             artifacts=dict(type='NO_ARTIFACTS'),
             cache=dict(type='NO_CACHE'),
             environment=dict(type='ARM_CONTAINER',
