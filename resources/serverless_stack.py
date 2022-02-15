@@ -19,7 +19,7 @@ from constructs import Construct
 from aws_cdk import Duration, Stack
 from aws_cdk.aws_iam import Effect, PolicyStatement
 from aws_cdk.aws_lambda import AssetCode, Runtime
-# from aws_cdk.aws_logs import RetentionDays
+from aws_cdk.aws_logs import RetentionDays
 
 from .cockpit_construct import Cockpit
 from .listen_events_construct import ListenEvents
@@ -45,7 +45,7 @@ class ServerlessStack(Stack):
         parameters = dict(  # passed to all functions
             code=AssetCode("code"),
             environment=environment,
-            # log_retention=RetentionDays.THREE_MONTHS,
+            log_retention=RetentionDays.THREE_MONTHS,
             reserved_concurrent_executions=toggles.maximum_concurrent_executions,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
