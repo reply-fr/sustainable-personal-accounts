@@ -46,23 +46,40 @@ phases:
       - echo Build completed on `date`
 """
 
+
 class Worker:
 
     @classmethod
-    def get_session(cls, account):
+    def get_session(cls, account, session=None):
         arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-        master = make_session(role_arn=arn) if arn else Session()
+        master = make_session(role_arn=arn, session=session) if arn else Session()
 
         name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
         return make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
                             session=master)
 
     @classmethod
-    def deploy_project(cls, buildspec, session=None):
+    def deploy_role(cls, name, session=None):
+        pass
+
+    @classmethod
+    def get_buildspec_for_prepare(cls):
+        logging.debug("Getting buildspec for prepare")
+        return BUILDSPEC_PREPARE
+
+    @classmethod
+    def get_buildspec_for_purge(cls):
+        logging.debug("Getting buildspec for purge")
+        return BUILDSPEC_PREPARE
+
+    @classmethod
+    def deploy_project(cls, name, description, buildspec, role, session=None):
+        logging.debug("Deploying Codebuild project")
+
         session = session if session else Session()
-        session.client('codebuild').create_project(
-            name='test',
-            description="Fancy project",
+        result = session.client('codebuild').create_project(
+            name=name,
+            description=description,
             source=dict(type='NO_SOURCE'),
             buildspec=buildspec,
             artifacts=dict(type='NO_ARTIFACTS'),
@@ -70,22 +87,33 @@ class Worker:
             environment=dict(type='ARM_CONTAINER',
                              image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
                              computeType='BUILD_GENERAL1_SMALL'),
-            serviceRole='',
+            serviceRole=role,
             timeoutInMinutes=480,
             tags=[dict(key='origin', value='SustainablePersonalAccounts')],
             logsConfig=dict(cloudWatchLogs=dict(status='ENABLED')),
             concurrentBuildLimit=1)
+        logging.debug("Done")
+        return result['project']['arn']
+
+    @classmethod
+    def build_project(cls, arn, session=None):
+        logging.debug("Starting project build with Codebuild ")
+        # session.client('codebuild').start_build( ... )
+        pass
 
     @classmethod
     def prepare(cls, account, session=None):
         session = session if session else cls.get_session(account)
 
         logging.info(f"Preparing account '{account}'...")
-
-        id = cls.deploy_project(stream='test', session=session)
-
-        # session.client('codebuild').start_build( ... )
-
+        buildspec = cls.get_buildspec_for_prepare()
+        role = cls.deploy_role(name='SpaRoleForCodebuild', session=session)
+        arn = cls.deploy_project(name="SpaProjectForPrepare",
+                                 description="This project prepares an AWS account before being released to cloud engineer",
+                                 buildspec=buildspec,
+                                 role=role,
+                                 session=session)
+        cls.build_project(arn=arn, session=session)
         logging.info("Done")
 
         # to be moved to the end of the Codebuild buildspec
@@ -96,11 +124,14 @@ class Worker:
         session = session if session else cls.get_session(account)
 
         logging.info(f"Purging account '{account}'...")
-
-        # session.client('codebuild').create_project( ... )
-
-        # session.client('codebuild').start_build( ... )
-
+        buildspec = cls.get_buildspec_for_purge()
+        role = cls.deploy_role(name='SpaRoleForCodebuild', session=session)
+        arn = cls.deploy_project(name="SpaProjectForPurge",
+                                 description="This project purges an AWS account of cloud resources",
+                                 buildspec=buildspec,
+                                 role=role,
+                                 session=session)
+        cls.build_project(arn=arn, session=session)
         logging.info("Done")
 
         # to be moved to the end of the Codebuild buildspec

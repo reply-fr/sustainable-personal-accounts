@@ -26,7 +26,7 @@ from boto3.session import Session
 from code import make_session
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture

@@ -28,9 +28,9 @@ from worker import Worker
 
 
 @trap_exception
-def handle_event(event, context):
+def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event, match=State.EXPIRED)
     result = Events.emit('ExpiredAccount', input.account)
-    Worker.purge(input.account)
+    Worker.purge(input.account, session=session)
     return result

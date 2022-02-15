@@ -19,7 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import os
 import pytest
 
@@ -30,19 +30,26 @@ from code.signal_assigned_account_handler import handle_event
 # pytestmark = pytest.mark.wip
 
 
+@pytest.fixture
+def session():
+    mock = Mock()
+    mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    return mock
+
+
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_event():
+def test_handle_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.ASSIGNED.value))
-    result = handle_event(event=event, context=None)
+    result = handle_event(event=event, context=None, session=session)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_event_on_unexpected_event():
+def test_handle_event_on_unexpected_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.VANILLA.value))
-    result = handle_event(event=event, context=None)
+    result = handle_event(event=event, context=None, session=session)
     assert result == "[DEBUG] Unexpected state 'vanilla' for this function"

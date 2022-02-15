@@ -22,7 +22,7 @@ import pytest
 
 from code import Events, State
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @patch.dict(os.environ, dict(DRY_RUN="FALSE"))

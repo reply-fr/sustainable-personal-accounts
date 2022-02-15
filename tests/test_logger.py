@@ -26,7 +26,7 @@ import pytest
 from code import setup_logging, trap_exception
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def write_to(log):
