@@ -18,7 +18,7 @@ Note that alternate projects are available if SPA does not suit your specific ne
 
 ## Event-driven architecture
 
-![architecture](./media/event-driven-architecture.png)
+![architecture](./media/reference-architecture.svg)
 
 ## Cyclic life cycle for personal accounts
 
