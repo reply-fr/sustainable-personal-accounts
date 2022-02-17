@@ -18,6 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import logging
 import os
+import time
 
 from botocore.exceptions import ClientError
 from boto3.session import Session
@@ -35,7 +36,7 @@ phases:
       python: 3.9
   pre_build:
     commands:
-      - apt-get install -y wget
+      - yum install -y wget
       - echo "Nothing to do in the pre_build phase..."
   build:
     commands:
@@ -128,46 +129,60 @@ class Worker:
 
     @classmethod
     def deploy_project(cls, name, description, buildspec, role, session=None):
-        logging.debug("Deploying Codebuild project")
-
         session = session if session else Session()
-        result = session.client('codebuild').create_project(
-            name=name,
-            description=description,
-            source=dict(type='NO_SOURCE',
-                        buildspec=buildspec),
-            artifacts=dict(type='NO_ARTIFACTS'),
-            cache=dict(type='NO_CACHE'),
-            environment=dict(type='ARM_CONTAINER',
-                             image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
-                             computeType='BUILD_GENERAL1_SMALL'),
-            serviceRole=role,
-            timeoutInMinutes=480,
-            tags=[dict(key='origin', value='SustainablePersonalAccounts')],
-            logsConfig=dict(cloudWatchLogs=dict(status='ENABLED')),
-            concurrentBuildLimit=1)
-        logging.debug("Done")
-        return result['project']['arn']
+        client = session.client('codebuild')
+        logging.debug("Deploying Codebuild project")
+        retries = 10
+        while retries > 0:  # we may have to wait for IAM role to be really available
+            try:
+                client.create_project(
+                    name=name,
+                    description=description,
+                    source=dict(type='NO_SOURCE',
+                                buildspec=buildspec),
+                    artifacts=dict(type='NO_ARTIFACTS'),
+                    cache=dict(type='NO_CACHE'),
+                    environment=dict(type='ARM_CONTAINER',
+                                     image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
+                                     computeType='BUILD_GENERAL1_SMALL'),
+                    serviceRole=role,
+                    timeoutInMinutes=480,
+                    tags=[dict(key='origin', value='SustainablePersonalAccounts')],
+                    logsConfig=dict(cloudWatchLogs=dict(status='ENABLED')),
+                    concurrentBuildLimit=1)
+                logging.debug("Done")
+                break
+
+            except client.exceptions.ResourceAlreadyExistsException as error:
+                logging.debug(f"Project '{name}' already exists")
+                break
+
+            except client.exceptions.InvalidInputException as error:
+                logging.debug("Sleeping...")
+                time.sleep(3)
+                retries -= 1
 
     @classmethod
-    def build_project(cls, arn, session=None):
-        logging.debug("Starting project build with Codebuild ")
-        # session.client('codebuild').start_build( ... )
-        pass
+    def build_project(cls, name, session=None):
+        session = session if session else Session()
+        client = session.client('codebuild')
+        logging.debug("Starting project build")
+        client.start_build(projectName=name)
 
     @classmethod
     def prepare(cls, account, session=None):
         session = session if session else cls.get_session(account)
 
         logging.info(f"Preparing account '{account}'...")
+        name = "SpaProjectForPrepare"
         buildspec = cls.get_buildspec_for_prepare()
         role = cls.deploy_role(name='SpaRoleForCodebuild', session=session)
-        arn = cls.deploy_project(name="SpaProjectForPrepare",
-                                 description="This project prepares an AWS account before being released to cloud engineer",
-                                 buildspec=buildspec,
-                                 role=role,
-                                 session=session)
-        cls.build_project(arn=arn, session=session)
+        cls.deploy_project(name=name,
+                           description="This project prepares an AWS account before being released to cloud engineer",
+                           buildspec=buildspec,
+                           role=role,
+                           session=session)
+        cls.build_project(name=name, session=session)
         logging.info("Done")
 
         # to be moved to the end of the Codebuild buildspec
@@ -178,14 +193,15 @@ class Worker:
         session = session if session else cls.get_session(account)
 
         logging.info(f"Purging account '{account}'...")
+        name = "SpaProjectForPurge"
         buildspec = cls.get_buildspec_for_purge()
         role = cls.deploy_role(name='SpaRoleForCodebuild', session=session)
-        arn = cls.deploy_project(name="SpaProjectForPurge",
-                                 description="This project purges an AWS account of cloud resources",
-                                 buildspec=buildspec,
-                                 role=role,
-                                 session=session)
-        cls.build_project(arn=arn, session=session)
+        cls.deploy_project(name=name,
+                           description="This project purges an AWS account of cloud resources",
+                           buildspec=buildspec,
+                           role=role,
+                           session=session)
+        cls.build_project(name=name, session=session)
         logging.info("Done")
 
         # to be moved to the end of the Codebuild buildspec

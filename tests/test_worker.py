@@ -23,8 +23,10 @@ import os
 from unittest.mock import Mock, patch
 import pytest
 
+from boto3.session import Session
+
 from code import Worker
-import code.session
+# import code.session
 
 
 pytestmark = pytest.mark.wip
@@ -51,10 +53,17 @@ def test_get_session():
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_deploy_project(session):
-    arn = Worker.deploy_project(name='name', description='description', buildspec='buildspec', role='role', session=session)
-    assert arn == 'arn:aws'
+    Worker.deploy_project(name='name', description='description', buildspec='buildspec', role='role', session=session)
     session.client.assert_called_with('codebuild')
     session.client.return_value.create_project.assert_called()
+
+
+# @patch.dict(os.environ, dict(DRY_RUN="true"))
+# def test_deploy_project_for_real():
+#     buildspec = Worker.get_buildspec_for_prepare()
+#     role = Worker.deploy_role(name='TestSpaRoleForCodeBuildVersion4', session=Session())
+#     Worker.deploy_project(name='TestSpaProjectForCodeBuildv2', description='description', buildspec=buildspec, role=role, session=Session())
+#     Worker.build_project(name='TestSpaProjectForCodeBuildv2', session=Session())
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
