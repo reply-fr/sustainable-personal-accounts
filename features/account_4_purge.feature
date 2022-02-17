@@ -6,18 +6,18 @@ so as to enforce software engineering best practices
 # use case: enforce everything-as-code over configuration a the console
 
 Scenario: where authenticated employee is prevented to create resources in expired account
-Given an individual cloud account in OU 'Expired Accounts'
+Given an individual cloud account is tagged with key 'account:state' and value 'expired'
 When employee assigned to the account signs in using SSO
 Then he can not create new resources
-# implementation: SCP of OU Expired Accounts
+# implementation: SCP
 
 Scenario: where expired account is reported and handled
-When an account lands in OU 'Expired Accounts'
+When account tag of key 'account:state' is changed to value 'expired'
 Then lambda function 'SignalExpiredAccount' is executed
 And lambda function emits an event 'ExpiredAccount' on event bus
 And lambda function creates codebuild project 'PurgeAccount' within assigned account
 And lambda function starts codebuild project 'PurgeAccount' asynchronously
-# implementation: lambda execution role permits creation of codebuild projects for accounts within OU 'Expired Accounts'
+# implementation: lambda execution role permits creation of codebuild projects
 # implementation: boto3.client('codebuild').start_build() with inline buildspec
 
 Scenario: where expired account is purged
@@ -30,5 +30,5 @@ Then codebuild project emits an event 'PurgedAccount' on event bus when job has 
 Scenario: where purged account is moved to next state
 When an event 'PurgedAccount' has been emitted on event bus
 Then lambda function 'MoveExpiredAccount' is executed
-And account is moved from OU 'Expired Accounts' to OU 'Assigned Accounts'
+And account tag of key 'account:state' is changed to value 'assigned'
 # a possible extension would be to check if the person is still eligigle for a personal account
