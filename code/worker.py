@@ -30,6 +30,11 @@ from session import make_session
 BUILDSPEC_PREPARE = """
 version: 0.2
 
+env:
+  variables:
+    EVENT: '{"Source": "SustainablePersonalAccounts", "DetailType": "PreparedAccount", "Detail": "{\\\"Account\\\": \\\"12345\\\"}"}'
+    EVENT_TWO: '{"Source": "SustainablePersonalAccounts", "DetailType": "PreparedAccount", "Detail": "{}"}'
+
 phases:
   install:
     runtime-versions:
@@ -37,6 +42,9 @@ phases:
   pre_build:
     commands:
       - yum install -y wget
+      - echo ${EVENT}
+      - echo "${EVENT}"
+      - aws events put-events --entries "[${EVENT}]"
       - echo "Nothing to do in the pre_build phase..."
   build:
     commands:
@@ -46,8 +54,6 @@ phases:
   post_build:
     commands:
       - echo "Build completed on `date`"
-      - aws events put-events --entries '[{"Source": "SustainablePersonalAccounts", "DetailType": "PreparedAccount", "Detail": "{\"Account\": \"12345\"}"}]'
-
 """
 
 

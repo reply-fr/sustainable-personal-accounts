@@ -61,9 +61,9 @@ def test_deploy_project(session):
 # @patch.dict(os.environ, dict(DRY_RUN="true"))
 # def test_deploy_project_for_real():
 #     buildspec = Worker.get_buildspec_for_prepare()
-#     role = Worker.deploy_role(name='TestSpaRoleForCodeBuildVersion4', session=Session())
-#     Worker.deploy_project(name='TestSpaProjectForCodeBuildv2', description='description', buildspec=buildspec, role=role, session=Session())
-#     Worker.build_project(name='TestSpaProjectForCodeBuildv2', session=Session())
+#     role = Worker.deploy_role(name='TestSpaRoleForCodeBuild', session=Session())
+#     Worker.deploy_project(name='TestSpaProjectForCodeBuild', description='description', buildspec=buildspec, role=role, session=Session())
+#     Worker.build_project(name='TestSpaProjectForCodeBuild', session=Session())
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
