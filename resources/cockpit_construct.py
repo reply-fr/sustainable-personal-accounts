@@ -44,6 +44,9 @@ class Cockpit(Construct):
         self.cockpit.add_widgets(
             self.get_text_label_widget())
 
+        args = self.get_lambda_execution_metrics(functions=functions)
+        self.cockpit.add_widgets(*args)
+
     #     self.cockpit.add_widgets(
     #         self.get_text_label_widget(),
     #         self.get_ec2_statuscheckfailed_widget(servers))
@@ -59,6 +62,20 @@ class Cockpit(Construct):
         return TextWidget(markdown=toggles.cockpit_markdown_text,
                           height=3,
                           width=18)
+
+    def get_lambda_execution_metrics(self, functions):
+        widgets = []
+        for function in functions:
+            widgets.append(self.get_lambda_execution_metric(function))
+        return widgets
+
+    def get_lambda_execution_metric(self, function):
+        return GraphWidget(title=function.function_name,
+                           width=8,
+                           stacked=True,
+                           left=[function.metric_duration(statistic="p50"),
+                                 function.metric_duration(statistic="p90"),
+                                 function.metric_duration(statistic="p99")])
 
     # def get_ec2_statuscheckfailed_widget(self, servers):
     #     ''' show the total number of EC2 status check that have failed '''

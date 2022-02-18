@@ -29,7 +29,7 @@ from code import Worker
 # import code.session
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
