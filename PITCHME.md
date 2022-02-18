@@ -40,6 +40,16 @@ style: |
 Each of them deserves a full AWS account to innovate fastly.
 
 ---
+<!-- _class: lead -->
+## __“ Knowledge technologists become the dominant social force ”__
+### -- Peter Drucker (2001)
+
+# :recycle:
+
+## __“ The condition of all progress is experience ”__
+### -- Felix Adler (1913)
+
+---
 
 ## Sustainable Personal Accounts
 
