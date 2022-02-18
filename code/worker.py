@@ -47,6 +47,7 @@ phases:
     commands:
       - echo "Build completed on `date`"
       - aws events put-events --entries '[{"Source": "SustainablePersonalAccounts", "DetailType": "PreparedAccount", "Detail": "{\"Account\": \"12345\"}"}]'
+
 """
 
 
@@ -156,11 +157,13 @@ class Worker:
 
             except client.exceptions.ResourceAlreadyExistsException as error:
                 logging.debug(f"Project '{name}' already exists")
-                break
+                client.delete_project(name=name)
+                time.sleep(10)
+                retries -= 1
 
             except client.exceptions.InvalidInputException as error:
                 logging.debug("Sleeping...")
-                time.sleep(3)
+                time.sleep(10)
                 retries -= 1
 
     @classmethod
