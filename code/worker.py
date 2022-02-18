@@ -46,6 +46,7 @@ phases:
   post_build:
     commands:
       - echo "Build completed on `date`"
+      - aws events put-events --entries '[{"Source": "SustainablePersonalAccounts", "DetailType": "PreparedAccount", "Detail": "{\"Account\": \"12345\"}"}]'
 """
 
 
