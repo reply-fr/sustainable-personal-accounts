@@ -44,56 +44,36 @@ class Cockpit(Construct):
         self.cockpit.add_widgets(
             self.get_text_label_widget())
 
-        args = self.get_lambda_execution_metrics(functions=functions)
-        self.cockpit.add_widgets(*args)
-
-    #     self.cockpit.add_widgets(
-    #         self.get_text_label_widget(),
-    #         self.get_ec2_statuscheckfailed_widget(servers))
-    #
-    #     self.cockpit.add_widgets(
-    #         self.get_ec2_cpuutilization_widget(servers),
-    #         self.get_ec2_networkout_widget(servers))
-    #
+        self.cockpit.add_widgets(
+            self.get_lambda_invocations_widget(functions=functions),
+            self.get_lambda_durations_widget(functions=functions),
+            self.get_lambda_errors_widget(functions=functions))
 
     def get_text_label_widget(self):
         ''' show static banner that has been configured for this dashboard '''
 
         return TextWidget(markdown=toggles.cockpit_markdown_text,
                           height=3,
-                          width=18)
+                          width=24)
 
-    def get_lambda_execution_metrics(self, functions):
-        widgets = []
-        for function in functions:
-            widgets.append(self.get_lambda_execution_metric(function))
-        return widgets
-
-    def get_lambda_execution_metric(self, function):
-        return GraphWidget(title=function.function_name,
+    def get_lambda_durations_widget(self, functions):
+        return GraphWidget(title="Lambda Durations",
                            width=8,
                            stacked=True,
-                           left=[function.metric_duration(statistic="p50"),
-                                 function.metric_duration(statistic="p90"),
-                                 function.metric_duration(statistic="p99")])
+                           left=[x.metric_duration() for x in functions])
 
-    # def get_ec2_statuscheckfailed_widget(self, servers):
-    #     ''' show the total number of EC2 status check that have failed '''
-    #
-    #     metrics = []
-    #     for instance in servers.list_all_servers():
-    #         metrics.append(Metric(
-    #             metric_name="StatusCheckFailed",
-    #             namespace="AWS/EC2",
-    #             dimensions_map=dict(InstanceId=instance.instance_id),
-    #             statistic="avg"))
-    #
-    #     return SingleValueWidget(
-    #         title="EC2 Status Check Failed",
-    #         metrics=metrics,
-    #         height=3,
-    #         width=6)
-    #
+    def get_lambda_errors_widget(self, functions):
+        return GraphWidget(title="Lambda Errors",
+                           width=8,
+                           stacked=True,
+                           left=[x.metric_errors() for x in functions])
+
+    def get_lambda_invocations_widget(self, functions):
+        return GraphWidget(title="Lambda Invocations",
+                           width=8,
+                           stacked=True,
+                           left=[x.metric_invocations() for x in functions])
+
     # def get_ec2_cpuutilization_widget(self, servers):
     #     ''' graph CPU Utilization percentage for computers in the cluster '''
     #
