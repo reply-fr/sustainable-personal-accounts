@@ -26,32 +26,6 @@ from boto3.session import Session
 from session import make_session
 
 
-BUILDSPEC_PREPARE = """
-version: 0.2
-
-env:
-  variables:
-    VERSION: "0.1alpha"
-
-phases:
-  install:
-    runtime-versions:
-      python: 3.9
-  pre_build:
-    commands:
-      - echo "buildspec version ${VERSION}"
-      - python --version
-      - aws --version
-      - echo "Nothing to do in the pre_build phase..."
-  build:
-    commands:
-      - echo "Build started on `date`"
-  post_build:
-    commands:
-      - echo "Build completed on `date`"
-"""
-
-
 class Worker:
 
     CODEBUILD_EVENT_PATTERN = {
@@ -262,12 +236,14 @@ class Worker:
     @classmethod
     def get_buildspec_for_prepare(cls):
         logging.debug("Getting buildspec for prepare")
-        return BUILDSPEC_PREPARE
+        with open(os.environ['BUILDSPEC_PREPARE']) as stream:
+            return stream.read()
 
     @classmethod
     def get_buildspec_for_purge(cls):
         logging.debug("Getting buildspec for purge")
-        return BUILDSPEC_PREPARE
+        with open(os.environ['BUILDSPEC_PURGE']) as stream:
+            return stream.read()
 
     @classmethod
     def get_session(cls, account, session=None):

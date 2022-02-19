@@ -30,6 +30,8 @@ class Configuration:
     ''' toggles are accessible from every python modules '''
 
     ALLOWED_ATTRIBUTES = dict(
+        buildspec_prepare='str',
+        buildspec_purge='str',
         cockpit_markdown_text='str',
         dry_run='bool',
         event_bus_arn='str',

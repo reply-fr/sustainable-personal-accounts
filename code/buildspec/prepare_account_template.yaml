@@ -1,0 +1,22 @@
+version: 0.2
+
+env:
+  variables:
+    VERSION: "0.1alpha"
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+  pre_build:
+    commands:
+      - echo "buildspec version ${VERSION}"
+      - python --version
+      - aws --version
+      - echo "Nothing to do in the pre_build phase..."
+  build:
+    commands:
+      - echo "Account preparation started on `date`"
+  post_build:
+    commands:
+      - echo "Account preparation completed on `date`"

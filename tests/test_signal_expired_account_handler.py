@@ -39,7 +39,9 @@ def session():
     return mock
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE", EVENT_BUS_ARN='arn:aws'))
+@patch.dict(os.environ, dict(BUILDSPEC_PURGE="code/buildspec/purge_account_template.yaml",
+                             DRY_RUN="TRUE",
+                             EVENT_BUS_ARN='arn:aws'))
 def test_handle_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",

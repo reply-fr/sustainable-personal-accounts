@@ -1,3 +1,8 @@
+# the buildspec templates to be used, relatively to the code/ directory
+#
+buildspec_prepare: "buildspec/prepare_account_template.yaml"
+buildspec_purge: "buildspec/purge_account_template.yaml"
+
 # this is displayed in the monitoring dashboard
 cockpit_markdown_text: |
   # Sustainable Personal Accounts Dashboard
