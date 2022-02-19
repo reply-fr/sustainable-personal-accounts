@@ -23,18 +23,22 @@ from aws_cdk.aws_lambda import Function
 
 class MoveExpiredAccounts(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
+        self.functions = [self.build_on_schedule(parameters=parameters, permissions=permissions)]
 
-        self.function = Function(
+    def build_on_schedule(self, parameters, permissions) -> Function:
+        function = Function(
             self, "OnSchedule",
-            description="Move expired accounts",
+            description="Change state of expired accounts",
             handler="move_expired_accounts_handler.handle_event",
             **parameters)
 
-        for statement in statements:
-            self.function.add_to_role_policy(statement)
+        for permission in permissions:
+            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
              schedule=Schedule.expression(toggles.expiration_expression),
-             targets=[LambdaFunction(self.function)])
+             targets=[LambdaFunction(function)])
+
+        return function

@@ -23,20 +23,23 @@ from aws_cdk.aws_lambda import Function
 
 class SignalExpiredAccount(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
+        self.functions = [self.build_on_tag(parameters=parameters, permissions=permissions)]
+
+    def build_on_tag(self, parameters, permissions) -> Function:
 
         if toggles.role_name_to_manage_codebuild:
             parameters['environment']['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
 
-        self.function = Function(
+        function = Function(
             self, "OnTag",
             description="Start the purge of an expired account",
             handler="signal_expired_account_handler.handle_event",
             **parameters)
 
-        for statement in statements:
-            self.function.add_to_role_policy(statement)
+        for permission in permissions:
+            function.add_to_role_policy(permission)
 
         Rule(self, "TagRule",
              event_pattern=EventPattern(
@@ -45,4 +48,6 @@ class SignalExpiredAccount(Construct):
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
                      eventSource=["organizations.amazonaws.com"])),
-             targets=[LambdaFunction(self.function)])
+             targets=[LambdaFunction(function)])
+
+        return function

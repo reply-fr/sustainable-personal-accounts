@@ -7,6 +7,10 @@ cockpit_markdown_text: |
 # if you comment this out, then organizations and accounts will be read, but not modified
 dry_run: False
 
+# this is used to signal the end of Codebuild projects
+#
+event_bus_arn: "arn:aws:events:eu-west-1:444444444444:event-bus/default"
+
 # this expression defines when accounts are expired
 # Reference:
 # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html

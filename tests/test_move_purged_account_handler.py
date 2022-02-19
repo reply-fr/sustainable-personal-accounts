@@ -24,25 +24,56 @@ import os
 import pytest
 
 from code import Events
-from code.move_purged_account_handler import handle_event
+from code.move_purged_account_handler import handle_codebuild_event, handle_local_event
+from code.worker import Worker
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_event():
+# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+def test_handle_codebuild_event():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="123456789012",
+                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
+                                           status="SUCCEEDED"))
+    result = handle_codebuild_event(event=event, context=None)
+    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
+
+
+# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+def test_handle_codebuild_event_on_unexpected_project():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="123456789012",
+                                           project="SampleProject",
+                                           status="SUCCEEDED"))
+    result = handle_codebuild_event(event=event, context=None)
+    assert result == "[DEBUG] Ignored project 'SampleProject'"
+
+
+# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+def test_handle_codebuild_event_on_unexpected_status():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="123456789012",
+                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
+                                           status="FAILED"))
+    result = handle_codebuild_event(event=event, context=None)
+    assert result == "[DEBUG] Ignored status 'FAILED'"
+
+
+@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+def test_handle_local_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
                                            label="PurgedAccount"))
-    result = handle_event(event=event, context=None)
-    assert result == 'PurgedAccount 123456789012'
+    result = handle_local_event(event=event, context=None)
+    assert result == '[OK] PurgedAccount 123456789012'
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
-def test_handle_event_on_unexpected_event():
+@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+def test_handle_local_event_on_unexpected_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
                                            label="CreatedAccount"))
-    result = handle_event(event=event, context=None)
+    result = handle_local_event(event=event, context=None)
     assert result == "[DEBUG] Unexpected event label 'CreatedAccount'"

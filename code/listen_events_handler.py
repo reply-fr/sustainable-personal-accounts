@@ -31,6 +31,7 @@ def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
     input = Events.decode_local_event(event)
+    logging.info(f"Listening {input.label} {input.account}")
     put_metric_data_by_account(input, session)
     put_metric_data_by_state(input, session)
 
@@ -50,11 +51,11 @@ def put_metric_data_by_state(input, session=None):
 
 
 def put_metric_data(name, dimensions, session=None):
-    logging.info(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
+    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
     session = session if session else Session()
     session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
                                                                   Dimensions=dimensions,
                                                                   Unit='Count',
                                                                   Value=1)],
                                                  Namespace="SustainablePersonalAccount")
-    logging.info("Done")
+    logging.debug("Done")

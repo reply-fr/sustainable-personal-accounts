@@ -26,7 +26,7 @@ from code import Events
 from code.listen_events_handler import handle_event
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def test_handle_event():

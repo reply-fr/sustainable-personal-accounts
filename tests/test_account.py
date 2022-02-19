@@ -19,7 +19,6 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import json
 import os
 import pytest
 from unittest.mock import Mock, patch

@@ -23,18 +23,16 @@ import os
 from unittest.mock import Mock, patch
 import pytest
 
-from boto3.session import Session
-
 from code import Worker
-# import code.session
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
 def session():
     mock = Mock()
+    mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
     mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
     return mock
@@ -58,19 +56,16 @@ def test_deploy_project(session):
     session.client.return_value.create_project.assert_called()
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="true"))
-# def test_deploy_project_for_real():
-#     buildspec = Worker.get_buildspec_for_prepare()
-#     role = Worker.deploy_role(name='TestSpaRoleForCodeBuild', session=Session())
-#     Worker.deploy_project(name='TestSpaProjectForCodeBuild', description='description', buildspec=buildspec, role=role, session=Session())
-#     Worker.build_project(name='TestSpaProjectForCodeBuild', session=Session())
-
+# def test_deploy_role_for_events():
+#     Worker.deploy_role_for_events(event_bus_arn='arn:aws')
+#     assert False
+#
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_prepare(session):
-    Worker.prepare(account='123456789012', session=session)
+    Worker.prepare(account='123456789012', event_bus_arn='arn:aws', session=session)
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_purge(session):
-    Worker.purge(account='123456789012', session=session)
+    Worker.purge(account='123456789012', event_bus_arn='arn:aws', session=session)

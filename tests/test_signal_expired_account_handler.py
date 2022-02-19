@@ -33,12 +33,13 @@ from code.signal_expired_account_handler import handle_event
 @pytest.fixture
 def session():
     mock = Mock()
+    mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
     mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
     return mock
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE", EVENT_BUS_ARN='arn:aws'))
 def test_handle_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
@@ -47,7 +48,7 @@ def test_handle_event(session):
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE", EVENT_BUS_ARN='arn:aws'))
 def test_handle_event_on_unexpected_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",

@@ -67,6 +67,24 @@ class Events:
             logging.warning("Dry-run mode - no event has been put")
 
     @staticmethod
+    def decode_codebuild_event(event, match=None):
+        decoded = SimpleNamespace()
+
+        decoded.account = event['account']
+        if len(decoded.account) != 12:
+            raise ValueError(f"Invalid account identifier '{decoded.account}'")
+
+        decoded.project = event['detail']['project-name']
+        if match and match != decoded.project:
+            raise ValueError(f"Ignored project '{decoded.project}'")
+
+        decoded.status = event['detail']['build-status']
+        if decoded.status != 'SUCCEEDED':
+            raise ValueError(f"Ignored status '{decoded.status}'")
+
+        return decoded
+
+    @staticmethod
     def decode_local_event(event, match=None):
         decoded = SimpleNamespace()
 

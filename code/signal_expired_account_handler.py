@@ -32,5 +32,7 @@ def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event, match=State.EXPIRED)
     result = Events.emit('ExpiredAccount', input.account)
-    Worker.purge(input.account, session=session)
+    Worker.purge(account=input.account,
+                 event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                 session=session)
     return result
