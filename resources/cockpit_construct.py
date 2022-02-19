@@ -22,13 +22,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 from constructs import Construct
-from aws_cdk.aws_cloudwatch import (ComparisonOperator,
-                                    Dashboard,
+from aws_cdk.aws_cloudwatch import (Dashboard,
                                     GraphWidget,
                                     Metric,
-                                    SingleValueWidget,
-                                    TextWidget,
-                                    TreatMissingData)
+                                    TextWidget)
+
+from code import State
 
 
 class Cockpit(Construct):
@@ -45,6 +44,10 @@ class Cockpit(Construct):
             self.get_text_label_widget())
 
         self.cockpit.add_widgets(
+            self.get_events_by_state_widget(),
+            self.get_events_by_account_widget())
+
+        self.cockpit.add_widgets(
             self.get_lambda_invocations_widget(functions=functions),
             self.get_lambda_durations_widget(functions=functions),
             self.get_lambda_errors_widget(functions=functions))
@@ -55,6 +58,33 @@ class Cockpit(Construct):
         return TextWidget(markdown=toggles.cockpit_markdown_text,
                           height=3,
                           width=24)
+
+    def get_events_by_account_widget(self):
+
+        return GraphWidget(
+            title="Events by account",
+            left=[Metric(
+                namespace="SustainablePersonalAccount",
+                metric_name="Account Event By Account",
+                statistic="sum")],
+            height=10,
+            width=12)
+
+    def get_events_by_state_widget(self):
+
+        metrics = []
+        for state in State:
+            metrics.append(Metric(
+                namespace="SustainablePersonalAccount",
+                metric_name="Account Event By State",
+                dimensions_map=dict(Label=state.value),
+                statistic="sum"))
+
+        return GraphWidget(
+            title="Events by state",
+            left=metrics,
+            height=10,
+            width=12)
 
     def get_lambda_durations_widget(self, functions):
         return GraphWidget(title="Lambda Durations",
@@ -73,48 +103,3 @@ class Cockpit(Construct):
                            width=8,
                            stacked=True,
                            left=[x.metric_invocations() for x in functions])
-
-    # def get_ec2_cpuutilization_widget(self, servers):
-    #     ''' graph CPU Utilization percentage for computers in the cluster '''
-    #
-    #     metrics = []
-    #     alarms = []
-    #     for instance in servers.list_all_servers():
-    #         metric = Metric(
-    #             metric_name="CPUUtilization",
-    #             namespace="AWS/EC2",
-    #             dimensions_map=dict(InstanceId=instance.instance_id),
-    #             statistic="avg")
-    #         alarm = metric.create_alarm(
-    #             self,
-    #             "EC2CPUAlarm-{}".format(self.resolve(instance.instance_id)),
-    #             threshold=90,
-    #             comparison_operator=ComparisonOperator.GREATER_THAN_OR_EQUAL_TO_THRESHOLD,
-    #             evaluation_periods=5,
-    #             treat_missing_data=TreatMissingData.NOT_BREACHING)
-    #         metrics.append(metric)
-    #         alarms.append(alarm.to_annotation())
-    #
-    #     return GraphWidget(
-    #         title="EC2 CPU Utilization",
-    #         left=metrics,
-    #         left_annotations=alarms,
-    #         height=10,
-    #         width=12)
-    #
-    # def get_ec2_networkout_widget(self, servers):
-    #     ''' graph network out traffic for computers in the cluster '''
-    #
-    #     metrics = []
-    #     for instance in servers.list_all_servers():
-    #         metrics.append(Metric(
-    #             metric_name="NetworkOut",
-    #             namespace="AWS/EC2",
-    #             dimensions_map=dict(InstanceId=instance.instance_id),
-    #             statistic="avg"))
-    #
-    #     return GraphWidget(
-    #         title="EC2 Network Out",
-    #         left=metrics,
-    #         height=10,
-    #         width=12)
