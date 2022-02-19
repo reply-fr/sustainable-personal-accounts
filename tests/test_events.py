@@ -146,9 +146,12 @@ def test_decode_tag_account_event_on_unexpected_state():
 def test_decode_tag_account_event_on_missing_state():
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012"))
+
+    # remove tag 'account:state' from regular fixture
     tags = event["detail"]["requestParameters"]["tags"]
     tags = [item for item in tags if item['key'] != 'account:state']
     event["detail"]["requestParameters"]["tags"] = tags
+
     with pytest.raises(ValueError):
         Events.decode_tag_account_event(event)
 
