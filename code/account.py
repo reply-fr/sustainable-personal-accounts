@@ -19,6 +19,7 @@ from enum import Enum, unique
 import json
 import logging
 import os
+from types import SimpleNamespace
 import re
 
 from boto3.session import Session
@@ -124,3 +125,14 @@ class Account:
             token = chunk.get('NextToken')
             if not token:
                 break
+
+    @classmethod
+    def describe(cls, account, session=None):
+        item = SimpleNamespace(account=account)
+        attributes = session.client('organizations').describe_account(AccountId=account)['Account']
+        item.arn = attributes['Arn']
+        item.email = attributes['Email']
+        item.name = attributes['Name']
+        item.is_active = True if attributes['Status'] == 'ACTIVE' else False
+        item.tags = cls.list_tags(account=account, session=session)
+        return item

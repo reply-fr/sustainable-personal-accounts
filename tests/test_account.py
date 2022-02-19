@@ -28,7 +28,7 @@ from types import SimpleNamespace
 from code import Account, State
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -291,6 +291,48 @@ def test_list():
     assert next(iterator) == '345678901234'
     with pytest.raises(StopIteration):
         next(iterator)
+
+
+def test_describe():
+
+    attributes = {
+        'Account': {
+            'Id': '345678901234',
+            'Arn': 'arn:aws:some-arn',
+            'Email': 'a@b.com',
+            'Name': 'account-three',
+            'Status': 'ACTIVE',
+            'JoinedMethod': 'CREATED',
+            'JoinedTimestamp': '20150101'
+        }
+    }
+
+    tags = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'a@b.com'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ]
+    }
+
+    mock = Mock()
+    mock.client.return_value.describe_account.return_value = attributes
+    mock.client.return_value.list_tags_for_resource.return_value = tags
+    item = Account.describe(account='123456789012',
+                            session=mock)
+    assert item.account == '123456789012'
+    assert item.arn == 'arn:aws:some-arn'
+    assert item.email == 'a@b.com'
+    assert item.name == 'account-three'
+    assert item.is_active
+    assert item.tags.get('account:owner') == 'a@b.com'
+    assert item.tags.get('account:state') == 'vanilla'
 
 
 def test_get_session():

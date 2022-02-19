@@ -26,7 +26,7 @@ import pytest
 from code import Worker
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture

@@ -33,6 +33,15 @@ def handle_event(event, context, session=None):
     for container in containers:
         for account in Account.list(parent=container, session=session):
 
-            # ensure tag 'account:state' is State.RELEASED
+            item = Account.describe(account)
 
+            if not item.is_active:
+                logging.debug(f"Ignoring inactive account '{account}'")
+                continue
+
+            if item.tags.get('account:state') != State.RELEASED:
+                logging.debug(f"Ignoring account '{account}' that has not been released")
+                continue
+
+            logging.info(f"Expiring account '{account}'")
             Account.move(account=account, state=State.EXPIRED)

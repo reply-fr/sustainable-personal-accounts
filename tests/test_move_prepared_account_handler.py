@@ -28,7 +28,7 @@ from code.move_prepared_account_handler import handle_codebuild_event, handle_lo
 from code.worker import Worker
 
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 # @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
