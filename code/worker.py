@@ -40,7 +40,7 @@ class Worker:
     PROJECT_NAME_FOR_ACCOUNT_PURGE = "SpaProjectForAccountPurge"
 
     @classmethod
-    def prepare(cls, account, event_bus_arn, session=None):
+    def prepare(cls, account, buildspec, event_bus_arn, session=None):
         session = session if session else cls.get_session(account)
 
         logging.info(f"Preparing account '{account}'...")
@@ -52,7 +52,7 @@ class Worker:
         role_arn = cls.deploy_role_for_codebuild(session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
-                           buildspec=cls.get_buildspec_for_prepare(),
+                           buildspec=buildspec,
                            role=role_arn,
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
@@ -60,7 +60,7 @@ class Worker:
         logging.info("Done")
 
     @classmethod
-    def purge(cls, account, event_bus_arn, session=None):
+    def purge(cls, account, buildspec, event_bus_arn, session=None):
         session = session if session else cls.get_session(account)
 
         logging.info(f"Purging account '{account}'...")
@@ -72,7 +72,7 @@ class Worker:
         role_arn = cls.deploy_role_for_codebuild(session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                            description="This project purges an AWS account of cloud resources",
-                           buildspec=cls.get_buildspec_for_purge(),
+                           buildspec=buildspec,
                            role=role_arn,
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
@@ -232,18 +232,6 @@ class Worker:
         client = session.client('codebuild')
         logging.debug("Starting project build")
         client.start_build(projectName=name)
-
-    @classmethod
-    def get_buildspec_for_prepare(cls):
-        logging.debug("Getting buildspec for prepare")
-        with open(os.environ['BUILDSPEC_PREPARE']) as stream:
-            return stream.read()
-
-    @classmethod
-    def get_buildspec_for_purge(cls):
-        logging.debug("Getting buildspec for purge")
-        with open(os.environ['BUILDSPEC_PURGE']) as stream:
-            return stream.read()
 
     @classmethod
     def get_session(cls, account, session=None):

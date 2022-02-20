@@ -91,8 +91,10 @@ def test_set_from_settings(toggles):
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
-    assert toggles.buildspec_prepare == 'buildspec/prepare_account_template.yaml'
-    assert toggles.buildspec_purge == 'buildspec/purge_account_template.yaml'
+    assert toggles.automation_account_id == '123456789012'
+    assert toggles.automation_region == 'eu-west-1'
+    assert toggles.preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
+    assert toggles.purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
     assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.dry_run is False
     assert toggles.event_bus_arn == 'arn:aws:events:eu-west-1:444444444444:event-bus/default'

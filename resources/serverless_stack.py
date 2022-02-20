@@ -29,6 +29,7 @@ from .move_expired_accounts_construct import MoveExpiredAccounts
 from .move_prepared_account_construct import MovePreparedAccount
 from .move_purged_account_construct import MovePurgedAccount
 from .move_vanilla_account_construct import MoveVanillaAccount
+from .parameters_construct import Parameters
 from .signal_assigned_account_construct import SignalAssignedAccount
 from .signal_expired_account_construct import SignalExpiredAccount
 
@@ -42,6 +43,8 @@ class ServerlessStack(Stack):
         environment = self.get_environment()
         parameters = self.get_parameters(environment=environment)
         permissions = self.get_permissions()
+
+        Parameters(self, "{}Parameters".format(toggles.environment_identifier))
 
         constructs = [
             ListenEvents(self, "ListenEvents", parameters=parameters, permissions=permissions),
@@ -62,8 +65,8 @@ class ServerlessStack(Stack):
 
     def get_environment(self) -> dict:  # shared across all lambda functions
         environment = dict(
-            BUILDSPEC_PREPARE=toggles.buildspec_prepare,
-            BUILDSPEC_PURGE=toggles.buildspec_purge,
+            PREPARATION_BUILDSPEC_PARAMETER=Parameters.PREPARATION_BUILDSPEC_PARAMETER,
+            PURGE_BUILDSPEC_PARAMETER=Parameters.PURGE_BUILDSPEC_PARAMETER,
             DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
             EVENT_BUS_ARN=toggles.event_bus_arn,
             ORGANIZATIONAL_UNITS=json.dumps(toggles.organizational_units),
@@ -97,6 +100,10 @@ class ServerlessStack(Stack):
 
             PolicyStatement(effect=Effect.ALLOW,
                             actions=['organizations:TagResource'],
+                            resources=['*']),
+
+            PolicyStatement(effect=Effect.ALLOW,
+                            actions=['ssm:GetParameter'],
                             resources=['*']),
 
             PolicyStatement(effect=Effect.ALLOW,

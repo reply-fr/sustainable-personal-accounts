@@ -61,22 +61,11 @@ def test_deploy_project(session):
 #     assert False
 #
 
-@patch.dict(os.environ, dict(BUILDSPEC_PREPARE="code/buildspec/prepare_account_template.yaml", DRY_RUN="true"))
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_prepare(session):
-    Worker.prepare(account='123456789012', event_bus_arn='arn:aws', session=session)
+    Worker.prepare(account='123456789012', buildspec='hello_world', event_bus_arn='arn:aws', session=session)
 
 
-@patch.dict(os.environ, dict(BUILDSPEC_PURGE="code/buildspec/purge_account_template.yaml", DRY_RUN="true"))
+@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_purge(session):
-    Worker.purge(account='123456789012', event_bus_arn='arn:aws', session=session)
-
-
-@patch.dict(os.environ, dict(BUILDSPEC_PREPARE="code/buildspec/prepare_account_template.yaml"))
-def test_get_buildspec_for_prepare():
-    text = Worker.get_buildspec_for_prepare()
-    assert len(text) > 10
-
-@patch.dict(os.environ, dict(BUILDSPEC_PURGE="code/buildspec/purge_account_template.yaml"))
-def test_get_buildspec_for_purge():
-    text = Worker.get_buildspec_for_purge()
-    assert len(text) > 10
+    Worker.purge(account='123456789012', buildspec='hello_again', event_bus_arn='arn:aws', session=session)

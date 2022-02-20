@@ -22,6 +22,8 @@ import logging
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from boto3.session import Session
+
 from account import State
 from events import Events
 from worker import Worker
@@ -34,5 +36,12 @@ def handle_event(event, context, session=None):
     result = Events.emit('AssignedAccount', input.account)
     Worker.prepare(account=input.account,
                    event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                   buildspec=get_buildspec(session=session),
                    session=session)
     return result
+
+
+def get_buildspec(session=None):
+    session = session if session else Session()
+    item = session.client('ssm').get_parameter(Name=os.environ['PREPARATION_BUILDSPEC_PARAMETER'])
+    return item['Parameter']['Value']
