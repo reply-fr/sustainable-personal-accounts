@@ -39,12 +39,12 @@ class ServerlessStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
 
+        Parameters(self, "{}Parameters".format(toggles.environment_identifier))
+
         # passed to all lambda functions
         environment = self.get_environment()
         parameters = self.get_parameters(environment=environment)
         permissions = self.get_permissions()
-
-        Parameters(self, "{}Parameters".format(toggles.environment_identifier))
 
         constructs = [
             ListenEvents(self, "ListenEvents", parameters=parameters, permissions=permissions),

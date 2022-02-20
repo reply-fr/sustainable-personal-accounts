@@ -229,9 +229,8 @@ class Worker:
     @classmethod
     def run_project(cls, name, session=None):
         session = session if session else Session()
-        client = session.client('codebuild')
-        logging.debug("Starting project build")
-        client.start_build(projectName=name)
+        logging.debug(f"Starting project build {name}")
+        session.client('codebuild').start_build(projectName=name)
 
     @classmethod
     def get_session(cls, account, session=None):
