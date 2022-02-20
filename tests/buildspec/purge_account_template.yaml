@@ -6,17 +6,66 @@ env:
 
 phases:
   install:
-    runtime-versions:
-      python: 3.9
-  pre_build:
     commands:
-      - echo "buildspec version ${VERSION}"
-      - python --version
-      - aws --version
-      - echo "Nothing to do in the pre_build phase..."
+      - wget -q https://github.com/rebuy-de/aws-nuke/releases/download/v2.17.0/aws-nuke-v2.17.0-linux-arm64.tar.gz
+      - tar -xvf aws-nuke-v2.17.0-linux-arm64.tar.gz
+      - mv aws-nuke-v2.17.0-linux-arm64 /bin/aws-nuke
+      - chmod +x /bin/aws-nuke
   build:
     commands:
-      - echo "Account purge started on `date`"
-  post_build:
-    commands:
-      - echo "Account purge completed on `date`"
+      - echo "Account purge started on $(date)"
+      - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+      - |
+        cat <<EOF > aws-nuke-config.yaml
+        regions:
+          - eu-west-1
+          - global
+        account-blocklist:
+          - "999999999999" # production
+        resource-types: # only nuke these resources
+          targets:
+          - CloudFormationStack
+          - EC2Address
+          - EC2ClientVpnEndpoint
+          - EC2ClientVpnEndpointAttachment
+          - EC2CustomerGateway
+          - EC2DHCPOption
+          - EC2DefaultSecurityGroupRule
+          - EC2EgressOnlyInternetGateway
+          - EC2Image
+          - EC2Instance
+          - EC2InternetGateway
+          - EC2InternetGatewayAttachment
+          - EC2LaunchTemplate
+          - EC2NATGateway
+          - EC2NetworkACL
+          - EC2NetworkInterface
+          - EC2PlacementGroup
+          - EC2RouteTable
+          - EC2SecurityGroup
+          - EC2Snapshot
+          - EC2SpotFleetRequest
+          - EC2Subnet
+          - EC2TGW
+          - EC2TGWAttachment
+          - EC2VPC
+          - EC2VPCEndpoint
+          - EC2VPCEndpointServiceConfiguration
+          - EC2VPCPeeringConnection
+          - EC2VPNConnection
+          - EC2VPNGateway
+          - EC2VPNGatewayAttachment
+          - EC2Volume
+          - IAMGroup
+          - IAMUser
+          - S3Bucket
+        accounts:
+          "${ACCOUNT}": {}
+        EOF
+      - echo "Setting an automated alias for this account"
+      - ALIAS=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 25 | head -n 1)
+      - aws iam create-account-alias --account-alias $ALIAS
+      - echo "Running Nuke on Account $ACCOUNT"
+      - aws-nuke -c aws-nuke-config.yaml --force | tee -a aws-nuke.log
+      # - aws-nuke resource-types
+      - echo "Account purge completed on $(date)"
