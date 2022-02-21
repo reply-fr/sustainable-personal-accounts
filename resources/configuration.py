@@ -29,6 +29,22 @@ import boto3
 class Configuration:
     ''' toggles are accessible from every python modules '''
 
+    ALLOWED_ATTRIBUTES = dict(
+        automation_account_id='str',
+        automation_region='str',
+        preparation_buildspec_template_file='str',
+        purge_buildspec_template_file='str',
+        cockpit_markdown_text='str',
+        dry_run='bool',
+        event_bus_arn='str',
+        expiration_expression='str',
+        maximum_concurrent_executions='int',
+        organizational_units='list',
+        role_arn_to_manage_accounts='str',
+        role_arn_to_put_events='str',
+        role_name_to_manage_codebuild='str',
+    )
+
     @staticmethod
     def expand_text(text, context: SimpleNamespace):
         ''' replace keywords in text with values found in context object '''
@@ -115,17 +131,6 @@ class Configuration:
     def set_attribute(cls, key, value):
         cls.validate_attribute(key, value)
         setattr(toggles, key, value)
-
-    ALLOWED_ATTRIBUTES = dict(
-        cockpit_markdown_text='str',
-        dry_run='bool',
-        expiration_expression='str',
-        maximum_concurrent_executions='int',
-        organizational_units='list',
-        role_arn_to_manage_accounts='str',
-        role_arn_to_put_events='str',
-        role_name_to_manage_codebuild='str',
-    )
 
     @classmethod
     def validate_attribute(cls, key, value):

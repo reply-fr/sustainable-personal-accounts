@@ -23,20 +23,19 @@ from aws_cdk.aws_lambda import Function
 
 class SignalAssignedAccount(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, statements=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
+        self.functions = [self.build_on_tag(parameters=parameters, permissions=permissions)]
 
-        if toggles.role_name_to_manage_codebuild:
-            parameters['environment']['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
-
-        self.function = Function(
+    def build_on_tag(self, parameters, permissions) -> Function:
+        function = Function(
             self, "OnTag",
             description="Start preparation of an assigned account",
             handler="signal_assigned_account_handler.handle_event",
             **parameters)
 
-        for statement in statements:
-            self.function.add_to_role_policy(statement)
+        for permission in permissions:
+            function.add_to_role_policy(permission)
 
         Rule(self, "TagRule",
              event_pattern=EventPattern(
@@ -45,4 +44,6 @@ class SignalAssignedAccount(Construct):
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
                      eventSource=["organizations.amazonaws.com"])),
-             targets=[LambdaFunction(self.function)])
+             targets=[LambdaFunction(function)])
+
+        return function

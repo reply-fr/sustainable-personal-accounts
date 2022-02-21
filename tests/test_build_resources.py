@@ -26,7 +26,7 @@ import pytest
 from build_resources import build_resources
 
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.mark.slow

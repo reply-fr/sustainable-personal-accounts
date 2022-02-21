@@ -16,7 +16,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-import os
 import logging
 
 from logger import setup_logging, trap_exception
@@ -24,11 +23,19 @@ setup_logging()
 
 from account import Account, State
 from events import Events
+from worker import Worker
 
 
 @trap_exception
-def handle_event(event, context):
+def handle_codebuild_event(event, context):
+    logging.debug(json.dumps(event))
+    input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION)
+    return Events.emit('PreparedAccount', input.account)
+
+
+@trap_exception
+def handle_local_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_local_event(event, match="PreparedAccount")
     Account.move(account=input.account, state=State.RELEASED)
-    return Events.emit('ReleasedAccount', input.account)
+    return Events.emit('ReleasedAccount', input.account, session=session)

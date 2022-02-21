@@ -57,12 +57,42 @@ def test_build_event_with_labels():
         Events.build_event(label='*perfectly*unknown*', account='123456789012')
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
-def test_put_event():
-    mock = Mock()
-    Events.put_event(event='hello', session=mock)
-    mock.client.assert_called_with('events')
-    mock.client.return_value.put_events.assert_called_with(Entries=['hello'])
+def test_decode_codebuild_event():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="123456789012",
+                                           project="SampleProject",
+                                           status="SUCCEEDED"))
+    decoded = Events.decode_codebuild_event(event)
+    assert decoded.account == "123456789012"
+    assert decoded.project == "SampleProject"
+    assert decoded.status == "SUCCEEDED"
+
+
+def test_decode_codebuild_event_on_malformed_account():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="short",
+                                           project="SampleProject",
+                                           status="SUCCEEDED"))
+    with pytest.raises(ValueError):
+        Events.decode_codebuild_event(event)
+
+
+def test_decode_codebuild_event_on_unexpected_project():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="123456789012",
+                                           project="NotMyProjectProject",
+                                           status="SUCCEEDED"))
+    with pytest.raises(ValueError):
+        Events.decode_codebuild_event(event, match="ExpectedProject")
+
+
+def test_decode_codebuild_event_on_unexpected_status():
+    event = Events.make_event(template="tests/events/codebuild-template.json",
+                              context=dict(account="123456789012",
+                                           project="SampleProject",
+                                           status="FAILED"))
+    with pytest.raises(ValueError):
+        Events.decode_codebuild_event(event)
 
 
 def test_decode_local_event():
@@ -146,12 +176,23 @@ def test_decode_tag_account_event_on_unexpected_state():
 def test_decode_tag_account_event_on_missing_state():
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012"))
+
+    # remove tag 'account:state' from regular fixture
     tags = event["detail"]["requestParameters"]["tags"]
     tags = [item for item in tags if item['key'] != 'account:state']
     event["detail"]["requestParameters"]["tags"] = tags
+
     with pytest.raises(ValueError):
         Events.decode_tag_account_event(event)
 
 
 def test_get_session():
     assert Events.get_session() is not None
+
+
+@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
+def test_put_event():
+    mock = Mock()
+    Events.put_event(event='hello', session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=['hello'])

@@ -6,23 +6,17 @@ Note that alternate projects are available if SPA does not suit your specific ne
 - [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
 - [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
 
-## Guiding principles for sustainable personal accounts
+## Maintenance window for personal accounts
 
-**We drive innovation by experimentations** - Professionals who can access the AWS console, APIs or SDK have a strong advantage to build systems out of available software and data constructs, and to prove the business opportunity or to fail fast. Large enterprises are advised to connect thousands of employees to AWS native capabilities so as to foster innovation at scale. A key performance indicator is the number of AWS accounts assigned to individuals across the corporation.
+Since we want to purge and to reset accounts assigned to individuals, this can be represented as a state machine that features following states and transitions.
 
-**We trust our employees and colleagues** - In most cases, temporary resources used on cloud infrastructure for some experimentation will require a very limited budget, and will stay isolated from corporate mainstream systems. This is creating an opportunity for a distinct responsibility models, where controls that are traditionally used for production and for large systems are relaxed on personal cloud accounts. For each personal cloud account, a monthly budget can be consumed without additional financial control. A key performance indicator is the number of personal cloud accounts that go above budget and that deserve specific scrutiny and corrective action.
+<!--- you can use mermaid live with following link, and then save in ./media
 
-**We influence corporate culture with recycling** - While production information systems have life cycles of multiple years, experimental information systems may be deployed for some hours only. Performing enterprises do clear cloud personal accounts used by their software engineers and data engineers for experiments and for labs. This is leading employees towards Continuous Integration (CI) practice in their day to day activities, that is foundational for sustainable agility. Business stakeholders can set the recycling horizon as a corporate policy. We recommend to start with monthly clearing of personal cloud accounts, and then move progressively towards weekly or even daily expirations. One key performance indicator is the cost saving incurred by deleted cloud resources on recycle. Another key performance indicator is the level of activity around git repositories initiated by individual persons.
+      https://mermaid.live/edit#eyJjb2RlIjoiZ3JhcGggTFJcbiAgICBBKFZhbmlsbGEgQWNjb3VudHMpIC0tPiBCXG4gICAgQihBc3NpZ25lZCBBY2NvdW50cykgLS0-IENcbiAgICBDKFJlbGVhc2VkIEFjY291bnRzKSAtLT4gRFxuICAgIEQoRXhwaXJlZCBBY2NvdW50cykgLS0-IEJcbiIsIm1lcm1haWQiOiJ7XG4gIFwidGhlbWVcIjogXCJkYXJrXCJcbn0iLCJ1cGRhdGVFZGl0b3IiOnRydWUsImF1dG9TeW5jIjp0cnVlLCJ1cGRhdGVEaWFncmFtIjp0cnVlfQ
 
-**We scale with automated guardrails and with insourced blueprints** - Jeff Bezos has a saying: “Good intentions don't work. Mechanisms do.” In the context of this project, guardrails mean that corporate policies should apply automatically to personal cloud accounts. In addition, these accounts are recycled periodically. These cycles are giving security teams periodic opportunities to update security controls and, therefore, to adapt continuously to cyber-threats. On the other hand, the tooling provided to employees working on the cloud is specific to each enterprise. Also, this tooling is evolving over time. In the context of this project, we provide complete freedom regarding the execution of custom software on each personal cloud account. In addition, with periodic recycling of these accounts there is an opportunity to continuously update the toolbox provided to employees.
+--->
 
-## Event-driven architecture
-
-![architecture](./media/event-driven-architecture.png)
-
-## Cyclic life cycle for personal accounts
-
-Since we want to purge and to recycle accounts assigned to individuals, this can be represented as a state machine that features following states and transitions.
+![state machine](./media/state-machine.png)
 
 - **Vanilla Accounts** - When an account has just been created by Control Tower, ServiceNow, or by any other mean, it is linked to a specific identity. Note that Control Tower does a pretty good job to create an identity in AWS Single Sign-On (SSO) before creating a new account. For accounts in this state, the most important activity is to add tags to the account itself. Then the tagged account can be moved to the next state.
 
@@ -33,17 +27,21 @@ Since we want to purge and to recycle accounts assigned to individuals, this can
 - **Expired Accounts** - Released Accounts are expired at regular intervals (e.g., daily, weekly, or monthly). Activities on expired accounts consist of systematic deletion of resources. Some resources may be preserved though the process, either because they have been tagged for explicit deadline at a later date, or because they cannot be created again (e.g., CloudFormation stacks created by Control Tower). Once accounts have been purged, they can be moved to Assigned Accounts for a new cycle.
 
 
-The diagram below depicts the overall state machine implemented in Sustainable Personal Accounts:
-
-<!--- you can use mermaid live with following link, and then save in ./media
-
-      https://mermaid.live/edit#eyJjb2RlIjoiZ3JhcGggTFJcbiAgICBBKFZhbmlsbGEgQWNjb3VudHMpIC0tPiBCXG4gICAgQihBc3NpZ25lZCBBY2NvdW50cykgLS0-IENcbiAgICBDKFJlbGVhc2VkIEFjY291bnRzKSAtLT4gRFxuICAgIEQoRXhwaXJlZCBBY2NvdW50cykgLS0-IEJcbiIsIm1lcm1haWQiOiJ7XG4gIFwidGhlbWVcIjogXCJkYXJrXCJcbn0iLCJ1cGRhdGVFZGl0b3IiOnRydWUsImF1dG9TeW5jIjp0cnVlLCJ1cGRhdGVEaWFncmFtIjp0cnVlfQ
-
---->
-
-![state machine](./media/state-machine.png)
-
 Note that the scope of SPA is limited to the effective part of AWS accounts life cycle. Since the creation and the deletion of accounts are not specified, there are multiple options available for actual implementation. If SPA is deployed within an environment managed by Control Tower, then you can benefit from the account factory and other tools exposed to you. For other environments, it is up to you to create new accounts and to delete them when appropriate.
+
+## Event-driven architecture
+
+![architecture](./media/reference-architecture.svg)
+
+## Guiding principles for sustainable personal accounts
+
+**We drive innovation by experimentations** - Professionals who can access the AWS console, APIs or SDK have a strong advantage to build systems out of available software and data constructs, and to prove the business opportunity or to fail fast. Large enterprises are advised to connect thousands of employees to AWS native capabilities so as to foster innovation at scale. A key performance indicator is the number of AWS accounts assigned to individuals across the corporation.
+
+**We trust our employees and colleagues** - In most cases, temporary resources used on cloud infrastructure for some experimentation will require a very limited budget, and will stay isolated from corporate mainstream systems. This is creating an opportunity for a distinct responsibility models, where controls that are traditionally used for production and for large systems are relaxed on personal cloud accounts. For each personal cloud account, a monthly budget can be consumed without additional financial control. A key performance indicator is the number of personal cloud accounts that go above budget and that deserve specific scrutiny and corrective action.
+
+**We influence corporate culture with recycling** - While production information systems have life cycles of multiple years, experimental information systems may be deployed for some hours only. Performing enterprises do clear cloud personal accounts used by their software engineers and data engineers for experiments and for labs. This is leading employees towards Continuous Integration (CI) practice in their day to day activities, that is foundational for sustainable agility. Business stakeholders can set the recycling horizon as a corporate policy. We recommend to start with monthly clearing of personal cloud accounts, and then move progressively towards weekly or even daily expirations. One key performance indicator is the cost saving incurred by deleted cloud resources on recycle. Another key performance indicator is the level of activity around git repositories initiated by individual persons.
+
+**We scale with automated guardrails and with insourced blueprints** - Jeff Bezos has a saying: “Good intentions don't work. Mechanisms do.” In the context of this project, guardrails mean that corporate policies should apply automatically to personal cloud accounts. In addition, these accounts are recycled periodically. These cycles are giving security teams periodic opportunities to update security controls and, therefore, to adapt continuously to cyber-threats. On the other hand, the tooling provided to employees working on the cloud is specific to each enterprise. Also, this tooling is evolving over time. In the context of this project, we provide complete freedom regarding the execution of custom software on each personal cloud account. In addition, with periodic recycling of these accounts there is an opportunity to continuously update the toolbox provided to employees.
 
 ## Frequently asked questions
 
@@ -94,13 +92,9 @@ If you have access to the AWS Console, then you are encouraged to work within a 
 
 Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. As a rule of thumb, the basic requirement is that up to 10,000 AWS accounts are purged and recycled on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.
 
-### Q. Why are you moving accounts across multiple Organisational Units (OU)?
-
-We build state machines out of Organisational Units (OU) because of security and because of efficiency. Since each OU has its own Security Control Policies (SCP), moving an account around also determines what a person can do, or not, after authentication. For example, when your account is moved to the OU Expired Accounts, then the SCP there is preventing you from creating any resource. Secondly, the move of an account can be easily detected at the organisation level and pushed to an event bus in AWS account devoted to automation. Thirdly, by deploying accounts across OU we do not need a separate storage engine for states. The Sustainable Personal Accounts design is both serverless and storageless, but servicefull.
-
 ### Q. How are transitions detected and managed?
 
-When an AWS account is created into an Organisation Unit, or moved to an OU, this is detected as an event originated by AWS Organization, and forwarded to an Amazon EventBridge bus. From there, multiple rules and subscribers can be activated to handle each event appropriately.
+When an AWS account is created into an Organisation Unit, or moved to an OU, this is detected as an event originated by AWS Organizations, and forwarded to an Amazon EventBridge bus. Similarly, when some AWS account is tagged, this is detected by AWS Organizations and forwarded to an event bus. From there, multiple rules and subscribers can be activated to handle each event appropriately.
 
 In addition, events generated by the code of Sustainable Personal Account itself are also emitted on the same bus. Generally speaking, we compensate the fragmentation of code by centralising events into a single event bus for the entire system.
 
@@ -142,9 +136,9 @@ Sure. Sustainable Personal Accounts features following building blocks:
 
 - **The Organisation** - This is the specific instance of AWS Organisation that is hosting  all personal accounts managed by SPA. We recommend to land SPA into an organisation deployed by AWS Control Tower, so as to benefit from integrated SSO.
 
-- **Vanilla Accounts**, **Assigned Accounts**, **Released Accounts** and **Expired Accounts** - These are the Organisational Unit (OU) that host all personal accounts. Each OU is a container for accounts in a given state. In the context of Control Tower, we recommend to create these four OUs as children of the Sandbox OU.
+- **Vanilla Accounts**, **Assigned Accounts**, **Released Accounts** and **Expired Accounts** - These are the managed with tags attached to AWS accounts. Tag key is `account:state` and possible values are `vanilla`, `assigned`, `released` and `expired`.
 
-- **Personal AWS accounts** - Each account handled with SPA is put into one of the four OUs mentioned above. In addition, each account is tagged with the e-mail address of the person using it. In the context of Control Tower, the creation of a personal account can be streamlined with the account factory in Service Catalog.
+- **Personal AWS accounts** - In the context of Control Tower, the creation of a personal account can be streamlined with the account factory in Service Catalog. Each account is tagged with the e-mail address of the person using it. In addition, each account handled with SPA can be put into one Organizational Unit under the Sandbox OU.
 
 - **Automation account** - This is the AWS account that hosts centralised SPA resources such as EventBridge event bus and Lambda functions. In the context of Control Tower, we recommend to place this account in the Sandbox OU. For example, you can rename the Sandbox AWS account created by Control Tower to Automation and that's it.
 

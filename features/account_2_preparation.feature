@@ -8,12 +8,12 @@ so as to enforce corporate policies
 # requirement: enforce cost management policies in individual cloud accounts
 
 Scenario: where assigned account is reported and handled
-When an account lands in OU 'Assigned Accounts'
+When account tag of key 'account:state' is changed to value 'assigned'
 Then lambda function 'SignalAssignedAccount' is executed
 And lambda function emits event 'AssignedAccount' on event bus
 And lambda function creates codebuild project 'PrepareAccount' within assigned account
 And lambda function starts codebuild project 'PrepareAccount' asynchronously
-# implementation: lambda execution role permits creation of codebuild projects for accounts within OU 'Assigned Accounts'
+# implementation: lambda execution role permits creation of codebuild projects
 # implementation: boto3.client('codebuild').start_build() with inline buildspec
 
 Scenario: where assigned account is prepared
@@ -25,5 +25,5 @@ Scenario: where assigned account is moved to next state
 When an event 'PreparedAccount' has been emitted on event bus
 Then lambda function 'MoveAssignedAccount' is executed
 And lambda function emits an event 'ReleasedAccount' on event bus
-And account is moved from OU 'Assigned Accounts' to OU 'Released Accounts'
+And account tag of key 'account:state' is changed to value 'released'
 # event is emitted for observability and for system extension

@@ -19,8 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import patch
-import os
+from unittest.mock import Mock
 import pytest
 
 from code import Events
@@ -30,9 +29,9 @@ from code.listen_events_handler import handle_event
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
 def test_handle_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           state="CreatedAccount"))
-    handle_event(event=event, context=None)
+                                           label="CreatedAccount"))
+    mock = Mock()
+    assert handle_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'

@@ -19,12 +19,9 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import json
 from unittest.mock import patch, Mock
 import os
 import pytest
-
-from boto3.session import Session
 
 from code.move_expired_accounts_handler import handle_event
 

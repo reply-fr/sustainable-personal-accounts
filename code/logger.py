@@ -51,7 +51,7 @@ def trap_exception(function):
         try:
             return function(*args, **kwargs)
 
-        except ValueError as error:  # for regular code breaks, e.g., event is not for this specific function
+        except ValueError as error:  # regular code breaks, e.g., event is not for this specific function
             logging.debug(error)
             return f"[DEBUG] {error}"
 
