@@ -43,7 +43,7 @@ class Parameters(Construct):
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for the purge of accounts",
             parameter_name=self.PURGE_BUILDSPEC_PARAMETER,
-            tier=ParameterTier.STANDARD)
+            tier=ParameterTier.ADVANCED)  # up to 8k template
 
     def get_buildspec_for_preparation(self):
         logging.debug("Getting buildspec for account preparation")

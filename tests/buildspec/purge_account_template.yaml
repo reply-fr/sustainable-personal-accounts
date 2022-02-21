@@ -24,67 +24,11 @@ phases:
           - "999999999999" # production
         resource-types: # only nuke these resources
           targets:
-          # - ACMCertificate
-          # - ACMPCACertificateAuthority
-          # - ACMPCACertificateAuthorityState
-          # - AMPWorkspace
-          # - APIGatewayAPIKey
-          # - APIGatewayClientCertificate
-          # - APIGatewayDomainName
-          # - APIGatewayRestAPI
-          # - APIGatewayUsagePlan
-          # - APIGatewayV2API
-          # - APIGatewayV2VpcLink
-          # - APIGatewayVpcLink
-          # - AWSBackupPlan
-          # - AWSBackupRecoveryPoint
-          # - AWSBackupSelection
-          # - AWSBackupVault
-          # - AWSBackupVaultAccessPolicy
-          # - AccessAnalyzer
-          # - AppMeshMesh
-          # - AppMeshRoute
-          # - AppMeshVirtualGateway
-          # - AppMeshVirtualNode
-          # - AppMeshVirtualRouter
-          # - AppMeshVirtualService
-          # - AppStreamDirectoryConfig
-          # - AppStreamFleet
-          # - AppStreamFleetState
-          # - AppStreamImage
-          # - AppStreamImageBuilder
-          # - AppStreamImageBuilderWaiter
-          # - AppStreamStack
-          # - AppStreamStackFleetAttachment
-          # - AppSyncGraphqlAPI
-          # - ApplicationAutoScalingScalableTarget
-          # - ArchiveRule
-          # - AthenaNamedQuery
-          # - AthenaWorkGroup
-          # - AutoScalingGroup
-          # - AutoScalingPlansScalingPlan
-          # - BatchComputeEnvironment
-          # - BatchComputeEnvironmentState
-          # - BatchJobQueue
-          # - BatchJobQueueState
-          # - Budget
-          # - Cloud9Environment
-          # - CloudDirectoryDirectory
-          # - CloudDirectorySchema
           - CloudFormationStack
-          # - CloudFormationStackSet
-          # - CloudFormationType
           - CloudFrontDistribution
-          # - CloudFrontDistributionDeployment
-          # - CloudFrontOriginAccessIdentity
-          # - CloudHSMV2Cluster
-          # - CloudHSMV2ClusterHSM
+          - CloudFrontDistributionDeployment
+          - CloudFrontOriginAccessIdentity
           # - CloudSearchDomain
-          # - CloudTrailTrail
-          # - CloudWatchAlarm
-          # - CloudWatchDashboard
-          # - CloudWatchEventsRule
-          # - CloudWatchEventsTarget
           # - CloudWatchLogsDestination
           # - CloudWatchLogsLogGroup
           # - CloudWatchLogsResourcePolicy
@@ -102,43 +46,22 @@ phases:
           # - CognitoUserPool
           # - CognitoUserPoolClient
           # - CognitoUserPoolDomain
-          # - ComprehendDocumentClassifier
-          # - ComprehendDominantLanguageDetectionJob
-          # - ComprehendEndpoint
-          # - ComprehendEntitiesDetectionJob
-          # - ComprehendEntityRecognizer
-          # - ComprehendKeyPhrasesDetectionJob
-          # - ComprehendSentimentDetectionJob
-          # - ConfigServiceConfigRule
-          # - ConfigServiceConfigurationRecorder
-          # - ConfigServiceDeliveryChannel
           # - DAXCluster
           # - DAXParameterGroup
           # - DAXSubnetGroup
           # - DataPipelinePipeline
-          # - DatabaseMigrationServiceCertificate
-          # - DatabaseMigrationServiceEndpoint
-          # - DatabaseMigrationServiceEventSubscription
-          # - DatabaseMigrationServiceReplicationInstance
-          # - DatabaseMigrationServiceReplicationTask
-          # - DatabaseMigrationServiceSubnetGroup
           # - DeviceFarmProject
           # - DirectoryServiceDirectory
           # - DynamoDBTable
           # - DynamoDBTableItem
           - EC2Address
           - EC2ClientVpnEndpoint
-          - EC2ClientVpnEndpointAttachment
           - EC2CustomerGateway
-          - EC2DHCPOption
-          - EC2DefaultSecurityGroupRule
-          - EC2EgressOnlyInternetGateway
           - EC2Image
           - EC2Instance
           - EC2InternetGateway
           - EC2InternetGatewayAttachment
           - EC2KeyPair
-          - EC2LaunchTemplate
           - EC2NATGateway
           - EC2NetworkACL
           - EC2NetworkInterface
@@ -147,16 +70,11 @@ phases:
           - EC2SecurityGroup
           - EC2Snapshot
           - EC2SpotFleetRequest
-          - EC2Subnet
           - EC2TGW
-          - EC2TGWAttachment
           - EC2VPC
           - EC2VPCEndpoint
-          - EC2VPCEndpointServiceConfiguration
-          - EC2VPCPeeringConnection
           - EC2VPNConnection
           - EC2VPNGateway
-          - EC2VPNGatewayAttachment
           - EC2Volume
           # - ECRRepository
           - ECSCluster
@@ -166,237 +84,54 @@ phases:
           - EFSFileSystem
           - EFSMountTarget
           - EKSCluster
-          # - EKSFargateProfiles
           - EKSNodegroups
           - ELB
           - ELBv2
-          - ELBv2TargetGroup
           - EMRCluster
-          # - EMRSecurityConfiguration
           # - ESDomain
           # - ElasticBeanstalkApplication
-          # - ElasticBeanstalkEnvironment
-          # - ElasticTranscoderPipeline
           # - ElasticacheCacheCluster
-          # - ElasticacheCacheParameterGroup
-          # - ElasticacheReplicationGroup
-          # - ElasticacheSubnetGroup
-          # - FMSNotificationChannel
-          # - FMSPolicy
           # - FSxBackup
           - FSxFileSystem
-          # - FirehoseDeliveryStream
-          # - GlobalAccelerator
-          # - GlobalAcceleratorEndpointGroup
-          # - GlobalAcceleratorListener
-          # - GlueClassifier
-          # - GlueConnection
-          # - GlueCrawler
           # - GlueDatabase
           # - GlueDevEndpoint
-          # - GlueJob
-          # - GlueTrigger
-          # - GuardDutyDetector
           - IAMGroup
           # - IAMGroupPolicy
           # - IAMGroupPolicyAttachment
-          # - IAMInstanceProfile
-          # - IAMInstanceProfileRole
-          # - IAMLoginProfile
           # - IAMOpenIDConnectProvider
           # - IAMPolicy
           # - IAMRole
           # - IAMRolePolicy
-          # - IAMRolePolicyAttachment
-          # - IAMSAMLProvider
-          # - IAMServerCertificate
-          # - IAMServiceSpecificCredential
-          # - IAMSigningCertificate
           - IAMUser
           - IAMUserAccessKey
-          # - IAMUserGroupAttachment
           # - IAMUserPolicy
-          # - IAMUserPolicyAttachment
-          # - IAMUserSSHPublicKey
-          # - IAMVirtualMFADevice
-          # - ImageBuilderComponent
-          # - ImageBuilderDistributionConfiguration
           # - ImageBuilderImage
-          # - ImageBuilderInfrastructureConfiguration
           # - ImageBuilderPipeline
-          # - ImageBuilderRecipe
-          # - InspectorAssessmentRun
-          # - InspectorAssessmentTarget
-          # - InspectorAssessmentTemplate
-          # - IoTAuthorizer
-          # - IoTCACertificate
-          # - IoTCertificate
-          # - IoTJob
-          # - IoTOTAUpdate
-          # - IoTPolicy
-          # - IoTRoleAlias
-          # - IoTStream
-          # - IoTThing
-          # - IoTThingGroup
-          # - IoTThingType
-          # - IoTThingTypeState
-          # - IoTTopicRule
-          # - KMSAlias
-          # - KMSKey
-          # - KendraIndex
-          # - KinesisAnalyticsApplication
-          # - KinesisStream
-          # - KinesisVideoProject
-          # - LambdaEventSourceMapping
           # - LambdaFunction
           # - LambdaLayer
-          # - LaunchConfiguration
-          # - LexBot
-          # - LexIntent
-          # - LexModelBuildingServiceBotAlias
-          # - LexSlotType
-          # - LifecycleHook
-          # - LightsailDisk
-          # - LightsailDomain
-          # - LightsailInstance
-          # - LightsailKeyPair
-          # - LightsailLoadBalancer
-          # - LightsailStaticIP
           # - MQBroker
           # - MSKCluster
-          # - MSKConfiguration
-          # - MachineLearningBranchPrediction
-          # - MachineLearningDataSource
-          # - MachineLearningEvaluation
-          # - MachineLearningMLModel
-          # - Macie
-          # - MediaConvertJobTemplate
-          # - MediaConvertPreset
-          # - MediaConvertQueue
-          # - MediaLiveChannel
-          # - MediaLiveInput
-          # - MediaLiveInputSecurityGroup
-          # - MediaPackageChannel
-          # - MediaPackageOriginEndpoint
-          # - MediaStoreContainer
-          # - MediaStoreDataItems
-          # - MediaTailorConfiguration
-          # - MobileProject
           # - NeptuneCluster
           # - NeptuneInstance
           # - NetpuneSnapshot
-          # - OpsWorksApp
-          # - OpsWorksCMBackup
-          # - OpsWorksCMServer
-          # - OpsWorksCMServerState
-          # - OpsWorksInstance
-          # - OpsWorksLayer
-          # - OpsWorksUserProfile
           # - RDSDBCluster
-          # - RDSDBClusterParameterGroup
-          # - RDSDBParameterGroup
-          # - RDSDBSubnetGroup
-          # - RDSEventSubscription
           # - RDSInstance
-          # - RDSOptionGroup
           # - RDSProxy
           # - RDSSnapshot
           # - RedshiftCluster
-          # - RedshiftParameterGroup
           # - RedshiftSnapshot
-          # - RedshiftSubnetGroup
           # - RekognitionCollection
-          # - ResourceGroupGroup
-          # - RoboMakerDeploymentJob
-          # - RoboMakerFleet
-          # - RoboMakerRobot
-          # - RoboMakerRobotApplication
-          # - RoboMakerSimulationApplication
-          # - RoboMakerSimulationJob
-          # - Route53HealthCheck
           # - Route53HostedZone
-          # - Route53ResolverEndpoint
-          # - Route53ResolverRule
-          # - Route53ResourceRecordSet
-          # - Route53TrafficPolicy
           # - S3AccessPoint
           - S3Bucket
-          # - S3MultipartUpload
-          # - S3Object
-          # - SESConfigurationSet
-          # - SESIdentity
-          # - SESReceiptFilter
-          # - SESReceiptRuleSet
-          # - SESTemplate
-          # - SFNStateMachine
-          # - SNSEndpoint
-          # - SNSPlatformApplication
-          # - SNSSubscription
           # - SNSTopic
           # - SQSQueue
-          # - SSMActivation
           # - SSMAssociation
           # - SSMDocument
-          # - SSMMaintenanceWindow
           # - SSMParameter
-          # - SSMPatchBaseline
-          # - SSMResourceDataSync
-          # - SageMakerApp
-          # - SageMakerDomain
-          # - SageMakerEndpoint
-          # - SageMakerEndpointConfig
-          # - SageMakerModel
           # - SageMakerNotebookInstance
-          # - SageMakerNotebookInstanceLifecycleConfig
-          # - SageMakerNotebookInstanceState
-          # - SageMakerUserProfiles
           # - SecretsManagerSecret
-          # - SecurityHub
-          # - ServiceCatalogConstraintPortfolioAttachment
-          # - ServiceCatalogPortfolio
-          # - ServiceCatalogPortfolioProductAttachment
-          # - ServiceCatalogPortfolioShareAttachment
-          # - ServiceCatalogPrincipalPortfolioAttachment
-          # - ServiceCatalogProduct
-          # - ServiceCatalogProvisionedProduct
-          # - ServiceCatalogTagOption
-          # - ServiceCatalogTagOptionPortfolioAttachment
-          # - ServiceDiscoveryInstance
-          # - ServiceDiscoveryNamespace
-          # - ServiceDiscoveryService
-          # - SimpleDBDomain
-          # - StorageGatewayFileShare
-          # - StorageGatewayGateway
-          # - StorageGatewayTape
-          # - StorageGatewayVolume
-          # - TransferServer
-          # - TransferServerUser
-          # - WAFRegionalByteMatchSet
-          # - WAFRegionalByteMatchSetIP
-          # - WAFRegionalIPSet
-          # - WAFRegionalIPSetIP
-          # - WAFRegionalRateBasedRule
-          # - WAFRegionalRateBasedRulePredicate
-          # - WAFRegionalRegexMatchSet
-          # - WAFRegionalRegexMatchTuple
-          # - WAFRegionalRegexPatternSet
-          # - WAFRegionalRegexPatternString
-          # - WAFRegionalRule
-          # - WAFRegionalRuleGroup
-          # - WAFRegionalRulePredicate
-          # - WAFRegionalWebACL
-          # - WAFRegionalWebACLRuleAttachment
-          # - WAFRule
-          # - WAFWebACL
-          # - WAFWebACLRuleAttachment
-          # - WAFv2IPSet
-          # - WAFv2RegexPatternSet
-          # - WAFv2RuleGroup
-          # - WAFv2WebACL
-          # - WorkLinkFleet
           # - WorkSpacesWorkspace
-          # - XRayGroup
-          # - XRaySamplingRule
         accounts:
           "${ACCOUNT}": {}
         EOF
