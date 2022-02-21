@@ -50,6 +50,17 @@ Each of them deserves a full AWS account to innovate fastly.
 ### -- Felix Adler (1913)
 
 ---
+<!-- _paginate: false -->
+![bg left 90%](./media/backlog-generation.svg)
+
+## <!-- fit -->:dancers: We are the future
+
+As an innovative employee,
+I want to test technology breakthroughs and maximize my impact onto our existing or new business.
+
+Please help me to leverage my AWS knowledge from AWS Console, SDK and APIs.
+
+---
 
 ## Sustainable Personal Accounts
 
