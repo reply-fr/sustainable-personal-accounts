@@ -18,8 +18,10 @@ phases:
       - |
         cat <<EOF > aws-nuke-config.yaml
         regions:
-          - eu-west-1
           - global
+          - eu-west-1
+          - eu-west-3
+          - us-east-1
         account-blocklist:
           - "999999999999" # production
         resource-types: # only nuke these resources
