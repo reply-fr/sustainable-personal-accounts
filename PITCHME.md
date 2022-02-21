@@ -56,13 +56,13 @@ Each of them deserves a full AWS account to innovate fastly.
 ## <!-- fit -->:dancers: We are the future
 
 As an innovative employee,
-I want to test technology breakthroughs and maximize my impact onto our existing or new business.
+I want to test emerging technology breakthroughs and stick at competitive edge.
 
-Please help me to leverage my AWS knowledge from AWS Console, SDK and APIs.
+Please help me to sketch ideas on cloud platform before contributing to our software and data products.
 
 ---
 
-## Sustainable Personal Accounts
+## :sparkles: Sustainable Personal Accounts
 
 __What?__ Provide an entire AWS account to every cloud practitioner of your enterprise. Yes, this can mean 1,000s of AWS accounts.
 
@@ -70,6 +70,7 @@ __Why?__ Because collective business agility depends on capability to build on c
 
 __How?__ Automate the management of AWS personal accounts at scale, including maintenance window to purge resources, to enforce corporate guardrails and to update shared blueprints. This is an open source package to be deployed within AWS Control Tower.
 
+<!--
 ---
 ## __Sustainable Personal Accounts__
 1. Guiding Principles
@@ -78,8 +79,10 @@ __How?__ Automate the management of AWS personal accounts at scale, including ma
 4. Initiative status and next steps
 5. How to adapt the solution to your specific requirements?
 
+-->
+
 ---
-## Guiding Principles
+## :rainbow: Guiding Principles
 
 <!--
 What is making this project different?
@@ -87,9 +90,9 @@ What is making this project different?
 Let us explain the mental models that explain our terms of reference, and related Key Performance Indicators.
 -->
 
-__We drive innovation with experimentations__ - A KPI is the number of AWS accounts assigned to individuals across the corporation.
+__We drive innovation with experimentations__ - How many AWS accounts are for individuals across your organization? #KPI
 
-__We trust our employees and colleagues__ - A KPI is the fraction of cloud accounts that go above budget and need corrective action.
+__We trust our employees and colleagues__ - Few cloud accounts go above budget and need corrective action. #KPI
 
 __We influence corporate culture with recycling__ - Maintenance windows enforce resource deletion (cost avoidance) and foster Continuous Integration (CI) at enterprise scale.
 
@@ -125,11 +128,7 @@ Maintenance window can very from one day to several months, depending of your co
 -->
 
 ---
-<!-- _paginate: false -->
-![bg contain](./media/reference-architecture.svg)
-
----
-## Event-driven Architecture
+## :factory: Event-driven Architecture
 
 * __Account tags store states of the machine__ and enforce scoped limitations with Service Control Policies (SCP).
 
@@ -144,7 +143,11 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 -->
 
 ---
-## Initiative status and next steps
+<!-- _paginate: false -->
+![bg contain](./media/reference-architecture.svg)
+
+---
+## :clapper: Initiative status and next steps
 
 🟢 🚩 Get idea validation from AWS Control Tower specialists (Dec)
 
@@ -159,13 +162,16 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 ▪️ Presentation to AWS Summit in Paris (April) 🏁
 
 ---
-## <!--fit--> How to adapt the solution to your specific requirements?
+## <!--fit--> :beers: How to adapt the solution to your specific requirements?
 
-__1. Serverless customization with SSM Parameter Store:__ Add script shell commands of your choice to CodeBuild projects.
+__1. Customization with configuration and templates:__ Download the package, look at the documentation and run it for yourself.
 
 __2. Fork this open source project:__ If you have python competencies with AWS CDK and boto3, then feel free to fork this project and to taylor it to your specific needs.
 
-__3. Reply can help!__ We are using the system for ourselves. And we have developed it, before sharing it with the community. [![Contact Reply](https://d11wkw82a69pyn.cloudfront.net/siteassets/images/logos/companies/reply-corporate-logo.png)](https://www.reply.com/)
+__3. Reply can help!__ We are using the system for ourselves. And we have developed it, before sharing it with the community.
+
+
+[![Contact Reply](https://d11wkw82a69pyn.cloudfront.net/siteassets/images/logos/companies/reply-corporate-logo.png)](https://www.reply.com/)
 
 ---
 <!-- _class: lead -->
