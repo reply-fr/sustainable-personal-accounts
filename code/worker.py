@@ -41,19 +41,22 @@ class Worker:
 
     @classmethod
     def prepare(cls, account, buildspec, event_bus_arn, session=None):
-        session = session if session else cls.get_session(account)
+        session = session if session else cls.get_session(account.id)
 
-        logging.info(f"Preparing account '{account}'...")
+        logging.info(f"Preparing account '{account.id}'...")
         role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
                                               session=session)
         cls.deploy_events_rule(event_bus_arn=event_bus_arn,
                                role_arn=role_arn,
                                session=session)
         role_arn = cls.deploy_role_for_codebuild(session=session)
+        variables = dict(BUDGET_AMOUNT="700.0",
+                         BUDGET_EMAIL=account.email)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=role_arn,
+                           variables=variables,
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
@@ -61,9 +64,9 @@ class Worker:
 
     @classmethod
     def purge(cls, account, buildspec, event_bus_arn, session=None):
-        session = session if session else cls.get_session(account)
+        session = session if session else cls.get_session(account.id)
 
-        logging.info(f"Purging account '{account}'...")
+        logging.info(f"Purging account '{account.id}'...")
         role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
                                               session=session)
         cls.deploy_events_rule(event_bus_arn=event_bus_arn,
@@ -190,9 +193,10 @@ class Worker:
         return role['Role']['Arn']
 
     @classmethod
-    def deploy_project(cls, name, description, buildspec, role, session=None):
+    def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
         session = session if session else Session()
         client = session.client('codebuild')
+        environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
         retries = 10
         while retries > 0:  # we may have to wait for IAM role to be really available
             logging.debug("Deploying Codebuild project")
@@ -206,7 +210,8 @@ class Worker:
                     cache=dict(type='NO_CACHE'),
                     environment=dict(type='ARM_CONTAINER',
                                      image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
-                                     computeType='BUILD_GENERAL1_SMALL'),
+                                     computeType='BUILD_GENERAL1_SMALL',
+                                     environmentVariables=environment_variables),
                     serviceRole=role,
                     timeoutInMinutes=480,
                     tags=[dict(key='origin', value='SustainablePersonalAccounts')],

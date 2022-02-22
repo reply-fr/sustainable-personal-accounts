@@ -55,10 +55,10 @@ Each of them deserves a full AWS account to innovate fastly.
 
 ## <!-- fit -->:dancers: We are the future
 
-As an innovative employee,
+“ As an innovative employee,
 I want to test emerging technology breakthroughs and stick at competitive edge.
 
-Please help me to sketch ideas on cloud platform before contributing to our software and data products.
+Please help me to sketch ideas on cloud platform before contributing to our software and data products. ”
 
 ---
 

@@ -108,7 +108,6 @@ class Account:
     @classmethod
     def list(cls, parent, session=None):
         session = session if session else cls.get_session()
-
         token = None
         while True:
             logging.debug(f"Listing accounts in parent '{parent}'")
@@ -127,12 +126,13 @@ class Account:
                 break
 
     @classmethod
-    def describe(cls, account, session=None):
-        item = SimpleNamespace(account=account)
-        attributes = session.client('organizations').describe_account(AccountId=account)['Account']
+    def describe(cls, id, session=None):
+        session = session if session else cls.get_session()
+        item = SimpleNamespace(id=id)
+        attributes = session.client('organizations').describe_account(AccountId=id)['Account']
         item.arn = attributes['Arn']
         item.email = attributes['Email']
         item.name = attributes['Name']
         item.is_active = True if attributes['Status'] == 'ACTIVE' else False
-        item.tags = cls.list_tags(account=account, session=session)
+        item.tags = cls.list_tags(account=id, session=session)
         return item
