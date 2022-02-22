@@ -324,9 +324,9 @@ def test_describe():
     mock = Mock()
     mock.client.return_value.describe_account.return_value = attributes
     mock.client.return_value.list_tags_for_resource.return_value = tags
-    item = Account.describe(account='123456789012',
+    item = Account.describe(id='123456789012',
                             session=mock)
-    assert item.account == '123456789012'
+    assert item.id == '123456789012'
     assert item.arn == 'arn:aws:some-arn'
     assert item.email == 'a@b.com'
     assert item.name == 'account-three'

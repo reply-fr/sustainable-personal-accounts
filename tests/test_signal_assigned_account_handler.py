@@ -37,6 +37,25 @@ def session():
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
     mock.client.return_value.get_parameter.return_value = dict(Parameter=dict(Value='buildspec_content'))
     mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
+    mock.client.return_value.describe_account.return_value = dict(Account=dict(Arn='arn:aws',
+                                                                               Email='a@b.com',
+                                                                               Name='Some-Account',
+                                                                               Status='ACTIVE'))
+    tags = {
+        'Tags': [
+            {
+                'Key': 'account:owner',
+                'Value': 'a@b.com'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ]
+    }
+    mock.client.return_value.list_tags_for_resource.return_value = tags
+
     return mock
 
 

@@ -2,21 +2,69 @@ version: 0.2
 
 env:
   variables:
-    VERSION: "0.1alpha"
+    BUDGET_AMOUNT: 500.0
+    BUDGET_EMAIL: a@b.com
+    BUDGET_NAME: SPA-budget
 
 phases:
   install:
-    runtime-versions:
-      python: 3.9
-  pre_build:
     commands:
-      - echo "buildspec version ${VERSION}"
-      - python --version
-      - aws --version
-      - echo "Nothing to do in the pre_build phase..."
+    - aws --version
+    - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+    - echo $BUDGET_AMOUNT
+    - echo $BUDGET_EMAIL
+    - echo $BUDGET_NAME
+
   build:
     commands:
-      - echo "Account preparation started on `date`"
-  post_build:
-    commands:
-      - echo "Account preparation completed on `date`"
+    - |
+      cat <<EOF >budget.json
+      {
+        "BudgetName": "${BUDGET_NAME}",
+        "BudgetLimit": {
+          "Amount": "${BUDGET_AMOUNT}",
+          "Unit": "USD"
+        },
+        "BudgetType": "COST",
+        "CostFilters": {},
+        "CostTypes": {
+          "IncludeTax": true,
+          "IncludeSubscription": true,
+          "UseBlended": false,
+          "IncludeRefund": false,
+          "IncludeCredit": false,
+          "IncludeUpfront": true,
+          "IncludeRecurring": true,
+          "IncludeOtherSubscription": true,
+          "IncludeSupport": true,
+          "IncludeDiscount": true,
+          "UseAmortized": false
+        },
+        "TimePeriod": {
+          "Start": "2020-01-01T01:00:00+01:00",
+          "End": "2080-01-01T02:00:00+02:00"
+        },
+        "TimeUnit": "MONTHLY"
+      }
+      EOF
+    - |
+      cat <<EOF >notifications-with-subscribers.json
+      [
+        {
+          "Notification": {
+            "ComparisonOperator": "GREATER_THAN",
+            "NotificationType": "ACTUAL",
+            "Threshold": 80,
+            "ThresholdType": "PERCENTAGE"
+          },
+          "Subscribers": [
+            {
+              "Address": "${BUDGET_EMAIL}",
+              "SubscriptionType": "EMAIL"
+            }
+          ]
+        }
+      ]
+      EOF
+    - aws budgets delete-budget --account-id $ACCOUNT --budget-name $BUDGET_NAME || true
+    - aws budgets create-budget --account-id $ACCOUNT --budget file://budget.json --notifications-with-subscribers file://notifications-with-subscribers.json

@@ -22,6 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import os
 from unittest.mock import Mock, patch
 import pytest
+from types import SimpleNamespace
 
 from code import Worker
 
@@ -63,9 +64,11 @@ def test_deploy_project(session):
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_prepare(session):
-    Worker.prepare(account='123456789012', buildspec='hello_world', event_bus_arn='arn:aws', session=session)
+    account = SimpleNamespace(id='123456789012', email='a@b.com')
+    Worker.prepare(account=account, buildspec='hello_world', event_bus_arn='arn:aws', session=session)
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_purge(session):
-    Worker.purge(account='123456789012', buildspec='hello_again', event_bus_arn='arn:aws', session=session)
+    account = SimpleNamespace(id='123456789012', email='a@b.com')
+    Worker.purge(account=account, buildspec='hello_again', event_bus_arn='arn:aws', session=session)
