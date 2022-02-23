@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import json
 import logging
 
 from constructs import Construct
@@ -23,11 +24,20 @@ from aws_cdk.aws_ssm import ParameterDataType, ParameterTier, StringParameter
 
 class Parameters(Construct):
 
+    ORGANIZATIONAL_UNITS_PARAMETER = "OrganizationalUnits"
     PREPARATION_BUILDSPEC_PARAMETER = "PreparationBuildspecTemplate"
     PURGE_BUILDSPEC_PARAMETER = "PurgeBuildspecTemplate"
 
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
+
+        StringParameter(
+            self, "OrganisationalUnits",
+            string_value=json.dumps(toggles.organisational_units),
+            data_type=ParameterDataType.TEXT,
+            description="Parameters for managed organizational units",
+            parameter_name=self.ORGANIZATIONAL_UNITS_PARAMETER,
+            tier=ParameterTier.STANDARD)
 
         StringParameter(
             self, "PreparationTemplate",
