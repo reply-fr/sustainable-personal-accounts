@@ -17,7 +17,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import builtins
 import os
-import json
 import logging
 from types import SimpleNamespace
 import yaml
@@ -106,7 +105,7 @@ class Configuration:
     def set_from_yaml(cls, stream):
         if type(stream) == str:
             with open(stream) as handle:
-                logging.info("Loading configuration from '{}'".format(stream))
+                logging.info(f"Loading configuration from '{stream}'")
                 settings = yaml.safe_load(handle)
                 cls.set_from_settings(settings)
         else:

@@ -33,7 +33,7 @@ class Parameters(Construct):
 
         StringParameter(
             self, "OrganisationalUnits",
-            string_value=json.dumps(toggles.organisational_units),
+            string_value=json.dumps(toggles.organizational_units),
             data_type=ParameterDataType.TEXT,
             description="Parameters for managed organizational units",
             parameter_name=self.ORGANIZATIONAL_UNITS_PARAMETER,
