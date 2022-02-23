@@ -48,7 +48,7 @@ class MoveVanillaAccount(Construct):
                  source=['aws.organizations'],
                  detail=dict(
                      eventName=['MoveAccount'],
-                     requestParameters=dict(destinationParentId=toggles.organizational_units))),
+                     requestParameters=dict(destinationParentId=list(toggles.organizational_units.keys())))),
              targets=[LambdaFunction(function)])
 
         return function
