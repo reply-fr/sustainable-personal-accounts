@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 from unittest.mock import Mock, patch
 import os
 import pytest
@@ -41,6 +42,21 @@ def session():
                                                                                Email='a@b.com',
                                                                                Name='Some-Account',
                                                                                Status='ACTIVE'))
+
+    parents = {
+        'Parents': [
+            {
+                'Id': 'ou-1234',
+                'Type': 'ORGANIZATIONAL_UNIT'
+            },
+        ]
+    }
+    mock.client.return_value.list_parents.return_value = parents
+
+    parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
+    parameter_2 = dict(Parameter=dict(Value='buildspec_content'))
+    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2]
+
     tags = {
         'Tags': [
             {
@@ -61,7 +77,8 @@ def session():
 
 @patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
                              DRY_RUN="TRUE",
-                             EVENT_BUS_ARN='arn:aws'))
+                             EVENT_BUS_ARN='arn:aws',
+                             ORGANIZATIONAL_UNITS_PARAMETER='here'))
 def test_handle_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
@@ -70,7 +87,9 @@ def test_handle_event(session):
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE", EVENT_BUS_ARN='arn:aws'))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             EVENT_BUS_ARN='arn:aws',
+                             ORGANIZATIONAL_UNITS_PARAMETER='here'))
 def test_handle_event_on_unexpected_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",

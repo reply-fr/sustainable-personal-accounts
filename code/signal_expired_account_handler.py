@@ -26,6 +26,7 @@ from boto3.session import Session
 
 from account import Account, State
 from events import Events
+from session import get_organizational_units
 from worker import Worker
 
 
@@ -35,6 +36,7 @@ def handle_event(event, context, session=None):
     input = Events.decode_tag_account_event(event=event, match=State.EXPIRED)
     result = Events.emit('ExpiredAccount', input.account)
     Worker.purge(account=Account.describe(input.account, session=session),
+                 organizational_units=get_organizational_units(session=session),
                  event_bus_arn=os.environ['EVENT_BUS_ARN'],
                  buildspec=get_buildspec(session=session),
                  session=session)

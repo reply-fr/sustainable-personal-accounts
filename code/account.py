@@ -135,4 +135,5 @@ class Account:
         item.name = attributes['Name']
         item.is_active = True if attributes['Status'] == 'ACTIVE' else False
         item.tags = cls.list_tags(account=id, session=session)
+        item.unit = session.client('organizations').list_parents(ChildId=id)['Parents'][0]['Id']
         return item

@@ -139,7 +139,7 @@ class Configuration:
         transformed = {}
         for unit in units:
             key = unit['identifier']
-            transformed[key] = {k: unit[k] for k in unit.keys() if k != 'identifier'}
+            transformed[key] = {k: str(unit[k]) for k in unit.keys() if k != 'identifier'}
         return transformed
 
     @staticmethod

@@ -82,7 +82,7 @@ def test_set_from_yaml(toggles):
     assert toggles.event_bus_arn == 'arn:aws:events:eu-west-1:444444444444:event-bus/default'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.maximum_concurrent_executions == 50
-    assert toggles.organizational_units == {'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}}
+    assert toggles.organizational_units == {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
     assert toggles.role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.role_arn_to_put_events == 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
     assert toggles.role_name_to_manage_codebuild == 'SpaCodebuildManagementRole'
