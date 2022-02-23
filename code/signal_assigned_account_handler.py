@@ -42,6 +42,6 @@ def handle_event(event, context, session=None):
 
 
 def get_buildspec(session=None):
-    session = session if session else Session()
+    session = session or Session()
     item = session.client('ssm').get_parameter(Name=os.environ['PREPARATION_BUILDSPEC_PARAMETER'])
     return item['Parameter']['Value']

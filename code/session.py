@@ -23,7 +23,7 @@ import botocore
 
 def make_session(role_arn, region=None, name=None, session=None):
 
-    session = session if session else Session()
+    session = session or Session()
     sts = session.client('sts')
 
     name = name if name else 'SPA-{}'.format(uuid.uuid1())

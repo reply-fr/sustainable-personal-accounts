@@ -41,7 +41,7 @@ class Worker:
 
     @classmethod
     def prepare(cls, account, buildspec, event_bus_arn, session=None):
-        session = session if session else cls.get_session(account.id)
+        session = session or cls.get_session(account.id)
 
         logging.info(f"Preparing account '{account.id}'...")
         role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
@@ -64,7 +64,7 @@ class Worker:
 
     @classmethod
     def purge(cls, account, buildspec, event_bus_arn, session=None):
-        session = session if session else cls.get_session(account.id)
+        session = session or cls.get_session(account.id)
 
         logging.info(f"Purging account '{account.id}'...")
         role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
@@ -84,7 +84,7 @@ class Worker:
 
     @classmethod
     def deploy_events_rule(cls, event_bus_arn, role_arn, name="SpaEventsRuleForCodebuild", description="", session=None):
-        session = session if session else Session()
+        session = session or Session()
         events = session.client('events')
 
         logging.info(f"Deploying rule '{name}' for events detection")
@@ -108,7 +108,7 @@ class Worker:
                                   name="SpaRoleForCodebuild",
                                   policy="AdministratorAccess",
                                   session=None):
-        session = session if session else Session()
+        session = session or Session()
         iam = session.client('iam')
 
         logging.info(f"Deploying role '{name}' for codebuild projects")
@@ -148,7 +148,7 @@ class Worker:
                                event_bus_arn,
                                name="SpaRoleForEvents",
                                session=None):
-        session = session if session else Session()
+        session = session or Session()
         iam = session.client('iam')
 
         logging.info(f"Deploying role '{name}' for events rule")
@@ -194,7 +194,7 @@ class Worker:
 
     @classmethod
     def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
-        session = session if session else Session()
+        session = session or Session()
         client = session.client('codebuild')
         environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
         retries = 10
@@ -233,7 +233,7 @@ class Worker:
 
     @classmethod
     def run_project(cls, name, session=None):
-        session = session if session else Session()
+        session = session or Session()
         logging.debug(f"Starting project build {name}")
         session.client('codebuild').start_build(projectName=name)
 
