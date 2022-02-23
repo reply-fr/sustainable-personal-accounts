@@ -64,7 +64,6 @@ class Configuration:
             cls.set_from_yaml(stream=stream)
         else:
             cls.set_from_yaml(stream=toggles.settings_file)
-        cls.set_from_environment()
         if features:  # allow test injection
             for key in features.__dict__.keys():
                 toggles.__dict__[key] = features.__dict__[key]
@@ -93,19 +92,6 @@ class Configuration:
         toggles.role_name_to_manage_codebuild = None
 
     @classmethod
-    def set_from_environment(cls, environ=None, mapping=None):
-
-        environ = environ if environ else os.environ  # allow test injection
-
-        if mapping is None:  # allow test injection
-            mapping = dict()
-
-        for key in mapping.keys():  # we only accept mapped environment variables
-            value = environ.get(mapping[key])
-            if value is not None:  # override only if environment variable has been set
-                cls.set_attribute(key, json.loads(value))
-
-    @classmethod
     def set_from_settings(cls, settings={}):
         for key in settings.keys():
             if type(settings[key]) == dict:
@@ -130,6 +116,8 @@ class Configuration:
     @classmethod
     def set_attribute(cls, key, value):
         cls.validate_attribute(key, value)
+        if key == 'organizational_units':
+            value = cls.transform_organizational_units(units=value)
         setattr(toggles, key, value)
 
     @classmethod
@@ -145,6 +133,15 @@ class Configuration:
                 raise AttributeError(f"invalid value for configuration attribute '{key}'")
         else:
             raise AttributeError(f"unknown configuration attribute '{key}'")
+
+    @staticmethod
+    def transform_organizational_units(units):
+        ''' make a dictionary out of a list of OU, using identifier as key '''
+        transformed = {}
+        for unit in units:
+            key = unit['identifier']
+            transformed[key] = {k: unit[k] for k in unit.keys() if k != 'identifier'}
+        return transformed
 
     @staticmethod
     def set_aws_environment():

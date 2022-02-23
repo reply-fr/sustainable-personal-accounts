@@ -48,9 +48,14 @@ expiration_expression: "cron(0 18 ? * SAT *)"
 #
 maximum_concurrent_executions: 50
 
-# these are organizational units where all accounts are located
+# these are organizational units where accounts are managed by the solution
 organizational_units:
-- ou-1234
+
+  - identifier: 'ou-1234'
+    budget_cost: '500'
+
+  - identifier: 'ou-5678'
+    budget_cost: '300'
 
 # this role is assumed by Lambda functions either to list AWS accounts in the OU,
 # or to tag AWS accounts

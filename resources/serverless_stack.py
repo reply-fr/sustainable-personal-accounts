@@ -69,7 +69,7 @@ class ServerlessStack(Stack):
             PURGE_BUILDSPEC_PARAMETER=Parameters.PURGE_BUILDSPEC_PARAMETER,
             DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
             EVENT_BUS_ARN=toggles.event_bus_arn,
-            ORGANIZATIONAL_UNITS=json.dumps(toggles.organizational_units),
+            ORGANIZATIONAL_UNITS=json.dumps(list(toggles.organizational_units.keys())),
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.role_arn_to_manage_accounts)
         if toggles.role_arn_to_put_events:
             environment['ROLE_ARN_TO_PUT_EVENTS'] = toggles.role_arn_to_put_events
