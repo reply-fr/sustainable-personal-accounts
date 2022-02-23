@@ -52,10 +52,10 @@ maximum_concurrent_executions: 50
 organizational_units:
 
   - identifier: 'ou-1234'
-    budget_cost: '500'
+    budget_cost: 500.0
 
   - identifier: 'ou-5678'
-    budget_cost: '300'
+    budget_cost: 300
 
 # this role is assumed by Lambda functions either to list AWS accounts in the OU,
 # or to tag AWS accounts

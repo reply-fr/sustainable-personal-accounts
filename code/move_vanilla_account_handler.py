@@ -16,7 +16,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-import os
 import logging
 
 from logger import setup_logging, trap_exception
@@ -24,13 +23,15 @@ setup_logging()
 
 from account import Account, State
 from events import Events
+from session import get_organizational_units
 
 
 @trap_exception
 def handle_move_event(event, context, session=None):
     logging.debug(json.dumps(event))
+    containers = get_organizational_units(session=session)
     input = Events.decode_move_account_event(event=event,
-                                             match=os.environ['ORGANIZATIONAL_UNIT'])
+                                             matches=list(containers.keys()))
     return handle_account(input.account, session=session)
 
 

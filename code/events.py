@@ -99,7 +99,7 @@ class Events:
         return decoded
 
     @staticmethod
-    def decode_move_account_event(event, match=None):
+    def decode_move_account_event(event, matches=None):
         decoded = SimpleNamespace()
 
         decoded.account = event['detail']['requestParameters']['accountId']
@@ -107,8 +107,8 @@ class Events:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
-        if match and match != decoded.organizational_unit:
-            raise ValueError(f"Unexpected event source '{decoded.organizational_unit}' for this function")
+        if matches and decoded.organizational_unit not in matches:
+            raise ValueError(f"Unexpected event source '{decoded.organizational_unit}'")
 
         return decoded
 

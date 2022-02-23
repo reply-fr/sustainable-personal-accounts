@@ -15,8 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
-
 from constructs import Construct
 from aws_cdk import Duration, Stack
 from aws_cdk.aws_iam import Effect, PolicyStatement

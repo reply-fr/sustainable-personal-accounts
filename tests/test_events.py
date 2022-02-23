@@ -145,7 +145,7 @@ def test_decode_move_account_event_on_unexpected_organizational_unit():
                                            destination_organizational_unit="ou-expected",
                                            source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        Events.decode_move_account_event(event, match="ou-destination")
+        Events.decode_move_account_event(event, matches=["ou-destination"])
 
 
 def test_decode_tag_account_event():
