@@ -52,7 +52,7 @@ def put_metric_data_by_state(input, session=None):
 
 def put_metric_data(name, dimensions, session=None):
     logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
-    session = session if session else Session()
+    session = session or Session()
     session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
                                                                   Dimensions=dimensions,
                                                                   Unit='Count',

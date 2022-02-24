@@ -60,7 +60,7 @@ class Events:
     def put_event(cls, event, session=None):
         logging.info(f"Putting event {event}")
         if os.environ.get("DRY_RUN") == "FALSE":
-            session = session if session else cls.get_session()
+            session = session or cls.get_session()
             session.client('events').put_events(Entries=[event])
             logging.info("Done")
         else:
@@ -99,7 +99,7 @@ class Events:
         return decoded
 
     @staticmethod
-    def decode_move_account_event(event, match=None):
+    def decode_move_account_event(event, matches=None):
         decoded = SimpleNamespace()
 
         decoded.account = event['detail']['requestParameters']['accountId']
@@ -107,8 +107,8 @@ class Events:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
-        if match and match != decoded.organizational_unit:
-            raise ValueError(f"Unexpected event source '{decoded.organizational_unit}' for this function")
+        if matches and decoded.organizational_unit not in matches:
+            raise ValueError(f"Unexpected event source '{decoded.organizational_unit}'")
 
         return decoded
 

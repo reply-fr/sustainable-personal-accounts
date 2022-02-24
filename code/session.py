@@ -15,18 +15,25 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import json
+import os
 import uuid
 
 from boto3.session import Session
 import botocore
 
 
-def make_session(role_arn, region=None, name=None, session=None):
+def get_organizational_units(session=None) -> dict:
+    session = session or Session()
+    item = session.client('ssm').get_parameter(Name=os.environ['ORGANIZATIONAL_UNITS_PARAMETER'])
+    return json.loads(item['Parameter']['Value'])
 
-    session = session if session else Session()
+
+def make_session(role_arn, region=None, name=None, session=None):
+    session = session or Session()
     sts = session.client('sts')
 
-    name = name if name else 'SPA-{}'.format(uuid.uuid1())
+    name = name or 'SPA-{}'.format(uuid.uuid1())
     try:
         response = sts.assume_role(RoleArn=role_arn, RoleSessionName=name)
     except botocore.exceptions.ParamValidationError:

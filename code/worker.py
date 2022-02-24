@@ -40,31 +40,31 @@ class Worker:
     PROJECT_NAME_FOR_ACCOUNT_PURGE = "SpaProjectForAccountPurge"
 
     @classmethod
-    def prepare(cls, account, buildspec, event_bus_arn, session=None):
-        session = session if session else cls.get_session(account.id)
+    def prepare(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
+        session = session or cls.get_session(account.id)
 
         logging.info(f"Preparing account '{account.id}'...")
+        logging.debug(f"account: {account.__dict__}")
+        logging.debug(f"organizational_units: {organizational_units}")
         role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
                                               session=session)
         cls.deploy_events_rule(event_bus_arn=event_bus_arn,
                                role_arn=role_arn,
                                session=session)
         role_arn = cls.deploy_role_for_codebuild(session=session)
-        variables = dict(BUDGET_AMOUNT="700.0",
-                         BUDGET_EMAIL=account.email)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=role_arn,
-                           variables=variables,
+                           variables=cls.make_prepare_variables(account, organizational_units),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
         logging.info("Done")
 
     @classmethod
-    def purge(cls, account, buildspec, event_bus_arn, session=None):
-        session = session if session else cls.get_session(account.id)
+    def purge(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
+        session = session or cls.get_session(account.id)
 
         logging.info(f"Purging account '{account.id}'...")
         role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
@@ -77,14 +77,25 @@ class Worker:
                            description="This project purges an AWS account of cloud resources",
                            buildspec=buildspec,
                            role=role_arn,
+                           variables=cls.make_purge_variables(account, organizational_units),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
         logging.info("Done")
 
+    def make_prepare_variables(account, organizational_units) -> dict:
+        configuration = organizational_units.get(account.unit, {})
+        variables = dict(BUDGET_AMOUNT=configuration.get('cost_budget', '200'),
+                         BUDGET_EMAIL=account.email)
+        return variables
+
+    def make_purge_variables(account, organizational_units) -> dict:
+        variables = dict(PURGE_EMAIL=account.email)
+        return variables
+
     @classmethod
     def deploy_events_rule(cls, event_bus_arn, role_arn, name="SpaEventsRuleForCodebuild", description="", session=None):
-        session = session if session else Session()
+        session = session or Session()
         events = session.client('events')
 
         logging.info(f"Deploying rule '{name}' for events detection")
@@ -108,7 +119,7 @@ class Worker:
                                   name="SpaRoleForCodebuild",
                                   policy="AdministratorAccess",
                                   session=None):
-        session = session if session else Session()
+        session = session or Session()
         iam = session.client('iam')
 
         logging.info(f"Deploying role '{name}' for codebuild projects")
@@ -148,7 +159,7 @@ class Worker:
                                event_bus_arn,
                                name="SpaRoleForEvents",
                                session=None):
-        session = session if session else Session()
+        session = session or Session()
         iam = session.client('iam')
 
         logging.info(f"Deploying role '{name}' for events rule")
@@ -194,7 +205,7 @@ class Worker:
 
     @classmethod
     def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
-        session = session if session else Session()
+        session = session or Session()
         client = session.client('codebuild')
         environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
         retries = 10
@@ -233,7 +244,7 @@ class Worker:
 
     @classmethod
     def run_project(cls, name, session=None):
-        session = session if session else Session()
+        session = session or Session()
         logging.debug(f"Starting project build {name}")
         session.client('codebuild').start_build(projectName=name)
 

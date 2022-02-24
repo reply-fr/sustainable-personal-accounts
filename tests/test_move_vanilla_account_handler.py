@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 from unittest.mock import patch, Mock
 import os
 import pytest
@@ -57,29 +58,32 @@ def valid_tags():
         ]
     }
 
+    parameter = json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})
+
     mock = Mock()
     mock.client.return_value.list_tags_for_resource.side_effect = [chunk_1, chunk_2]
+    mock.client.return_value.get_parameter.return_value = dict(Parameter=dict(Value=parameter))
     return mock
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true", ORGANIZATIONAL_UNIT="ou-landing"))
+@patch.dict(os.environ, dict(DRY_RUN="true", ORGANIZATIONAL_UNITS_PARAMETER="here"))
 def test_handle_move_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
-                                           destination_organizational_unit="ou-landing",
+                                           destination_organizational_unit="ou-1234",
                                            origin_organizational_unit="ou-origin"))
     result = handle_move_event(event=event, context=None, session=valid_tags)
     assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true", ORGANIZATIONAL_UNIT="ou-landing"))
+@patch.dict(os.environ, dict(DRY_RUN="true", ORGANIZATIONAL_UNITS_PARAMETER="here"))
 def test_handle_move_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
                                            destination_organizational_unit="ou-unexpected",
                                            origin_organizational_unit="ou-origin"))
     result = handle_move_event(event=event, context=None, session=valid_tags)
-    assert result == "[DEBUG] Unexpected event source 'ou-unexpected' for this function"
+    assert result == "[DEBUG] Unexpected event source 'ou-unexpected'"
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true"))

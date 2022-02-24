@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    VERSION: "0.1alpha"
+    PURGE_EMAIL: a@b.com
 
 phases:
   install:

@@ -295,6 +295,8 @@ def test_list():
 
 def test_describe():
 
+    mock = Mock()
+
     attributes = {
         'Account': {
             'Id': '345678901234',
@@ -306,6 +308,7 @@ def test_describe():
             'JoinedTimestamp': '20150101'
         }
     }
+    mock.client.return_value.describe_account.return_value = attributes
 
     tags = {
         'Tags': [
@@ -320,10 +323,18 @@ def test_describe():
             }
         ]
     }
-
-    mock = Mock()
-    mock.client.return_value.describe_account.return_value = attributes
     mock.client.return_value.list_tags_for_resource.return_value = tags
+
+    parents = {
+        'Parents': [
+            {
+                'Id': 'ou-1234',
+                'Type': 'ORGANIZATIONAL_UNIT'
+            },
+        ]
+    }
+    mock.client.return_value.list_parents.return_value = parents
+
     item = Account.describe(id='123456789012',
                             session=mock)
     assert item.id == '123456789012'
@@ -333,6 +344,7 @@ def test_describe():
     assert item.is_active
     assert item.tags.get('account:owner') == 'a@b.com'
     assert item.tags.get('account:state') == 'vanilla'
+    assert item.unit == 'ou-1234'
 
 
 def test_get_session():

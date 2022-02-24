@@ -72,7 +72,7 @@ class Account:
 
     @classmethod
     def iterate_tags(cls, account, session=None):
-        session = session if session else cls.get_session()
+        session = session or cls.get_session()
 
         token = None
         while True:
@@ -97,7 +97,7 @@ class Account:
 
         logging.info(f"Tagging account '{account}' with state '{state.value}'...")
         if os.environ.get("DRY_RUN") == "FALSE":
-            session = session if session else cls.get_session()
+            session = session or cls.get_session()
             session.client('organizations').tag_resource(
                 ResourceId=account,
                 Tags=[dict(Key='account:state', Value=state.value)])
@@ -107,7 +107,7 @@ class Account:
 
     @classmethod
     def list(cls, parent, session=None):
-        session = session if session else cls.get_session()
+        session = session or cls.get_session()
         token = None
         while True:
             logging.debug(f"Listing accounts in parent '{parent}'")
@@ -127,7 +127,7 @@ class Account:
 
     @classmethod
     def describe(cls, id, session=None):
-        session = session if session else cls.get_session()
+        session = session or cls.get_session()
         item = SimpleNamespace(id=id)
         attributes = session.client('organizations').describe_account(AccountId=id)['Account']
         item.arn = attributes['Arn']
@@ -135,4 +135,5 @@ class Account:
         item.name = attributes['Name']
         item.is_active = True if attributes['Status'] == 'ACTIVE' else False
         item.tags = cls.list_tags(account=id, session=session)
+        item.unit = session.client('organizations').list_parents(ChildId=id)['Parents'][0]['Id']
         return item

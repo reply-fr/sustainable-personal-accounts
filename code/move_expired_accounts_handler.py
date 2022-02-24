@@ -17,21 +17,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
-import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
+from session import get_organizational_units
 
 
 @trap_exception
 def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
-    containers = json.loads(os.environ['ORGANIZATIONAL_UNITS'])
-    for container in containers:
-        for account in Account.list(parent=container, session=session):
+    units = get_organizational_units()
+    for unit in units.keys():
+        for account in Account.list(parent=unit, session=session):
 
             item = Account.describe(account)
 
