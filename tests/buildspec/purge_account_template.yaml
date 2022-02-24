@@ -143,5 +143,5 @@ phases:
       - echo "Running AWS-Nuke on account $ACCOUNT"
       - aws-nuke -c aws-nuke-config.yaml --force | tee aws-nuke.log
       - cat aws-nuke.log | tail -n 50 >aws-nuke-short.log
-      - aws ssm put-parameter --name SpaPurgeLog --type String --value file://aws-nuke-short.log
+      - aws ssm put-parameter --name SpaPurgeLog --type String --value file://aws-nuke-short.log --overwrite
       - echo "Account purge completed on $(date)"
