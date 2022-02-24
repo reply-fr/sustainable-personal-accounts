@@ -81,7 +81,11 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.dry_run is False
-    assert toggles.organizational_units == {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
+    organizational_units = {
+        'ou-1234': {'cost_budget': '500.0', 'preparation_variables': "{'HELLO': 'WORLD'}", 'purge_variables': "{'DRY_RUN': 'TRUE'}"},
+        'ou-5678': {'cost_budget': '300', 'preparation_variables': "{'HELLO': 'UNIVERSE'}", 'purge_variables': "{'DRY_RUN': 'FALSE'}"},
+    }
+    assert toggles.organizational_units == organizational_units
     assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
 

@@ -56,7 +56,7 @@ class Worker:
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=role_arn,
-                           variables=cls.make_prepare_variables(account, organizational_units),
+                           variables=cls.make_preparation_variables(account, organizational_units),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
@@ -83,14 +83,23 @@ class Worker:
                         session=session)
         logging.info("Done")
 
-    def make_prepare_variables(account, organizational_units) -> dict:
+    @staticmethod
+    def make_preparation_variables(account, organizational_units) -> dict:
         configuration = organizational_units.get(account.unit, {})
         variables = dict(BUDGET_AMOUNT=configuration.get('cost_budget', '200'),
                          BUDGET_EMAIL=account.email)
+        extras = configuration.get('preparation_variables', {})
+        for key in extras.keys():
+            variables[key] = extras[key]
         return variables
 
+    @staticmethod
     def make_purge_variables(account, organizational_units) -> dict:
+        configuration = organizational_units.get(account.unit, {})
         variables = dict(PURGE_EMAIL=account.email)
+        extras = configuration.get('purge_variables', {})
+        for key in extras.keys():
+            variables[key] = extras[key]
         return variables
 
     @classmethod

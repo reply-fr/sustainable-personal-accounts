@@ -36,9 +36,11 @@ automation:
 
 
 # parameters for resources deployed in managed accounts
+#
 worker:
 
   # this is the buildspec template for the preparation of an account managed by SPA
+  #
   preparation_buildspec_template_file: "tests/buildspec/preparation_account_template.yaml"
 
   # this is the buildspec tempalte for the purge of an account managed by SPA
@@ -51,10 +53,19 @@ worker:
 dry_run: False
 
 # these are organizational units where accounts are managed by the solution
+#
 organizational_units:
 
   - identifier: 'ou-1234'
     cost_budget: 500.0
+    preparation_variables:
+      HELLO: WORLD
+    purge_variables:
+      DRY_RUN: 'TRUE'
 
   - identifier: 'ou-5678'
     cost_budget: 300
+    preparation_variables:
+      HELLO: UNIVERSE
+    purge_variables:
+      DRY_RUN: 'FALSE'
