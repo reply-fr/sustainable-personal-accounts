@@ -186,10 +186,6 @@ def test_decode_tag_account_event_on_missing_state():
         Events.decode_tag_account_event(event)
 
 
-def test_get_session():
-    assert Events.get_session() is not None
-
-
 @patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_put_event():
     mock = Mock()
