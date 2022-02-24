@@ -35,7 +35,6 @@ class Configuration:
         purge_buildspec_template_file='str',
         cockpit_markdown_text='str',
         dry_run='bool',
-        event_bus_arn='str',
         expiration_expression='str',
         maximum_concurrent_executions='int',
         organizational_units='list',

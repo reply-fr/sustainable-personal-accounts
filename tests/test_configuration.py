@@ -79,7 +79,6 @@ def test_set_from_yaml(toggles):
     assert toggles.purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
     assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.dry_run is False
-    assert toggles.event_bus_arn == 'arn:aws:events:eu-west-1:444444444444:event-bus/default'
     assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.maximum_concurrent_executions == 50
     assert toggles.organizational_units == {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
