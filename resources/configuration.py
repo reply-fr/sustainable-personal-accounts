@@ -30,17 +30,16 @@ class Configuration:
 
     ALLOWED_ATTRIBUTES = dict(
         automation_account_id='str',
+        automation_cockpit_markdown_text='str',
+        automation_maintenance_window_expression='str',
+        automation_maximum_concurrent_executions='int',
         automation_region='str',
-        preparation_buildspec_template_file='str',
-        purge_buildspec_template_file='str',
-        cockpit_markdown_text='str',
+        automation_role_arn_to_manage_accounts='str',
+        automation_role_name_to_manage_codebuild='str',
         dry_run='bool',
-        expiration_expression='str',
-        maximum_concurrent_executions='int',
         organizational_units='list',
-        role_arn_to_manage_accounts='str',
-        role_arn_to_put_events='str',
-        role_name_to_manage_codebuild='str',
+        worker_preparation_buildspec_template_file='str',
+        worker_purge_buildspec_template_file='str',
     )
 
     @staticmethod
@@ -82,12 +81,12 @@ class Configuration:
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
 
         # other default values
-        toggles.cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
+        toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
         toggles.dry_run = True
 
         # can be absent from settings file
-        toggles.role_arn_to_put_events = None
-        toggles.role_name_to_manage_codebuild = None
+        toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
+
 
     @classmethod
     def set_from_settings(cls, settings={}):

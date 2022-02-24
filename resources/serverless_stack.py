@@ -68,11 +68,8 @@ class ServerlessStack(Stack):
             PURGE_BUILDSPEC_PARAMETER=Parameters.PURGE_BUILDSPEC_PARAMETER,
             DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
-            ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.role_arn_to_manage_accounts)
-        if toggles.role_arn_to_put_events:
-            environment['ROLE_ARN_TO_PUT_EVENTS'] = toggles.role_arn_to_put_events
-        if toggles.role_name_to_manage_codebuild:
-            environment['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
+            ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
+            ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild)
         return environment
 
     def get_parameters(self, environment) -> dict:  # used to build lambda functions
@@ -80,7 +77,7 @@ class ServerlessStack(Stack):
             code=AssetCode("code"),
             environment=environment,
             log_retention=RetentionDays.THREE_MONTHS,
-            reserved_concurrent_executions=toggles.maximum_concurrent_executions,
+            reserved_concurrent_executions=toggles.automation_maximum_concurrent_executions,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
         return parameters

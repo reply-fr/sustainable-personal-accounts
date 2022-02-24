@@ -61,7 +61,7 @@ def test_initialize():
 
 def test_set_default_values(toggles):
     Configuration.set_default_values()
-    assert toggles.role_arn_to_put_events is None
+    assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
 
 
 def test_set_from_settings(toggles):
@@ -74,17 +74,16 @@ def test_set_from_settings(toggles):
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
     assert toggles.automation_account_id == '123456789012'
+    assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
+    assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
+    assert toggles.automation_maximum_concurrent_executions == 50
     assert toggles.automation_region == 'eu-west-1'
-    assert toggles.preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
-    assert toggles.purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
-    assert toggles.cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
+    assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+    assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.dry_run is False
-    assert toggles.expiration_expression == 'cron(0 18 ? * SAT *)'
-    assert toggles.maximum_concurrent_executions == 50
     assert toggles.organizational_units == {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    assert toggles.role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
-    assert toggles.role_arn_to_put_events == 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
-    assert toggles.role_name_to_manage_codebuild == 'SpaCodebuildManagementRole'
+    assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
+    assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
 
 
 def test_set_from_yaml_invalid(toggles):
