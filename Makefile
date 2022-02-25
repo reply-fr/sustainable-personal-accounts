@@ -65,7 +65,7 @@ setup:
 	python3 -m venv venv
 	. venv/bin/activate && python -m pip install --upgrade pip -r requirements.txt
 	@echo "Installing CDK and other NPM modules..."
-	npm install -g aws-cdk --force
+	npm install -g aws-cdk@latest --force
 	cdk --version
 	@echo "Installing MARP locally..."
 	npm install -g @marp-team/marp-cli --force

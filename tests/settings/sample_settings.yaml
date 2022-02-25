@@ -8,61 +8,64 @@ automation:
   #
   region: "eu-west-1"
 
+  # this is displayed in the monitoring dashboard
+  cockpit_markdown_text: |
+    # Sustainable Personal Accounts Dashboard
+    Currently under active development (alpha)
 
-preparation:
-
-  # when the solution is deployed, the file below is read and pushed to the parameter store
+  # this expression defines when accounts are expired
+  # Reference:
+  # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
   #
-  buildspec_template_file: "tests/buildspec/preparation_account_template.yaml"
+  maintenance_window_expression: "cron(0 18 ? * SAT *)"
 
-
-purge:
-
-  # when the solution is deployed, the file below is read and pushed to the parameter store
+  # this is the maximum rate of invocations for each individual lambda function
+  # Reference:
+  # - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
   #
-  buildspec_template_file: "tests/buildspec/purge_account_template.yaml"
+  maximum_concurrent_executions: 50
+
+  # this role is assumed by Lambda functions either to list AWS accounts in the OU,
+  # and to tag AWS accounts
+  #
+  role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+
+  # this role is assumed by Lambda functions to create CodeBuild projects and to start them
+  #
+  role_name_to_manage_codebuild: 'AWSControlTowerExecution'
 
 
-# this is displayed in the monitoring dashboard
-cockpit_markdown_text: |
-  # Sustainable Personal Accounts Dashboard
-  Currently under active development (alpha)
+# parameters for resources deployed in managed accounts
+#
+worker:
+
+  # this is the buildspec template for the preparation of an account managed by SPA
+  #
+  preparation_buildspec_template_file: "tests/buildspec/preparation_account_template.yaml"
+
+  # this is the buildspec tempalte for the purge of an account managed by SPA
+  #
+  purge_buildspec_template_file: "tests/buildspec/purge_account_template.yaml"
+
 
 # this is required to actually modify accounts and create codebuild workers
 # if you comment this out, then organizations and accounts will be read, but not modified
 dry_run: False
 
-# this is used to signal the end of Codebuild projects
-#
-event_bus_arn: "arn:aws:events:eu-west-1:444444444444:event-bus/default"
-
-# this expression defines when accounts are expired
-# Reference:
-# - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
-#
-expiration_expression: "cron(0 18 ? * SAT *)"
-
-# this is the maximum rate of invocations for each individual lambda function
-# Reference:
-# - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
-#
-maximum_concurrent_executions: 50
-
 # these are organizational units where accounts are managed by the solution
+#
 organizational_units:
 
   - identifier: 'ou-1234'
     cost_budget: 500.0
+    preparation_variables:
+      HELLO: WORLD
+    purge_variables:
+      DRY_RUN: 'TRUE'
 
   - identifier: 'ou-5678'
     cost_budget: 300
-
-# this role is assumed by Lambda functions either to list AWS accounts in the OU,
-# or to tag AWS accounts
-role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
-
-# this role is assumed by Lambda functions to put events
-role_arn_to_put_events: 'arn:aws:iam::333333333333:role/SpaPutEventsRole'
-
-# this role is assumed by Lambda functions to create CodeBuild projects and to start them
-role_name_to_manage_codebuild: 'SpaCodebuildManagementRole'
+    preparation_variables:
+      HELLO: UNIVERSE
+    purge_variables:
+      DRY_RUN: 'FALSE'

@@ -29,9 +29,6 @@ class SignalExpiredAccount(Construct):
 
     def build_on_tag(self, parameters, permissions) -> Function:
 
-        if toggles.role_name_to_manage_codebuild:
-            parameters['environment']['ROLE_NAME_TO_MANAGE_CODEBUILD'] = toggles.role_name_to_manage_codebuild
-
         function = Function(
             self, "OnTag",
             description="Start the purge of an expired account",

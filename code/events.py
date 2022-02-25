@@ -22,8 +22,6 @@ from types import SimpleNamespace
 
 from boto3.session import Session
 
-from session import make_session
-
 
 class Events:
 
@@ -34,11 +32,6 @@ class Events:
         'PreparedAccount',
         'PurgedAccount',
         'ReleasedAccount']
-
-    @classmethod
-    def get_session(cls):
-        role = os.environ.get('ROLE_ARN_TO_PUT_EVENTS')
-        return make_session(role_arn=role) if role else Session()
 
     @classmethod
     def emit(cls, label, account, session=None):
@@ -60,7 +53,7 @@ class Events:
     def put_event(cls, event, session=None):
         logging.info(f"Putting event {event}")
         if os.environ.get("DRY_RUN") == "FALSE":
-            session = session or cls.get_session()
+            session = session or Session()
             session.client('events').put_events(Entries=[event])
             logging.info("Done")
         else:

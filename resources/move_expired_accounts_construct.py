@@ -38,7 +38,7 @@ class MoveExpiredAccounts(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
-             schedule=Schedule.expression(toggles.expiration_expression),
+             schedule=Schedule.expression(toggles.automation_maintenance_window_expression),
              targets=[LambdaFunction(function)])
 
         return function

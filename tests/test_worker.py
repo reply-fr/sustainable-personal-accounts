@@ -74,11 +74,12 @@ def test_purge(session):
     Worker.purge(account=account, organizational_units={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)
 
 
-def test_make_prepare_variables():
+def test_make_preparation_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.make_prepare_variables(account=account, organizational_units=organizational_units)
+    variables = Worker.make_preparation_variables(account=account, organizational_units=organizational_units)
     assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com'}
+
 
 def test_make_purge_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')

@@ -57,10 +57,10 @@ class Parameters(Construct):
 
     def get_buildspec_for_preparation(self):
         logging.debug("Getting buildspec for account preparation")
-        with open(toggles.preparation_buildspec_template_file) as stream:
+        with open(toggles.worker_preparation_buildspec_template_file) as stream:
             return stream.read()
 
     def get_buildspec_for_purge(self):
         logging.debug("Getting buildspec for the purge of accounts")
-        with open(toggles.purge_buildspec_template_file) as stream:
+        with open(toggles.worker_purge_buildspec_template_file) as stream:
             return stream.read()
