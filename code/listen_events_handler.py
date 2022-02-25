@@ -32,22 +32,12 @@ def handle_event(event, context, session=None):
 
     input = Events.decode_local_event(event)
     logging.info(f"Listening {input.label} {input.account}")
-    put_metric_data_by_account(input, session)
-    put_metric_data_by_state(input, session)
+    put_metric_data(name='AccountEvent',
+                    dimensions=[dict(Name='Account', Value=input.account),
+                                dict(Name='Label', Value=input.label)],
+                    session=session)
 
     return f"[OK] {input.label} {input.account}"
-
-
-def put_metric_data_by_account(input, session=None):
-    put_metric_data(name='Account Event By Account',
-                    dimensions=[dict(Name='Account', Value=input.account)],
-                    session=session)
-
-
-def put_metric_data_by_state(input, session=None):
-    put_metric_data(name='Account Event By State',
-                    dimensions=[dict(Name='Label', Value=input.label)],
-                    session=session)
 
 
 def put_metric_data(name, dimensions, session=None):

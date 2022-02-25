@@ -22,12 +22,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 from constructs import Construct
+from aws_cdk import Duration
 from aws_cdk.aws_cloudwatch import (Dashboard,
                                     GraphWidget,
-                                    Metric,
+                                    MathExpression,
                                     TextWidget)
-
-from code import State
 
 
 class Cockpit(Construct):
@@ -35,10 +34,7 @@ class Cockpit(Construct):
     def __init__(self, scope: Construct, id: str, functions):
         super().__init__(scope, id)
 
-        self.cockpit = Dashboard(
-            self,
-            id=id,
-            dashboard_name=id)
+        self.cockpit = Dashboard(self, id=id, dashboard_name=id)
 
         self.cockpit.add_widgets(
             self.get_text_label_widget())
@@ -54,36 +50,30 @@ class Cockpit(Construct):
 
     def get_text_label_widget(self):
         ''' show static banner that has been configured for this dashboard '''
-
         return TextWidget(markdown=toggles.automation_cockpit_markdown_text,
-                          height=3,
+                          height=2,
                           width=24)
 
     def get_events_by_account_widget(self):
-
         return GraphWidget(
             title="Events by account",
-            left=[Metric(
-                namespace="SustainablePersonalAccount",
-                metric_name="Account Event By Account",
-                statistic="sum")],
-            height=10,
+            left=[MathExpression(
+                label='account',
+                expression="SEARCH('{SustainablePersonalAccount, Account} MetricName=""AccountEvent""', 'Sum', 60)",
+                period=Duration.minutes(1),
+                using_metrics={})],
+            height=6,
             width=12)
 
     def get_events_by_state_widget(self):
-
-        metrics = []
-        for state in State:
-            metrics.append(Metric(
-                namespace="SustainablePersonalAccount",
-                metric_name="Account Event By State",
-                dimensions_map=dict(Label=state.value),
-                statistic="sum"))
-
         return GraphWidget(
-            title="Events by state",
-            left=metrics,
-            height=10,
+            title="Events by label",
+            left=[MathExpression(
+                label='state',
+                expression="SEARCH('{SustainablePersonalAccount, Label}', 'Sum', 60)",
+                period=Duration.minutes(1),
+                using_metrics={})],
+            height=6,
             width=12)
 
     def get_lambda_durations_widget(self, functions):
