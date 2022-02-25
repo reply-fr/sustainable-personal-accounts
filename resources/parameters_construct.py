@@ -36,7 +36,7 @@ class Parameters(Construct):
             string_value=json.dumps(toggles.organizational_units),
             data_type=ParameterDataType.TEXT,
             description="Parameters for managed organizational units",
-            parameter_name=self.ORGANIZATIONAL_UNITS_PARAMETER,
+            parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER,
             tier=ParameterTier.STANDARD)
 
         StringParameter(
@@ -44,7 +44,7 @@ class Parameters(Construct):
             string_value=self.get_buildspec_for_preparation(),
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for account preparation",
-            parameter_name=self.PREPARATION_BUILDSPEC_PARAMETER,
+            parameter_name=toggles.environment_identifier + self.PREPARATION_BUILDSPEC_PARAMETER,
             tier=ParameterTier.STANDARD)
 
         StringParameter(
@@ -52,7 +52,7 @@ class Parameters(Construct):
             string_value=self.get_buildspec_for_purge(),
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for the purge of accounts",
-            parameter_name=self.PURGE_BUILDSPEC_PARAMETER,
+            parameter_name=toggles.environment_identifier + self.PURGE_BUILDSPEC_PARAMETER,
             tier=ParameterTier.ADVANCED)  # up to 8k template
 
     def get_buildspec_for_preparation(self):

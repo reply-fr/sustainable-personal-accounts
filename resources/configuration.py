@@ -82,10 +82,8 @@ class Configuration:
 
         # other default values
         toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
-        toggles.dry_run = True
-
-        # can be absent from settings file
         toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
+        toggles.dry_run = True
 
     @classmethod
     def set_from_settings(cls, settings={}):

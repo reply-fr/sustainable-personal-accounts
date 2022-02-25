@@ -63,6 +63,7 @@ class ServerlessStack(Stack):
 
     def get_environment(self) -> dict:  # shared across all lambda functions
         environment = dict(
+            ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
             ORGANIZATIONAL_UNITS_PARAMETER=Parameters.ORGANIZATIONAL_UNITS_PARAMETER,
             PREPARATION_BUILDSPEC_PARAMETER=Parameters.PREPARATION_BUILDSPEC_PARAMETER,
             PURGE_BUILDSPEC_PARAMETER=Parameters.PURGE_BUILDSPEC_PARAMETER,

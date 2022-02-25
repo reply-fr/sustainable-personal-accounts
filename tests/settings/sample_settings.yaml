@@ -9,6 +9,7 @@ automation:
   region: "eu-west-1"
 
   # this is displayed in the monitoring dashboard
+  #
   cockpit_markdown_text: |
     # Sustainable Personal Accounts Dashboard
     Currently under active development (alpha)
@@ -57,14 +58,18 @@ dry_run: False
 organizational_units:
 
   - identifier: 'ou-1234'
+    note: 'a container for some accounts'
     cost_budget: 500.0
+    budget_name: 'DataTeamBudget'
     preparation_variables:
       HELLO: WORLD
     purge_variables:
       DRY_RUN: 'TRUE'
 
   - identifier: 'ou-5678'
+    note: 'another account container'
     cost_budget: 300
+    budget_name: 'DevelopmentTeamBudget'
     preparation_variables:
       HELLO: UNIVERSE
     purge_variables:

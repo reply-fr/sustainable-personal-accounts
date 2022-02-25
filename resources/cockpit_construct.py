@@ -70,7 +70,7 @@ class Cockpit(Construct):
             title="Events by label",
             left=[MathExpression(
                 label='state',
-                expression="SEARCH('{SustainablePersonalAccount, Label}', 'Sum', 60)",
+                expression="SEARCH('{SustainablePersonalAccount, Label} MetricName=""AccountEvent""', 'Sum', 60)",
                 period=Duration.minutes(1),
                 using_metrics={})],
             height=6,

@@ -91,6 +91,8 @@ class Worker:
         extras = configuration.get('preparation_variables', {})
         for key in extras.keys():
             variables[key] = extras[key]
+        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+            variables['ENVIRONMENT_IDENTIFIER'] = value
         return variables
 
     @staticmethod
@@ -100,6 +102,8 @@ class Worker:
         extras = configuration.get('purge_variables', {})
         for key in extras.keys():
             variables[key] = extras[key]
+        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+            variables['ENVIRONMENT_IDENTIFIER'] = value
         return variables
 
     @classmethod
