@@ -148,6 +148,7 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 
 ---
 <!-- _class: lead -->
+<!-- _paginate: false -->
 ![](https://icongr.am/octicons/gift.svg?size=256&color=f96d00)
 ## Ok, walk me through the solution
 
