@@ -87,7 +87,6 @@ class Configuration:
         # can be absent from settings file
         toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
 
-
     @classmethod
     def set_from_settings(cls, settings={}):
         for key in settings.keys():
@@ -137,7 +136,7 @@ class Configuration:
         transformed = {}
         for unit in units:
             key = unit['identifier']
-            transformed[key] = {k: str(unit[k]) for k in unit.keys() if k != 'identifier'}
+            transformed[key] = {k: unit[k] for k in unit.keys() if k != 'identifier'}
         return transformed
 
     @staticmethod

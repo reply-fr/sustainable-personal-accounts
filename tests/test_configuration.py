@@ -82,8 +82,8 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.dry_run is False
     organizational_units = {
-        'ou-1234': {'cost_budget': '500.0', 'preparation_variables': "{'HELLO': 'WORLD'}", 'purge_variables': "{'DRY_RUN': 'TRUE'}"},
-        'ou-5678': {'cost_budget': '300', 'preparation_variables': "{'HELLO': 'UNIVERSE'}", 'purge_variables': "{'DRY_RUN': 'FALSE'}"},
+        'ou-1234': {'cost_budget': 500.0, 'preparation_variables': {'HELLO': 'WORLD'}, 'purge_variables': {'DRY_RUN': 'TRUE'}},
+        'ou-5678': {'cost_budget': 300, 'preparation_variables': {'HELLO': 'UNIVERSE'}, 'purge_variables': {'DRY_RUN': 'FALSE'}},
     }
     assert toggles.organizational_units == organizational_units
     assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'

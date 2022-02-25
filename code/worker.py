@@ -86,7 +86,7 @@ class Worker:
     @staticmethod
     def make_preparation_variables(account, organizational_units) -> dict:
         configuration = organizational_units.get(account.unit, {})
-        variables = dict(BUDGET_AMOUNT=configuration.get('cost_budget', '200'),
+        variables = dict(BUDGET_AMOUNT=str(configuration.get('cost_budget', 200)),
                          BUDGET_EMAIL=account.email)
         extras = configuration.get('preparation_variables', {})
         for key in extras.keys():
