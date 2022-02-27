@@ -31,6 +31,7 @@ class SignalExpiredAccount(Construct):
 
         function = Function(
             self, "OnTag",
+            function_name="{}SignalExpiredAccountOnTag".format(toggles.environment_identifier),
             description="Start the purge of an expired account",
             handler="signal_expired_account_handler.handle_event",
             **parameters)

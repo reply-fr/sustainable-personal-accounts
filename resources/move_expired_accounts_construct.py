@@ -25,11 +25,12 @@ class MoveExpiredAccounts(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.build_on_schedule(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_schedule(parameters=parameters, permissions=permissions)]
 
-    def build_on_schedule(self, parameters, permissions) -> Function:
+    def on_schedule(self, parameters, permissions) -> Function:
         function = Function(
             self, "OnSchedule",
+            function_name="{}MoveExpiredAccounts".format(toggles.environment_identifier),
             description="Change state of expired accounts",
             handler="move_expired_accounts_handler.handle_event",
             reserved_concurrent_executions=1,

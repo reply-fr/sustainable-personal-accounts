@@ -27,10 +27,11 @@ class ListenEvents(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.build_on_event(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
-    def build_on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters, permissions) -> Function:
         function = Function(self, "OnEvent",
+                            function_name="{}ListenEvents".format(toggles.environment_identifier),
                             description="Listen events from the bus",
                             handler="listen_events_handler.handle_event",
                             **parameters)

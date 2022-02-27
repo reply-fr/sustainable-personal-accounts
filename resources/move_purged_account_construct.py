@@ -26,13 +26,14 @@ class MovePurgedAccount(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
         self.functions = [
-            self.build_on_codebuild(parameters=parameters, permissions=permissions),
-            self.build_on_event(parameters=parameters, permissions=permissions)
+            self.on_codebuild(parameters=parameters, permissions=permissions),
+            self.on_event(parameters=parameters, permissions=permissions)
         ]
 
-    def build_on_codebuild(self, parameters, permissions) -> Function:
+    def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
             self, "OnCodebuild",
+            function_name="{}MovePurgedAccountOnCodebuild".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
             handler="move_purged_account_handler.handle_codebuild_event",
             reserved_concurrent_executions=10,
@@ -50,9 +51,10 @@ class MovePurgedAccount(Construct):
 
         return function
 
-    def build_on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters, permissions) -> Function:
         function = Function(
             self, "OnEvent",
+            function_name="{}MovePurgedAccountOnEvent".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
             handler="move_purged_account_handler.handle_local_event",
             reserved_concurrent_executions=10,
