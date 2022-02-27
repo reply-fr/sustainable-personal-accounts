@@ -54,13 +54,12 @@ def trap_exception(function):
         except ValueError as error:  # regular code breaks, e.g., event is not for this specific function
             if os.environ.get('VERBOSITY', 'DEBUG') != 'DEBUG':
                 logging.debug(error)
-                return f"[DEBUG] {error}"
-            raise
+            else:
+                logging.exception(error)
+            return f"[DEBUG] {error}"
 
         except Exception as error:  # prevent lambda retries on internal errors
-            if os.environ.get('VERBOSITY', 'DEBUG') != 'DEBUG':
-                logging.error(error)
-                return f"[ERROR] {type(error).__name__}: {error}"
-            raise
+            logging.exception(error)
+            return f"[ERROR] {type(error).__name__}: {error}"
 
     return safe_function

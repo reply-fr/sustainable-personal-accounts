@@ -35,6 +35,12 @@ automation:
   #
   role_name_to_manage_codebuild: 'AWSControlTowerExecution'
 
+  # this defines the amount of text sent to logs
+  # - allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  # - default value: INFO
+  #
+  verbosity: ERROR
+
 
 # parameters for resources deployed in managed accounts
 #

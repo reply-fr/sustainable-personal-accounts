@@ -70,7 +70,8 @@ class ServerlessStack(Stack):
             DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
-            ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild)
+            ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
+            VERBOSITY=toggles.automation_verbosity)
         return environment
 
     def get_parameters(self, environment) -> dict:  # used to build lambda functions
