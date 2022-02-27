@@ -44,7 +44,8 @@ class SignalAssignedAccount(Construct):
                  detail=dict(
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
-                     eventSource=["organizations.amazonaws.com"])),
+                     eventSource=["organizations.amazonaws.com"],
+                     requestParameters=dict(tags=[dict(key="account:state", value="assigned")])),
              targets=[LambdaFunction(function)])
 
         return function
