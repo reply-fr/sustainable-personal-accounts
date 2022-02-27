@@ -221,8 +221,8 @@ class Worker:
         session = session or Session()
         client = session.client('codebuild')
         environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
-        retries = 10
-        while retries > 0:  # we may have to wait for IAM role to be really available
+        retries = 0
+        while retries < 5:  # we may have to wait for IAM role to be really available
             logging.debug("Deploying Codebuild project")
             try:
                 client.create_project(
@@ -247,19 +247,30 @@ class Worker:
             except client.exceptions.ResourceAlreadyExistsException as error:
                 logging.debug(f"Project '{name}' already exists, deleting it")
                 client.delete_project(name=name)
-                time.sleep(10)
-                retries -= 1
+                retries += 1
+                time.sleep(retries * 5)
 
             except client.exceptions.InvalidInputException as error:  # we could have to wait for IAM to be ready
                 logging.debug("Sleeping...")
-                time.sleep(10)
-                retries -= 1
+                retries += 1
+                time.sleep(retries * 5)
 
     @classmethod
     def run_project(cls, name, session=None):
         session = session or Session()
-        logging.debug(f"Starting project build {name}")
-        session.client('codebuild').start_build(projectName=name)
+        client = session('codebuild')
+        retries = 0
+        while retries < 5:  # we may have to wait for Codebuild project to be really available
+            logging.debug(f"Starting project build {name}")
+            try:
+                client.start_build(projectName=name)
+                logging.debug("Done")
+                break
+
+            except client.exceptions.ResourceNotFoundException as error:
+                logging.debug("Sleeping...")
+                retries += 1
+                time.sleep(retries * 5)
 
     @classmethod
     def get_session(cls, account, session=None):
