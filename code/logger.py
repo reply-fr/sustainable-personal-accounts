@@ -35,7 +35,7 @@ def setup_logging(environ=None,
                   stream=sys.stdout):
     logger = logging.getLogger(name)
     environ = environ or os.environ
-    verbosity = environ.get('VERBOSITY', 'DEBUG')
+    verbosity = environ.get('VERBOSITY', 'INFO')
     logger.setLevel(logging.__dict__[verbosity])
     handler = logging.StreamHandler(stream)
     handler.setFormatter(logging.Formatter(format))
