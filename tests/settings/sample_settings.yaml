@@ -1,3 +1,9 @@
+# prefix for cloud resources and cloud stack
+#
+environment_identifier: SpaTest
+
+# parameters for resources deployed in the automation account
+#
 automation:
 
   # the target account for the deployment of the solution
@@ -19,12 +25,6 @@ automation:
   # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
   #
   maintenance_window_expression: "cron(0 18 ? * SAT *)"
-
-  # this is the maximum rate of invocations for each individual lambda function
-  # Reference:
-  # - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
-  #
-  maximum_concurrent_executions: 50
 
   # this role is assumed by Lambda functions either to list AWS accounts in the OU,
   # and to tag AWS accounts

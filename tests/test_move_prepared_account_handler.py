@@ -31,17 +31,19 @@ from code.worker import Worker
 # pytestmark = pytest.mark.wip
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             VERBOSITY='DEBUG'))
 def test_handle_codebuild_event():
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
                                            project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                                            status="SUCCEEDED"))
     result = handle_codebuild_event(event=event, context=None)
-    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_project():
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
@@ -51,7 +53,8 @@ def test_handle_codebuild_event_on_unexpected_project():
     assert result == "[DEBUG] Ignored project 'SampleProject'"
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_status():
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
@@ -61,20 +64,39 @@ def test_handle_codebuild_event_on_unexpected_status():
     assert result == "[DEBUG] Ignored status 'FAILED'"
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='DEBUG'))
 def test_handle_local_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           label="PreparedAccount"))
+                                           label="PreparedAccount",
+                                           environment="envt1"))
     result = handle_local_event(event=event, context=None)
-    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
-def test_handle_local_event_on_unexpected_event():
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+def test_handle_local_event_on_unexpected_environment():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           label="CreatedAccount"))
+                                           label="PreparedAccount",
+                                           environment="alien*environment"))
+
+    result = handle_local_event(event=event, context=None)
+    assert result == "[DEBUG] Unexpected environment 'alien*environment'"
+
+
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+def test_handle_local_event_on_unexpected_label():
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="123456789012",
+                                           label="CreatedAccount",
+                                           environment="envt1"))
 
     result = handle_local_event(event=event, context=None)
     assert result == "[DEBUG] Unexpected event label 'CreatedAccount'"

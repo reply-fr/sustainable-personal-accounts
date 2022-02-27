@@ -29,19 +29,20 @@ from session import get_organizational_units
 def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
-    units = get_organizational_units()
+    units = get_organizational_units(session=session)
     for unit in units.keys():
         for account in Account.list(parent=unit, session=session):
 
-            item = Account.describe(account)
+            item = Account.describe(account, session=session)
 
             if not item.is_active:
                 logging.debug(f"Ignoring inactive account '{account}'")
                 continue
 
-            if item.tags.get('account:state') != State.RELEASED:
+            if item.tags.get('account:state') != State.RELEASED.value:
                 logging.debug(f"Ignoring account '{account}' that has not been released")
                 continue
 
-            logging.info(f"Expiring account '{account}'")
             Account.move(account=account, state=State.EXPIRED)
+
+    return '[OK]'

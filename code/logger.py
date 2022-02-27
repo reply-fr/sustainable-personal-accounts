@@ -34,7 +34,7 @@ def setup_logging(environ=None,
                   name=None,
                   stream=sys.stdout):
     logger = logging.getLogger(name)
-    environ = environ if environ else os.environ
+    environ = environ or os.environ
     verbosity = environ.get('VERBOSITY', 'DEBUG')
     logger.setLevel(logging.__dict__[verbosity])
     handler = logging.StreamHandler(stream)
@@ -52,11 +52,15 @@ def trap_exception(function):
             return function(*args, **kwargs)
 
         except ValueError as error:  # regular code breaks, e.g., event is not for this specific function
-            logging.debug(error)
-            return f"[DEBUG] {error}"
+            if os.environ.get('VERBOSITY', 'DEBUG') != 'DEBUG':
+                logging.debug(error)
+                return f"[DEBUG] {error}"
+            raise
 
         except Exception as error:  # prevent lambda retries on internal errors
-            logging.error(error)
-            return f"[ERROR] {type(error).__name__}: {error}"
+            if os.environ.get('VERBOSITY', 'DEBUG') != 'DEBUG':
+                logging.error(error)
+                return f"[ERROR] {type(error).__name__}: {error}"
+            raise
 
     return safe_function

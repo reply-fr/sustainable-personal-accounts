@@ -45,9 +45,14 @@ class Events:
             raise ValueError(f"Invalid event label '{label}'")
         if len(account) != 12:
             raise ValueError(f"Invalid account identifier '{account}'")
-        return dict(Detail=json.dumps(dict(Account=account)),
+        return dict(Detail=json.dumps(dict(Account=account,
+                                           Environment=cls.get_expected_environment())),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
+
+    @classmethod
+    def get_expected_environment(cls):
+        return os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')
 
     @classmethod
     def put_event(cls, event, session=None):
@@ -77,9 +82,13 @@ class Events:
 
         return decoded
 
-    @staticmethod
-    def decode_local_event(event, match=None):
+    @classmethod
+    def decode_local_event(cls, event, match=None):
         decoded = SimpleNamespace()
+
+        decoded.environment = event['detail']['Environment']
+        if decoded.environment != cls.get_expected_environment():
+            raise ValueError(f"Unexpected environment '{decoded.environment}'")
 
         decoded.account = event['detail']['Account']
         if len(decoded.account) != 12:

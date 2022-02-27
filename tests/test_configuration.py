@@ -76,11 +76,11 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_account_id == '123456789012'
     assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
-    assert toggles.automation_maximum_concurrent_executions == 50
     assert toggles.automation_region == 'eu-west-1'
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.dry_run is False
+    assert toggles.environment_identifier == 'SpaTest'
     organizational_units = {
         'ou-1234': {
             'budget_name': 'DataTeamBudget',

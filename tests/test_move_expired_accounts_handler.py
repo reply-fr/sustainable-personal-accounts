@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 from unittest.mock import patch, Mock
 import os
 import pytest
@@ -29,9 +30,12 @@ from code.move_expired_accounts_handler import handle_event
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS="[\"ou-1234\"]"))
-@patch.dict(os.environ, dict(DRY_RUN="true"))
+@patch.dict(os.environ, dict(DRY_RUN="true",
+                             ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
+                             VERBOSITY='DEBUG'))
 def test_handle_event():
+
+    mock = Mock()
 
     chunk = {
         'Accounts': [
@@ -66,8 +70,19 @@ def test_handle_event():
             },
         ]
     }
-
-    mock = Mock()
     mock.client.return_value.list_accounts_for_parent.return_value = chunk
 
-    handle_event(event=dict(hello='world!'), context=None, session=mock)
+    get_parameter = {'Parameter': {'Value': json.dumps({'hello': 'world'})}}
+    mock.client.return_value.get_parameter.return_value = get_parameter
+
+    describe_account = {'Account': {'Arn': 'arn:aws', 'Email': 'a@b.com', 'Name': 'name', 'Status': 'ACTIVE'}}
+    mock.client.return_value.describe_account.return_value = describe_account
+
+    list_tags_for_resource = {'Tags': {}}
+    mock.client.return_value.list_tags_for_resource.return_value = list_tags_for_resource
+
+    list_parents = {'Parents': [{'Id': 'ou-1234'}]}
+    mock.client.return_value.list_parents.return_value = list_parents
+
+    result = handle_event(event=dict(hello='world!'), context=None, session=mock)
+    assert result == '[OK]'

@@ -78,18 +78,20 @@ def session():
 @patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
                              DRY_RUN="TRUE",
                              EVENT_BUS_ARN='arn:aws',
-                             ORGANIZATIONAL_UNITS_PARAMETER='here'))
+                             ORGANIZATIONAL_UNITS_PARAMETER='here',
+                             VERBOSITY='DEBUG'))
 def test_handle_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.ASSIGNED.value))
     result = handle_event(event=event, context=None, session=session)
-    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(DRY_RUN="TRUE",
                              EVENT_BUS_ARN='arn:aws',
-                             ORGANIZATIONAL_UNITS_PARAMETER='here'))
+                             ORGANIZATIONAL_UNITS_PARAMETER='here',
+                             VERBOSITY='INFO'))
 def test_handle_event_on_unexpected_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",

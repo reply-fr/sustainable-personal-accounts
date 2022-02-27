@@ -32,6 +32,7 @@ class MoveExpiredAccounts(Construct):
             self, "OnSchedule",
             description="Change state of expired accounts",
             handler="move_expired_accounts_handler.handle_event",
+            reserved_concurrent_executions=1,
             **parameters)
 
         for permission in permissions:

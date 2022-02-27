@@ -8,5 +8,5 @@
   "region":
   "eu-west-1",
   "resources": [],
-  "detail": {"Account": "___account___"}
+  "detail": {"Account": "___account___", "Environment": "___environment___"}
 }

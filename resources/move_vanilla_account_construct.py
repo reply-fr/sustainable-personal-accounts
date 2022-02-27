@@ -38,6 +38,7 @@ class MoveVanillaAccount(Construct):
             self, "OnMove",
             description="Change state of created accounts to assigned",
             handler="move_vanilla_account_handler.handle_move_event",
+            reserved_concurrent_executions=1,
             **parameters)
 
         for permission in permissions:
@@ -60,6 +61,7 @@ class MoveVanillaAccount(Construct):
             self, "OnTag",
             description="Change state of created accounts to assigned",
             handler="move_vanilla_account_handler.handle_tag_event",
+            reserved_concurrent_executions=1,
             **parameters)
 
         for permission in permissions:

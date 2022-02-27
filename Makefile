@@ -37,9 +37,6 @@ help:
 # ensure that child processes get variables set in this Makefile
 .EXPORT_ALL_VARIABLES:
 
-# by default, target this environment
-ENVIRONMENT ?= Alpha
-
 # determine which shell is used for commands launched by make
 MAKESHELL ?= /bin/bash
 
@@ -49,9 +46,6 @@ PRESENTATION_NAME ?= PITCHME
 
 # by default, use this configuration file
 SETTINGS ?= settings.yaml
-
-# by default, prefix for stacks created in AWS CloudFormation
-STACK_PREFIX ?= Spa
 
 # by default, limit verbosity to informational messages -- DEBUG, INFO, WARNING
 # for example, you can run: VERBOSITY=DEBUG make diff
@@ -154,15 +148,12 @@ rebase:
 	git stash pop
 
 diff: venv/bin/activate
-	@echo "Checking environment '${ENVIRONMENT}'..."
 	cdk diff
 
 deploy: venv/bin/activate
-	@echo "Deploying environment '${ENVIRONMENT}'..."
 	cdk deploy --all
 
 destroy: venv/bin/activate
-	@echo "Destroying environment '${ENVIRONMENT}'..."
 	cdk destroy --all
 
 put-events:

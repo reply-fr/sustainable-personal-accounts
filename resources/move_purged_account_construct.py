@@ -35,6 +35,7 @@ class MovePurgedAccount(Construct):
             self, "OnCodebuild",
             description="Change state of purged accounts to assigned",
             handler="move_purged_account_handler.handle_codebuild_event",
+            reserved_concurrent_executions=10,
             **parameters)
 
         for permission in permissions:
@@ -54,6 +55,7 @@ class MovePurgedAccount(Construct):
             self, "OnEvent",
             description="Change state of purged accounts to assigned",
             handler="move_purged_account_handler.handle_local_event",
+            reserved_concurrent_executions=10,
             **parameters)
 
         for permission in permissions:

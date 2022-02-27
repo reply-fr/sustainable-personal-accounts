@@ -111,14 +111,12 @@ class Account:
         token = None
         while True:
             logging.debug(f"Listing accounts in parent '{parent}'")
-            parameters = dict(ParentId=parent,
-                              MaxResults=50)
+            parameters = dict(ParentId=parent)
             if token:
                 parameters['NextToken'] = token
             chunk = session.client('organizations').list_accounts_for_parent(**parameters)
 
             for item in chunk['Accounts']:
-                logging.debug(json.dumps(item))
                 yield item['Id']
 
             token = chunk.get('NextToken')
