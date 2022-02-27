@@ -46,7 +46,7 @@ class SignalExpiredAccount(Construct):
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
                      eventSource=["organizations.amazonaws.com"],
-                     requestParameters=dict(tags=[dict(key="account:state", value="expired")])),
+                     requestParameters=dict(tags=[dict(key="account:state", value="expired")]))),
              targets=[LambdaFunction(function)])
 
         return function
