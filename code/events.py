@@ -46,12 +46,12 @@ class Events:
         if len(account) != 12:
             raise ValueError(f"Invalid account identifier '{account}'")
         return dict(Detail=json.dumps(dict(Account=account,
-                                           Environment=cls.get_expected_environment())),
+                                           Environment=cls.get_environment())),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
 
     @classmethod
-    def get_expected_environment(cls):
+    def get_environment(cls):
         return os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')
 
     @classmethod
@@ -86,11 +86,11 @@ class Events:
     def decode_local_event(cls, event, match=None):
         decoded = SimpleNamespace()
 
-        decoded.environment = event['detail']['Environment']
-        if decoded.environment != cls.get_expected_environment():
+        decoded.environment = event['detail'].get('Environment', 'None')
+        if decoded.environment != cls.get_environment():
             raise ValueError(f"Unexpected environment '{decoded.environment}'")
 
-        decoded.account = event['detail']['Account']
+        decoded.account = event['detail'].get('Account', 'None')
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 

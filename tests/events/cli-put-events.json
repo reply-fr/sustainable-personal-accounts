@@ -3,32 +3,32 @@
         {
             "Source": "SustainablePersonalAccounts",
             "DetailType": "CreatedAccount",
-            "Detail": "{\"Account\": \"123456789012\"}"
+            "Detail": "{\"Account\": \"123456789012\", \"Environment\": \"SpaTest\"}"
         },
         {
             "Source": "SustainablePersonalAccounts",
             "DetailType": "AssignedAccount",
-            "Detail": "{\"Account\": \"123456789012\"}"
+            "Detail": "{\"Account\": \"123456789012\", \"Environment\": \"SpaTest\"}"
         },
         {
             "Source": "SustainablePersonalAccounts",
             "DetailType": "PreparedAccount",
-            "Detail": "{\"Account\": \"123456789012\"}"
+            "Detail": "{\"Account\": \"123456789012\", \"Environment\": \"SpaTest\"}"
         },
         {
             "Source": "SustainablePersonalAccounts",
             "DetailType": "ReleasedAccount",
-            "Detail": "{\"Account\": \"123456789012\"}"
+            "Detail": "{\"Account\": \"123456789012\", \"Environment\": \"SpaTest\"}"
           },
           {
               "Source": "SustainablePersonalAccounts",
               "DetailType": "ExpiredAccount",
-              "Detail": "{\"Account\": \"123456789012\"}"
+              "Detail": "{\"Account\": \"123456789012\", \"Environment\": \"SpaTest\"}"
           },
           {
               "Source": "SustainablePersonalAccounts",
               "DetailType": "PurgedAccount",
-              "Detail": "{\"Account\": \"123456789012\"}"
+              "Detail": "{\"Account\": \"123456789012\", \"Environment\": \"SpaTest\"}"
           }
     ]
 }

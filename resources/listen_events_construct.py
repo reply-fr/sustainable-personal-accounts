@@ -41,6 +41,7 @@ class ListenEvents(Construct):
         Rule(self, "EventRule",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
+                 detail={"Environment": [toggles.environment_identifier]},
                  detail_type=Events.EVENT_LABELS),
              targets=[LambdaFunction(function)])
 

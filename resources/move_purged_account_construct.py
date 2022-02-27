@@ -64,6 +64,7 @@ class MovePurgedAccount(Construct):
         Rule(self, "EventRule",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
+                 detail={"Environment": [toggles.environment_identifier]},
                  detail_type=['PurgedAccount']),
              targets=[LambdaFunction(function)])
 

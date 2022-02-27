@@ -34,7 +34,8 @@ def handle_event(event, context, session=None):
     logging.info(f"Listening {input.label} {input.account}")
     put_metric_data(name='AccountEvent',
                     dimensions=[dict(Name='Account', Value=input.account),
-                                dict(Name='Label', Value=input.label)],
+                                dict(Name='Label', Value=input.label),
+                                dict(Name='Environment', Value=Events.get_environment())],
                     session=session)
 
     return f"[OK] {input.label} {input.account}"

@@ -54,12 +54,18 @@ class Cockpit(Construct):
                           height=2,
                           width=24)
 
+    SEARCH_TEMPLATE = "SEARCH('{SustainablePersonalAccount, ___by___} Environment=""___environment___"" MetricName=""AccountEvent""', 'Sum', 60)"
+
+    def get_search_expression(self, by='Account', environment=None):
+        environment = environment or toggles.environment_identifier
+        return self.SEARCH_TEMPLATE.replace('___by___', by).replace('___environment___', environment)
+
     def get_events_by_account_widget(self):
         return GraphWidget(
             title="Events by account",
             left=[MathExpression(
                 label='account',
-                expression="SEARCH('{SustainablePersonalAccount, Account} MetricName=""AccountEvent""', 'Sum', 60)",
+                expression=self.get_search_expression(by='Account'),
                 period=Duration.minutes(1),
                 using_metrics={})],
             height=6,
@@ -70,7 +76,7 @@ class Cockpit(Construct):
             title="Events by label",
             left=[MathExpression(
                 label='state',
-                expression="SEARCH('{SustainablePersonalAccount, Label} MetricName=""AccountEvent""', 'Sum', 60)",
+                expression=self.get_search_expression(by='Label'),
                 period=Duration.minutes(1),
                 using_metrics={})],
             height=6,
