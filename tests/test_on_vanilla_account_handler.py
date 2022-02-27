@@ -25,7 +25,7 @@ import os
 import pytest
 
 from code import Events, State
-from code.move_vanilla_account_handler import handle_move_event, handle_tag_event
+from code.on_vanilla_account_handler import handle_move_event, handle_tag_event
 
 
 # pytestmark = pytest.mark.wip

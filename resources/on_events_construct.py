@@ -20,33 +20,30 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
+from code import Events
 
-class SignalExpiredAccount(Construct):
+
+class OnEvents(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.build_on_tag(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
-    def build_on_tag(self, parameters, permissions) -> Function:
-
-        function = Function(
-            self, "OnTag",
-            function_name="{}SignalExpiredAccountOnTag".format(toggles.environment_identifier),
-            description="Start the purge of an expired account",
-            handler="signal_expired_account_handler.handle_event",
-            **parameters)
+    def on_event(self, parameters, permissions) -> Function:
+        function = Function(self, "ThenListen",
+                            function_name="{}OnEvents".format(toggles.environment_identifier),
+                            description="Listen events from the bus",
+                            handler="on_events_handler.handle_event",
+                            **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
-        Rule(self, "TagRule",
+        Rule(self, "EventRule",
              event_pattern=EventPattern(
-                 source=['aws.organizations'],
-                 detail=dict(
-                     errorCode=[{"exists": False}],
-                     eventName=["TagResource"],
-                     eventSource=["organizations.amazonaws.com"],
-                     requestParameters=dict(tags=dict(key=["account:state"], value=["expired"])))),
+                 source=['SustainablePersonalAccounts'],
+                 detail={"Environment": [toggles.environment_identifier]},
+                 detail_type=Events.EVENT_LABELS),
              targets=[LambdaFunction(function)])
 
         return function

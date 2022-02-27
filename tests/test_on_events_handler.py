@@ -24,7 +24,7 @@ import os
 import pytest
 
 from code import Events
-from code.listen_events_handler import handle_event
+from code.on_events_handler import handle_event
 
 
 # pytestmark = pytest.mark.wip

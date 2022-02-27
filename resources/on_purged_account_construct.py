@@ -20,21 +20,45 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
-from code import Events
 
-
-class ListenEvents(Construct):
+class OnPurgedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
+        self.functions = [
+            self.on_codebuild(parameters=parameters, permissions=permissions),
+            self.on_event(parameters=parameters, permissions=permissions)
+        ]
+
+    def on_codebuild(self, parameters, permissions) -> Function:
+        function = Function(
+            self, "ByCodebuild",
+            function_name="{}OnPurgedAccountByCodebuild".format(toggles.environment_identifier),
+            description="Change state of purged accounts to assigned",
+            handler="on_purged_account_handler.handle_codebuild_event",
+            reserved_concurrent_executions=10,
+            **parameters)
+
+        for permission in permissions:
+            function.add_to_role_policy(permission)
+
+        Rule(self, "CodebuildRule",
+             event_pattern=EventPattern(
+                 source=['aws.codebuild'],
+                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"]},
+                 detail_type=["CodeBuild Build State Change"]),
+             targets=[LambdaFunction(function)])
+
+        return function
 
     def on_event(self, parameters, permissions) -> Function:
-        function = Function(self, "OnEvent",
-                            function_name="{}ListenEvents".format(toggles.environment_identifier),
-                            description="Listen events from the bus",
-                            handler="listen_events_handler.handle_event",
-                            **parameters)
+        function = Function(
+            self, "ByEvent",
+            function_name="{}OnPurgedAccount".format(toggles.environment_identifier),
+            description="Change state of purged accounts to assigned",
+            handler="on_purged_account_handler.handle_local_event",
+            reserved_concurrent_executions=10,
+            **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
@@ -43,7 +67,7 @@ class ListenEvents(Construct):
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
-                 detail_type=Events.EVENT_LABELS),
+                 detail_type=['PurgedAccount']),
              targets=[LambdaFunction(function)])
 
         return function

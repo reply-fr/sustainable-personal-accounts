@@ -22,14 +22,14 @@ from aws_cdk.aws_lambda import AssetCode, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 from .cockpit_construct import Cockpit
-from .listen_events_construct import ListenEvents
-from .move_expired_accounts_construct import MoveExpiredAccounts
-from .move_prepared_account_construct import MovePreparedAccount
-from .move_purged_account_construct import MovePurgedAccount
-from .move_vanilla_account_construct import MoveVanillaAccount
+from .on_assigned_account_construct import OnAssignedAccount
+from .on_events_construct import OnEvents
+from .on_expired_account_construct import OnExpiredAccount
+from .on_maintenance_window_construct import OnMaintenanceWindow
+from .on_prepared_account_construct import OnPreparedAccount
+from .on_purged_account_construct import OnPurgedAccount
+from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
-from .signal_assigned_account_construct import SignalAssignedAccount
-from .signal_expired_account_construct import SignalExpiredAccount
 
 
 class ServerlessStack(Stack):
@@ -45,13 +45,13 @@ class ServerlessStack(Stack):
         permissions = self.get_permissions()
 
         constructs = [
-            ListenEvents(self, "ListenEvents", parameters=parameters, permissions=permissions),
-            SignalAssignedAccount(self, "SignalAssignedAccount", parameters=parameters, permissions=permissions),
-            MovePreparedAccount(self, "MovePreparedAccount", parameters=parameters, permissions=permissions),
-            MoveExpiredAccounts(self, "MoveExpiredAccounts", parameters=parameters, permissions=permissions),
-            MoveVanillaAccount(self, "MoveVanillaAccount", parameters=parameters, permissions=permissions),
-            SignalExpiredAccount(self, "SignalExpiredAccount", parameters=parameters, permissions=permissions),
-            MovePurgedAccount(self, "MovePurgedAccount", parameters=parameters, permissions=permissions)
+            OnAssignedAccount(self, "OnAssignedAccount", parameters=parameters, permissions=permissions),
+            OnEvents(self, "OnEvents", parameters=parameters, permissions=permissions),
+            OnExpiredAccount(self, "OnExpiredAccount", parameters=parameters, permissions=permissions),
+            OnMaintenanceWindow(self, "OnMaintenanceWindow", parameters=parameters, permissions=permissions),
+            OnPreparedAccount(self, "OnPreparedAccount", parameters=parameters, permissions=permissions),
+            OnPurgedAccount(self, "OnPurgedAccount", parameters=parameters, permissions=permissions),
+            OnVanillaAccount(self, "OnVanillaAccount", parameters=parameters, permissions=permissions),
         ]
         functions = []
         for construct in constructs:

@@ -24,7 +24,7 @@ import os
 import pytest
 
 from code import Events
-from code.move_purged_account_handler import handle_codebuild_event, handle_local_event
+from code.on_purged_account_handler import handle_codebuild_event, handle_local_event
 from code.worker import Worker
 
 

@@ -21,7 +21,7 @@ from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
 
-class MovePurgedAccount(Construct):
+class OnPreparedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
@@ -32,10 +32,10 @@ class MovePurgedAccount(Construct):
 
     def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
-            self, "OnCodebuild",
-            function_name="{}MovePurgedAccountOnCodebuild".format(toggles.environment_identifier),
-            description="Change state of purged accounts to assigned",
-            handler="move_purged_account_handler.handle_codebuild_event",
+            self, "ByCodebuild",
+            function_name="{}OnPreparedAccountByCodebuild".format(toggles.environment_identifier),
+            description="Change state of prepared accounts to released",
+            handler="on_prepared_account_handler.handle_codebuild_event",
             reserved_concurrent_executions=10,
             **parameters)
 
@@ -53,10 +53,10 @@ class MovePurgedAccount(Construct):
 
     def on_event(self, parameters, permissions) -> Function:
         function = Function(
-            self, "OnEvent",
-            function_name="{}MovePurgedAccountOnEvent".format(toggles.environment_identifier),
-            description="Change state of purged accounts to assigned",
-            handler="move_purged_account_handler.handle_local_event",
+            self, "ByEvent",
+            function_name="{}OnPreparedAccount".format(toggles.environment_identifier),
+            description="Change state of prepared accounts to released",
+            handler="on_prepared_account_handler.handle_local_event",
             reserved_concurrent_executions=10,
             **parameters)
 
@@ -67,7 +67,7 @@ class MovePurgedAccount(Construct):
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
-                 detail_type=['PurgedAccount']),
+                 detail_type=['PreparedAccount']),
              targets=[LambdaFunction(function)])
 
         return function

@@ -24,7 +24,7 @@ from unittest.mock import patch, Mock
 import os
 import pytest
 
-from code.move_expired_accounts_handler import handle_event
+from code.on_maintenance_window_handler import handle_event
 
 
 # pytestmark = pytest.mark.wip

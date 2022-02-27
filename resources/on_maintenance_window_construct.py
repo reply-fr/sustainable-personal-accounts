@@ -21,7 +21,7 @@ from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
 
-class MoveExpiredAccounts(Construct):
+class OnMaintenanceWindow(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
@@ -29,10 +29,10 @@ class MoveExpiredAccounts(Construct):
 
     def on_schedule(self, parameters, permissions) -> Function:
         function = Function(
-            self, "OnSchedule",
-            function_name="{}MoveExpiredAccounts".format(toggles.environment_identifier),
+            self, "BySchedule",
+            function_name="{}OnMaintenanceWindow".format(toggles.environment_identifier),
             description="Change state of expired accounts",
-            handler="move_expired_accounts_handler.handle_event",
+            handler="on_maintenance_window_handler.handle_event",
             reserved_concurrent_executions=1,
             **parameters)
 

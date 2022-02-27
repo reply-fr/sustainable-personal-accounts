@@ -258,7 +258,7 @@ class Worker:
     @classmethod
     def run_project(cls, name, session=None):
         session = session or Session()
-        client = session('codebuild')
+        client = session.client('codebuild')
         retries = 0
         while retries < 5:  # we may have to wait for Codebuild project to be really available
             logging.debug(f"Starting project build {name}")
