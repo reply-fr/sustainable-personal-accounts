@@ -76,7 +76,7 @@ class MoveVanillaAccount(Construct):
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
                      eventSource=["organizations.amazonaws.com"],
-                     requestParameters=dict(tags=[dict(key="account:state", value="vanilla")]))),
+                     requestParameters=dict(tags=dict(key=["account:state"], value=["vanilla"])))),
              targets=[LambdaFunction(function)])
 
         return function
