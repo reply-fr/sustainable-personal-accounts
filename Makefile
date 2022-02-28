@@ -163,3 +163,5 @@ clean:
 	rm -rf ${PRESENTATION_NAME}.html
 	rm -rf ${PRESENTATION_NAME}.pdf
 	rm -rf ${PRESENTATION_NAME}.pptx
+	rm -rf htmlcov/
+	rm -rf cdk.out/asset.*
