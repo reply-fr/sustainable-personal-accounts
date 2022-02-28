@@ -204,6 +204,7 @@ class Worker:
             iam.attach_role_policy(
                 RoleName=name,
                 PolicyArn=policy_arn)
+
         except ClientError as error:
             if error.response['Error']['Code'] == 'EntityAlreadyExists':
                 logging.debug(f"Policy '{policy_name}' already exists")
@@ -259,18 +260,10 @@ class Worker:
     def run_project(cls, name, session=None):
         session = session or Session()
         client = session.client('codebuild')
-        retries = 0
-        while retries < 5:  # we may have to wait for Codebuild project to be really available
-            logging.debug(f"Starting project build {name}")
-            try:
-                client.start_build(projectName=name)
-                logging.debug("Done")
-                break
-
-            except client.exceptions.ResourceNotFoundException as error:
-                logging.debug("Sleeping...")
-                retries += 1
-                time.sleep(retries * 5)
+        logging.info(f"Starting project build {name}")
+        result = client.start_build(projectName=name)
+        logging.debug(result.get('build'))
+        logging.info("Done")
 
     @classmethod
     def get_session(cls, account, session=None):
