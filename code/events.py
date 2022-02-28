@@ -111,6 +111,7 @@ class Events:
 
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
         if matches and decoded.organizational_unit not in matches:
+            logging.debug(matches)
             raise ValueError(f"Unexpected event source '{decoded.organizational_unit}'")
 
         return decoded

@@ -54,8 +54,9 @@ def session():
     mock.client.return_value.list_parents.return_value = parents
 
     parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_2 = dict(Parameter=dict(Value='buildspec_content'))
-    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2]
+    parameter_2 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
+    parameter_3 = dict(Parameter=dict(Value='buildspec_content'))
+    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2, parameter_3]
 
     tags = {
         'Tags': [

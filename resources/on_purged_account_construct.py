@@ -36,7 +36,6 @@ class OnPurgedAccount(Construct):
             function_name="{}OnPurgedAccountByCodebuild".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
             handler="on_purged_account_handler.handle_codebuild_event",
-            reserved_concurrent_executions=10,
             **parameters)
 
         for permission in permissions:
@@ -57,7 +56,6 @@ class OnPurgedAccount(Construct):
             function_name="{}OnPurgedAccount".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
             handler="on_purged_account_handler.handle_local_event",
-            reserved_concurrent_executions=10,
             **parameters)
 
         for permission in permissions:

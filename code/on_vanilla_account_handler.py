@@ -40,6 +40,8 @@ def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event,
                                             match=State.VANILLA)
+    units = get_organizational_units(session=session)
+    Account.validate_organizational_unit(input.account, expected=units.keys(), session=session)
     return handle_account(input.account, session=session)
 
 

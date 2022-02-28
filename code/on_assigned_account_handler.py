@@ -34,6 +34,8 @@ from worker import Worker
 def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED)
+    units = get_organizational_units(session=session)
+    Account.validate_organizational_unit(input.account, expected=units.keys(), session=session)
     result = Events.emit('AssignedAccount', input.account)
     Worker.prepare(account=Account.describe(input.account, session=session),
                    organizational_units=get_organizational_units(session=session),

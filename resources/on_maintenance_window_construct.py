@@ -33,7 +33,6 @@ class OnMaintenanceWindow(Construct):
             function_name="{}OnMaintenanceWindow".format(toggles.environment_identifier),
             description="Change state of expired accounts",
             handler="on_maintenance_window_handler.handle_event",
-            reserved_concurrent_executions=1,
             **parameters)
 
         for permission in permissions:

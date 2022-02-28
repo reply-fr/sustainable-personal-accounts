@@ -36,7 +36,6 @@ class OnPreparedAccount(Construct):
             function_name="{}OnPreparedAccountByCodebuild".format(toggles.environment_identifier),
             description="Change state of prepared accounts to released",
             handler="on_prepared_account_handler.handle_codebuild_event",
-            reserved_concurrent_executions=10,
             **parameters)
 
         for permission in permissions:
@@ -57,7 +56,6 @@ class OnPreparedAccount(Construct):
             function_name="{}OnPreparedAccount".format(toggles.environment_identifier),
             description="Change state of prepared accounts to released",
             handler="on_prepared_account_handler.handle_local_event",
-            reserved_concurrent_executions=10,
             **parameters)
 
         for permission in permissions:

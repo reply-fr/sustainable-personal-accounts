@@ -34,6 +34,8 @@ from code.on_vanilla_account_handler import handle_move_event, handle_tag_event
 @pytest.fixture
 def valid_tags():
 
+    mock = Mock()
+
     chunk_1 = {
         'Tags': [
             {
@@ -57,12 +59,13 @@ def valid_tags():
             }
         ]
     }
+    mock.client.return_value.list_tags_for_resource.side_effect = [chunk_1, chunk_2]
 
     parameter = json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})
-
-    mock = Mock()
-    mock.client.return_value.list_tags_for_resource.side_effect = [chunk_1, chunk_2]
     mock.client.return_value.get_parameter.return_value = dict(Parameter=dict(Value=parameter))
+
+    mock.client.return_value.list_parents.return_value = dict(Parents=[dict(Id='ou-1234')])
+
     return mock
 
 
@@ -91,6 +94,7 @@ def test_handle_move_event_on_unexpected_event(valid_tags):
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true",
+                             ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
 def test_handle_tag_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",
@@ -101,6 +105,7 @@ def test_handle_tag_event(valid_tags):
 
 
 @patch.dict(os.environ, dict(DRY_RUN="true",
+                             ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",

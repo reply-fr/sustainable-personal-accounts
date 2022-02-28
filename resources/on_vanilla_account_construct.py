@@ -39,7 +39,6 @@ class OnVanillaAccount(Construct):
             function_name="{}OnVanillaAccountByMove".format(toggles.environment_identifier),
             description="Change state of created accounts to assigned",
             handler="on_vanilla_account_handler.handle_move_event",
-            reserved_concurrent_executions=1,
             **parameters)
 
         for permission in permissions:
@@ -63,7 +62,6 @@ class OnVanillaAccount(Construct):
             function_name="{}OnVanillaAccount".format(toggles.environment_identifier),
             description="Change state of created accounts to assigned",
             handler="on_vanilla_account_handler.handle_tag_event",
-            reserved_concurrent_executions=1,
             **parameters)
 
         for permission in permissions:
