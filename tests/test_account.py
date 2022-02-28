@@ -37,7 +37,7 @@ def valid_tags():
     chunk_1 = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'a@b.com'
             },
 
@@ -86,7 +86,7 @@ def invalid_owner():
     chunk = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'John Snow'
             },
 
@@ -108,7 +108,7 @@ def absent_state():
     chunk = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'a@b.com'
             }
         ]
@@ -125,7 +125,7 @@ def invalid_state():
     chunk = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'a@b.com'
             },
 
@@ -173,13 +173,13 @@ def test_validate_tags_on_invalid_state(invalid_state):
 def test_list_tags(valid_tags):
     tags = Account.list_tags(account='123456789012',
                              session=valid_tags)
-    assert tags == {'account:owner': 'a@b.com', 'account:state': 'vanilla', 'another_tag': 'another_value'}
+    assert tags == {'account:holder': 'a@b.com', 'account:state': 'vanilla', 'another_tag': 'another_value'}
 
 
 def test_iterate_tags(valid_tags):
     iterator = Account.iterate_tags(account='123456789012',
                                     session=valid_tags)
-    assert next(iterator) == {'Key': 'account:owner', 'Value': 'a@b.com'}
+    assert next(iterator) == {'Key': 'account:holder', 'Value': 'a@b.com'}
     assert next(iterator) == {'Key': 'account:state', 'Value': 'vanilla'}
     assert next(iterator) == {"Key": "another_tag", "Value": "another_value"}
     with pytest.raises(StopIteration):
@@ -313,7 +313,7 @@ def test_describe():
     tags = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'a@b.com'
             },
 
@@ -342,7 +342,7 @@ def test_describe():
     assert item.email == 'a@b.com'
     assert item.name == 'account-three'
     assert item.is_active
-    assert item.tags.get('account:owner') == 'a@b.com'
+    assert item.tags.get('account:holder') == 'a@b.com'
     assert item.tags.get('account:state') == 'vanilla'
     assert item.unit == 'ou-1234'
 

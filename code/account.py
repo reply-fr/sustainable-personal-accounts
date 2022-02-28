@@ -57,10 +57,10 @@ class Account:
     @classmethod
     def validate_tags(cls, account, session=None):
         tags = cls.list_tags(account, session=session)
-        if 'account:owner' not in tags.keys():
-            raise ValueError(f"Missing tag 'account:owner' on account '{account}' - this account can not be assigned")
-        if not cls.validate_owner(tags['account:owner']):
-            raise ValueError(f"Invalid value for tag 'account:owner' on account '{account}' - this account can not be assigned")
+        if 'account:holder' not in tags.keys():
+            raise ValueError(f"Missing tag 'account:holder' on account '{account}' - this account can not be assigned")
+        if not cls.validate_owner(tags['account:holder']):
+            raise ValueError(f"Invalid value for tag 'account:holder' on account '{account}' - this account can not be assigned")
         if 'account:state' not in tags.keys():
             raise ValueError(f"Missing tag 'account:state' on account '{account}' - this account can not be assigned")
         if not cls.validate_state(tags['account:state']):

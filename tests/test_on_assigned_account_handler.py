@@ -61,7 +61,7 @@ def session():
     tags = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'a@b.com'
             },
 

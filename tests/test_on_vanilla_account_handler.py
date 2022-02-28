@@ -39,7 +39,7 @@ def valid_tags():
     chunk_1 = {
         'Tags': [
             {
-                'Key': 'account:owner',
+                'Key': 'account:holder',
                 'Value': 'a@b.com'
             },
 
