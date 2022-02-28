@@ -30,12 +30,9 @@ from worker import Worker
 def handle_codebuild_event(event, context):
     logging.debug(json.dumps(event))
     input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION)
-    return Events.emit('PreparedAccount', input.account)
+    return handle_account(input.account)
 
 
-@trap_exception
-def handle_local_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-    input = Events.decode_local_event(event, match="PreparedAccount")
-    Account.move(account=input.account, state=State.RELEASED)
-    return Events.emit('ReleasedAccount', input.account, session=session)
+def handle_account(account, session=None):
+    Account.move(account=account, state=State.RELEASED)
+    return Events.emit('PreparedAccount', account)

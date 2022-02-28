@@ -29,23 +29,21 @@ from session import get_organizational_units
 @trap_exception
 def handle_move_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    containers = get_organizational_units(session=session)
-    input = Events.decode_move_account_event(event=event,
-                                             matches=list(containers.keys()))
+    units = get_organizational_units(session=session)
+    input = Events.decode_move_account_event(event=event, matches=list(units.keys()))
     return handle_account(input.account, session=session)
 
 
 @trap_exception
 def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    input = Events.decode_tag_account_event(event=event,
-                                            match=State.VANILLA)
-    units = get_organizational_units(session=session)
-    Account.validate_organizational_unit(input.account, expected=units.keys(), session=session)
+    input = Events.decode_tag_account_event(event=event, match=State.VANILLA)
     return handle_account(input.account, session=session)
 
 
 def handle_account(account, session=None):
+    units = get_organizational_units(session=session)
+    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
     Account.validate_tags(account=account, session=session)
     Account.move(account=account, state=State.ASSIGNED, session=session)
     return Events.emit('CreatedAccount', account)

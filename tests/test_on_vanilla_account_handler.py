@@ -82,7 +82,7 @@ def test_handle_move_event(valid_tags):
 
 @patch.dict(os.environ, dict(DRY_RUN="true",
                              ORGANIZATIONAL_UNITS_PARAMETER="here",
-                             VERBOSITY='INFO'))
+                             VERBOSITY='DEBUG'))
 def test_handle_move_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",

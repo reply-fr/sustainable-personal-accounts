@@ -19,11 +19,11 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import os
 
 from code import Events
-from code.on_prepared_account_handler import handle_codebuild_event, handle_local_event
+from code.on_prepared_account_handler import handle_codebuild_event, handle_account
 from code.worker import Worker
 
 # import pytest
@@ -66,36 +66,7 @@ def test_handle_codebuild_event_on_unexpected_status():
 @patch.dict(os.environ, dict(DRY_RUN="TRUE",
                              ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
-def test_handle_local_event():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="PreparedAccount",
-                                           environment="envt1"))
-    result = handle_local_event(event=event, context=None)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
-
-
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             ENVIRONMENT_IDENTIFIER="envt1",
-                             VERBOSITY='INFO'))
-def test_handle_local_event_on_unexpected_environment():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="PreparedAccount",
-                                           environment="alien*environment"))
-
-    result = handle_local_event(event=event, context=None)
-    assert result == "[DEBUG] Unexpected environment 'alien*environment'"
-
-
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             ENVIRONMENT_IDENTIFIER="envt1",
-                             VERBOSITY='INFO'))
-def test_handle_local_event_on_unexpected_label():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount",
-                                           environment="envt1"))
-
-    result = handle_local_event(event=event, context=None)
-    assert result == "[DEBUG] Unexpected event label 'CreatedAccount'"
+def test_handle_account():
+    mock = Mock()
+    result = handle_account('123456789012', session=mock)
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}

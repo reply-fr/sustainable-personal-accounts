@@ -32,7 +32,7 @@ class OnAssignedAccount(Construct):
             self, "ByTag",
             function_name="{}OnAssignedAccount".format(toggles.environment_identifier),
             description="Start preparation of an assigned account",
-            handler="on_assigned_account_handler.handle_event",
+            handler="on_assigned_account_handler.handle_tag_event",
             **parameters)
 
         for permission in permissions:

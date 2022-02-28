@@ -16,30 +16,36 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk.aws_events import Rule, Schedule
+from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
 
-class OnMaintenanceWindow(Construct):
+class OnReleasedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_schedule(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_tag(parameters=parameters, permissions=permissions)]
 
-    def on_schedule(self, parameters, permissions) -> Function:
+    def on_tag(self, parameters, permissions) -> Function:
         function = Function(
-            self, "BySchedule",
-            function_name="{}OnMaintenanceWindow".format(toggles.environment_identifier),
-            description="Change state of expired accounts",
-            handler="on_maintenance_window_handler.handle_schedule_event",
+            self, "ByTag",
+            function_name="{}OnReleasedAccount".format(toggles.environment_identifier),
+            description="Release personal account for innovative work",
+            handler="on_released_account_handler.handle_tag_event",
             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
-        Rule(self, "TriggerRule",
-             schedule=Schedule.expression(toggles.automation_maintenance_window_expression),
+        Rule(self, "TagRule",
+             event_pattern=EventPattern(
+                 source=['aws.organizations'],
+                 detail=dict(
+                     errorCode=[{"exists": False}],
+                     eventName=["TagResource"],
+                     eventSource=["organizations.amazonaws.com"],
+                     requestParameters=dict(tags=dict(key=["account:state"], value=["released"])))),
              targets=[LambdaFunction(function)])
 
         return function

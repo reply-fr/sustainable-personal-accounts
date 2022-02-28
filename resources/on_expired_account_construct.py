@@ -33,7 +33,7 @@ class OnExpiredAccount(Construct):
             self, "ByTag",
             function_name="{}OnExpiredAccount".format(toggles.environment_identifier),
             description="Start the purge of an expired account",
-            handler="on_expired_account_handler.handle_event",
+            handler="on_expired_account_handler.handle_tag_event",
             **parameters)
 
         for permission in permissions:

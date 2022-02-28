@@ -31,7 +31,7 @@ def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
     input = Events.decode_local_event(event)
-    logging.info(f"Listening {input.label} {input.account}")
+    logging.info(f"Listening '{input.label}' '{input.account}'")
     put_metric_data(name='AccountEvent',
                     dimensions=[dict(Name='Account', Value=input.account),
                                 dict(Name='Label', Value=input.label),

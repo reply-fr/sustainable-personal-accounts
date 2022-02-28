@@ -15,7 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import logging
 
 from logger import setup_logging, trap_exception
@@ -26,23 +25,21 @@ from session import get_organizational_units
 
 
 @trap_exception
-def handle_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-
+def handle_schedule_event(event, context, session=None):
+    logging.info("Expiring personal accounts")
     units = get_organizational_units(session=session)
     for unit in units.keys():
+        logging.info(f"Scanning organizational unit '{unit}'")
         for account in Account.list(parent=unit, session=session):
-
             item = Account.describe(account, session=session)
-
             if not item.is_active:
-                logging.debug(f"Ignoring inactive account '{account}'")
+                logging.info(f"Ignoring inactive account '{account}'")
                 continue
-
-            if item.tags.get('account:state') != State.RELEASED.value:
-                logging.debug(f"Ignoring account '{account}' that has not been released")
+            state = item.tags.get('account:state')
+            if state != State.RELEASED.value:
+                logging.info(f"Ignoring account '{account}' that in in state '{state}'")
                 continue
-
             Account.move(account=account, state=State.EXPIRED)
+    logging.info("All configured organizational units have been scanned")
 
     return '[OK]'

@@ -31,13 +31,17 @@ from worker import Worker
 
 
 @trap_exception
-def handle_event(event, context, session=None):
+def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED)
+    return handle_account(input.account, session=session)
+
+
+def handle_account(account, session=None):
     units = get_organizational_units(session=session)
-    Account.validate_organizational_unit(input.account, expected=units.keys(), session=session)
-    result = Events.emit('AssignedAccount', input.account)
-    Worker.prepare(account=Account.describe(input.account, session=session),
+    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    result = Events.emit('AssignedAccount', account)
+    Worker.prepare(account=Account.describe(account, session=session),
                    organizational_units=get_organizational_units(session=session),
                    event_bus_arn=os.environ['EVENT_BUS_ARN'],
                    buildspec=get_buildspec(session=session),

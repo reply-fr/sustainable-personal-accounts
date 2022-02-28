@@ -60,7 +60,7 @@ class Worker:
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
-        logging.info("Done")
+        logging.info(f"Account '{account.id}' is being prepared")
 
     @classmethod
     def purge(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
@@ -81,7 +81,7 @@ class Worker:
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
-        logging.info("Done")
+        logging.info(f"Account '{account.id}' is being purged")
 
     @staticmethod
     def make_preparation_variables(account, organizational_units) -> dict:

@@ -27,10 +27,7 @@ class OnPreparedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [
-            self.on_codebuild(parameters=parameters, permissions=permissions),
-            self.on_event(parameters=parameters, permissions=permissions)
-        ]
+        self.functions = [self.on_codebuild(parameters=parameters, permissions=permissions)]
 
     def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
@@ -49,26 +46,6 @@ class OnPreparedAccount(Construct):
                  detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
                          "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION]},
                  detail_type=["CodeBuild Build State Change"]),
-             targets=[LambdaFunction(function)])
-
-        return function
-
-    def on_event(self, parameters, permissions) -> Function:
-        function = Function(
-            self, "ByEvent",
-            function_name="{}OnPreparedAccount".format(toggles.environment_identifier),
-            description="Change state of prepared accounts to released",
-            handler="on_prepared_account_handler.handle_local_event",
-            **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
-
-        Rule(self, "EventRule",
-             event_pattern=EventPattern(
-                 source=['SustainablePersonalAccounts'],
-                 detail={"Environment": [toggles.environment_identifier]},
-                 detail_type=['PreparedAccount']),
              targets=[LambdaFunction(function)])
 
         return function

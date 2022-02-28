@@ -52,7 +52,7 @@ class Account:
         session = session or cls.get_session()
         actual = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
         if actual not in expected:
-            raise ValueError(f"Unexpected organizational unit '{actual}'")
+            raise ValueError(f"Unexpected organizational unit '{actual}' for account '{account}'")
 
     @classmethod
     def validate_tags(cls, account, session=None):

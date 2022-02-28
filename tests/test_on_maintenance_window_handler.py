@@ -23,7 +23,7 @@ import json
 from unittest.mock import patch, Mock
 import os
 
-from code.on_maintenance_window_handler import handle_event
+from code.on_maintenance_window_handler import handle_schedule_event
 
 # import pytest
 # pytestmark = pytest.mark.wip
@@ -32,7 +32,7 @@ from code.on_maintenance_window_handler import handle_event
 @patch.dict(os.environ, dict(DRY_RUN="true",
                              ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
                              VERBOSITY='DEBUG'))
-def test_handle_event():
+def test_handle_schedule_event():
 
     mock = Mock()
 
@@ -83,5 +83,5 @@ def test_handle_event():
     list_parents = {'Parents': [{'Id': 'ou-1234'}]}
     mock.client.return_value.list_parents.return_value = list_parents
 
-    result = handle_event(event=dict(hello='world!'), context=None, session=mock)
+    result = handle_schedule_event(event=dict(hello='world!'), context=None, session=mock)
     assert result == '[OK]'
