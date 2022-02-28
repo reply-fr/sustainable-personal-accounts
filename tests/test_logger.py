@@ -22,11 +22,10 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 from io import StringIO
 from unittest.mock import Mock, patch
 import os
-import pytest
 
 from code import setup_logging, trap_exception
 
-
+# import pytest
 # pytestmark = pytest.mark.wip
 
 

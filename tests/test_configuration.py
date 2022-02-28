@@ -23,12 +23,11 @@ import builtins
 from io import BytesIO
 from unittest.mock import patch
 import os
-import pytest
 from types import SimpleNamespace
 
 from resources import Configuration
 
-
+import pytest
 pytestmark = pytest.mark.wip
 
 

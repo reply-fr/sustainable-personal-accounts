@@ -21,13 +21,12 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
 import os
-import pytest
 
 from code import Events
 from code.on_purged_account_handler import handle_codebuild_event, handle_local_event
 from code.worker import Worker
 
-
+# import pytest
 # pytestmark = pytest.mark.wip
 
 

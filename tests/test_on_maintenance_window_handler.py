@@ -22,11 +22,10 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import json
 from unittest.mock import patch, Mock
 import os
-import pytest
 
 from code.on_maintenance_window_handler import handle_event
 
-
+# import pytest
 # pytestmark = pytest.mark.wip
 
 

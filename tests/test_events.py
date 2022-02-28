@@ -18,10 +18,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 from unittest.mock import Mock, patch
 import os
-import pytest
 
 from code import Events, State
 
+import pytest
 # pytestmark = pytest.mark.wip
 
 

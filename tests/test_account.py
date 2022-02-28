@@ -20,14 +20,12 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import os
-import pytest
 from unittest.mock import Mock, patch
 from types import SimpleNamespace
 
-
 from code import Account, State
 
-
+import pytest
 # pytestmark = pytest.mark.wip
 
 

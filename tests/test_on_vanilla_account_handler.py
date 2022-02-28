@@ -22,12 +22,11 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import json
 from unittest.mock import patch, Mock
 import os
-import pytest
 
 from code import Events, State
 from code.on_vanilla_account_handler import handle_move_event, handle_tag_event
 
-
+import pytest
 # pytestmark = pytest.mark.wip
 
 
