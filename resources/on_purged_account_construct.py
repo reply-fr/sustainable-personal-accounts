@@ -20,6 +20,8 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
+from code import Worker
+
 
 class OnPurgedAccount(Construct):
 
@@ -44,7 +46,8 @@ class OnPurgedAccount(Construct):
         Rule(self, "CodebuildRule",
              event_pattern=EventPattern(
                  source=['aws.codebuild'],
-                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"]},
+                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
+                         "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE]},
                  detail_type=["CodeBuild Build State Change"]),
              targets=[LambdaFunction(function)])
 
