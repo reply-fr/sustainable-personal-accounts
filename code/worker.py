@@ -263,7 +263,7 @@ class Worker:
         logging.info(f"Starting project build {name}")
         result = client.start_build(projectName=name)
         logging.debug(result.get('build'))
-        logging.info("Done")
+        logging.debug("Done")
 
     @classmethod
     def get_session(cls, account, session=None):
@@ -274,7 +274,7 @@ class Worker:
         target = make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
                               session=master)
         identity = target.client('sts').get_caller_identity()
-        logging.debug(f"Identity {identity}")
+        logging.debug(f"Using identity {identity}")
         return target
 
     @classmethod

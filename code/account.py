@@ -112,7 +112,7 @@ class Account:
             session.client('organizations').tag_resource(
                 ResourceId=account,
                 Tags=[dict(Key='account:state', Value=state.value)])
-            logging.info("Done")
+            logging.debug("Done")
         else:
             logging.warning("Dry-run mode - account has not been tagged")
 

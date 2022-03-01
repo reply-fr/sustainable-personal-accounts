@@ -60,7 +60,7 @@ class Events:
         if os.environ.get("DRY_RUN") == "FALSE":
             session = session or Session()
             session.client('events').put_events(Entries=[event])
-            logging.info("Done")
+            logging.debug("Done")
         else:
             logging.warning("Dry-run mode - no event has been put")
 
