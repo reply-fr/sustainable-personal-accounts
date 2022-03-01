@@ -84,6 +84,7 @@ def test_set_from_yaml(toggles):
     assert toggles.environment_identifier == 'SpaTest'
     organizational_units = {
         'ou-1234': {
+            'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
             'budget_name': 'DataTeamBudget',
             'cost_budget': 500.0,
             'note': 'a container for some accounts',
@@ -91,6 +92,7 @@ def test_set_from_yaml(toggles):
             'purge_variables': {'DRY_RUN': 'TRUE'}
         },
         'ou-5678': {
+            'account_tags': {'CostCenter': 'xyz', 'Sponsor': 'Mister Jones'},
             'budget_name': 'DevelopmentTeamBudget',
             'cost_budget': 300,
             'note': 'another account container',

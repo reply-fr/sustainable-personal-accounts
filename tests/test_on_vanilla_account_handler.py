@@ -35,6 +35,19 @@ def valid_tags():
 
     mock = Mock()
 
+    attributes = {
+        'Account': {
+            'Id': '345678901234',
+            'Arn': 'arn:aws:some-arn',
+            'Email': 'a@b.com',
+            'Name': 'account-three',
+            'Status': 'ACTIVE',
+            'JoinedMethod': 'CREATED',
+            'JoinedTimestamp': '20150101'
+        }
+    }
+    mock.client.return_value.describe_account.return_value = attributes
+
     chunk_1 = {
         'Tags': [
             {
