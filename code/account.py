@@ -55,19 +55,23 @@ class Account:
             raise ValueError(f"Unexpected organizational unit '{actual}' for account '{account}'")
 
     @classmethod
-    def validate_tags(cls, account, session=None):
-        tags = cls.list_tags(account, session=session)
+    def validate_tags(cls, account, tags=None, session=None):
+        tags = tags or cls.list_tags(account, session=session)
         if 'account:holder' not in tags.keys():
-            raise ValueError(f"Missing tag 'account:holder' on account '{account}' - this account can not be assigned")
-        if not cls.validate_owner(tags['account:holder']):
-            raise ValueError(f"Invalid value for tag 'account:holder' on account '{account}' - this account can not be assigned")
+            raise ValueError(f"Account '{account}' has no tag 'account:holder'")
+        holder = tags['account:holder']
+        if not cls.validate_holder(holder):
+            raise ValueError(f"Account '{account}' assigned to '{holder}' has invalid value for tag 'account:holder'")
         if 'account:state' not in tags.keys():
-            raise ValueError(f"Missing tag 'account:state' on account '{account}' - this account can not be assigned")
-        if not cls.validate_state(tags['account:state']):
-            raise ValueError(f"Invalid value for tag 'account:state' on account '{account}' - this account can not be assigned")
+            raise ValueError(f"Account '{account}' assigned to '{holder}' has no tag 'account:state'")
+        state = tags['account:state']
+        if not cls.validate_state(state):
+            raise ValueError(f"Account '{account}' assigned to '{holder}' has invalid value '{state}' for tag 'account:state'")
+        if state not in [State.RELEASED.value]:
+            logging.warning(f"Account '{account}' assigned to '{holder}' is in transient state '{state}'")
 
     @classmethod
-    def validate_owner(cls, text):
+    def validate_holder(cls, text):
         return re.fullmatch(cls.VALID_EMAIL, text)
 
     @classmethod
@@ -106,7 +110,7 @@ class Account:
         if not isinstance(state, State):
             raise ValueError(f"Unexpected state type {state}")
 
-        logging.info(f"Tagging account '{account}' with state '{state.value}'...")
+        logging.info(f"Tagging account '{account}' with state '{state.value}'")
         if os.environ.get("DRY_RUN") == "FALSE":
             session = session or cls.get_session()
             session.client('organizations').tag_resource(

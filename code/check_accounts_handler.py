@@ -20,26 +20,23 @@ import logging
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from account import Account, State
+from account import Account
 from session import get_organizational_units
 
 
 @trap_exception
-def handle_schedule_event(event, context, session=None):
-    logging.info("Expiring personal accounts")
+def handle_event(event, context, session=None):
+    logging.info("Checking personal accounts")
     units = get_organizational_units(session=session)
     for unit in units.keys():
         logging.info(f"Scanning organizational unit '{unit}'")
         for account in Account.list(parent=unit, session=session):
             item = Account.describe(account, session=session)
-            if not item.is_active:
-                logging.info(f"Ignoring inactive account '{account}'")
-                continue
-            state = item.tags.get('account:state')
-            if state != State.RELEASED.value:
-                logging.info(f"Ignoring account '{account}' that is in state '{state}'")
-                continue
-            Account.move(account=account, state=State.EXPIRED)
+            try:
+                Account.validate_tags(account=account, tags=item.tags, session=session)
+                logging.info(f"Account '{account}' assigned to '{item.email}' is valid")
+            except ValueError as error:
+                logging.error(error)
     logging.info("All configured organizational units have been scanned")
 
     return '[OK]'

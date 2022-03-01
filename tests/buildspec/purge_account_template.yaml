@@ -143,6 +143,6 @@ phases:
       - aws iam create-account-alias --account-alias $ALIAS
       - echo "Running AWS-Nuke on account $ACCOUNT"
       - aws-nuke -c aws-nuke-config.yaml --force | tee aws-nuke.log
-      - cat aws-nuke.log | tail -n 50 >aws-nuke-short.log
+      - cat aws-nuke.log | tail -c 4000 >aws-nuke-short.log
       - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://aws-nuke-short.log --overwrite
       - echo "Account purge completed on $(date)"
