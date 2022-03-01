@@ -38,18 +38,29 @@ class State(Enum):  # value is given to tag 'account:state'
 class Account:
     VALID_EMAIL = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
 
+    session = None
+
     @classmethod
     def get_session(cls):
-        role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-        return make_session(role_arn=role) if role else Session()
+        if cls.session is None:
+            role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
+            cls.session = make_session(role_arn=role) if role else Session()
+        return cls.session
+
+    @classmethod
+    def validate_organizational_unit(cls, account, expected, session=None):
+        session = session or cls.get_session()
+        actual = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+        if actual not in expected:
+            raise ValueError(f"Unexpected organizational unit '{actual}' for account '{account}'")
 
     @classmethod
     def validate_tags(cls, account, session=None):
         tags = cls.list_tags(account, session=session)
-        if 'account:owner' not in tags.keys():
-            raise ValueError(f"Missing tag 'account:owner' on account '{account}' - this account can not be assigned")
-        if not cls.validate_owner(tags['account:owner']):
-            raise ValueError(f"Invalid value for tag 'account:owner' on account '{account}' - this account can not be assigned")
+        if 'account:holder' not in tags.keys():
+            raise ValueError(f"Missing tag 'account:holder' on account '{account}' - this account can not be assigned")
+        if not cls.validate_owner(tags['account:holder']):
+            raise ValueError(f"Invalid value for tag 'account:holder' on account '{account}' - this account can not be assigned")
         if 'account:state' not in tags.keys():
             raise ValueError(f"Missing tag 'account:state' on account '{account}' - this account can not be assigned")
         if not cls.validate_state(tags['account:state']):
@@ -101,7 +112,7 @@ class Account:
             session.client('organizations').tag_resource(
                 ResourceId=account,
                 Tags=[dict(Key='account:state', Value=state.value)])
-            logging.info("Done")
+            logging.debug("Done")
         else:
             logging.warning("Dry-run mode - account has not been tagged")
 
@@ -111,14 +122,12 @@ class Account:
         token = None
         while True:
             logging.debug(f"Listing accounts in parent '{parent}'")
-            parameters = dict(ParentId=parent,
-                              MaxResults=50)
+            parameters = dict(ParentId=parent)
             if token:
                 parameters['NextToken'] = token
             chunk = session.client('organizations').list_accounts_for_parent(**parameters)
 
             for item in chunk['Accounts']:
-                logging.debug(json.dumps(item))
                 yield item['Id']
 
             token = chunk.get('NextToken')

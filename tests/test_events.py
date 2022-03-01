@@ -18,20 +18,21 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 from unittest.mock import Mock, patch
 import os
-import pytest
 
 from code import Events, State
 
+import pytest
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
+@patch.dict(os.environ, dict(DRY_RUN="FALSE",
+                             ENVIRONMENT_IDENTIFIER='FromHere'))
 def test_emit():
     mock = Mock()
     Events.emit(label='CreatedAccount', account='123456789012', session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Account": "123456789012"}',
+        {'Detail': '{"Account": "123456789012", "Environment": "FromHere"}',
          'DetailType': 'CreatedAccount',
          'Source': 'SustainablePersonalAccounts'}])
 
@@ -95,27 +96,43 @@ def test_decode_codebuild_event_on_unexpected_status():
         Events.decode_codebuild_event(event)
 
 
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           label="CreatedAccount"))
+                                           label="CreatedAccount",
+                                           environment="envt1"))
     decoded = Events.decode_local_event(event)
     assert decoded.account == "123456789012"
     assert decoded.label == "CreatedAccount"
 
 
-def test_decode_local_event_on_malformed_account():
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_local_event_on_unexpected_environment():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="short",
-                                           label="CreatedAccount"))
+                                           label="CreatedAccount",
+                                           environment="alien*environment"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event)
 
 
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_local_event_on_malformed_account():
+    event = Events.make_event(template="tests/events/local-event-template.json",
+                              context=dict(account="short",
+                                           label="CreatedAccount",
+                                           environment="envt1"))
+    with pytest.raises(ValueError):
+        Events.decode_local_event(event)
+
+
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_label():
     event = Events.make_event(template="tests/events/local-event-template.json",
                               context=dict(account="123456789012",
-                                           label="CreatedAccount"))
+                                           label="CreatedAccount",
+                                           environment="envt1"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event, match='PurgedAccount')
 

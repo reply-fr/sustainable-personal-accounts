@@ -16,26 +16,40 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
+import os
 import logging
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from boto3.session import Session
+
 from account import Account, State
 from events import Events
+from session import get_organizational_units
 from worker import Worker
 
 
 @trap_exception
-def handle_codebuild_event(event, context):
+def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE)
-    return Events.emit('PurgedAccount', input.account)
+    input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED)
+    return handle_account(input.account, session=session)
 
 
-@trap_exception
-def handle_local_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-    input = Events.decode_local_event(event, match="PurgedAccount")
-    Account.move(account=input.account, state=State.ASSIGNED)
-    return f"[OK] PurgedAccount {input.account}"
+def handle_account(account, session=None):
+    units = get_organizational_units(session=session)
+    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    result = Events.emit('AssignedAccount', account)
+    Worker.prepare(account=Account.describe(account, session=session),
+                   organizational_units=get_organizational_units(session=session),
+                   event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                   buildspec=get_buildspec(session=session),
+                   session=session)
+    return result
+
+
+def get_buildspec(session=None):
+    session = session or Session()
+    item = session.client('ssm').get_parameter(Name=os.environ['PREPARATION_BUILDSPEC_PARAMETER'])
+    return item['Parameter']['Value']

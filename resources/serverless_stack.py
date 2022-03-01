@@ -22,14 +22,15 @@ from aws_cdk.aws_lambda import AssetCode, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
 from .cockpit_construct import Cockpit
-from .listen_events_construct import ListenEvents
-from .move_expired_accounts_construct import MoveExpiredAccounts
-from .move_prepared_account_construct import MovePreparedAccount
-from .move_purged_account_construct import MovePurgedAccount
-from .move_vanilla_account_construct import MoveVanillaAccount
+from .on_assigned_account_construct import OnAssignedAccount
+from .on_events_construct import OnEvents
+from .on_expired_account_construct import OnExpiredAccount
+from .on_maintenance_window_construct import OnMaintenanceWindow
+from .on_prepared_account_construct import OnPreparedAccount
+from .on_purged_account_construct import OnPurgedAccount
+from .on_released_account_construct import OnReleasedAccount
+from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
-from .signal_assigned_account_construct import SignalAssignedAccount
-from .signal_expired_account_construct import SignalExpiredAccount
 
 
 class ServerlessStack(Stack):
@@ -45,13 +46,14 @@ class ServerlessStack(Stack):
         permissions = self.get_permissions()
 
         constructs = [
-            ListenEvents(self, "ListenEvents", parameters=parameters, permissions=permissions),
-            SignalAssignedAccount(self, "SignalAssignedAccount", parameters=parameters, permissions=permissions),
-            MovePreparedAccount(self, "MovePreparedAccount", parameters=parameters, permissions=permissions),
-            MoveExpiredAccounts(self, "MoveExpiredAccounts", parameters=parameters, permissions=permissions),
-            MoveVanillaAccount(self, "MoveVanillaAccount", parameters=parameters, permissions=permissions),
-            SignalExpiredAccount(self, "SignalExpiredAccount", parameters=parameters, permissions=permissions),
-            MovePurgedAccount(self, "MovePurgedAccount", parameters=parameters, permissions=permissions)
+            OnAssignedAccount(self, "OnAssignedAccount", parameters=parameters, permissions=permissions),
+            OnEvents(self, "OnEvents", parameters=parameters, permissions=permissions),
+            OnExpiredAccount(self, "OnExpiredAccount", parameters=parameters, permissions=permissions),
+            OnMaintenanceWindow(self, "OnMaintenanceWindow", parameters=parameters, permissions=permissions),
+            OnPreparedAccount(self, "OnPreparedAccount", parameters=parameters, permissions=permissions),
+            OnPurgedAccount(self, "OnPurgedAccount", parameters=parameters, permissions=permissions),
+            OnReleasedAccount(self, "OnReleasedAccount", parameters=parameters, permissions=permissions),
+            OnVanillaAccount(self, "OnVanillaAccount", parameters=parameters, permissions=permissions),
         ]
         functions = []
         for construct in constructs:
@@ -63,13 +65,15 @@ class ServerlessStack(Stack):
 
     def get_environment(self) -> dict:  # shared across all lambda functions
         environment = dict(
-            ORGANIZATIONAL_UNITS_PARAMETER=Parameters.ORGANIZATIONAL_UNITS_PARAMETER,
-            PREPARATION_BUILDSPEC_PARAMETER=Parameters.PREPARATION_BUILDSPEC_PARAMETER,
-            PURGE_BUILDSPEC_PARAMETER=Parameters.PURGE_BUILDSPEC_PARAMETER,
+            ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
+            ORGANIZATIONAL_UNITS_PARAMETER=toggles.environment_identifier + Parameters.ORGANIZATIONAL_UNITS_PARAMETER,
+            PREPARATION_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PREPARATION_BUILDSPEC_PARAMETER,
+            PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
             DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
-            ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild)
+            ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
+            VERBOSITY=toggles.automation_verbosity)
         return environment
 
     def get_parameters(self, environment) -> dict:  # used to build lambda functions
@@ -77,7 +81,6 @@ class ServerlessStack(Stack):
             code=AssetCode("code"),
             environment=environment,
             log_retention=RetentionDays.THREE_MONTHS,
-            reserved_concurrent_executions=toggles.automation_maximum_concurrent_executions,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9)
         return parameters

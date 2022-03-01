@@ -20,28 +20,32 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
-from code import Events
 
-
-class ListenEvents(Construct):
+class OnReleasedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.build_on_event(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_tag(parameters=parameters, permissions=permissions)]
 
-    def build_on_event(self, parameters, permissions) -> Function:
-        function = Function(self, "OnEvent",
-                            description="Listen events from the bus",
-                            handler="listen_events_handler.handle_event",
-                            **parameters)
+    def on_tag(self, parameters, permissions) -> Function:
+        function = Function(
+            self, "ByTag",
+            function_name="{}OnReleasedAccount".format(toggles.environment_identifier),
+            description="Release personal account for innovative work",
+            handler="on_released_account_handler.handle_tag_event",
+            **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
-        Rule(self, "EventRule",
+        Rule(self, "TagRule",
              event_pattern=EventPattern(
-                 source=['SustainablePersonalAccounts'],
-                 detail_type=Events.EVENT_LABELS),
+                 source=['aws.organizations'],
+                 detail=dict(
+                     errorCode=[{"exists": False}],
+                     eventName=["TagResource"],
+                     eventSource=["organizations.amazonaws.com"],
+                     requestParameters=dict(tags=dict(key=["account:state"], value=["released"])))),
              targets=[LambdaFunction(function)])
 
         return function

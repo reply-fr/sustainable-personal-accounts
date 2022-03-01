@@ -21,17 +21,19 @@ from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
 
-class SignalAssignedAccount(Construct):
+class OnExpiredAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
         self.functions = [self.build_on_tag(parameters=parameters, permissions=permissions)]
 
     def build_on_tag(self, parameters, permissions) -> Function:
+
         function = Function(
-            self, "OnTag",
-            description="Start preparation of an assigned account",
-            handler="signal_assigned_account_handler.handle_event",
+            self, "ByTag",
+            function_name="{}OnExpiredAccount".format(toggles.environment_identifier),
+            description="Start the purge of an expired account",
+            handler="on_expired_account_handler.handle_tag_event",
             **parameters)
 
         for permission in permissions:
@@ -43,7 +45,8 @@ class SignalAssignedAccount(Construct):
                  detail=dict(
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
-                     eventSource=["organizations.amazonaws.com"])),
+                     eventSource=["organizations.amazonaws.com"],
+                     requestParameters=dict(tags=dict(key=["account:state"], value=["expired"])))),
              targets=[LambdaFunction(function)])
 
         return function

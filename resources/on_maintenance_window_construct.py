@@ -16,53 +16,30 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk.aws_events import EventPattern, Rule
+from aws_cdk.aws_events import Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
 
-class MovePreparedAccount(Construct):
+class OnMaintenanceWindow(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [
-            self.build_on_codebuild(parameters=parameters, permissions=permissions),
-            self.build_on_event(parameters=parameters, permissions=permissions)
-        ]
+        self.functions = [self.on_schedule(parameters=parameters, permissions=permissions)]
 
-    def build_on_codebuild(self, parameters, permissions) -> Function:
+    def on_schedule(self, parameters, permissions) -> Function:
         function = Function(
-            self, "OnCodebuild",
-            description="Change state of prepared accounts to released",
-            handler="move_prepared_account_handler.handle_codebuild_event",
+            self, "BySchedule",
+            function_name="{}OnMaintenanceWindow".format(toggles.environment_identifier),
+            description="Change state of expired accounts",
+            handler="on_maintenance_window_handler.handle_schedule_event",
             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
-        Rule(self, "CodebuildRule",
-             event_pattern=EventPattern(
-                 source=['aws.codebuild'],
-                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"]},
-                 detail_type=["CodeBuild Build State Change"]),
-             targets=[LambdaFunction(function)])
-
-        return function
-
-    def build_on_event(self, parameters, permissions) -> Function:
-        function = Function(
-            self, "OnEvent",
-            description="Change state of prepared accounts to released",
-            handler="move_prepared_account_handler.handle_local_event",
-            **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
-
-        Rule(self, "EventRule",
-             event_pattern=EventPattern(
-                 source=['SustainablePersonalAccounts'],
-                 detail_type=['PreparedAccount']),
+        Rule(self, "TriggerRule",
+             schedule=Schedule.expression(toggles.automation_maintenance_window_expression),
              targets=[LambdaFunction(function)])
 
         return function

@@ -147,6 +147,12 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 ![bg contain](./media/reference-architecture.svg)
 
 ---
+<!-- _class: lead -->
+<!-- _paginate: false -->
+![](https://icongr.am/octicons/gift.svg?size=256&color=f96d00)
+## Ok, walk me through the solution
+
+---
 ## :clapper: Initiative status and next steps
 
 🟢 🚩 Get idea validation from AWS Control Tower specialists (Dec)

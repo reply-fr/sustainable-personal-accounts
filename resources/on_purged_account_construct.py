@@ -20,21 +20,21 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
+from code import Worker
 
-class MovePurgedAccount(Construct):
+
+class OnPurgedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [
-            self.build_on_codebuild(parameters=parameters, permissions=permissions),
-            self.build_on_event(parameters=parameters, permissions=permissions)
-        ]
+        self.functions = [self.on_codebuild(parameters=parameters, permissions=permissions)]
 
-    def build_on_codebuild(self, parameters, permissions) -> Function:
+    def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
-            self, "OnCodebuild",
+            self, "ByCodebuild",
+            function_name="{}OnPurgedAccountByCodebuild".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
-            handler="move_purged_account_handler.handle_codebuild_event",
+            handler="on_purged_account_handler.handle_codebuild_event",
             **parameters)
 
         for permission in permissions:
@@ -43,26 +43,9 @@ class MovePurgedAccount(Construct):
         Rule(self, "CodebuildRule",
              event_pattern=EventPattern(
                  source=['aws.codebuild'],
-                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"]},
+                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
+                         "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE]},
                  detail_type=["CodeBuild Build State Change"]),
-             targets=[LambdaFunction(function)])
-
-        return function
-
-    def build_on_event(self, parameters, permissions) -> Function:
-        function = Function(
-            self, "OnEvent",
-            description="Change state of purged accounts to assigned",
-            handler="move_purged_account_handler.handle_local_event",
-            **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
-
-        Rule(self, "EventRule",
-             event_pattern=EventPattern(
-                 source=['SustainablePersonalAccounts'],
-                 detail_type=['PurgedAccount']),
              targets=[LambdaFunction(function)])
 
         return function

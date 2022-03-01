@@ -20,12 +20,11 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import Mock
-import pytest
 
 from boto3.session import Session
 from code import make_session
 
-
+import pytest
 # pytestmark = pytest.mark.wip
 
 

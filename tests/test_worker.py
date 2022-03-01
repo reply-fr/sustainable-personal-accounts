@@ -21,12 +21,11 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import os
 from unittest.mock import Mock, patch
-import pytest
 from types import SimpleNamespace
 
 from code import Worker
 
-
+import pytest
 pytestmark = pytest.mark.wip
 
 

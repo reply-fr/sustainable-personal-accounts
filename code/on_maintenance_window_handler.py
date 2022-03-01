@@ -15,35 +15,31 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
-import os
 import logging
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from boto3.session import Session
-
 from account import Account, State
-from events import Events
 from session import get_organizational_units
-from worker import Worker
 
 
 @trap_exception
-def handle_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-    input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED)
-    result = Events.emit('AssignedAccount', input.account)
-    Worker.prepare(account=Account.describe(input.account, session=session),
-                   organizational_units=get_organizational_units(session=session),
-                   event_bus_arn=os.environ['EVENT_BUS_ARN'],
-                   buildspec=get_buildspec(session=session),
-                   session=session)
-    return result
+def handle_schedule_event(event, context, session=None):
+    logging.info("Expiring personal accounts")
+    units = get_organizational_units(session=session)
+    for unit in units.keys():
+        logging.info(f"Scanning organizational unit '{unit}'")
+        for account in Account.list(parent=unit, session=session):
+            item = Account.describe(account, session=session)
+            if not item.is_active:
+                logging.info(f"Ignoring inactive account '{account}'")
+                continue
+            state = item.tags.get('account:state')
+            if state != State.RELEASED.value:
+                logging.info(f"Ignoring account '{account}' that in in state '{state}'")
+                continue
+            Account.move(account=account, state=State.EXPIRED)
+    logging.info("All configured organizational units have been scanned")
 
-
-def get_buildspec(session=None):
-    session = session or Session()
-    item = session.client('ssm').get_parameter(Name=os.environ['PREPARATION_BUILDSPEC_PARAMETER'])
-    return item['Parameter']['Value']
+    return '[OK]'

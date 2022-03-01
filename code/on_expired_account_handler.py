@@ -16,32 +16,40 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
+import os
 import logging
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from boto3.session import Session
+
 from account import Account, State
+from events import Events
 from session import get_organizational_units
+from worker import Worker
 
 
 @trap_exception
-def handle_event(event, context, session=None):
+def handle_tag_event(event, context, session=None):
     logging.debug(json.dumps(event))
+    input = Events.decode_tag_account_event(event=event, match=State.EXPIRED)
+    return handle_account(input.account, session=session)
 
-    units = get_organizational_units()
-    for unit in units.keys():
-        for account in Account.list(parent=unit, session=session):
 
-            item = Account.describe(account)
+def handle_account(account, session=None):
+    units = get_organizational_units(session=session)
+    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    result = Events.emit('ExpiredAccount', account)
+    Worker.purge(account=Account.describe(account, session=session),
+                 organizational_units=get_organizational_units(session=session),
+                 event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                 buildspec=get_buildspec(session=session),
+                 session=session)
+    return result
 
-            if not item.is_active:
-                logging.debug(f"Ignoring inactive account '{account}'")
-                continue
 
-            if item.tags.get('account:state') != State.RELEASED:
-                logging.debug(f"Ignoring account '{account}' that has not been released")
-                continue
-
-            logging.info(f"Expiring account '{account}'")
-            Account.move(account=account, state=State.EXPIRED)
+def get_buildspec(session=None):
+    session = session or Session()
+    item = session.client('ssm').get_parameter(Name=os.environ['PURGE_BUILDSPEC_PARAMETER'])
+    return item['Parameter']['Value']

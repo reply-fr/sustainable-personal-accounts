@@ -1,3 +1,9 @@
+# prefix for cloud resources and cloud stack
+#
+environment_identifier: SpaTest
+
+# parameters for resources deployed in the automation account
+#
 automation:
 
   # the target account for the deployment of the solution
@@ -9,6 +15,7 @@ automation:
   region: "eu-west-1"
 
   # this is displayed in the monitoring dashboard
+  #
   cockpit_markdown_text: |
     # Sustainable Personal Accounts Dashboard
     Currently under active development (alpha)
@@ -19,12 +26,6 @@ automation:
   #
   maintenance_window_expression: "cron(0 18 ? * SAT *)"
 
-  # this is the maximum rate of invocations for each individual lambda function
-  # Reference:
-  # - https://docs.aws.amazon.com/lambda/latest/dg/invocation-scaling.html
-  #
-  maximum_concurrent_executions: 50
-
   # this role is assumed by Lambda functions either to list AWS accounts in the OU,
   # and to tag AWS accounts
   #
@@ -33,6 +34,12 @@ automation:
   # this role is assumed by Lambda functions to create CodeBuild projects and to start them
   #
   role_name_to_manage_codebuild: 'AWSControlTowerExecution'
+
+  # this defines the amount of text sent to logs
+  # - allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  # - default value: INFO
+  #
+  verbosity: ERROR
 
 
 # parameters for resources deployed in managed accounts
@@ -57,14 +64,18 @@ dry_run: False
 organizational_units:
 
   - identifier: 'ou-1234'
+    note: 'a container for some accounts'
     cost_budget: 500.0
+    budget_name: 'DataTeamBudget'
     preparation_variables:
       HELLO: WORLD
     purge_variables:
       DRY_RUN: 'TRUE'
 
   - identifier: 'ou-5678'
+    note: 'another account container'
     cost_budget: 300
+    budget_name: 'DevelopmentTeamBudget'
     preparation_variables:
       HELLO: UNIVERSE
     purge_variables:

@@ -21,11 +21,10 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
 import os
-import pytest
 
 from build_resources import build_resources
 
-
+import pytest
 pytestmark = pytest.mark.wip
 
 

@@ -16,34 +16,34 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-import os
 import logging
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from boto3.session import Session
-
 from account import Account, State
 from events import Events
 from session import get_organizational_units
-from worker import Worker
 
 
 @trap_exception
-def handle_event(event, context, session=None):
+def handle_move_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    input = Events.decode_tag_account_event(event=event, match=State.EXPIRED)
-    result = Events.emit('ExpiredAccount', input.account)
-    Worker.purge(account=Account.describe(input.account, session=session),
-                 organizational_units=get_organizational_units(session=session),
-                 event_bus_arn=os.environ['EVENT_BUS_ARN'],
-                 buildspec=get_buildspec(session=session),
-                 session=session)
-    return result
+    units = get_organizational_units(session=session)
+    input = Events.decode_move_account_event(event=event, matches=list(units.keys()))
+    return handle_account(input.account, session=session)
 
 
-def get_buildspec(session=None):
-    session = session or Session()
-    item = session.client('ssm').get_parameter(Name=os.environ['PURGE_BUILDSPEC_PARAMETER'])
-    return item['Parameter']['Value']
+@trap_exception
+def handle_tag_event(event, context, session=None):
+    logging.debug(json.dumps(event))
+    input = Events.decode_tag_account_event(event=event, match=State.VANILLA)
+    return handle_account(input.account, session=session)
+
+
+def handle_account(account, session=None):
+    units = get_organizational_units(session=session)
+    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    Account.validate_tags(account=account, session=session)
+    Account.move(account=account, state=State.ASSIGNED, session=session)
+    return Events.emit('CreatedAccount', account)

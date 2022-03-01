@@ -60,7 +60,7 @@ class Worker:
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
-        logging.info("Done")
+        logging.info(f"Account '{account.id}' is being prepared")
 
     @classmethod
     def purge(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
@@ -81,7 +81,7 @@ class Worker:
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
-        logging.info("Done")
+        logging.info(f"Account '{account.id}' is being purged")
 
     @staticmethod
     def make_preparation_variables(account, organizational_units) -> dict:
@@ -91,6 +91,8 @@ class Worker:
         extras = configuration.get('preparation_variables', {})
         for key in extras.keys():
             variables[key] = extras[key]
+        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+            variables['ENVIRONMENT_IDENTIFIER'] = value
         return variables
 
     @staticmethod
@@ -100,6 +102,8 @@ class Worker:
         extras = configuration.get('purge_variables', {})
         for key in extras.keys():
             variables[key] = extras[key]
+        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+            variables['ENVIRONMENT_IDENTIFIER'] = value
         return variables
 
     @classmethod
@@ -200,6 +204,7 @@ class Worker:
             iam.attach_role_policy(
                 RoleName=name,
                 PolicyArn=policy_arn)
+
         except ClientError as error:
             if error.response['Error']['Code'] == 'EntityAlreadyExists':
                 logging.debug(f"Policy '{policy_name}' already exists")
@@ -217,8 +222,8 @@ class Worker:
         session = session or Session()
         client = session.client('codebuild')
         environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
-        retries = 10
-        while retries > 0:  # we may have to wait for IAM role to be really available
+        retries = 0
+        while retries < 5:  # we may have to wait for IAM role to be really available
             logging.debug("Deploying Codebuild project")
             try:
                 client.create_project(
@@ -243,19 +248,22 @@ class Worker:
             except client.exceptions.ResourceAlreadyExistsException as error:
                 logging.debug(f"Project '{name}' already exists, deleting it")
                 client.delete_project(name=name)
-                time.sleep(10)
-                retries -= 1
+                retries += 1
+                time.sleep(retries * 5)
 
             except client.exceptions.InvalidInputException as error:  # we could have to wait for IAM to be ready
                 logging.debug("Sleeping...")
-                time.sleep(10)
-                retries -= 1
+                retries += 1
+                time.sleep(retries * 5)
 
     @classmethod
     def run_project(cls, name, session=None):
         session = session or Session()
-        logging.debug(f"Starting project build {name}")
-        session.client('codebuild').start_build(projectName=name)
+        client = session.client('codebuild')
+        logging.info(f"Starting project build {name}")
+        result = client.start_build(projectName=name)
+        logging.debug(result.get('build'))
+        logging.debug("Done")
 
     @classmethod
     def get_session(cls, account, session=None):
@@ -266,7 +274,7 @@ class Worker:
         target = make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
                               session=master)
         identity = target.client('sts').get_caller_identity()
-        logging.debug(f"Identity {identity}")
+        logging.debug(f"Using identity {identity}")
         return target
 
     @classmethod

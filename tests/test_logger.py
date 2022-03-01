@@ -20,12 +20,12 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from io import StringIO
-from unittest.mock import Mock
-import pytest
+from unittest.mock import Mock, patch
+import os
 
 from code import setup_logging, trap_exception
 
-
+# import pytest
 # pytestmark = pytest.mark.wip
 
 
@@ -104,6 +104,7 @@ def test_trap_exception_on_no_error():
     assert result == 'ok'
 
 
+@patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_trap_exception_on_value_error():
     mock = Mock(side_effect=ValueError('boom'))
     decorated = trap_exception(mock)
@@ -112,6 +113,7 @@ def test_trap_exception_on_value_error():
     assert result == "[DEBUG] boom"
 
 
+@patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_trap_exception_on_internal_error():
     mock = Mock(side_effect=RuntimeError('boom'))
     decorated = trap_exception(mock)

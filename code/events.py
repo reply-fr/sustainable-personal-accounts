@@ -45,9 +45,14 @@ class Events:
             raise ValueError(f"Invalid event label '{label}'")
         if len(account) != 12:
             raise ValueError(f"Invalid account identifier '{account}'")
-        return dict(Detail=json.dumps(dict(Account=account)),
+        return dict(Detail=json.dumps(dict(Account=account,
+                                           Environment=cls.get_environment())),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
+
+    @classmethod
+    def get_environment(cls):
+        return os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')
 
     @classmethod
     def put_event(cls, event, session=None):
@@ -55,7 +60,7 @@ class Events:
         if os.environ.get("DRY_RUN") == "FALSE":
             session = session or Session()
             session.client('events').put_events(Entries=[event])
-            logging.info("Done")
+            logging.debug("Done")
         else:
             logging.warning("Dry-run mode - no event has been put")
 
@@ -69,6 +74,7 @@ class Events:
 
         decoded.project = event['detail']['project-name']
         if match and match != decoded.project:
+            logging.debug(f"Expecting project name '{match}'")
             raise ValueError(f"Ignored project '{decoded.project}'")
 
         decoded.status = event['detail']['build-status']
@@ -77,11 +83,15 @@ class Events:
 
         return decoded
 
-    @staticmethod
-    def decode_local_event(event, match=None):
+    @classmethod
+    def decode_local_event(cls, event, match=None):
         decoded = SimpleNamespace()
 
-        decoded.account = event['detail']['Account']
+        decoded.environment = event['detail'].get('Environment', 'None')
+        if decoded.environment != cls.get_environment():
+            raise ValueError(f"Unexpected environment '{decoded.environment}'")
+
+        decoded.account = event['detail'].get('Account', 'None')
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
@@ -101,6 +111,7 @@ class Events:
 
         decoded.organizational_unit = event['detail']['requestParameters']['destinationParentId']
         if matches and decoded.organizational_unit not in matches:
+            logging.debug(matches)
             raise ValueError(f"Unexpected event source '{decoded.organizational_unit}'")
 
         return decoded

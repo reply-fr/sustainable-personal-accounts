@@ -16,29 +16,36 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk.aws_events import Rule, Schedule
+from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
+from code import Worker
 
-class MoveExpiredAccounts(Construct):
+
+class OnPreparedAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.build_on_schedule(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_codebuild(parameters=parameters, permissions=permissions)]
 
-    def build_on_schedule(self, parameters, permissions) -> Function:
+    def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
-            self, "OnSchedule",
-            description="Change state of expired accounts",
-            handler="move_expired_accounts_handler.handle_event",
+            self, "ByCodebuild",
+            function_name="{}OnPreparedAccountByCodebuild".format(toggles.environment_identifier),
+            description="Change state of prepared accounts to released",
+            handler="on_prepared_account_handler.handle_codebuild_event",
             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
-        Rule(self, "TriggerRule",
-             schedule=Schedule.expression(toggles.automation_maintenance_window_expression),
+        Rule(self, "CodebuildRule",
+             event_pattern=EventPattern(
+                 source=['aws.codebuild'],
+                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
+                         "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION]},
+                 detail_type=["CodeBuild Build State Change"]),
              targets=[LambdaFunction(function)])
 
         return function

@@ -19,29 +19,30 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import os
-import pytest
 
 from code import Events
-from code.move_purged_account_handler import handle_codebuild_event, handle_local_event
+from code.on_prepared_account_handler import handle_codebuild_event, handle_account
 from code.worker import Worker
 
-
+# import pytest
 # pytestmark = pytest.mark.wip
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             VERBOSITY='DEBUG'))
 def test_handle_codebuild_event():
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
-                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
+                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                                            status="SUCCEEDED"))
     result = handle_codebuild_event(event=event, context=None)
-    assert result == {'Detail': '{"Account": "123456789012"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_project():
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
@@ -51,29 +52,21 @@ def test_handle_codebuild_event_on_unexpected_project():
     assert result == "[DEBUG] Ignored project 'SampleProject'"
 
 
-# @patch.dict(os.environ, dict(DRY_RUN="TRUE"))
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_status():
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
-                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
+                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                                            status="FAILED"))
     result = handle_codebuild_event(event=event, context=None)
     assert result == "[DEBUG] Ignored status 'FAILED'"
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
-def test_handle_local_event():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="PurgedAccount"))
-    result = handle_local_event(event=event, context=None)
-    assert result == '[OK] PurgedAccount 123456789012'
-
-
-@patch.dict(os.environ, dict(DRY_RUN="TRUE"))
-def test_handle_local_event_on_unexpected_event():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount"))
-    result = handle_local_event(event=event, context=None)
-    assert result == "[DEBUG] Unexpected event label 'CreatedAccount'"
+@patch.dict(os.environ, dict(DRY_RUN="TRUE",
+                             ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='DEBUG'))
+def test_handle_account():
+    mock = Mock()
+    result = handle_account('123456789012', session=mock)
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}

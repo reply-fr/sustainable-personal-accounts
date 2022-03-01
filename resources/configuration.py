@@ -32,11 +32,12 @@ class Configuration:
         automation_account_id='str',
         automation_cockpit_markdown_text='str',
         automation_maintenance_window_expression='str',
-        automation_maximum_concurrent_executions='int',
         automation_region='str',
         automation_role_arn_to_manage_accounts='str',
         automation_role_name_to_manage_codebuild='str',
+        automation_verbosity='str',
         dry_run='bool',
+        environment_identifier='str',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
         worker_purge_buildspec_template_file='str',
@@ -82,10 +83,9 @@ class Configuration:
 
         # other default values
         toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
-        toggles.dry_run = True
-
-        # can be absent from settings file
         toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
+        toggles.automation_verbosity = 'INFO'
+        toggles.dry_run = True
 
     @classmethod
     def set_from_settings(cls, settings={}):

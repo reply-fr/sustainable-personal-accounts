@@ -23,12 +23,11 @@ import builtins
 from io import BytesIO
 from unittest.mock import patch
 import os
-import pytest
 from types import SimpleNamespace
 
 from resources import Configuration
 
-
+import pytest
 pytestmark = pytest.mark.wip
 
 
@@ -62,6 +61,7 @@ def test_initialize():
 def test_set_default_values(toggles):
     Configuration.set_default_values()
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
+    assert toggles.automation_verbosity == 'INFO'
 
 
 def test_set_from_settings(toggles):
@@ -76,14 +76,27 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_account_id == '123456789012'
     assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
     assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
-    assert toggles.automation_maximum_concurrent_executions == 50
     assert toggles.automation_region == 'eu-west-1'
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
+    assert toggles.automation_verbosity == 'ERROR'
     assert toggles.dry_run is False
+    assert toggles.environment_identifier == 'SpaTest'
     organizational_units = {
-        'ou-1234': {'cost_budget': 500.0, 'preparation_variables': {'HELLO': 'WORLD'}, 'purge_variables': {'DRY_RUN': 'TRUE'}},
-        'ou-5678': {'cost_budget': 300, 'preparation_variables': {'HELLO': 'UNIVERSE'}, 'purge_variables': {'DRY_RUN': 'FALSE'}},
+        'ou-1234': {
+            'budget_name': 'DataTeamBudget',
+            'cost_budget': 500.0,
+            'note': 'a container for some accounts',
+            'preparation_variables': {'HELLO': 'WORLD'},
+            'purge_variables': {'DRY_RUN': 'TRUE'}
+        },
+        'ou-5678': {
+            'budget_name': 'DevelopmentTeamBudget',
+            'cost_budget': 300,
+            'note': 'another account container',
+            'preparation_variables': {'HELLO': 'UNIVERSE'},
+            'purge_variables': {'DRY_RUN': 'FALSE'}
+        },
     }
     assert toggles.organizational_units == organizational_units
     assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'

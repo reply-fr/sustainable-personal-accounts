@@ -15,23 +15,24 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import json
 import logging
-logging.getLogger('botocore').setLevel(logging.CRITICAL)
-logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from unittest.mock import Mock
-import pytest
+from logger import setup_logging, trap_exception
+setup_logging()
 
-from code import Events
-from code.listen_events_handler import handle_event
-
-
-# pytestmark = pytest.mark.wip
+from account import Account, State
+from events import Events
+from worker import Worker
 
 
-def test_handle_event():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount"))
-    mock = Mock()
-    assert handle_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
+@trap_exception
+def handle_codebuild_event(event, context):
+    logging.debug(json.dumps(event))
+    input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE)
+    return handle_account(input.account)
+
+
+def handle_account(account, session=None):
+    Account.move(account=account, state=State.ASSIGNED)
+    return Events.emit('PurgedAccount', account)
