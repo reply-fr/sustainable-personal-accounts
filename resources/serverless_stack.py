@@ -21,6 +21,7 @@ from aws_cdk.aws_iam import Effect, PolicyStatement
 from aws_cdk.aws_lambda import AssetCode, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
+from .check_accounts_construct import CheckAccounts
 from .cockpit_construct import Cockpit
 from .on_assigned_account_construct import OnAssignedAccount
 from .on_events_construct import OnEvents
@@ -46,6 +47,7 @@ class ServerlessStack(Stack):
         permissions = self.get_permissions()
 
         constructs = [
+            CheckAccounts(self, "CheckAccounts", parameters=parameters, permissions=permissions),
             OnAssignedAccount(self, "OnAssignedAccount", parameters=parameters, permissions=permissions),
             OnEvents(self, "OnEvents", parameters=parameters, permissions=permissions),
             OnExpiredAccount(self, "OnExpiredAccount", parameters=parameters, permissions=permissions),
