@@ -40,6 +40,7 @@ class OnEvents(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
+             description="Route custom events from SPA to listening lambda function",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},

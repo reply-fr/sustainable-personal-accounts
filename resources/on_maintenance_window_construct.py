@@ -39,6 +39,7 @@ class OnMaintenanceWindow(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
+             description="Trigger account maintenance window on scheduling expression",
              schedule=Schedule.expression(toggles.automation_maintenance_window_expression),
              targets=[LambdaFunction(function)])
 

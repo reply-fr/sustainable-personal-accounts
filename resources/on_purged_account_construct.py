@@ -41,6 +41,7 @@ class OnPurgedAccount(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "CodebuildRule",
+             description="Route the completion of account purge with Codebuild project to lambda function",
              event_pattern=EventPattern(
                  source=['aws.codebuild'],
                  detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
