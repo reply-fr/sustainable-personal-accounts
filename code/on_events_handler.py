@@ -32,9 +32,12 @@ def handle_event(event, context, session=None):
 
     input = Events.decode_local_event(event)
     logging.info(f"Listening '{input.label}' '{input.account}'")
-    put_metric_data(name='AccountEvent',
+    put_metric_data(name='AccountEventByAccount',
                     dimensions=[dict(Name='Account', Value=input.account),
-                                dict(Name='Label', Value=input.label),
+                                dict(Name='Environment', Value=Events.get_environment())],
+                    session=session)
+    put_metric_data(name='AccountEventByLabel',
+                    dimensions=[dict(Name='Label', Value=input.label),
                                 dict(Name='Environment', Value=Events.get_environment())],
                     session=session)
 
