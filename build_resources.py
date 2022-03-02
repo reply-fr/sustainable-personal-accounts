@@ -29,7 +29,7 @@ def build_resources(settings=None):
     Configuration.initialize(stream=settings)
 
     app = App()
-    ServerlessStack(app, toggles.environment_identifier)
+    ServerlessStack(app, toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
     app.synth()
 
 
