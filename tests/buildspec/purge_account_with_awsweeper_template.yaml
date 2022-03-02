@@ -4,7 +4,7 @@ env:
   variables:
     PURGE_EMAIL: a@b.com
     PURGE_MESSAGE: SpaPurgeMessage
-    PURGE_MODE: "--dry-run"
+    PURGE_MODE: --dry-run
 
 phases:
   install:
@@ -29,7 +29,7 @@ phases:
       - |
         for $REGION in eu-west-1 eu-west-3 us-east-1
         do
-          ./bin/awsweeper ${PURGE_MODE} --region ${PURGE_REGION} filter.yaml | tee -a awsweeper.log
+          ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
         done
       - cat awsweeper.log | tail -c 4000 >purge-message.txt
       - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
