@@ -1,0 +1,36 @@
+version: 0.2
+
+env:
+  variables:
+    PURGE_EMAIL: a@b.com
+    PURGE_MESSAGE: SpaPurgeMessage
+    PURGE_MODE: "--dry-run"
+
+phases:
+  install:
+    commands:
+      - curl -sSfL https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.11.1
+  build:
+    commands:
+      - echo "Account purge started on $(date)"
+      - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+      - |
+        cat <<EOF > filter.yaml
+        aws_cloudformation_stack:
+        - id: NOT(StackSet-AWSControlTowerBP)
+        aws_ebs_snapshot:
+        aws_ebs_volume:
+        aws_eip:
+        aws_instance:
+        aws_iam_group:
+        aws_iam_user:
+        EOF
+      - echo "Running AWSWEEPER on account $ACCOUNT"
+      - |
+        for $REGION in eu-west-1 eu-west-3 us-east-1
+        do
+          ./bin/awsweeper ${PURGE_MODE} --region ${PURGE_REGION} filter.yaml | tee -a awsweeper.log
+        done
+      - cat awsweeper.log | tail -c 4000 >purge-message.txt
+      - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
+      - echo "Account purge completed on $(date)"
