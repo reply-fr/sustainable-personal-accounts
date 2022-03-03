@@ -39,6 +39,7 @@ class OnReleasedAccount(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TagRule",
+             description="Route the tagging of released accounts to lambda function",
              event_pattern=EventPattern(
                  source=['aws.organizations'],
                  detail=dict(

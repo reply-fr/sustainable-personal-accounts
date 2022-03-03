@@ -35,6 +35,11 @@ automation:
   #
   role_name_to_manage_codebuild: 'AWSControlTowerExecution'
 
+  # these tags are used on resources deployed in automation account
+  #
+  tags:
+    CostCenter: 'shared'
+
   # this defines the amount of text sent to logs
   # - allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL
   # - default value: INFO
@@ -65,8 +70,11 @@ organizational_units:
 
   - identifier: 'ou-1234'
     note: 'a container for some accounts'
-    cost_budget: 500.0
+    account_tags:
+      CostCenter: 'abc'
+      Sponsor: 'Foo Bar'
     budget_name: 'DataTeamBudget'
+    cost_budget: 500.0
     preparation_variables:
       HELLO: WORLD
     purge_variables:
@@ -74,8 +82,11 @@ organizational_units:
 
   - identifier: 'ou-5678'
     note: 'another account container'
-    cost_budget: 300
+    account_tags:
+      CostCenter: 'xyz'
+      Sponsor: 'Mister Jones'
     budget_name: 'DevelopmentTeamBudget'
+    cost_budget: 300
     preparation_variables:
       HELLO: UNIVERSE
     purge_variables:

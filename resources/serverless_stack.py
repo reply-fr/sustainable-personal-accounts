@@ -16,7 +16,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import Duration, Stack
+from aws_cdk import Duration, Stack, Tags
 from aws_cdk.aws_iam import Effect, PolicyStatement
 from aws_cdk.aws_lambda import AssetCode, Runtime
 from aws_cdk.aws_logs import RetentionDays
@@ -60,6 +60,9 @@ class ServerlessStack(Stack):
         functions = []
         for construct in constructs:
             functions.extend(construct.functions)
+
+        for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
+            Tags.of(self).add(key, toggles.automation_tags[key])
 
         Cockpit(self,
                 "{}Cockpit".format(toggles.environment_identifier),

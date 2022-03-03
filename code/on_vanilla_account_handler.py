@@ -44,6 +44,23 @@ def handle_tag_event(event, context, session=None):
 def handle_account(account, session=None):
     units = get_organizational_units(session=session)
     Account.validate_organizational_unit(account, expected=units.keys(), session=session)
-    Account.validate_tags(account=account, session=session)
-    Account.move(account=account, state=State.ASSIGNED, session=session)
+    item = Account.describe(account, session=session)
+    if updated := inspect_tags(item=item, unit=units[item.unit]):
+        Account.tag(account, updated, session=session)
+    # Account.move(account=account, state=State.ASSIGNED, session=session)
     return Events.emit('CreatedAccount', account)
+
+
+def inspect_tags(item, unit):
+    updated = {'account:state': State.ASSIGNED.value}
+
+    holder = item.tags.get('account:holder') or item.email
+    if not Account.validate_holder(holder):
+        raise ValueError(f"Account '{item.id}' has invalid holder '{holder}'")
+    updated['account:holder'] = holder
+
+    account_tags = unit.get("account_tags", {})
+    for key in account_tags.keys():
+        updated[key] = account_tags[key]
+
+    return updated

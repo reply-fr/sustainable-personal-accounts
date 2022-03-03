@@ -48,31 +48,15 @@ class Account:
         return cls.session
 
     @classmethod
+    def validate_holder(cls, text):
+        return re.fullmatch(cls.VALID_EMAIL, text)
+
+    @classmethod
     def validate_organizational_unit(cls, account, expected, session=None):
         session = session or cls.get_session()
         actual = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
         if actual not in expected:
             raise ValueError(f"Unexpected organizational unit '{actual}' for account '{account}'")
-
-    @classmethod
-    def validate_tags(cls, account, tags=None, session=None):
-        tags = tags or cls.list_tags(account, session=session)
-        if 'account:holder' not in tags.keys():
-            raise ValueError(f"Account '{account}' has no tag 'account:holder'")
-        holder = tags['account:holder']
-        if not cls.validate_holder(holder):
-            raise ValueError(f"Account '{account}' assigned to '{holder}' has invalid value for tag 'account:holder'")
-        if 'account:state' not in tags.keys():
-            raise ValueError(f"Account '{account}' assigned to '{holder}' has no tag 'account:state'")
-        state = tags['account:state']
-        if not cls.validate_state(state):
-            raise ValueError(f"Account '{account}' assigned to '{holder}' has invalid value '{state}' for tag 'account:state'")
-        if state not in [State.RELEASED.value]:
-            logging.warning(f"Account '{account}' assigned to '{holder}' is in transient state '{state}'")
-
-    @classmethod
-    def validate_holder(cls, text):
-        return re.fullmatch(cls.VALID_EMAIL, text)
 
     @classmethod
     def validate_state(cls, text):
@@ -119,6 +103,15 @@ class Account:
             logging.debug("Done")
         else:
             logging.warning("Dry-run mode - account has not been tagged")
+
+    @classmethod
+    def tag(cls, account, tags, session=None):
+        logging.info(f"Tagging account '{account}' with tags '{tags}'")
+        session = session or cls.get_session()
+        session.client('organizations').tag_resource(
+            ResourceId=account,
+            Tags=[dict(Key=k, Value=tags[k]) for k in tags.keys()])
+        logging.debug("Done")
 
     @classmethod
     def list(cls, parent, session=None):

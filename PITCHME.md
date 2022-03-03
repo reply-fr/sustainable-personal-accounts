@@ -153,6 +153,10 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 ## Ok, walk me through the solution
 
 ---
+<!-- _paginate: false -->
+![bg contain](./media/cloudwatch-dashboard.png)
+
+---
 ## :clapper: Initiative status and next steps
 
 🟢 🚩 Get idea validation from AWS Control Tower specialists (Dec)

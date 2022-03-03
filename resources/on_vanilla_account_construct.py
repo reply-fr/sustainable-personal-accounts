@@ -45,6 +45,7 @@ class OnVanillaAccount(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "MoveRule",
+             description="Route the landing of an account in managed organizational units to lambda function",
              event_pattern=EventPattern(
                  source=['aws.organizations'],
                  detail=dict(
@@ -68,6 +69,7 @@ class OnVanillaAccount(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TagRule",
+             description="Route the tagging of vanilla accounts to lambda function",
              event_pattern=EventPattern(
                  source=['aws.organizations'],
                  detail=dict(

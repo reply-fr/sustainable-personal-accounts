@@ -1,0 +1,65 @@
+version: 0.2
+
+env:
+  variables:
+    PURGE_EMAIL: a@b.com
+    PURGE_MESSAGE: SpaPurgeMessage
+    PURGE_MODE: --dry-run
+
+phases:
+  install:
+    commands:
+      - curl -sSfL https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.11.1
+  build:
+    commands:
+      - echo "Account purge started on $(date)"
+      - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+      # full list of resource types at https://github.com/jckuester/awsweeper#supported-resources
+      - |
+        cat <<EOF > filter.yaml
+        aws_cloudformation_stack:
+        - id: NOT(stack/StackSet-AWSControlTowerBP)
+        aws_dynamodb_global_table:
+        aws_dynamodb_table:
+        aws_rds_cluster:
+        aws_rds_global_cluster:
+        aws_db_instance:  # rds
+        aws_db_snapshot:
+        aws_ebs_snapshot:
+        aws_ebs_volume:
+        aws_ecs_cluster:
+        aws_efs_file_system:
+        aws_eip:
+        aws_eks_cluster:
+        aws_fsx_lustre_file_system:
+        aws_fsx_windows_file_system:
+        aws_instance:  # ec2
+        aws_iam_group:  # forbidden!
+        aws_iam_user:  # forbidden!
+        aws_kinesis_stream:
+        aws_lambda_function:
+        - id: NOT(aws-controltower)
+        aws_msk_cluster:
+        aws_redshift_cluster:
+        aws_route53_zone:
+        aws_sfn_state_machine:
+        aws_sns_topic:
+        - id: NOT(aws-controltower)
+        aws_sqs_queue:
+        EOF
+      - |
+        cat <<EOF > regions.txt
+        eu-west-1
+        eu-west-3
+        eu-central-1
+        us-east-1
+        EOF
+      - |
+        while read REGION
+        do
+          echo "Running AWSWEEPER on account $ACCOUNT in region $REGION"
+          ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
+        done < regions.txt
+      - cat awsweeper.log | tail -c 4000 >purge-message.txt
+      - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
+      - echo "Account purge completed on $(date)"

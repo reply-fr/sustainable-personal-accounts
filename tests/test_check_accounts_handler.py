@@ -23,9 +23,9 @@ import json
 from unittest.mock import patch, Mock
 import os
 
-from code.check_accounts_handler import handle_event
+from code.check_accounts_handler import handle_event, validate_tags
 
-# import pytest
+import pytest
 # pytestmark = pytest.mark.wip
 
 
@@ -85,3 +85,35 @@ def test_handle_event():
 
     result = handle_event(event=dict(hello='world!'), context=None, session=mock)
     assert result == '[OK]'
+
+
+def test_validate_tags():
+    valid_tags = {'account:holder': 'a@b.com',
+                  'account:state': 'released'}
+    validate_tags(account='123456789012', tags=valid_tags)
+
+
+def test_validate_tags_on_absent_holder():
+    absent_holder = {'account:state': 'released'}
+    with pytest.raises(ValueError):
+        validate_tags(account='123456789012', tags=absent_holder)
+
+
+def test_validate_tags_on_invalid_holder():
+    invalid_holder = {'account:holder': 'a_b.com',
+                      'account:state': 'released'}
+    with pytest.raises(ValueError):
+        validate_tags(account='123456789012', tags=invalid_holder)
+
+
+def test_validate_tags_on_absent_state():
+    absent_state = {'account:holder': 'a@b.com'}
+    with pytest.raises(ValueError):
+        validate_tags(account='123456789012', tags=absent_state)
+
+
+def test_validate_tags_on_invalid_state():
+    invalid_state = {'account:holder': 'a@b.com',
+                     'account:state': '*alien*'}
+    with pytest.raises(ValueError):
+        validate_tags(account='123456789012', tags=invalid_state)
