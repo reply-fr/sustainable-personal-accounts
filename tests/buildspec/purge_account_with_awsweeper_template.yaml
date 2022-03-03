@@ -25,12 +25,18 @@ phases:
         aws_iam_group:
         aws_iam_user:
         EOF
-      - echo "Running AWSWEEPER on account $ACCOUNT"
       - |
-        for $REGION in eu-west-1 eu-west-3 us-east-1
+        cat <<EOF > regions.txt
+        eu-west-1
+        eu-west-2
+        us-east-1
+        EOF
+      - |
+        while read REGION
         do
+          echo "Running AWSWEEPER on account $ACCOUNT in region $REGION"
           ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
-        done
+        done < regions.txt
       - cat awsweeper.log | tail -c 4000 >purge-message.txt
       - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
       - echo "Account purge completed on $(date)"
