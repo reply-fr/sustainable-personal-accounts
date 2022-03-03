@@ -18,7 +18,7 @@ phases:
       - |
         cat <<EOF > filter.yaml
         aws_cloudformation_stack:
-        - id: NOT(stack/StackSet-AWSControlTowerBP|stack/CDKToolkit)
+        - id: NOT(stack/StackSet-AWSControlTowerBP)
         aws_dynamodb_global_table:
         aws_dynamodb_table:
         aws_rds_cluster:
