@@ -32,7 +32,7 @@ style: |
 <!-- _paginate: false -->
 <!-- _class: lead -->
 
-![bg left:40% 110%](./media/sustainable-personal-accounts.png)
+![bg left:40% 110%](./media/sustainable-personal-accounts.svg)
 
 ## __Sustainable Personal Accounts__
 
