@@ -32,7 +32,7 @@ style: |
 <!-- _paginate: false -->
 <!-- _class: lead -->
 
-![bg left:40% 80%](https://d2908q01vomqb2.cloudfront.net/fc074d501302eb2b93e2554793fcaf50b3bf7291/2021/06/02/Figure-1.-Example-of-a-basic-organization.jpg)
+![bg left:40% 110%](./media/sustainable-personal-accounts.png)
 
 ## __Sustainable Personal Accounts__
 
@@ -66,20 +66,9 @@ Please help me to sketch ideas on cloud platform before contributing to our soft
 
 __What?__ Provide an entire AWS account to every cloud practitioner of your enterprise. Yes, this can mean 1,000s of AWS accounts.
 
-__Why?__ Because collective business agility depends on capability to build on cloud infrastructure. Access to AWS console, SDK and API is differentiating your business.
+__Why?__ Because collective business agility depends on capability to build on cloud infrastructure. Spread access to AWS console, SDK and API to differentiate your business.
 
 __How?__ Automate the management of AWS personal accounts at scale, including maintenance window to purge resources, to enforce corporate guardrails and to update shared blueprints. This is an open source package to be deployed within AWS Control Tower.
-
-<!--
----
-## __Sustainable Personal Accounts__
-1. Guiding Principles
-2. State Machine
-3. Event-driven Architecture
-4. Initiative status and next steps
-5. How to adapt the solution to your specific requirements?
-
--->
 
 ---
 ## :rainbow: Guiding Principles
