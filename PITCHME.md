@@ -64,11 +64,11 @@ Please help me to sketch ideas on cloud platform before contributing to our soft
 
 ## :sparkles: Sustainable Personal Accounts
 
-__What?__ Provide an entire AWS account to every cloud practitioner of your enterprise. Yes, this can mean 1,000s of AWS accounts.
+__What?__ SPA provides an entire AWS account to every cloud practitioner of an enterprise. Yes, this can mean 1,000s of AWS accounts to manage.
 
-__Why?__ Because collective business agility depends on capability to build on cloud infrastructure. Spread access to AWS console, SDK and API to differentiate your business.
+__Why?__ Because collective business agility relies on individuals. Enlarge access to AWS console, SDK and API to accelerate innovation.
 
-__How?__ Automate the management of AWS personal accounts at scale, including maintenance window to purge resources, to enforce corporate guardrails and to update shared blueprints. This is an open source package to be deployed within AWS Control Tower.
+__How?__ SPA automates the management of AWS personal accounts at scale, by implementing maintenance windows on each account. Central teams can purge resources, enforce corporate guardrails and update shared blueprints periodically and automatically.
 
 ---
 ## :rainbow: Guiding Principles
