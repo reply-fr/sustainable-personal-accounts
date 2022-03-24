@@ -21,6 +21,7 @@ from aws_cdk.aws_iam import Effect, PolicyStatement
 from aws_cdk.aws_lambda import AssetCode, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
+from .alerts_construct import Alerts
 from .check_accounts_construct import CheckAccounts
 from .cockpit_construct import Cockpit
 from .on_assigned_account_construct import OnAssignedAccount
@@ -39,10 +40,11 @@ class ServerlessStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
 
+        alerts = Alerts(self, "{}Alerts".format(toggles.environment_identifier))
         Parameters(self, "{}Parameters".format(toggles.environment_identifier))
 
         # passed to all lambda functions
-        environment = self.get_environment()
+        environment = self.get_environment(topic=alerts.topic)
         parameters = self.get_parameters(environment=environment)
         permissions = self.get_permissions()
 
@@ -68,7 +70,7 @@ class ServerlessStack(Stack):
                 "{}Cockpit".format(toggles.environment_identifier),
                 functions=functions)
 
-    def get_environment(self) -> dict:  # shared across all lambda functions
+    def get_environment(self, topic) -> dict:  # shared across all lambda functions
         environment = dict(
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
             ORGANIZATIONAL_UNITS_PARAMETER=toggles.environment_identifier + Parameters.ORGANIZATIONAL_UNITS_PARAMETER,
@@ -78,10 +80,11 @@ class ServerlessStack(Stack):
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
+            TOPIC_NAME=topic.topic_name,
             VERBOSITY=toggles.automation_verbosity)
         return environment
 
-    def get_parameters(self, environment) -> dict:  # used to build lambda functions
+    def get_parameters(self, environment) -> dict:  # passed to every lambda functions
         parameters = dict(
             code=AssetCode("code"),
             environment=environment,
