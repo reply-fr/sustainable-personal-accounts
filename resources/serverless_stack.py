@@ -21,9 +21,9 @@ from aws_cdk.aws_iam import Effect, PolicyStatement
 from aws_cdk.aws_lambda import AssetCode, Runtime
 from aws_cdk.aws_logs import RetentionDays
 
-from .alerts_construct import Alerts
 from .check_accounts_construct import CheckAccounts
 from .cockpit_construct import Cockpit
+from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
 from .on_events_construct import OnEvents
 from .on_expired_account_construct import OnExpiredAccount
@@ -40,16 +40,16 @@ class ServerlessStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
 
-        alerts = Alerts(self, "{}Alerts".format(toggles.environment_identifier))
-        Parameters(self, "{}Parameters".format(toggles.environment_identifier))
+        Parameters(self, "Parameters")
 
         # passed to all lambda functions
-        environment = self.get_environment(topic_arn=alerts.topic.topic_arn)
+        environment = self.get_environment()
         parameters = self.get_parameters(environment=environment)
         permissions = self.get_permissions()
 
-        constructs = [
+        monitored_lambdas = [
             CheckAccounts(self, "CheckAccounts", parameters=parameters, permissions=permissions),
+            OnAlert(self, "OnAlert", parameters=parameters, permissions=permissions),
             OnAssignedAccount(self, "OnAssignedAccount", parameters=parameters, permissions=permissions),
             OnEvents(self, "OnEvents", parameters=parameters, permissions=permissions),
             OnExpiredAccount(self, "OnExpiredAccount", parameters=parameters, permissions=permissions),
@@ -60,17 +60,17 @@ class ServerlessStack(Stack):
             OnVanillaAccount(self, "OnVanillaAccount", parameters=parameters, permissions=permissions),
         ]
         functions = []
-        for construct in constructs:
+        for construct in monitored_lambdas:
             functions.extend(construct.functions)
-
-        for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
-            Tags.of(self).add(key, toggles.automation_tags[key])
 
         Cockpit(self,
                 "{}Cockpit".format(toggles.environment_identifier),
                 functions=functions)
 
-    def get_environment(self, topic_arn) -> dict:  # shared across all lambda functions
+        for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
+            Tags.of(self).add(key, toggles.automation_tags[key])
+
+    def get_environment(self) -> dict:  # shared across all lambda functions
         environment = dict(
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
@@ -79,7 +79,6 @@ class ServerlessStack(Stack):
             PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
-            TOPIC_ARN=topic_arn,
             VERBOSITY=toggles.automation_verbosity)
         return environment
 

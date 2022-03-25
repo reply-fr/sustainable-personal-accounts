@@ -46,16 +46,11 @@ class Worker:
         logging.info(f"Preparing account '{account.id}'...")
         logging.debug(f"account: {account.__dict__}")
         logging.debug(f"organizational_units: {organizational_units}")
-        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
-                                              session=session)
-        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
-                               role_arn=role_arn,
-                               session=session)
-        role_arn = cls.deploy_role_for_codebuild(session=session)
+        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
-                           role=role_arn,
+                           role=cls.deploy_role_for_codebuild(session=session),
                            variables=cls.make_preparation_variables(account, organizational_units),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
@@ -67,21 +62,24 @@ class Worker:
         session = session or cls.get_session(account.id)
 
         logging.info(f"Purging account '{account.id}'...")
-        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
-                                              session=session)
-        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
-                               role_arn=role_arn,
-                               session=session)
-        role_arn = cls.deploy_role_for_codebuild(session=session)
+        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                            description="This project purges an AWS account of cloud resources",
                            buildspec=buildspec,
-                           role=role_arn,
+                           role=cls.deploy_role_for_codebuild(session=session),
                            variables=cls.make_purge_variables(account, organizational_units),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
         logging.info(f"Account '{account.id}' is being purged")
+
+    @classmethod
+    def forward_codebuild_events_to_central_bus(cls, event_bus_arn, session=None):
+        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
+                                              session=session)
+        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
+                               role_arn=role_arn,
+                               session=session)
 
     @staticmethod
     def make_preparation_variables(account, organizational_units) -> dict:

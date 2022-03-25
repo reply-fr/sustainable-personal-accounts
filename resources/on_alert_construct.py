@@ -22,14 +22,15 @@ from constructs import Construct
 from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement
 from aws_cdk.aws_sns import Topic
 from aws_cdk.aws_sns_subscriptions import EmailSubscription
+from aws_cdk.aws_lambda import Function
 
 
-class Alerts(Construct):
+class OnAlert(Construct):
 
     TOPIC_DISPLAY_NAME = "Topic for alerts identified in managed accounts"
     TOPIC_NAME = "SpaAlerts"
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
 
         self.topic = Topic(
@@ -46,6 +47,25 @@ class Alerts(Construct):
 
         for recipient in toggles.automation_subscribed_email_addresses:
             self.topic.add_subscription(EmailSubscription(recipient))
+
+        parameters['environment']['TOPIC_ARN'] = self.topic.topic_arn
+        permissions.append(PolicyStatement(effect=Effect.ALLOW,
+                                           actions=['SNS:Publish'],
+                                           resources=[self.topic.topic_arn]))
+        self.functions = [self.on_alert(parameters=parameters, permissions=permissions)]
+
+    def on_alert(self, parameters, permissions) -> Function:
+        function = Function(
+            self, "FromAlert",
+            function_name="{}OnAlert".format(toggles.environment_identifier),
+            description="Receive an alert event",
+            handler="on_alert_handler.handle_alert_event",
+            **parameters)
+
+        for permission in permissions:
+            function.add_to_role_policy(permission)
+
+        return function
 
     def get_organization_identifier(self):
         try:
