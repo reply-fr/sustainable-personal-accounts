@@ -53,22 +53,22 @@ Each of them deserves a full AWS account to innovate fastly.
 <!-- _paginate: false -->
 ![bg left 90%](./media/backlog-generation.svg)
 
-## <!-- fit -->:dancers: We are the future
+## <!-- fit -->Experiment, then innovate
 
-“ As an innovative employee,
+👷 As an innovative employee,
 I want to test emerging technology breakthroughs and stick at competitive edge.
 
-Please help me to sketch ideas on cloud platform before contributing to our software and data products. ”
+🧪 Please help me to sketch ideas on cloud platform before contributing to our software and data products.
 
 ---
 
 ## :sparkles: Sustainable Personal Accounts
 
-__What?__ SPA provides an entire AWS account to every cloud practitioner of an enterprise. Yes, this can mean 1,000s of AWS accounts to manage.
+__What?__ SPA provides an entire AWS account to every cloud practitioner of an enterprise. Yes, this can mean 10,000s of AWS accounts to manage.
 
-__Why?__ Because collective business agility relies on individuals. Enlarge access to AWS console, SDK and API to accelerate innovation.
+__Why?__ Collective business agility relies on individuals. Democratize access to AWS console and tools to accelerate innovation.
 
-__How?__ SPA automates the management of AWS personal accounts at scale, by implementing maintenance windows on each account. Central teams can purge resources, enforce corporate guardrails and update shared blueprints periodically and automatically.
+__How?__ SPA automates the management of AWS personal accounts at scale, with maintenance windows on each account. Central teams can purge resources, enforce corporate guardrails and update shared blueprints periodically and automatically.
 
 ---
 ## :rainbow: Guiding Principles
@@ -143,22 +143,32 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 
 ---
 <!-- _paginate: false -->
-![bg contain](./media/cloudwatch-dashboard.png)
+<style scoped>
+section {
+  background: orange;
+}
+</style>
+![bg 80%](./media/budget-alarm-message.png)
 
 ---
-## :clapper: Initiative status and next steps
+<!-- _paginate: false -->
+![bg 100%](./media/cloudwatch-dashboard.png)
 
-🟢 🚩 Get idea validation from AWS Control Tower specialists (Dec)
+---
+## :clapper: Initiative progress
 
-🟢 Develop the solution for internal needs of Storm Reply
+🥚 Validate the concept with AWS Control Tower specialists (Dec)
 
-🟢 Seek continuous support from AWS Control Tower specialists
+🐣 Develop the solution for internal usage of Reply
 
-▪️ Release of public GitHub repository of SPA (March)
+🐤 Release of public GitHub repository of SPA
 
-▪️ Release of technical blog post on the SPA design (March)
+🐥 Present SPA at AWS Summit in Paris (April)
 
-▪️ Presentation to AWS Summit in Paris (April) 🏁
+🐦 Adapt the solution to multiple enterprises
+
+🐧 Release of technical blog post on the SPA design (H2)
+
 
 ---
 ## <!--fit--> :beers: How to adapt the solution to your specific requirements?
@@ -174,9 +184,7 @@ __3. Reply can help!__ We are using the system for ourselves. And we have develo
 
 ---
 <!-- _class: lead -->
-![](https://icongr.am/octicons/git-pull-request.svg?size=256&color=f96d00)
-
-# Thank you!
+![width:800px](./media/sustainable-personal-accounts.svg)
 
 https://github.com/reply-fr/sustainable-personal-accounts
 
