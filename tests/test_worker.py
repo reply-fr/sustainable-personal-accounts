@@ -34,19 +34,9 @@ def session():
     mock = Mock()
     mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    mock.client.return_value.create_topic.return_value = dict(TopicArn='arn:aws')
     mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
     return mock
-
-
-@patch.dict(os.environ, dict(ROLE_ARN_TO_MANAGE_ACCOUNTS='some_role'))
-def test_get_session():
-    pass
-
-    # handle = Mock()
-    # handle.client.return_value.assume_role.return_value = dict(Credentials=dict(AccessKeyId='ak',
-    #                                                                             SecretAccessKey='sk',
-    #                                                                             SessionToken='token'))
-    # Worker.get_session(account='123456789012', session=handle)
 
 
 def test_deploy_project(session):
@@ -55,10 +45,18 @@ def test_deploy_project(session):
     session.client.return_value.create_project.assert_called()
 
 
-# def test_deploy_role_for_events():
-#     Worker.deploy_role_for_events(event_bus_arn='arn:aws')
-#     assert False
-#
+def test_get_preparation_variables():
+    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
+    variables = Worker.get_preparation_variables(account=account, organizational_units=organizational_units)
+    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com'}
+
+
+def test_get_purge_variables():
+    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
+    variables = Worker.get_purge_variables(account=account, organizational_units=organizational_units)
+    assert variables == {'PURGE_EMAIL': 'a@b.com'}
 
 def test_prepare(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
@@ -68,17 +66,3 @@ def test_prepare(session):
 def test_purge(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     Worker.purge(account=account, organizational_units={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)
-
-
-def test_make_preparation_variables():
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.make_preparation_variables(account=account, organizational_units=organizational_units)
-    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com'}
-
-
-def test_make_purge_variables():
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.make_purge_variables(account=account, organizational_units=organizational_units)
-    assert variables == {'PURGE_EMAIL': 'a@b.com'}

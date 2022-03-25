@@ -21,6 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import Mock, patch
+from moto import mock_events
 import os
 
 from code import Events
@@ -75,6 +76,7 @@ def session():
 
 
 @patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
+@mock_events
 def test_handle_codebuild_event(session):
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
@@ -106,6 +108,7 @@ def test_handle_codebuild_event_on_unexpected_status(session):
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
+@mock_events
 def test_handle_account(session):
     result = handle_account('123456789012', session=session)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}

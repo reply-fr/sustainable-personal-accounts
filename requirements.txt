@@ -3,6 +3,7 @@ coverage
 flake8
 mccabe
 mock
+moto[all]
 pygount
 pytest
 pytest-cov

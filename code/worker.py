@@ -40,71 +40,6 @@ class Worker:
     PROJECT_NAME_FOR_ACCOUNT_PURGE = "SpaProjectForAccountPurge"
 
     @classmethod
-    def prepare(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
-        session = session or cls.get_session(account.id)
-
-        logging.info(f"Preparing account '{account.id}'...")
-        logging.debug(f"account: {account.__dict__}")
-        logging.debug(f"organizational_units: {organizational_units}")
-        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
-        cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
-                           description="This project prepares an AWS account before being released to cloud engineer",
-                           buildspec=buildspec,
-                           role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.make_preparation_variables(account, organizational_units),
-                           session=session)
-        cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
-                        session=session)
-        logging.info(f"Account '{account.id}' is being prepared")
-
-    @classmethod
-    def purge(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
-        session = session or cls.get_session(account.id)
-
-        logging.info(f"Purging account '{account.id}'...")
-        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
-        cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
-                           description="This project purges an AWS account of cloud resources",
-                           buildspec=buildspec,
-                           role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.make_purge_variables(account, organizational_units),
-                           session=session)
-        cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
-                        session=session)
-        logging.info(f"Account '{account.id}' is being purged")
-
-    @classmethod
-    def forward_codebuild_events_to_central_bus(cls, event_bus_arn, session=None):
-        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
-                                              session=session)
-        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
-                               role_arn=role_arn,
-                               session=session)
-
-    @staticmethod
-    def make_preparation_variables(account, organizational_units) -> dict:
-        configuration = organizational_units.get(account.unit, {})
-        variables = dict(BUDGET_AMOUNT=str(configuration.get('cost_budget', 200)),
-                         BUDGET_EMAIL=account.email)
-        variables.update(configuration.get('preparation_variables', {}))
-        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
-            variables['ENVIRONMENT_IDENTIFIER'] = value
-        if value := os.environ.get('TOPIC_ARN'):
-            variables['TOPIC_ARN'] = value
-        return variables
-
-    @staticmethod
-    def make_purge_variables(account, organizational_units) -> dict:
-        configuration = organizational_units.get(account.unit, {})
-        variables = dict(PURGE_EMAIL=account.email)
-        variables.update(configuration.get('purge_variables', {}))
-        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
-            variables['ENVIRONMENT_IDENTIFIER'] = value
-        if value := os.environ.get('TOPIC_ARN'):
-            variables['TOPIC_ARN'] = value
-        return variables
-
-    @classmethod
     def deploy_events_rule(cls, event_bus_arn, role_arn, name="SpaEventsRuleForCodebuild", description="", session=None):
         session = session or Session()
         events = session.client('events')
@@ -126,10 +61,46 @@ class Worker:
         logging.info(f"Rule '{name}' has been updated")
 
     @classmethod
-    def deploy_role_for_codebuild(cls,
-                                  name="SpaRoleForCodebuild",
-                                  policy="AdministratorAccess",
-                                  session=None):
+    def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
+        session = session or Session()
+        client = session.client('codebuild')
+        environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
+        retries = 0
+        while retries < 5:  # we may have to wait for IAM role to be really available
+            logging.debug("Deploying Codebuild project")
+            try:
+                client.create_project(
+                    name=name,
+                    description=description,
+                    source=dict(type='NO_SOURCE',
+                                buildspec=buildspec),
+                    artifacts=dict(type='NO_ARTIFACTS'),
+                    cache=dict(type='NO_CACHE'),
+                    environment=dict(type='ARM_CONTAINER',
+                                     image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
+                                     computeType='BUILD_GENERAL1_SMALL',
+                                     environmentVariables=environment_variables),
+                    serviceRole=role,
+                    timeoutInMinutes=480,
+                    tags=[dict(key='origin', value='SustainablePersonalAccounts')],
+                    logsConfig=dict(cloudWatchLogs=dict(status='ENABLED')),
+                    concurrentBuildLimit=1)
+                logging.debug("Done")
+                break
+
+            except client.exceptions.ResourceAlreadyExistsException as error:
+                logging.debug(f"Project '{name}' already exists, deleting it")
+                client.delete_project(name=name)
+                retries += 1
+                time.sleep(retries * 5)
+
+            except client.exceptions.InvalidInputException as error:  # we could have to wait for IAM to be ready
+                logging.debug("Sleeping...")
+                retries += 1
+                time.sleep(retries * 5)
+
+    @classmethod
+    def deploy_role_for_codebuild(cls, name="SpaRoleForCodebuild", policy="AdministratorAccess", session=None):
         session = session or Session()
         iam = session.client('iam')
 
@@ -166,10 +137,7 @@ class Worker:
         return role['Role']['Arn']
 
     @classmethod
-    def deploy_role_for_events(cls,
-                               event_bus_arn,
-                               name="SpaRoleForEvents",
-                               session=None):
+    def deploy_role_for_events(cls, event_bus_arn, name="SpaRoleForEvents", session=None):
         session = session or Session()
         iam = session.client('iam')
 
@@ -216,52 +184,73 @@ class Worker:
         return role['Role']['Arn']
 
     @classmethod
-    def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
+    def deploy_topic_for_alerts(cls, name="SpaAlertTopic", session=None):
         session = session or Session()
-        client = session.client('codebuild')
-        environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
-        retries = 0
-        while retries < 5:  # we may have to wait for IAM role to be really available
-            logging.debug("Deploying Codebuild project")
-            try:
-                client.create_project(
-                    name=name,
-                    description=description,
-                    source=dict(type='NO_SOURCE',
-                                buildspec=buildspec),
-                    artifacts=dict(type='NO_ARTIFACTS'),
-                    cache=dict(type='NO_CACHE'),
-                    environment=dict(type='ARM_CONTAINER',
-                                     image='aws/codebuild/amazonlinux2-aarch64-standard:2.0',
-                                     computeType='BUILD_GENERAL1_SMALL',
-                                     environmentVariables=environment_variables),
-                    serviceRole=role,
-                    timeoutInMinutes=480,
-                    tags=[dict(key='origin', value='SustainablePersonalAccounts')],
-                    logsConfig=dict(cloudWatchLogs=dict(status='ENABLED')),
-                    concurrentBuildLimit=1)
-                logging.debug("Done")
-                break
+        sns = session.client('sns')
 
-            except client.exceptions.ResourceAlreadyExistsException as error:
-                logging.debug(f"Project '{name}' already exists, deleting it")
-                client.delete_project(name=name)
-                retries += 1
-                time.sleep(retries * 5)
+        logging.info(f"Deploying topic '{name}' for budget alerts")
 
-            except client.exceptions.InvalidInputException as error:  # we could have to wait for IAM to be ready
-                logging.debug("Sleeping...")
-                retries += 1
-                time.sleep(retries * 5)
+        try:
+            topic = sns.create_topic(Name=name)
+            logging.debug(f"Topic '{name}' has been created")
+            print(topic)
+            return topic['TopicArn']
+        except ClientError as error:
+            logging.error(error)
+            return
+
+
 
     @classmethod
-    def run_project(cls, name, session=None):
-        session = session or Session()
-        client = session.client('codebuild')
-        logging.info(f"Starting project build {name}")
-        result = client.start_build(projectName=name)
-        logging.debug(result.get('build'))
-        logging.debug("Done")
+    def forward_alerts_to_central_lambda(cls, lambda_arn, session=None):
+        topic_arn = cls.deploy_topic_for_alerts(session=session)
+        cls.subscribe_lambda_to_topic(topic_arn=topic_arn, lambda_arn=lambda_arn, session=session)
+
+    @classmethod
+    def forward_codebuild_events_to_central_bus(cls, event_bus_arn, session=None):
+        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
+                                              session=session)
+        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
+                               role_arn=role_arn,
+                               session=session)
+
+    @staticmethod
+    def get_preparation_variables(account, organizational_units) -> dict:
+        configuration = organizational_units.get(account.unit, {})
+        variables = dict(BUDGET_AMOUNT=str(configuration.get('cost_budget', 200)),
+                         BUDGET_EMAIL=account.email)
+        variables.update(configuration.get('preparation_variables', {}))
+        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+            variables['ENVIRONMENT_IDENTIFIER'] = value
+        if value := os.environ.get('TOPIC_ARN'):
+            variables['TOPIC_ARN'] = value
+        return variables
+
+    @staticmethod
+    def get_purge_variables(account, organizational_units) -> dict:
+        configuration = organizational_units.get(account.unit, {})
+        variables = dict(PURGE_EMAIL=account.email)
+        variables.update(configuration.get('purge_variables', {}))
+        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+            variables['ENVIRONMENT_IDENTIFIER'] = value
+        if value := os.environ.get('TOPIC_ARN'):
+            variables['TOPIC_ARN'] = value
+        return variables
+
+    @classmethod
+    def get_put_events_policy_document(cls, event_bus_arn):
+        policy = {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Action": "events:PutEvents",
+                    "Resource": event_bus_arn
+                }
+            ]
+        }
+        logging.debug(f"Put events policy: {json.dumps(policy)}")
+        return json.dumps(policy)
 
     @classmethod
     def get_session(cls, account, session=None):
@@ -293,16 +282,54 @@ class Worker:
         return json.dumps(policy)
 
     @classmethod
-    def get_put_events_policy_document(cls, event_bus_arn):
-        policy = {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": "events:PutEvents",
-                    "Resource": event_bus_arn
-                }
-            ]
-        }
-        logging.debug(f"Put events policy: {json.dumps(policy)}")
-        return json.dumps(policy)
+    def prepare(cls, account, organizational_units, buildspec, event_bus_arn, lambda_arn=None, session=None):
+        session = session or cls.get_session(account.id)
+
+        logging.info(f"Preparing account '{account.id}'...")
+        logging.debug(f"account: {account.__dict__}")
+        logging.debug(f"organizational_units: {organizational_units}")
+        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
+        cls.forward_alerts_to_central_lambda(lambda_arn=lambda_arn, session=session)
+        cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
+                           description="This project prepares an AWS account before being released to cloud engineer",
+                           buildspec=buildspec,
+                           role=cls.deploy_role_for_codebuild(session=session),
+                           variables=cls.get_preparation_variables(account, organizational_units),
+                           session=session)
+        cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
+                        session=session)
+        logging.info(f"Account '{account.id}' is being prepared")
+
+    @classmethod
+    def purge(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
+        session = session or cls.get_session(account.id)
+
+        logging.info(f"Purging account '{account.id}'...")
+        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
+        cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
+                           description="This project purges an AWS account of cloud resources",
+                           buildspec=buildspec,
+                           role=cls.deploy_role_for_codebuild(session=session),
+                           variables=cls.get_purge_variables(account, organizational_units),
+                           session=session)
+        cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
+                        session=session)
+        logging.info(f"Account '{account.id}' is being purged")
+
+    @classmethod
+    def subscribe_lambda_to_topic(cls, topic_arn, lambda_arn, session=None):
+        session = session or Session()
+        sns = session.client('sns')
+        try:
+            sns.subscribe(TopicArn=topic_arn, Protocol='lambda', Endpoint=lambda_arn)
+        except ClientError as error:
+            logging.error(error)
+
+    @classmethod
+    def run_project(cls, name, session=None):
+        session = session or Session()
+        client = session.client('codebuild')
+        logging.info(f"Starting project build {name}")
+        result = client.start_build(projectName=name)
+        logging.debug(result.get('build'))
+        logging.debug("Done")
