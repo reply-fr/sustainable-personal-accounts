@@ -19,14 +19,14 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import os
 from unittest.mock import Mock, patch
+import os
+import pytest
 from types import SimpleNamespace
 
 from code import Worker
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -38,7 +38,7 @@ def session():
     return mock
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true", ROLE_ARN_TO_MANAGE_ACCOUNTS='some_role'))
+@patch.dict(os.environ, dict(ROLE_ARN_TO_MANAGE_ACCOUNTS='some_role'))
 def test_get_session():
     pass
 
@@ -49,7 +49,6 @@ def test_get_session():
     # Worker.get_session(account='123456789012', session=handle)
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_deploy_project(session):
     Worker.deploy_project(name='name', description='description', buildspec='buildspec', role='role', session=session)
     session.client.assert_called_with('codebuild')
@@ -61,13 +60,11 @@ def test_deploy_project(session):
 #     assert False
 #
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_prepare(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     Worker.prepare(account=account, organizational_units={}, buildspec='hello_world', event_bus_arn='arn:aws', session=session)
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_purge(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     Worker.purge(account=account, organizational_units={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)

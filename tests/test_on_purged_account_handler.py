@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 from unittest.mock import Mock, patch
 import os
 
@@ -26,47 +27,85 @@ from code import Events
 from code.on_purged_account_handler import handle_codebuild_event, handle_account
 from code.worker import Worker
 
-# import pytest
-# pytestmark = pytest.mark.wip
+import pytest
+pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             VERBOSITY='DEBUG'))
-def test_handle_codebuild_event():
+@pytest.fixture
+def session():
+    mock = Mock()
+    mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
+    mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
+    mock.client.return_value.describe_account.return_value = dict(Account=dict(Arn='arn:aws',
+                                                                               Email='a@b.com',
+                                                                               Name='Some-Account',
+                                                                               Status='ACTIVE'))
+    parents = {
+        'Parents': [
+            {
+                'Id': 'ou-1234',
+                'Type': 'ORGANIZATIONAL_UNIT'
+            },
+        ]
+    }
+    mock.client.return_value.list_parents.return_value = parents
+
+    parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
+    parameter_2 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
+    parameter_3 = dict(Parameter=dict(Value='buildspec_content'))
+    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2, parameter_3]
+
+    tags = {
+        'Tags': [
+            {
+                'Key': 'account:holder',
+                'Value': 'a@b.com'
+            },
+
+            {
+                'Key': 'account:state',
+                'Value': 'vanilla'
+            }
+        ]
+    }
+    mock.client.return_value.list_tags_for_resource.return_value = tags
+
+    return mock
+
+
+@patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
+def test_handle_codebuild_event(session):
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
                                            project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                                            status="SUCCEEDED"))
-    result = handle_codebuild_event(event=event, context=None)
+    result = handle_codebuild_event(event=event, context=None, session=session)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             VERBOSITY='INFO'))
-def test_handle_codebuild_event_on_unexpected_project():
+@patch.dict(os.environ, dict(VERBOSITY='INFO'))
+def test_handle_codebuild_event_on_unexpected_project(session):
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
                                            project="SampleProject",
                                            status="SUCCEEDED"))
-    result = handle_codebuild_event(event=event, context=None)
+    result = handle_codebuild_event(event=event, context=None, session=session)
     assert result == "[DEBUG] Ignored project 'SampleProject'"
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             VERBOSITY='INFO'))
-def test_handle_codebuild_event_on_unexpected_status():
+@patch.dict(os.environ, dict(VERBOSITY='INFO'))
+def test_handle_codebuild_event_on_unexpected_status(session):
     event = Events.make_event(template="tests/events/codebuild-template.json",
                               context=dict(account="123456789012",
                                            project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                                            status="FAILED"))
-    result = handle_codebuild_event(event=event, context=None)
+    result = handle_codebuild_event(event=event, context=None, session=session)
     assert result == "[DEBUG] Ignored status 'FAILED'"
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             ENVIRONMENT_IDENTIFIER="envt1",
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
-def test_handle_account():
-    mock = Mock()
-    result = handle_account('123456789012', session=mock)
+def test_handle_account(session):
+    result = handle_account('123456789012', session=session)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}

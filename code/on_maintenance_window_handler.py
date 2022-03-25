@@ -39,7 +39,7 @@ def handle_schedule_event(event, context, session=None):
             if state != State.RELEASED.value:
                 logging.info(f"Ignoring account '{account}' that is in state '{state}'")
                 continue
-            Account.move(account=account, state=State.EXPIRED)
+            Account.move(account=account, state=State.EXPIRED, session=session)
     logging.info("All configured organizational units have been scanned")
 
     return '[OK]'

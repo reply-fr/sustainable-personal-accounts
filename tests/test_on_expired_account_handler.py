@@ -74,7 +74,6 @@ def session():
 
 
 @patch.dict(os.environ, dict(PURGE_BUILDSPEC_PARAMETER="parameter-name",
-                             DRY_RUN="TRUE",
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='DEBUG'))
@@ -86,8 +85,7 @@ def test_handle_tag_event(session):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             EVENT_BUS_ARN='arn:aws',
+@patch.dict(os.environ, dict(EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_state(session):

@@ -29,8 +29,7 @@ import pytest
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true",
-                             ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
+@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
                              VERBOSITY='DEBUG'))
 def test_handle_event():
 

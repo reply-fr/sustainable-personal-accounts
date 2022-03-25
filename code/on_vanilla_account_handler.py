@@ -47,7 +47,6 @@ def handle_account(account, session=None):
     item = Account.describe(account, session=session)
     if updated := inspect_tags(item=item, unit=units[item.unit]):
         Account.tag(account, updated, session=session)
-    # Account.move(account=account, state=State.ASSIGNED, session=session)
     return Events.emit('CreatedAccount', account)
 
 
