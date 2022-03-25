@@ -30,7 +30,7 @@ class OnEvents(Construct):
         self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
     def on_event(self, parameters, permissions) -> Function:
-        function = Function(self, "ThenListen",
+        function = Function(self, "FromEvent",
                             function_name="{}OnEvents".format(toggles.environment_identifier),
                             description="Listen events from the bus",
                             handler="on_events_handler.handle_event",

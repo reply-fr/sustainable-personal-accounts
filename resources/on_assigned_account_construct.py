@@ -29,7 +29,7 @@ class OnAssignedAccount(Construct):
 
     def on_tag(self, parameters, permissions) -> Function:
         function = Function(
-            self, "ByTag",
+            self, "FromTag",
             function_name="{}OnAssignedAccount".format(toggles.environment_identifier),
             description="Start preparation of an assigned account",
             handler="on_assigned_account_handler.handle_tag_event",

@@ -29,7 +29,7 @@ class OnReleasedAccount(Construct):
 
     def on_tag(self, parameters, permissions) -> Function:
         function = Function(
-            self, "ByTag",
+            self, "FromTag",
             function_name="{}OnReleasedAccount".format(toggles.environment_identifier),
             description="Release personal account for innovative work",
             handler="on_released_account_handler.handle_tag_event",

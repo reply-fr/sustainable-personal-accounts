@@ -30,7 +30,7 @@ class OnExpiredAccount(Construct):
     def build_on_tag(self, parameters, permissions) -> Function:
 
         function = Function(
-            self, "ByTag",
+            self, "FromTag",
             function_name="{}OnExpiredAccount".format(toggles.environment_identifier),
             description="Start the purge of an expired account",
             handler="on_expired_account_handler.handle_tag_event",
