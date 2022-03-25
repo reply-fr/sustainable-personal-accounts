@@ -78,6 +78,7 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_region == 'eu-west-1'
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
+    assert toggles.automation_subscribed_email_addresses == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
     assert toggles.automation_tags == {'CostCenter': 'shared'}
     assert toggles.automation_verbosity == 'ERROR'
     assert toggles.environment_identifier == 'SpaDemo'

@@ -15,8 +15,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import boto3
+import logging
+
 from constructs import Construct
+from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement
 from aws_cdk.aws_sns import Topic
+from aws_cdk.aws_sns_subscriptions import EmailSubscription
 
 
 class Alerts(Construct):
@@ -30,5 +35,22 @@ class Alerts(Construct):
         self.topic = Topic(
             self, "AlertTopic",
             display_name=self.TOPIC_DISPLAY_NAME,
-            fifo=True,
             topic_name=self.TOPIC_NAME)
+
+        statement = PolicyStatement(effect=Effect.ALLOW,
+                                    actions=['SNS:Publish'],
+                                    conditions=dict(StringEquals={"aws:PrincipalOrgID": self.get_organization_identifier()}),
+                                    principals=[AnyPrincipal()],
+                                    resources=[self.topic.topic_arn])
+        self.topic.add_to_resource_policy(statement)
+
+        for recipient in toggles.automation_subscribed_email_addresses:
+            self.topic.add_subscription(EmailSubscription(recipient))
+
+    def get_organization_identifier(self):
+        try:
+            details = boto3.client('organizations').describe_organization()
+            return details['Organization']['Id']
+        except Exception as error:
+            logging.exception(error)
+            return 'o-is-unknown'

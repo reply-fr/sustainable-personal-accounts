@@ -35,6 +35,12 @@ automation:
   #
   role_name_to_manage_codebuild: 'AWSControlTowerExecution'
 
+  # these e-mail addresses receive messages on alerts
+  #
+  subscribed_email_addresses:
+  - finops_alerts@acme.com
+  - cloud_operations@acme.com
+
   # these tags are used on resources deployed in automation account
   #
   tags:

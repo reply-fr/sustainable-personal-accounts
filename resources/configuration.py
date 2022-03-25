@@ -35,6 +35,7 @@ class Configuration:
         automation_region='str',
         automation_role_arn_to_manage_accounts='str',
         automation_role_name_to_manage_codebuild='str',
+        automation_subscribed_email_addresses='list',
         automation_tags='dict',
         automation_verbosity='str',
         environment_identifier='str',
@@ -84,6 +85,7 @@ class Configuration:
         # other default values
         toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
         toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
+        toggles.automation_subscribed_email_addresses = []
         toggles.automation_tags = {}
         toggles.automation_verbosity = 'INFO'
 

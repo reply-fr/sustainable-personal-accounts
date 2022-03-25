@@ -44,7 +44,7 @@ class ServerlessStack(Stack):
         Parameters(self, "{}Parameters".format(toggles.environment_identifier))
 
         # passed to all lambda functions
-        environment = self.get_environment(topic=alerts.topic)
+        environment = self.get_environment(topic_arn=alerts.topic.topic_arn)
         parameters = self.get_parameters(environment=environment)
         permissions = self.get_permissions()
 
@@ -70,16 +70,16 @@ class ServerlessStack(Stack):
                 "{}Cockpit".format(toggles.environment_identifier),
                 functions=functions)
 
-    def get_environment(self, topic) -> dict:  # shared across all lambda functions
+    def get_environment(self, topic_arn) -> dict:  # shared across all lambda functions
         environment = dict(
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
+            EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ORGANIZATIONAL_UNITS_PARAMETER=toggles.environment_identifier + Parameters.ORGANIZATIONAL_UNITS_PARAMETER,
             PREPARATION_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PREPARATION_BUILDSPEC_PARAMETER,
             PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
-            EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
-            TOPIC_NAME=topic.topic_name,
+            TOPIC_ARN=topic_arn,
             VERBOSITY=toggles.automation_verbosity)
         return environment
 

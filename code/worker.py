@@ -88,22 +88,22 @@ class Worker:
         configuration = organizational_units.get(account.unit, {})
         variables = dict(BUDGET_AMOUNT=str(configuration.get('cost_budget', 200)),
                          BUDGET_EMAIL=account.email)
-        extras = configuration.get('preparation_variables', {})
-        for key in extras.keys():
-            variables[key] = extras[key]
+        variables.update(configuration.get('preparation_variables', {}))
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
+        if value := os.environ.get('TOPIC_ARN'):
+            variables['TOPIC_ARN'] = value
         return variables
 
     @staticmethod
     def make_purge_variables(account, organizational_units) -> dict:
         configuration = organizational_units.get(account.unit, {})
         variables = dict(PURGE_EMAIL=account.email)
-        extras = configuration.get('purge_variables', {})
-        for key in extras.keys():
-            variables[key] = extras[key]
+        variables.update(configuration.get('purge_variables', {}))
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
+        if value := os.environ.get('TOPIC_ARN'):
+            variables['TOPIC_ARN'] = value
         return variables
 
     @classmethod
