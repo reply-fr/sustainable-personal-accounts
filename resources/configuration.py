@@ -37,7 +37,6 @@ class Configuration:
         automation_role_name_to_manage_codebuild='str',
         automation_tags='dict',
         automation_verbosity='str',
-        dry_run='bool',
         environment_identifier='str',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
@@ -87,7 +86,6 @@ class Configuration:
         toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
         toggles.automation_tags = {}
         toggles.automation_verbosity = 'INFO'
-        toggles.dry_run = True
 
     @classmethod
     def set_from_settings(cls, settings={}):
