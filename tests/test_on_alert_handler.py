@@ -49,7 +49,7 @@ def queued_message():
                 "messageAttributes": {},
                 "md5OfBody": "0123456789012",
                 "eventSource": "aws:sqs",
-                "eventSourceARN": "arn:aws:sqs:eu-west-1:123456789012:SpaAlerts",
+                "eventSourceARN": "arn:aws:sqs:eu-west-1:111111111111:SpaAlerts",
                 "awsRegion": "eu-west-1"
             }
         ]

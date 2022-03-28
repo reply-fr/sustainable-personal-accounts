@@ -40,7 +40,7 @@ SUBJECT_TEMPLATE = "Alert on account '{account_id}'"
 @trap_exception
 def handle_queue_event(event, context, session=None):
     logging.info("Receiving records from queue")
-    logging.debug(json.dumps(event))
+    logging.info(json.dumps(event))
     for record in event['Records']:
         handle_record(record, session=session)
     return '[OK]'
@@ -50,20 +50,25 @@ def handle_record(record, session=None):
     if record['eventSource'] == "aws:sqs":
         handle_sqs_record(record, session=session)
     else:
+        logging.info(record)
         raise AttributeError("Unable to handle source '{}'".format(record['eventSource']))
 
 
 def handle_sqs_record(record, session=None):
-    body = json.loads(record['body'])
-    logging.debug(body)
-    topic_arn = body['TopicArn']
-    account_id = topic_arn.split(':')[4]
+    account_id = record['eventSourceARN'].split(':')[4]
+    logging.debug(record['body'])
+    try:
+        body = json.loads(record['body'])
+        relay_notification(account_id=account_id, message=body['Message'], session=session)
+    except json.decoder.JSONDecodeError:
+        relay_notification(account_id=account_id, message=record['body'], session=session)
 
+
+def relay_notification(account_id, message, session=None):
     notification = dict(TopicArn=os.environ['TOPIC_ARN'],
-                        Message=get_message(account_id=account_id, message=body['Message']),
+                        Message=get_message(account_id=account_id, message=message),
                         Subject=get_subject(account_id=account_id))
     logging.info(f"Publishing notification: {notification}")
-
     session = session or Session()
     session.client('sns').publish(**notification)
 
