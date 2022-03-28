@@ -38,17 +38,6 @@ SUBJECT_TEMPLATE = "Alert on account '{account_id}'"
 
 
 @trap_exception
-def handle_alert_event(event, context, session=None):
-    logging.info("Processing alert")
-    logging.debug(json.dumps(event))
-    # session = session or Session()
-    # session.client('sns').publish(TopicArn=os.environ['TOPIC_ARN'],
-    #                               Message=event['Records'][0]['Sns']['Message'],
-    #                               Subject=event['Records'][0]['Sns']['Subject'])
-    return '[OK]'
-
-
-@trap_exception
 def handle_queue_event(event, context, session=None):
     logging.info("Receiving records from queue")
     logging.debug(json.dumps(event))
