@@ -23,13 +23,13 @@ import json
 from unittest.mock import Mock, patch
 from moto import mock_events
 import os
+import pytest
 
 from code import Events
 from code.on_prepared_account_handler import handle_codebuild_event, handle_account
 from code.worker import Worker
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture

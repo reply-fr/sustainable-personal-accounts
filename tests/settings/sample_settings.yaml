@@ -99,6 +99,12 @@ organizational_units:
     purge_variables:
       DRY_RUN: 'TRUE'
 
+    # disable some or all of Codebuild activities
+    #
+    # skipped:
+    # - preparation
+    # - purge
+
   # settings specific to accounts placed in this organizational unit
   #
   - identifier: 'ou-5678'
@@ -127,3 +133,9 @@ organizational_units:
     #
     purge_variables:
       DRY_RUN: 'FALSE'
+
+    # disable some or all of Codebuild activities
+    #
+    skipped:
+    - preparation
+    - purge

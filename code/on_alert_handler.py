@@ -16,19 +16,72 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import json
-import os
 import logging
+import os
+
+from boto3.session import Session
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from boto3.session import Session
+
+MESSAGE_TEMPLATE = """
+You will find below a copy of the alert that has been sent automatically to the holder of account '{account_id}':
+
+----
+
+{message}
+"""
+
+
+SUBJECT_TEMPLATE = "Alert on account '{account_id}'"
 
 
 @trap_exception
 def handle_alert_event(event, context, session=None):
     logging.info("Processing alert")
-    logging.info(json.dumps(event))
-    session = session or Session()
-
+    logging.debug(json.dumps(event))
+    # session = session or Session()
+    # session.client('sns').publish(TopicArn=os.environ['TOPIC_ARN'],
+    #                               Message=event['Records'][0]['Sns']['Message'],
+    #                               Subject=event['Records'][0]['Sns']['Subject'])
     return '[OK]'
+
+
+@trap_exception
+def handle_queue_event(event, context, session=None):
+    logging.info("Receiving records from queue")
+    logging.debug(json.dumps(event))
+    for record in event['Records']:
+        handle_record(record, session=session)
+    return '[OK]'
+
+
+def handle_record(record, session=None):
+    if record['eventSource'] == "aws:sqs":
+        handle_sqs_record(record, session=session)
+    else:
+        raise AttributeError("Unable to handle source '{}'".format(record['eventSource']))
+
+
+def handle_sqs_record(record, session=None):
+    body = json.loads(record['body'])
+    logging.debug(body)
+    topic_arn = body['TopicArn']
+    account_id = topic_arn.split(':')[4]
+
+    notification = dict(TopicArn=os.environ['TOPIC_ARN'],
+                        Message=get_message(account_id=account_id, message=body['Message']),
+                        Subject=get_subject(account_id=account_id))
+    logging.info(f"Publishing notification: {notification}")
+
+    session = session or Session()
+    session.client('sns').publish(**notification)
+
+
+def get_message(account_id, message) -> str:
+    return MESSAGE_TEMPLATE.format(account_id=account_id, message=message).strip()
+
+
+def get_subject(account_id) -> str:
+    return SUBJECT_TEMPLATE.format(account_id=account_id).strip()

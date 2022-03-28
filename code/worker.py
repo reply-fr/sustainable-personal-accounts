@@ -184,8 +184,8 @@ class Worker:
         return role['Role']['Arn']
 
     @classmethod
-    def deploy_topic_for_alerts(cls, name="SpaAlertTopic", session=None):
-        session = session or Session()
+    def deploy_topic_for_alerts(cls, name="SpaAlertTopic", account=None):
+        session = cls.get_session(account.id) if (account and account.id != '123456789012') else Session()
         sns = session.client('sns')
 
         logging.info(f"Deploying topic '{name}' for budget alerts")
@@ -193,18 +193,58 @@ class Worker:
         try:
             topic = sns.create_topic(Name=name)
             logging.debug(f"Topic '{name}' has been created")
-            print(topic)
+            logging.debug("TopicArn=" + topic['TopicArn'])
+            cls.grant_permission_from_automation(sns=sns, topic_arn=topic['TopicArn'], account_id=os.environ['AUTOMATION_ACCOUNT'])
+            cls.grant_publishing_from_budgets(topic_arn=topic['TopicArn'], account=account)
             return topic['TopicArn']
         except ClientError as error:
             logging.error(error)
             return
 
+    @classmethod
+    def grant_permission_from_automation(cls, sns, topic_arn, account_id):
 
+        try:
+            logging.info("Granting access to the topic from automation account")
+            sns.add_permission(TopicArn=topic_arn,
+                               Label="GrantAutomationAccess",
+                               AWSAccountId=[account_id],
+                               ActionName=['Receive', 'Subscribe', 'ListSubscriptionsByTopic'])
+        except ClientError as error:
+            if os.environ.get('VERBOSITY', 'INFO') == 'DEBUG':
+                logging.error(error)
+            else:
+                logging.info("Statement already exists")
 
     @classmethod
-    def forward_alerts_to_central_lambda(cls, lambda_arn, session=None):
-        topic_arn = cls.deploy_topic_for_alerts(session=session)
-        cls.subscribe_lambda_to_topic(topic_arn=topic_arn, lambda_arn=lambda_arn, session=session)
+    def grant_publishing_from_budgets(cls, topic_arn, account=None):
+        session = cls.get_session(account.id) if (account and account.id != '123456789012') else Session()
+        sns = session.client('sns')
+
+        try:
+            logging.info("Allowing budgets to post message")
+            policy = json.loads(sns.get_topic_attributes(TopicArn=topic_arn)['Attributes']['Policy'])
+            statements = policy['Statement']
+            grant = {
+                "Sid": "GrantPublishingFromBudgets",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "budgets.amazonaws.com"
+                },
+                "Action": "SNS:Publish",
+                "Resource": topic_arn
+            }
+            updated = [grant]
+            for statement in statements:
+                if statement['Sid'] != grant['Sid']:
+                    updated.append(statement)
+            policy['Statement'] = updated
+            sns.set_topic_attributes(TopicArn=topic_arn,
+                                     AttributeName='Policy',
+                                     AttributeValue=json.dumps(policy))
+
+        except ClientError as error:
+            logging.error(error)
 
     @classmethod
     def forward_codebuild_events_to_central_bus(cls, event_bus_arn, session=None):
@@ -215,15 +255,15 @@ class Worker:
                                session=session)
 
     @staticmethod
-    def get_preparation_variables(account, organizational_units) -> dict:
+    def get_preparation_variables(account, organizational_units, topic_arn) -> dict:
         configuration = organizational_units.get(account.unit, {})
         variables = dict(BUDGET_AMOUNT=str(configuration.get('cost_budget', 200)),
                          BUDGET_EMAIL=account.email)
         variables.update(configuration.get('preparation_variables', {}))
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
-        if value := os.environ.get('TOPIC_ARN'):
-            variables['TOPIC_ARN'] = value
+        if topic_arn:
+            variables['TOPIC_ARN'] = topic_arn
         return variables
 
     @staticmethod
@@ -282,19 +322,18 @@ class Worker:
         return json.dumps(policy)
 
     @classmethod
-    def prepare(cls, account, organizational_units, buildspec, event_bus_arn, lambda_arn=None, session=None):
+    def prepare(cls, account, organizational_units, buildspec, event_bus_arn, topic_arn, session=None):
         session = session or cls.get_session(account.id)
 
         logging.info(f"Preparing account '{account.id}'...")
         logging.debug(f"account: {account.__dict__}")
         logging.debug(f"organizational_units: {organizational_units}")
         cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
-        cls.forward_alerts_to_central_lambda(lambda_arn=lambda_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_preparation_variables(account, organizational_units),
+                           variables=cls.get_preparation_variables(account, organizational_units, topic_arn),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
@@ -315,15 +354,6 @@ class Worker:
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
         logging.info(f"Account '{account.id}' is being purged")
-
-    @classmethod
-    def subscribe_lambda_to_topic(cls, topic_arn, lambda_arn, session=None):
-        session = session or Session()
-        sns = session.client('sns')
-        try:
-            sns.subscribe(TopicArn=topic_arn, Protocol='lambda', Endpoint=lambda_arn)
-        except ClientError as error:
-            logging.error(error)
 
     @classmethod
     def run_project(cls, name, session=None):

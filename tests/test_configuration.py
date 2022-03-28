@@ -23,12 +23,12 @@ import builtins
 from io import BytesIO
 from unittest.mock import patch
 import os
+import pytest
 from types import SimpleNamespace
 
 from resources import Configuration
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -97,7 +97,8 @@ def test_set_from_yaml(toggles):
             'cost_budget': 300,
             'note': 'another account container',
             'preparation_variables': {'HELLO': 'UNIVERSE'},
-            'purge_variables': {'DRY_RUN': 'FALSE'}
+            'purge_variables': {'DRY_RUN': 'FALSE'},
+            'skipped': ['preparation', 'purge']
         },
     }
     assert toggles.organizational_units == organizational_units

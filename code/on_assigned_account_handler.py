@@ -22,6 +22,7 @@ import logging
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from botocore.exceptions import ClientError
 from boto3.session import Session
 
 from account import Account, State
@@ -39,13 +40,22 @@ def handle_tag_event(event, context, session=None):
 
 def handle_account(account, session=None):
     units = get_organizational_units(session=session)
-    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    details = Account.describe(account, session=session)
+    if details.unit not in units.keys():
+        raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
     result = Events.emit('AssignedAccount', account)
-    Worker.prepare(account=Account.describe(account, session=session),
-                   organizational_units=get_organizational_units(session=session),
-                   event_bus_arn=os.environ['EVENT_BUS_ARN'],
-                   buildspec=get_buildspec(session=session),
-                   session=session)
+    unit = units[details.unit]
+    if 'preparation' in unit.get('skipped', []):
+        Account.move(account=account, state=State.RELEASED, session=session)
+    else:
+        topic_arn = Worker.deploy_topic_for_alerts(account=details)
+        subscribe_lambda_to_topic(topic_arn=topic_arn, lambda_arn=get_lambda_arn(), session=session)
+        Worker.prepare(account=details,
+                       organizational_units=units,
+                       event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                       topic_arn=topic_arn,
+                       buildspec=get_buildspec(session=session),
+                       session=session)
     return result
 
 
@@ -53,3 +63,19 @@ def get_buildspec(session=None):
     session = session or Session()
     item = session.client('ssm').get_parameter(Name=os.environ['PREPARATION_BUILDSPEC_PARAMETER'])
     return item['Parameter']['Value']
+
+
+def get_lambda_arn():
+    return "arn:aws:lambda:{}:{}:function:{}OnAlert".format(os.environ['AUTOMATION_REGION'],
+                                                            os.environ['AUTOMATION_ACCOUNT'],
+                                                            os.environ['ENVIRONMENT_IDENTIFIER'])
+
+
+def subscribe_lambda_to_topic(topic_arn, lambda_arn, session=None):
+    session = session or Session()
+    sns = session.client('sns')
+    try:
+        logging.info(f"Subscribing lambda function to topic '{topic_arn}'")
+        sns.subscribe(TopicArn=topic_arn, Protocol='lambda', Endpoint=lambda_arn)
+    except ClientError as error:
+        logging.error(error)

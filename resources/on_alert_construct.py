@@ -19,13 +19,18 @@ import boto3
 import logging
 
 from constructs import Construct
+from aws_cdk import Duration
 from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement
+from aws_cdk.aws_sqs import Queue
 from aws_cdk.aws_sns import Topic
 from aws_cdk.aws_sns_subscriptions import EmailSubscription
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_lambda_event_sources import SqsEventSource
 
 
 class OnAlert(Construct):
+
+    QUEUE_NAME = "SpaAlerts"
 
     TOPIC_DISPLAY_NAME = "Topic for alerts identified in managed accounts"
     TOPIC_NAME = "SpaAlerts"
@@ -39,7 +44,7 @@ class OnAlert(Construct):
             topic_name=self.TOPIC_NAME)
 
         statement = PolicyStatement(effect=Effect.ALLOW,
-                                    actions=['SNS:Publish'],
+                                    actions=['sns:Publish'],
                                     conditions=dict(StringEquals={"aws:PrincipalOrgID": self.get_organization_identifier()}),
                                     principals=[AnyPrincipal()],
                                     resources=[self.topic.topic_arn])
@@ -48,18 +53,28 @@ class OnAlert(Construct):
         for recipient in toggles.automation_subscribed_email_addresses:
             self.topic.add_subscription(EmailSubscription(recipient))
 
+        self.queue = Queue(self, "AlertQueue", queue_name=self.QUEUE_NAME)
+
+        statement = PolicyStatement(effect=Effect.ALLOW,
+                                    actions=['sqs:SendMessage'],
+                                    conditions=dict(StringEquals={"aws:PrincipalOrgID": self.get_organization_identifier()}),
+                                    principals=[AnyPrincipal()],
+                                    resources=[self.queue.queue_arn])
+        self.queue.add_to_resource_policy(statement)
+
         parameters['environment']['TOPIC_ARN'] = self.topic.topic_arn
-        permissions.append(PolicyStatement(effect=Effect.ALLOW,
-                                           actions=['SNS:Publish'],
-                                           resources=[self.topic.topic_arn]))
-        self.functions = [self.on_alert(parameters=parameters, permissions=permissions)]
+        alert_function = self.on_alert(parameters=parameters, permissions=permissions)
+        alert_function.add_event_source(SqsEventSource(self.queue))
+
+        self.functions = [alert_function]
 
     def on_alert(self, parameters, permissions) -> Function:
+        parameters['timeout'] = Duration.seconds(20)
         function = Function(
             self, "FromAlert",
             function_name="{}OnAlert".format(toggles.environment_identifier),
             description="Receive an alert event",
-            handler="on_alert_handler.handle_alert_event",
+            handler="on_alert_handler.handle_queue_event",
             **parameters)
 
         for permission in permissions:

@@ -63,6 +63,10 @@ phases:
             {
               "Address": "${BUDGET_EMAIL}",
               "SubscriptionType": "EMAIL"
+            },
+            {
+              "Address": "${TOPIC_ARN}",
+              "SubscriptionType": "SNS"
             }
           ]
         }

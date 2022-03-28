@@ -23,12 +23,12 @@ import json
 from unittest.mock import Mock, patch
 from moto import mock_events
 import os
+import pytest
 
 from code import Events, State
 from code.on_released_account_handler import handle_tag_event
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture

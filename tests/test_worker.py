@@ -19,7 +19,10 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from boto3 import Session
+import json
 from unittest.mock import Mock, patch
+from moto import mock_sns
 import os
 import pytest
 from types import SimpleNamespace
@@ -48,8 +51,9 @@ def test_deploy_project(session):
 def test_get_preparation_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.get_preparation_variables(account=account, organizational_units=organizational_units)
-    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com'}
+    topic_arn = 'arn:aws'
+    variables = Worker.get_preparation_variables(account=account, organizational_units=organizational_units, topic_arn=topic_arn)
+    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com', 'TOPIC_ARN': 'arn:aws'}
 
 
 def test_get_purge_variables():
@@ -58,9 +62,27 @@ def test_get_purge_variables():
     variables = Worker.get_purge_variables(account=account, organizational_units=organizational_units)
     assert variables == {'PURGE_EMAIL': 'a@b.com'}
 
+
+@mock_sns
+def test_grant_publishing_from_budgets():
+    session = Session()
+    topic_arn = session.client('sns').create_topic(Name='test')['TopicArn']
+
+    Worker.grant_publishing_from_budgets(topic_arn=topic_arn)
+
+    attributes = session.client('sns').get_topic_attributes(TopicArn=topic_arn)
+    policy = json.loads(attributes['Attributes']['Policy'])
+    found = False
+    for statement in policy['Statement']:
+        if statement['Sid'] == "GrantPublishingFromBudgets":
+            found = True
+    assert found
+
+
+@patch.dict(os.environ, dict(AUTOMATION_ACCOUNT="123456789012"))
 def test_prepare(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    Worker.prepare(account=account, organizational_units={}, buildspec='hello_world', event_bus_arn='arn:aws', session=session)
+    Worker.prepare(account=account, organizational_units={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
 
 
 def test_purge(session):
