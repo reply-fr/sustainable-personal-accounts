@@ -50,7 +50,7 @@ class Worker:
             Name=name,
             EventPattern=json.dumps(cls.CODEBUILD_EVENT_PATTERN),
             Description=description,
-            Tags=[dict(Key='owner', Value='SPA')])
+            Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
 
         events.put_targets(
             Rule=name,
@@ -112,7 +112,7 @@ class Worker:
                 AssumeRolePolicyDocument=cls.get_trusting_policy_document(service="codebuild.amazonaws.com"),
                 Description='Set permissions for Codebuild project',
                 MaxSessionDuration=12 * 60 * 60,
-                Tags=[dict(Key='owner', Value='SPA')])
+                Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
             logging.debug(f"Role '{name}' has been created")
         except ClientError as error:
             if error.response['Error']['Code'] == 'EntityAlreadyExists':
@@ -149,7 +149,7 @@ class Worker:
                 AssumeRolePolicyDocument=cls.get_trusting_policy_document(service="events.amazonaws.com"),
                 Description='Set permissions for EventBridge rule',
                 MaxSessionDuration=12 * 60 * 60,
-                Tags=[dict(Key='owner', Value='SPA')])
+                Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
             logging.debug(f"Role '{name}' has been created")
         except ClientError as error:
             if error.response['Error']['Code'] == 'EntityAlreadyExists':
@@ -191,7 +191,8 @@ class Worker:
         logging.info(f"Deploying topic '{name}' for budget alerts")
 
         try:
-            topic = sns.create_topic(Name=name)
+            topic = sns.create_topic(Name=name,
+                                     Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
             logging.debug(f"Topic '{name}' has been created")
             logging.debug("TopicArn=" + topic['TopicArn'])
             cls.grant_permission_from_automation(sns=sns, topic_arn=topic['TopicArn'], account_id=os.environ['AUTOMATION_ACCOUNT'])
@@ -298,8 +299,7 @@ class Worker:
         master = make_session(role_arn=arn, session=session) if arn else Session()
 
         name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
-        target = make_session(role_arn=f'arn:aws:iam::{account}:role/{name}',
-                              session=master)
+        target = make_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=master)
         identity = target.client('sts').get_caller_identity()
         logging.debug(f"Using identity {identity}")
         return target
