@@ -191,8 +191,9 @@ class Worker:
         logging.info(f"Deploying topic '{name}' for budget alerts")
 
         try:
-            topic = sns.create_topic(Name=name,
-                                     Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
+            topic = sns.create_topic(Name=name)
+            sns.tag_resource(ResourceArn=topic['TopicArn'],
+                             Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
             logging.debug(f"Topic '{name}' has been created")
             logging.debug("TopicArn=" + topic['TopicArn'])
             cls.grant_permission_from_automation(sns=sns, topic_arn=topic['TopicArn'], account_id=os.environ['AUTOMATION_ACCOUNT'])
