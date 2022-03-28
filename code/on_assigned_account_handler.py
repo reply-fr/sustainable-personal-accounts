@@ -49,7 +49,7 @@ def handle_account(account, session=None):
         Account.move(account=account, state=State.RELEASED, session=session)
     else:
         topic_arn = Worker.deploy_topic_for_alerts(account=details)
-        subscribe_lambda_to_topic(topic_arn=topic_arn, lambda_arn=get_lambda_arn(), session=session)
+        subscribe_queue_to_topic(topic_arn=topic_arn, queue_arn=get_queue_arn(), session=session)
         Worker.prepare(account=details,
                        organizational_units=units,
                        event_bus_arn=os.environ['EVENT_BUS_ARN'],
@@ -65,17 +65,17 @@ def get_buildspec(session=None):
     return item['Parameter']['Value']
 
 
-def get_lambda_arn():
-    return "arn:aws:lambda:{}:{}:function:{}OnAlert".format(os.environ['AUTOMATION_REGION'],
-                                                            os.environ['AUTOMATION_ACCOUNT'],
-                                                            os.environ['ENVIRONMENT_IDENTIFIER'])
+def get_queue_arn():
+    return "arn:aws:sqs:{}:{}:{}Alerts".format(os.environ['AUTOMATION_REGION'],
+                                               os.environ['AUTOMATION_ACCOUNT'],
+                                               os.environ['ENVIRONMENT_IDENTIFIER'])
 
 
-def subscribe_lambda_to_topic(topic_arn, lambda_arn, session=None):
+def subscribe_queue_to_topic(topic_arn, queue_arn, session=None):
     session = session or Session()
     sns = session.client('sns')
     try:
-        logging.info(f"Subscribing lambda function to topic '{topic_arn}'")
-        sns.subscribe(TopicArn=topic_arn, Protocol='lambda', Endpoint=lambda_arn)
+        logging.info(f"Subscribing central queue to topic '{topic_arn}'")
+        sns.subscribe(TopicArn=topic_arn, Protocol='sqs', Endpoint=queue_arn)
     except ClientError as error:
         logging.error(error)
