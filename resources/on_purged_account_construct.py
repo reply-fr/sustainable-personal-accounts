@@ -32,7 +32,7 @@ class OnPurgedAccount(Construct):
     def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
             self, "FromCodebuild",
-            function_name="{}OnPurgedAccountByCodebuild".format(toggles.environment_identifier),
+            function_name="{}OnPurgedAccountFromCodebuild".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
             handler="on_purged_account_handler.handle_codebuild_event",
             **parameters)
@@ -44,7 +44,7 @@ class OnPurgedAccount(Construct):
              description="Route the completion of account purge with Codebuild project to lambda function",
              event_pattern=EventPattern(
                  source=['aws.codebuild'],
-                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
+                 detail={"build-status": ["SUCCEEDED"],
                          "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE]},
                  detail_type=["CodeBuild Build State Change"]),
              targets=[LambdaFunction(function)])

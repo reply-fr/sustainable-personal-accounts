@@ -9,7 +9,7 @@ env:
 phases:
   install:
     commands:
-      - curl -sSfL https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.11.1
+      - curl -sSfL --retry 3 https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.11.1
   build:
     commands:
       - echo "Account purge started on $(date)"

@@ -30,6 +30,8 @@ from worker import Worker
 def handle_codebuild_event(event, context, session=None):
     logging.debug(json.dumps(event))
     input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION)
+    if input.status != "SUCCEEDED":
+        raise ValueError(f"Ignoring status '{input.status}'")
     return handle_account(input.account, session=session)
 
 

@@ -20,12 +20,16 @@ import logging
 
 from constructs import Construct
 from aws_cdk import Duration
+from aws_cdk.aws_events import EventPattern, Rule
+from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement, ServicePrincipal
 from aws_cdk.aws_sqs import Queue
 from aws_cdk.aws_sns import Topic
 from aws_cdk.aws_sns_subscriptions import EmailSubscription
 from aws_cdk.aws_lambda import Function
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
+
+from code import Worker
 
 
 class OnAlert(Construct):
@@ -69,22 +73,44 @@ class OnAlert(Construct):
         self.queue.add_to_resource_policy(statement)
 
         parameters['environment']['TOPIC_ARN'] = self.topic.topic_arn
-        alert_function = self.on_alert(parameters=parameters, permissions=permissions)
-        alert_function.add_event_source(SqsEventSource(self.queue))
+        self.functions = [self.on_alert(parameters=parameters, permissions=permissions, queue=self.queue),
+                          self.on_codebuild(parameters=parameters, permissions=permissions)]
 
-        self.functions = [alert_function]
-
-    def on_alert(self, parameters, permissions) -> Function:
+    def on_alert(self, parameters, permissions, queue) -> Function:
         parameters['timeout'] = Duration.seconds(20)
         function = Function(
             self, "FromAlert",
             function_name="{}OnAlert".format(toggles.environment_identifier),
-            description="Receive an alert event",
+            description="Be notified on an alert",
             handler="on_alert_handler.handle_queue_event",
             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
+
+        function.add_event_source(SqsEventSource(queue))
+
+        return function
+
+    def on_codebuild(self, parameters, permissions) -> Function:
+        function = Function(
+            self, "FromCodebuild",
+            function_name="{}OnAlertFromCodebuild".format(toggles.environment_identifier),
+            description="Be notified on a failed Codebuild project",
+            handler="on_alert_handler.handle_codebuild_event",
+            **parameters)
+
+        for permission in permissions:
+            function.add_to_role_policy(permission)
+
+        Rule(self, "CodebuildRule",
+             description="Route the failure of Codebuild project to lambda function",
+             event_pattern=EventPattern(
+                 source=['aws.codebuild'],
+                 detail={"build-status": ["FAILED", "STOPPED"],
+                         "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION]},
+                 detail_type=["CodeBuild Build State Change"]),
+             targets=[LambdaFunction(function)])
 
         return function
 

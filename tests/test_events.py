@@ -86,15 +86,6 @@ def test_decode_codebuild_event_on_unexpected_project():
         Events.decode_codebuild_event(event, match="ExpectedProject")
 
 
-def test_decode_codebuild_event_on_unexpected_status():
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="123456789012",
-                                           project="SampleProject",
-                                           status="FAILED"))
-    with pytest.raises(ValueError):
-        Events.decode_codebuild_event(event)
-
-
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event():
     event = Events.make_event(template="tests/events/local-event-template.json",

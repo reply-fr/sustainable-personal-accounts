@@ -360,7 +360,7 @@ class Worker:
     def run_project(cls, name, session=None):
         session = session or Session()
         client = session.client('codebuild')
-        logging.info(f"Starting project build {name}")
+        logging.info(f"Starting project build '{name}'")
         result = client.start_build(projectName=name)
         logging.debug(result.get('build'))
         logging.debug("Done")

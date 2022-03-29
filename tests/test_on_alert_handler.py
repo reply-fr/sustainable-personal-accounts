@@ -20,13 +20,12 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import boto3
-import json
 from unittest.mock import Mock, patch
-from moto import mock_sqs, mock_sns
+from moto import mock_organizations, mock_sns
 import os
 import pytest
 
-from code.on_alert_handler import handle_queue_event
+from code.on_alert_handler import handle_queue_event, get_codebuild_message
 
 pytestmark = pytest.mark.wip
 
@@ -56,22 +55,26 @@ def queued_message():
     }
 
 
+def test_get_codebuild_message():
+    result = get_codebuild_message(account='123456789012', project='someProject', status='FAILED')
+    assert result == "You will find below details on failing CodeBuild project ran on account '123456789012':\n\n- account: 123456789012\n- project: someProject\n- status: FAILED"
+
+
 @mock_sns
-def test_handle_queue_event(queued_message):
+def test_handle_queue_event(queued_message, account_describe_mock):
     topic = boto3.client('sns').create_topic(Name="test-topic")
-    session = Mock()
     with patch.dict(os.environ, dict(TOPIC_ARN=topic['TopicArn'])):
-        result = handle_queue_event(event=queued_message, context=None, session=session)
+        result = handle_queue_event(event=queued_message, context=None, session=account_describe_mock)
         assert result == '[OK]'
-    session.client.return_value.publish.assert_called_with(TopicArn='arn:aws:sns:eu-west-1:123456789012:test-topic',
-                                                           Message="You will find below a copy of the alert that has been sent automatically to the holder of account '111111111111':\n\n----\n\nsome message",
-                                                           Subject="Alert on account '111111111111'")
+    account_describe_mock.client.return_value.publish.assert_called_with(TopicArn='arn:aws:sns:eu-west-1:123456789012:test-topic',
+                                                                         Message="You will find below a copy of the alert that has been sent automatically to the holder of account '111111111111 (a@b.com)':\n\n----\n\nsome message",
+                                                                         Subject="Alert on account '111111111111'")
 
 
 """
 @mock_sqs
 @mock_sns
-def test_maximum_number_of_topics_per_queue():
+def test_high_number_of_topics_per_queue():
     ''' unique test to ensure that up to 10,000 topics can subscribe to the same queue '''
     queue_url = boto3.client('sqs').create_queue(QueueName='queue')['QueueUrl']
     queue_arn = boto3.client('sqs').get_queue_attributes(QueueUrl=queue_url, AttributeNames=['QueueArn'])['Attributes']['QueueArn']

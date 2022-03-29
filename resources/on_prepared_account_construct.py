@@ -32,7 +32,7 @@ class OnPreparedAccount(Construct):
     def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
             self, "FromCodebuild",
-            function_name="{}OnPreparedAccountByCodebuild".format(toggles.environment_identifier),
+            function_name="{}OnPreparedAccountFromCodebuild".format(toggles.environment_identifier),
             description="Change state of prepared accounts to released",
             handler="on_prepared_account_handler.handle_codebuild_event",
             **parameters)
@@ -44,7 +44,7 @@ class OnPreparedAccount(Construct):
              description="Route the completion of account preparation with Codebuild project to lambda function",
              event_pattern=EventPattern(
                  source=['aws.codebuild'],
-                 detail={"build-status": ["SUCCEEDED", "FAILED", "STOPPED"],
+                 detail={"build-status": ["SUCCEEDED"],
                          "project-name": [Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION]},
                  detail_type=["CodeBuild Build State Change"]),
              targets=[LambdaFunction(function)])
