@@ -20,7 +20,7 @@ import logging
 
 from constructs import Construct
 from aws_cdk import Duration
-from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement
+from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement, ServicePrincipal
 from aws_cdk.aws_sqs import Queue
 from aws_cdk.aws_sns import Topic
 from aws_cdk.aws_sns_subscriptions import EmailSubscription
@@ -39,7 +39,7 @@ class OnAlert(Construct):
         super().__init__(scope, id)
 
         self.topic = Topic(
-            self, "AlertTopic",
+            self, "Topic",
             display_name=self.TOPIC_DISPLAY_NAME,
             topic_name=self.TOPIC_NAME)
 
@@ -53,12 +53,18 @@ class OnAlert(Construct):
         for recipient in toggles.automation_subscribed_email_addresses:
             self.topic.add_subscription(EmailSubscription(recipient))
 
-        self.queue = Queue(self, "AlertQueue", queue_name=self.QUEUE_NAME)
+        self.queue = Queue(self, "Queue", queue_name=self.QUEUE_NAME)
 
         statement = PolicyStatement(effect=Effect.ALLOW,
                                     actions=['sqs:SendMessage'],
                                     conditions=dict(StringEquals={"aws:PrincipalOrgID": self.get_organization_identifier()}),
                                     principals=[AnyPrincipal()],
+                                    resources=[self.queue.queue_arn])
+        self.queue.add_to_resource_policy(statement)
+
+        statement = PolicyStatement(effect=Effect.ALLOW,
+                                    actions=['sqs:SendMessage'],
+                                    principals=[ServicePrincipal('sns.amazonaws.com')],
                                     resources=[self.queue.queue_arn])
         self.queue.add_to_resource_policy(statement)
 
