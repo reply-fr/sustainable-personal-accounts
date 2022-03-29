@@ -40,7 +40,7 @@ SUBJECT_TEMPLATE = "Alert on account '{account_id}'"
 @trap_exception
 def handle_queue_event(event, context, session=None):
     logging.info("Receiving records from queue")
-    logging.info(json.dumps(event))
+    logging.debug(event)
     for record in event['Records']:
         handle_record(record, session=session)
     return '[OK]'
@@ -55,19 +55,31 @@ def handle_record(record, session=None):
 
 
 def handle_sqs_record(record, session=None):
-    account_id = record['eventSourceARN'].split(':')[4]
-    logging.debug(record['body'])
+    logging.info("Processing one record")
+    logging.debug(record)
     try:
         body = json.loads(record['body'])
-        relay_notification(account_id=account_id, message=body['Message'], session=session)
+        account_id = body['TopicArn'].split(':')[4]
+        relay_notification(message=body['Message'], account_id=account_id, session=session)
     except json.decoder.JSONDecodeError:
-        relay_notification(account_id=account_id, message=record['body'], session=session)
+        relay_message(message=record['body'], session=session)
 
 
 def relay_notification(account_id, message, session=None):
     notification = dict(TopicArn=os.environ['TOPIC_ARN'],
                         Message=get_message(account_id=account_id, message=message),
                         Subject=get_subject(account_id=account_id))
+    publish_notification(notification=notification, session=session)
+
+
+def relay_message(message, session=None):
+    notification = dict(TopicArn=os.environ['TOPIC_ARN'],
+                        Message=message,
+                        Subject="Alert message")
+    publish_notification(notification=notification, session=session)
+
+
+def publish_notification(notification, session=None):
     logging.info(f"Publishing notification: {notification}")
     session = session or Session()
     session.client('sns').publish(**notification)
