@@ -152,6 +152,15 @@ section {
 
 ---
 <!-- _paginate: false -->
+<style scoped>
+section {
+  background: orange;
+}
+</style>
+![bg 80%](./media/budget-administrator-message.png)
+
+---
+<!-- _paginate: false -->
 ![bg 100%](./media/cloudwatch-dashboard.png)
 
 ---
