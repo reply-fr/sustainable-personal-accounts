@@ -23,12 +23,12 @@ import builtins
 from io import BytesIO
 from unittest.mock import patch
 import os
+import pytest
 from types import SimpleNamespace
 
 from resources import Configuration
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -49,7 +49,6 @@ def test_expand_text(toggles):
 def test_initialize():
 
     Configuration.initialize(stream='tests/settings/sample_settings.yaml')
-    assert builtins.toggles.dry_run is False
     assert builtins.toggles.aws_account is not None
     assert builtins.toggles.aws_environment is not None
     assert builtins.toggles.aws_region is not None
@@ -74,15 +73,15 @@ def test_set_from_settings(toggles):
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
     assert toggles.automation_account_id == '123456789012'
-    assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)'
+    assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (beta)'
     assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
     assert toggles.automation_region == 'eu-west-1'
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
+    assert toggles.automation_subscribed_email_addresses == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
     assert toggles.automation_tags == {'CostCenter': 'shared'}
     assert toggles.automation_verbosity == 'ERROR'
-    assert toggles.dry_run is False
-    assert toggles.environment_identifier == 'SpaTest'
+    assert toggles.environment_identifier == 'SpaDemo'
     organizational_units = {
         'ou-1234': {
             'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
@@ -98,7 +97,8 @@ def test_set_from_yaml(toggles):
             'cost_budget': 300,
             'note': 'another account container',
             'preparation_variables': {'HELLO': 'UNIVERSE'},
-            'purge_variables': {'DRY_RUN': 'FALSE'}
+            'purge_variables': {'DRY_RUN': 'FALSE'},
+            'skipped': ['preparation', 'purge']
         },
     }
     assert toggles.organizational_units == organizational_units

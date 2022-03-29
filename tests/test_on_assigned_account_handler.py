@@ -21,26 +21,35 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import Mock, patch
+from moto import mock_events, mock_sns
 import os
+import pytest
 
 from code import Events, State
 from code.on_assigned_account_handler import handle_tag_event
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
 def session():
     mock = Mock()
+
     mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
+
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
-    mock.client.return_value.get_parameter.return_value = dict(Parameter=dict(Value='buildspec_content'))
-    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
+
     mock.client.return_value.describe_account.return_value = dict(Account=dict(Arn='arn:aws',
                                                                                Email='a@b.com',
                                                                                Name='Some-Account',
                                                                                Status='ACTIVE'))
+
+    parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
+    parameter_2 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
+    parameter_3 = dict(Parameter=dict(Value='buildspec_content'))
+    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2, parameter_3]
+
+    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
 
     parents = {
         'Parents': [
@@ -51,11 +60,6 @@ def session():
         ]
     }
     mock.client.return_value.list_parents.return_value = parents
-
-    parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_2 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_3 = dict(Parameter=dict(Value='buildspec_content'))
-    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2, parameter_3]
 
     tags = {
         'Tags': [
@@ -76,20 +80,23 @@ def session():
 
 
 @patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
-                             DRY_RUN="TRUE",
+                             AUTOMATION_ACCOUNT="123456789012",
+                             AUTOMATION_REGION="eu-west-12",
                              EVENT_BUS_ARN='arn:aws',
+                             ENVIRONMENT_IDENTIFIER='Test',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='DEBUG'))
+@mock_events
+@mock_sns
 def test_handle_tag_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
                                            new_state=State.ASSIGNED.value))
     result = handle_tag_event(event=event, context=None, session=session)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Test"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             EVENT_BUS_ARN='arn:aws',
+@patch.dict(os.environ, dict(EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_state(session):

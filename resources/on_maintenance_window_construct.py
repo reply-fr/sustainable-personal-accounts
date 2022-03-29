@@ -29,7 +29,7 @@ class OnMaintenanceWindow(Construct):
 
     def on_schedule(self, parameters, permissions) -> Function:
         function = Function(
-            self, "BySchedule",
+            self, "FromSchedule",
             function_name="{}OnMaintenanceWindow".format(toggles.environment_identifier),
             description="Change state of expired accounts",
             handler="on_maintenance_window_handler.handle_schedule_event",

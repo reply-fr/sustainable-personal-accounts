@@ -53,7 +53,7 @@ def trap_exception(function):
 
         except ValueError as error:  # regular code breaks, e.g., event is not for this specific function
             if os.environ.get('VERBOSITY', 'DEBUG') != 'DEBUG':
-                logging.debug(error)
+                logging.error(error)
             else:
                 logging.exception(error)
             return f"[DEBUG] {error}"

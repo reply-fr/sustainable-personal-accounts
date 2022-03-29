@@ -95,14 +95,11 @@ class Account:
             raise ValueError(f"Unexpected state type {state}")
 
         logging.info(f"Tagging account '{account}' with state '{state.value}'")
-        if os.environ.get("DRY_RUN") == "FALSE":
-            session = session or cls.get_session()
-            session.client('organizations').tag_resource(
-                ResourceId=account,
-                Tags=[dict(Key='account:state', Value=state.value)])
-            logging.debug("Done")
-        else:
-            logging.warning("Dry-run mode - account has not been tagged")
+        session = session or cls.get_session()
+        session.client('organizations').tag_resource(
+            ResourceId=account,
+            Tags=[dict(Key='account:state', Value=state.value)])
+        logging.debug("Done")
 
     @classmethod
     def tag(cls, account, tags, session=None):

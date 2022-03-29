@@ -27,7 +27,7 @@ class CheckAccounts(Construct):
 
     def on_run(self, parameters, permissions) -> Function:
         function = Function(
-            self, "ByRun",
+            self, "FromInvoke",
             function_name="{}CheckAccounts".format(toggles.environment_identifier),
             description="Check the state of managed accounts",
             handler="check_accounts_handler.handle_event",

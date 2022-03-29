@@ -19,14 +19,17 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import os
+from boto3 import Session
+import json
 from unittest.mock import Mock, patch
+from moto import mock_sns
+import os
+import pytest
 from types import SimpleNamespace
 
 from code import Worker
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -34,54 +37,54 @@ def session():
     mock = Mock()
     mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
     mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    mock.client.return_value.create_topic.return_value = dict(TopicArn='arn:aws')
     mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
     return mock
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true", ROLE_ARN_TO_MANAGE_ACCOUNTS='some_role'))
-def test_get_session():
-    pass
-
-    # handle = Mock()
-    # handle.client.return_value.assume_role.return_value = dict(Credentials=dict(AccessKeyId='ak',
-    #                                                                             SecretAccessKey='sk',
-    #                                                                             SessionToken='token'))
-    # Worker.get_session(account='123456789012', session=handle)
-
-
-@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_deploy_project(session):
     Worker.deploy_project(name='name', description='description', buildspec='buildspec', role='role', session=session)
     session.client.assert_called_with('codebuild')
     session.client.return_value.create_project.assert_called()
 
 
-# def test_deploy_role_for_events():
-#     Worker.deploy_role_for_events(event_bus_arn='arn:aws')
-#     assert False
-#
+def test_get_preparation_variables():
+    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
+    topic_arn = 'arn:aws'
+    variables = Worker.get_preparation_variables(account=account, organizational_units=organizational_units, topic_arn=topic_arn)
+    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com', 'TOPIC_ARN': 'arn:aws'}
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
+
+def test_get_purge_variables():
+    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
+    variables = Worker.get_purge_variables(account=account, organizational_units=organizational_units)
+    assert variables == {'PURGE_EMAIL': 'a@b.com'}
+
+
+@mock_sns
+def test_grant_publishing_from_budgets():
+    session = Session()
+    topic_arn = session.client('sns').create_topic(Name='test')['TopicArn']
+
+    Worker.grant_publishing_from_budgets(topic_arn=topic_arn)
+
+    attributes = session.client('sns').get_topic_attributes(TopicArn=topic_arn)
+    policy = json.loads(attributes['Attributes']['Policy'])
+    found = False
+    for statement in policy['Statement']:
+        if statement['Sid'] == "GrantPublishingFromBudgets":
+            found = True
+    assert found
+
+
+@patch.dict(os.environ, dict(AUTOMATION_ACCOUNT="123456789012"))
 def test_prepare(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    Worker.prepare(account=account, organizational_units={}, buildspec='hello_world', event_bus_arn='arn:aws', session=session)
+    Worker.prepare(account=account, organizational_units={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true"))
 def test_purge(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     Worker.purge(account=account, organizational_units={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)
-
-
-def test_make_preparation_variables():
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.make_preparation_variables(account=account, organizational_units=organizational_units)
-    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com'}
-
-
-def test_make_purge_variables():
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.make_purge_variables(account=account, organizational_units=organizational_units)
-    assert variables == {'PURGE_EMAIL': 'a@b.com'}

@@ -32,7 +32,7 @@ style: |
 <!-- _paginate: false -->
 <!-- _class: lead -->
 
-![bg left:40% 80%](https://d2908q01vomqb2.cloudfront.net/fc074d501302eb2b93e2554793fcaf50b3bf7291/2021/06/02/Figure-1.-Example-of-a-basic-organization.jpg)
+![bg left:40% 110%](./media/sustainable-personal-accounts.svg)
 
 ## __Sustainable Personal Accounts__
 
@@ -53,33 +53,22 @@ Each of them deserves a full AWS account to innovate fastly.
 <!-- _paginate: false -->
 ![bg left 90%](./media/backlog-generation.svg)
 
-## <!-- fit -->:dancers: We are the future
+## <!-- fit -->Experiment, then innovate
 
-“ As an innovative employee,
+👷 As an innovative employee,
 I want to test emerging technology breakthroughs and stick at competitive edge.
 
-Please help me to sketch ideas on cloud platform before contributing to our software and data products. ”
+🧪 Please help me to sketch ideas on cloud platform before contributing to our software and data products.
 
 ---
 
 ## :sparkles: Sustainable Personal Accounts
 
-__What?__ Provide an entire AWS account to every cloud practitioner of your enterprise. Yes, this can mean 1,000s of AWS accounts.
+__What?__ SPA provides an entire AWS account to every cloud practitioner of an enterprise. Yes, this can mean 10,000s of AWS accounts to manage.
 
-__Why?__ Because collective business agility depends on capability to build on cloud infrastructure. Access to AWS console, SDK and API is differentiating your business.
+__Why?__ Collective business agility relies on individuals. Democratize access to AWS console and tools to accelerate innovation.
 
-__How?__ Automate the management of AWS personal accounts at scale, including maintenance window to purge resources, to enforce corporate guardrails and to update shared blueprints. This is an open source package to be deployed within AWS Control Tower.
-
-<!--
----
-## __Sustainable Personal Accounts__
-1. Guiding Principles
-2. State Machine
-3. Event-driven Architecture
-4. Initiative status and next steps
-5. How to adapt the solution to your specific requirements?
-
--->
+__How?__ SPA automates the management of AWS personal accounts at scale, with maintenance windows on each account. Central teams can purge resources, enforce corporate guardrails and update shared blueprints periodically and automatically.
 
 ---
 ## :rainbow: Guiding Principles
@@ -154,22 +143,32 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 
 ---
 <!-- _paginate: false -->
-![bg contain](./media/cloudwatch-dashboard.png)
+<style scoped>
+section {
+  background: orange;
+}
+</style>
+![bg 80%](./media/budget-alarm-message.png)
 
 ---
-## :clapper: Initiative status and next steps
+<!-- _paginate: false -->
+![bg 100%](./media/cloudwatch-dashboard.png)
 
-🟢 🚩 Get idea validation from AWS Control Tower specialists (Dec)
+---
+## :clapper: Initiative progress
 
-🟢 Develop the solution for internal needs of Storm Reply
+🥚 Validate the concept with AWS Control Tower specialists (Dec)
 
-🟢 Seek continuous support from AWS Control Tower specialists
+🐣 Develop the solution for internal usage of Reply
 
-▪️ Release of public GitHub repository of SPA (March)
+🐤 Release of public GitHub repository of SPA
 
-▪️ Release of technical blog post on the SPA design (March)
+🐥 Present SPA at AWS Summit in Paris (April)
 
-▪️ Presentation to AWS Summit in Paris (April) 🏁
+🐦 Adapt the solution to multiple enterprises
+
+🐧 Release of technical blog post on the SPA design (H2)
+
 
 ---
 ## <!--fit--> :beers: How to adapt the solution to your specific requirements?
@@ -185,9 +184,7 @@ __3. Reply can help!__ We are using the system for ourselves. And we have develo
 
 ---
 <!-- _class: lead -->
-![](https://icongr.am/octicons/git-pull-request.svg?size=256&color=f96d00)
-
-# Thank you!
+![width:800px](./media/sustainable-personal-accounts.svg)
 
 https://github.com/reply-fr/sustainable-personal-accounts
 

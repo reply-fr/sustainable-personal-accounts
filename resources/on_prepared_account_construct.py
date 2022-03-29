@@ -31,7 +31,7 @@ class OnPreparedAccount(Construct):
 
     def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
-            self, "ByCodebuild",
+            self, "FromCodebuild",
             function_name="{}OnPreparedAccountByCodebuild".format(toggles.environment_identifier),
             description="Change state of prepared accounts to released",
             handler="on_prepared_account_handler.handle_codebuild_event",

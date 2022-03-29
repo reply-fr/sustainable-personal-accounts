@@ -18,11 +18,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from constructs import Construct
 from aws_cdk import Duration, Stack, Tags
 from aws_cdk.aws_iam import Effect, PolicyStatement
-from aws_cdk.aws_lambda import AssetCode, Runtime
+from aws_cdk.aws_lambda import AssetCode, Runtime, Tracing
 from aws_cdk.aws_logs import RetentionDays
 
 from .check_accounts_construct import CheckAccounts
 from .cockpit_construct import Cockpit
+from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
 from .on_events_construct import OnEvents
 from .on_expired_account_construct import OnExpiredAccount
@@ -39,55 +40,59 @@ class ServerlessStack(Stack):
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
 
-        Parameters(self, "{}Parameters".format(toggles.environment_identifier))
+        Parameters(self, "Parameters")
 
         # passed to all lambda functions
         environment = self.get_environment()
         parameters = self.get_parameters(environment=environment)
         permissions = self.get_permissions()
 
-        constructs = [
-            CheckAccounts(self, "CheckAccounts", parameters=parameters, permissions=permissions),
-            OnAssignedAccount(self, "OnAssignedAccount", parameters=parameters, permissions=permissions),
-            OnEvents(self, "OnEvents", parameters=parameters, permissions=permissions),
-            OnExpiredAccount(self, "OnExpiredAccount", parameters=parameters, permissions=permissions),
-            OnMaintenanceWindow(self, "OnMaintenanceWindow", parameters=parameters, permissions=permissions),
-            OnPreparedAccount(self, "OnPreparedAccount", parameters=parameters, permissions=permissions),
-            OnPurgedAccount(self, "OnPurgedAccount", parameters=parameters, permissions=permissions),
-            OnReleasedAccount(self, "OnReleasedAccount", parameters=parameters, permissions=permissions),
-            OnVanillaAccount(self, "OnVanillaAccount", parameters=parameters, permissions=permissions),
-        ]
-        functions = []
-        for construct in constructs:
-            functions.extend(construct.functions)
+        labels = [
+            'CheckAccounts',
+            'OnAlert',
+            'OnAssignedAccount',
+            'OnEvents',
+            'OnExpiredAccount',
+            'OnMaintenanceWindow',
+            'OnPreparedAccount',
+            'OnPurgedAccount',
+            'OnReleasedAccount',
+            'OnVanillaAccount']
+
+        monitored_functions = []
+        for label in labels:
+            construct = globals()[label](self, label, parameters=parameters.copy(), permissions=permissions.copy())
+            monitored_functions.extend(construct.functions)
+
+        Cockpit(self,
+                "{}Cockpit".format(toggles.environment_identifier),
+                functions=monitored_functions)
 
         for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
             Tags.of(self).add(key, toggles.automation_tags[key])
 
-        Cockpit(self,
-                "{}Cockpit".format(toggles.environment_identifier),
-                functions=functions)
-
     def get_environment(self) -> dict:  # shared across all lambda functions
         environment = dict(
+            AUTOMATION_ACCOUNT=toggles.automation_account_id,
+            AUTOMATION_REGION=toggles.automation_region,
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
+            EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ORGANIZATIONAL_UNITS_PARAMETER=toggles.environment_identifier + Parameters.ORGANIZATIONAL_UNITS_PARAMETER,
             PREPARATION_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PREPARATION_BUILDSPEC_PARAMETER,
             PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
-            DRY_RUN="TRUE" if toggles.dry_run else "FALSE",
-            EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             VERBOSITY=toggles.automation_verbosity)
         return environment
 
-    def get_parameters(self, environment) -> dict:  # used to build lambda functions
+    def get_parameters(self, environment) -> dict:  # passed to every lambda functions
         parameters = dict(
             code=AssetCode("code"),
             environment=environment,
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
-            runtime=Runtime.PYTHON_3_9)
+            runtime=Runtime.PYTHON_3_9,
+            tracing=Tracing.ACTIVE)
         return parameters
 
     def get_permissions(self) -> list:  # given to all lambda functions
@@ -103,6 +108,14 @@ class ServerlessStack(Stack):
 
             PolicyStatement(effect=Effect.ALLOW,
                             actions=['organizations:TagResource'],
+                            resources=['*']),
+
+            PolicyStatement(effect=Effect.ALLOW,
+                            actions=['sns:Publish', 'sns:Subscribe'],
+                            resources=['*']),
+
+            PolicyStatement(effect=Effect.ALLOW,
+                            actions=['sqs:ReceiveMessage'],
                             resources=['*']),
 
             PolicyStatement(effect=Effect.ALLOW,

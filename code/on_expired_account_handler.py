@@ -39,13 +39,19 @@ def handle_tag_event(event, context, session=None):
 
 def handle_account(account, session=None):
     units = get_organizational_units(session=session)
-    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    details = Account.describe(account, session=session)
+    if details.unit not in units.keys():
+        raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
     result = Events.emit('ExpiredAccount', account)
-    Worker.purge(account=Account.describe(account, session=session),
-                 organizational_units=get_organizational_units(session=session),
-                 event_bus_arn=os.environ['EVENT_BUS_ARN'],
-                 buildspec=get_buildspec(session=session),
-                 session=session)
+    unit = units[details.unit]
+    if 'purge' in unit.get('skipped', []):
+        Account.move(account=account, state=State.ASSIGNED, session=session)
+    else:
+        Worker.purge(account=details,
+                     organizational_units=units,
+                     event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                     buildspec=get_buildspec(session=session),
+                     session=session)
     return result
 
 

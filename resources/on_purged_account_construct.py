@@ -31,7 +31,7 @@ class OnPurgedAccount(Construct):
 
     def on_codebuild(self, parameters, permissions) -> Function:
         function = Function(
-            self, "ByCodebuild",
+            self, "FromCodebuild",
             function_name="{}OnPurgedAccountByCodebuild".format(toggles.environment_identifier),
             description="Change state of purged accounts to assigned",
             handler="on_purged_account_handler.handle_codebuild_event",

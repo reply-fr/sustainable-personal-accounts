@@ -19,8 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import os
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from types import SimpleNamespace
 
 from code import Account, State
@@ -77,7 +76,6 @@ def test_iterate_tags(valid_tags):
         next(iterator)
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_move_to_vanilla():
     session = Mock()
     Account.move(account='0123456789012',
@@ -89,7 +87,6 @@ def test_move_to_vanilla():
         Tags=[{'Key': 'account:state', 'Value': 'vanilla'}])
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_move_to_assigned():
     session = Mock()
     Account.move(account='0123456789012',
@@ -101,7 +98,6 @@ def test_move_to_assigned():
         Tags=[{'Key': 'account:state', 'Value': 'assigned'}])
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_move_to_released():
     session = Mock()
     Account.move(account='0123456789012',
@@ -113,7 +109,6 @@ def test_move_to_released():
         Tags=[{'Key': 'account:state', 'Value': 'released'}])
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_move_to_expired():
     session = Mock()
     Account.move(account='0123456789012',
@@ -125,7 +120,6 @@ def test_move_to_expired():
         Tags=[{'Key': 'account:state', 'Value': 'expired'}])
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_move_with_exception():
     with pytest.raises(ValueError):
         Account.move(account='0123456789012',

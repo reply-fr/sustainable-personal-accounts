@@ -25,8 +25,7 @@ import pytest
 # pytestmark = pytest.mark.wip
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE",
-                             ENVIRONMENT_IDENTIFIER='FromHere'))
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
 def test_emit():
     mock = Mock()
     Events.emit(label='CreatedAccount', account='123456789012', session=mock)
@@ -203,7 +202,6 @@ def test_decode_tag_account_event_on_missing_state():
         Events.decode_tag_account_event(event)
 
 
-@patch.dict(os.environ, dict(DRY_RUN="FALSE"))
 def test_put_event():
     mock = Mock()
     Events.put_event(event='hello', session=mock)

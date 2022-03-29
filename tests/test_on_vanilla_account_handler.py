@@ -21,6 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import patch, Mock
+from moto import mock_events
 import os
 
 from code import Events, State
@@ -81,9 +82,9 @@ def valid_tags():
     return mock
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true",
-                             ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
+@mock_events
 def test_handle_move_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
                               context=dict(account="123456789012",
@@ -93,8 +94,7 @@ def test_handle_move_event(valid_tags):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true",
-                             ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
 def test_handle_move_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/move-account-template.json",
@@ -105,9 +105,9 @@ def test_handle_move_event_on_unexpected_event(valid_tags):
     assert result == "[DEBUG] Unexpected event source 'ou-unexpected'"
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true",
-                             ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
+@mock_events
 def test_handle_tag_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
@@ -116,8 +116,7 @@ def test_handle_tag_event(valid_tags):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="true",
-                             ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_event(valid_tags):
     event = Events.make_event(template="tests/events/tag-account-template.json",

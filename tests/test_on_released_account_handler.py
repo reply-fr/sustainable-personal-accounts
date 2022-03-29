@@ -21,13 +21,14 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import Mock, patch
+from moto import mock_events
 import os
+import pytest
 
 from code import Events, State
 from code.on_released_account_handler import handle_tag_event
 
-import pytest
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -76,10 +77,10 @@ def session():
 
 
 @patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
-                             DRY_RUN="TRUE",
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='DEBUG'))
+@mock_events
 def test_handle_tag_event(session):
     event = Events.make_event(template="tests/events/tag-account-template.json",
                               context=dict(account="123456789012",
@@ -88,8 +89,7 @@ def test_handle_tag_event(session):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(DRY_RUN="TRUE",
-                             EVENT_BUS_ARN='arn:aws',
+@patch.dict(os.environ, dict(EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_state(session):

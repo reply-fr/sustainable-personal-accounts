@@ -16,7 +16,7 @@ Since we want to purge and to reset accounts assigned to individuals, this can b
 
 --->
 
-![state machine](./media/state-machine.png)
+![state machine](./media/state-machine.svg)
 
 - **Vanilla Accounts** - When an account has just been created by Control Tower, ServiceNow, or by any other mean, it is linked to a specific identity. Note that Control Tower does a pretty good job to create an identity in AWS Single Sign-On (SSO) before creating a new account. For accounts in this state, the most important activity is to add tags to the account itself. Then the tagged account can be moved to the next state.
 
@@ -146,8 +146,8 @@ Sure. Sustainable Personal Accounts features following building blocks:
 
 - **Event bus** - This is the default EventBridge bus of the Automation Account. It is the single place to observe the entire system. Subscribing to events is a natural option for the extension and for the customisation of SPA.
 
-- **MoveVanillaAccount**, **SignalAssignedAccount**, **MoveAssignedAccount**, **ExpireReleasedAccounts**, **SignalExpiredAccount** and **MoveExpiredAccount** - Each Lambda function is triggered by some EventBridge rule.
+- **OnVanillaAccount**, **OnAssignedAccount**, **OnPreparedAccount**, **OnReleasedAccounts**, **OnExpiredAccount** and **OnPurgedAccount** - Each Lambda function is triggered by some EventBridge rule.
 
-- **PrepareAccount** and **PurgeAccount** - These templated CodeBuild projects are actually deployed in personal accounts, and started asynchronously, by Lambda functions **SignalAssignedAccount** and **SignalExpiredAccount**.
+- **PrepareAccount** and **PurgeAccount** - These templated CodeBuild projects are actually deployed in personal accounts, and started asynchronously, by Lambda functions **OnAssignedAccount** and **OnExpiredAccount**.
 
 - **Parameter store** - Parameters used by SPA code, including templates for CodeBuild projects, are placed in SSM Parameter Store of the Automation account.

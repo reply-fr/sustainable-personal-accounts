@@ -1,6 +1,6 @@
 # prefix for cloud resources and cloud stack
 #
-environment_identifier: SpaTest
+environment_identifier: SpaDemo
 
 # parameters for resources deployed in the automation account
 #
@@ -18,7 +18,7 @@ automation:
   #
   cockpit_markdown_text: |
     # Sustainable Personal Accounts Dashboard
-    Currently under active development (alpha)
+    Currently under active development (beta)
 
   # this expression defines when accounts are expired
   # Reference:
@@ -27,13 +27,19 @@ automation:
   maintenance_window_expression: "cron(0 18 ? * SAT *)"
 
   # this role is assumed by Lambda functions either to list AWS accounts in the OU,
-  # and to tag AWS accounts
+  # or to tag AWS accounts
   #
   role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
 
   # this role is assumed by Lambda functions to create CodeBuild projects and to start them
   #
   role_name_to_manage_codebuild: 'AWSControlTowerExecution'
+
+  # these e-mail addresses receive messages on alerts
+  #
+  subscribed_email_addresses:
+  - finops_alerts@acme.com
+  - cloud_operations@acme.com
 
   # these tags are used on resources deployed in automation account
   #
@@ -60,34 +66,76 @@ worker:
   purge_buildspec_template_file: "tests/buildspec/purge_account_template.yaml"
 
 
-# this is required to actually modify accounts and create codebuild workers
-# if you comment this out, then organizations and accounts will be read, but not modified
-dry_run: False
-
 # these are organizational units where accounts are managed by the solution
 #
 organizational_units:
 
+  # settings specific to accounts placed in this organizational unit
+  #
   - identifier: 'ou-1234'
     note: 'a container for some accounts'
+
+    # added to every account
+    #
     account_tags:
       CostCenter: 'abc'
       Sponsor: 'Foo Bar'
+
+    # name of the budget created in each account
+    #
     budget_name: 'DataTeamBudget'
+
+    # amount of monthly budget for individual account
+    #
     cost_budget: 500.0
+
+    # passed to Codebuild project for the preparation of an account
+    #
     preparation_variables:
       HELLO: WORLD
+
+    # passed to Codebuild project for the purge of an account
+    #
     purge_variables:
       DRY_RUN: 'TRUE'
 
+    # disable some or all of Codebuild activities
+    #
+    # skipped:
+    # - preparation
+    # - purge
+
+  # settings specific to accounts placed in this organizational unit
+  #
   - identifier: 'ou-5678'
     note: 'another account container'
+
+    # added to every account
+    #
     account_tags:
       CostCenter: 'xyz'
       Sponsor: 'Mister Jones'
+
+    # name of the budget created in each account
+    #
     budget_name: 'DevelopmentTeamBudget'
+
+    # amount of monthly budget for individual account
+    #
     cost_budget: 300
+
+    # passed to Codebuild project for the preparation of an account
+    #
     preparation_variables:
       HELLO: UNIVERSE
+
+    # passed to Codebuild project for the purge of an account
+    #
     purge_variables:
       DRY_RUN: 'FALSE'
+
+    # disable some or all of Codebuild activities
+    #
+    skipped:
+    - preparation
+    - purge

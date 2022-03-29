@@ -18,7 +18,7 @@ phases:
       - |
         cat <<EOF > filter.yaml
         aws_cloudformation_stack:
-        - id: NOT(stack/StackSet-AWSControlTowerBP)
+        - id: NOT((stack/StackSet-AWSControlTowerBP|CDKToolkit))
         aws_dynamodb_global_table:
         aws_dynamodb_table:
         aws_rds_cluster:
@@ -57,7 +57,7 @@ phases:
       - |
         while read REGION
         do
-          echo "Running AWSWEEPER on account $ACCOUNT in region $REGION"
+          echo "Running AWSWEEPER on account $ACCOUNT in region $REGION" >> awsweeper.log
           ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
         done < regions.txt
       - cat awsweeper.log | tail -c 4000 >purge-message.txt

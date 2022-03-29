@@ -5,6 +5,7 @@ env:
     BUDGET_AMOUNT: 500.0
     BUDGET_EMAIL: a@b.com
     BUDGET_NAME: SPA-budget
+    TOPIC_ARN: None
 
 phases:
   install:
@@ -14,6 +15,7 @@ phases:
     - echo $BUDGET_AMOUNT
     - echo $BUDGET_EMAIL
     - echo $BUDGET_NAME
+    - echo $TOPIC_ARN
 
   build:
     commands:
@@ -61,6 +63,10 @@ phases:
             {
               "Address": "${BUDGET_EMAIL}",
               "SubscriptionType": "EMAIL"
+            },
+            {
+              "Address": "${TOPIC_ARN}",
+              "SubscriptionType": "SNS"
             }
           ]
         }
