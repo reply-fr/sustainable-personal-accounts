@@ -46,6 +46,7 @@ def handle_account(account, session=None):
     result = Events.emit('AssignedAccount', account)
     unit = units[details.unit]
     if 'preparation' in unit.get('skipped', []):
+        logging.info("Skipping the purge of the account")
         Account.move(account=account, state=State.RELEASED, session=session)
     else:
         topic_arn = Worker.deploy_topic_for_alerts(account=details)

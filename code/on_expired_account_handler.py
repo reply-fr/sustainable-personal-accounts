@@ -45,6 +45,7 @@ def handle_account(account, session=None):
     result = Events.emit('ExpiredAccount', account)
     unit = units[details.unit]
     if 'purge' in unit.get('skipped', []):
+        logging.info("Skipping the purge of the account")
         Account.move(account=account, state=State.ASSIGNED, session=session)
     else:
         Worker.purge(account=details,
