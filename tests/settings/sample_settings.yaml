@@ -81,29 +81,34 @@ organizational_units:
       CostCenter: 'abc'
       Sponsor: 'Foo Bar'
 
-    # name of the budget created in each account
+    # preparation of assigned account
     #
-    budget_name: 'DataTeamBudget'
+    preparation:
 
-    # amount of monthly budget for individual account
-    #
-    cost_budget: 500.0
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      mode: enabled
 
-    # passed to Codebuild project for the preparation of an account
-    #
-    preparation_variables:
-      HELLO: WORLD
+      # name of the budget created in each account
+      budget_name: 'DataTeamBudget'
 
-    # passed to Codebuild project for the purge of an account
-    #
-    purge_variables:
-      DRY_RUN: 'TRUE'
+      # amount of monthly budget for individual account
+      cost_budget: 500.0
 
-    # disable some or all of Codebuild activities
+      # passed to Codebuild project for the preparation of an account
+      variables:
+        HELLO: WORLD
+
+
+    # purge of expired account
     #
-    # skipped:
-    # - preparation
-    # - purge
+    purge:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      mode: enabled
+
+      # passed to Codebuild project for the purge of an account
+      variables:
+        DRY_RUN: 'TRUE'
 
   # settings specific to accounts placed in this organizational unit
   #
@@ -116,26 +121,31 @@ organizational_units:
       CostCenter: 'xyz'
       Sponsor: 'Mister Jones'
 
-    # name of the budget created in each account
+    # preparation of assigned account
     #
-    budget_name: 'DevelopmentTeamBudget'
+    preparation:
 
-    # amount of monthly budget for individual account
-    #
-    cost_budget: 300
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      mode: disabled
 
-    # passed to Codebuild project for the preparation of an account
-    #
-    preparation_variables:
-      HELLO: UNIVERSE
+      # name of the budget created in each account
+      budget_name: 'DevelopmentTeamBudget'
 
-    # passed to Codebuild project for the purge of an account
-    #
-    purge_variables:
-      DRY_RUN: 'FALSE'
+      # amount of monthly budget for individual account
+      cost_budget: 300
 
-    # disable some or all of Codebuild activities
+      # passed to Codebuild project for the preparation of an account
+      variables:
+        HELLO: UNIVERSE
+
+
+    # purge of expired account
     #
-    skipped:
-    - preparation
-    - purge
+    purge:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      mode: disabled
+
+      # passed to Codebuild project for the purge of an account
+      variables:
+        DRY_RUN: 'FALSE'

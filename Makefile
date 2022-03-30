@@ -103,7 +103,7 @@ shell:
 pre-commit: lint test bandit
 
 lint: venv/bin/activate
-	venv/bin/python -m flake8 --max-complexity 8 --ignore E402,E501,F841,W503 --builtins="toggles" --per-file-ignores="resources/serverless_stack.py:F401" ${CODE_PATH} tests
+	venv/bin/python -m flake8 --max-complexity 8 --ignore E402,E501,F841,W503 --builtins="toggles" --per-file-ignores="resources/serverless_stack.py:F401 tests/conftest.py:F401" ${CODE_PATH} tests
 
 test: venv/bin/activate
 	venv/bin/python -m pytest -ra --durations=0 -m "not slow" tests/

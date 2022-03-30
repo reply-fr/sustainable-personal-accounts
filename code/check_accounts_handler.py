@@ -21,13 +21,13 @@ from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
-from session import get_organizational_units
+from session import get_organizational_units_settings
 
 
 @trap_exception
 def handle_event(event, context, session=None):
     logging.info("Checking personal accounts")
-    units = get_organizational_units(session=session)
+    units = get_organizational_units_settings(session=session)
     for unit in units.keys():
         logging.info(f"Scanning organizational unit '{unit}'")
         logging.debug(units[unit])
@@ -40,31 +40,31 @@ def handle_event(event, context, session=None):
 def handle_account(account, unit=None, session=None):
     item = Account.describe(account, session=session)
     try:
-        validate_tags(account=account, tags=item.tags)
+        validate_tags(item)
         if unit:
-            validate_unit_configuration(item, unit=unit)
+            expected_tags = unit.get("account_tags", {})
+            validate_additional_tags(item, expected_tags=expected_tags)
     except ValueError as error:
         logging.error(error)
 
 
-def validate_tags(account, tags):
-    if 'account:holder' not in tags.keys():
-        raise ValueError(f"Account '{account}' has no tag 'account:holder'")
-    holder = tags['account:holder']
+def validate_tags(item):
+    if 'account:holder' not in item.tags.keys():
+        raise ValueError(f"Account '{item.id}' has no tag 'account:holder'")
+    holder = item.tags['account:holder']
     if not Account.validate_holder(holder):
-        raise ValueError(f"Account '{account}' assigned to '{holder}' has invalid value for tag 'account:holder'")
-    if 'account:state' not in tags.keys():
-        raise ValueError(f"Account '{account}' assigned to '{holder}' has no tag 'account:state'")
-    state = tags['account:state']
+        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value for tag 'account:holder'")
+    if 'account:state' not in item.tags.keys():
+        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has no tag 'account:state'")
+    state = item.tags['account:state']
     if not Account.validate_state(state):
-        raise ValueError(f"Account '{account}' assigned to '{holder}' has invalid value '{state}' for tag 'account:state'")
+        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value '{state}' for tag 'account:state'")
     if state not in [State.RELEASED.value]:
-        logging.warning(f"Account '{account}' assigned to '{holder}' is in transient state '{state}'")
-    logging.info(f"Account '{account}' assigned to '{holder}' is valid")
+        logging.warning(f"Account '{item.id}' assigned to '{holder}' is in transient state '{state}'")
+    logging.info(f"Account '{item.id}' assigned to '{holder}' is valid")
 
 
-def validate_unit_configuration(item, unit):
-    expected_tags = unit.get("account_tags", {})
+def validate_additional_tags(item, expected_tags):
     for key in expected_tags.keys():
         if key not in item.tags.keys():
             logging.warning(f"Account '{item.id}' assigned to '{item.tags['account:holder']}' has no tag '{key}'")

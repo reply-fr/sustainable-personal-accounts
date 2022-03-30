@@ -20,8 +20,8 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import boto3
-from unittest.mock import Mock, patch
-from moto import mock_organizations, mock_sns
+from unittest.mock import patch
+from moto import mock_sns
 import os
 import pytest
 

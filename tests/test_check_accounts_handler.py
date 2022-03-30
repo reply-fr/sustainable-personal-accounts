@@ -22,6 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import json
 from unittest.mock import patch, Mock
 import os
+from types import SimpleNamespace
 
 from code.check_accounts_handler import handle_event, validate_tags
 
@@ -87,32 +88,34 @@ def test_handle_event():
 
 
 def test_validate_tags():
-    valid_tags = {'account:holder': 'a@b.com',
-                  'account:state': 'released'}
-    validate_tags(account='123456789012', tags=valid_tags)
+    valid_tags = SimpleNamespace(id='123456789012',
+                                 tags={'account:holder': 'a@b.com', 'account:state': 'released'})
+    validate_tags(item=valid_tags)
 
 
 def test_validate_tags_on_absent_holder():
-    absent_holder = {'account:state': 'released'}
+    absent_holder = SimpleNamespace(id='123456789012',
+                                    tags={'account:state': 'released'})
     with pytest.raises(ValueError):
-        validate_tags(account='123456789012', tags=absent_holder)
+        validate_tags(item=absent_holder)
 
 
 def test_validate_tags_on_invalid_holder():
-    invalid_holder = {'account:holder': 'a_b.com',
-                      'account:state': 'released'}
+    invalid_holder = SimpleNamespace(id='123456789012',
+                                     tags={'account:holder': 'a_b.com', 'account:state': 'released'})
     with pytest.raises(ValueError):
-        validate_tags(account='123456789012', tags=invalid_holder)
+        validate_tags(item=invalid_holder)
 
 
 def test_validate_tags_on_absent_state():
-    absent_state = {'account:holder': 'a@b.com'}
+    absent_state = SimpleNamespace(id='123456789012',
+                                   tags={'account:holder': 'a@b.com'})
     with pytest.raises(ValueError):
-        validate_tags(account='123456789012', tags=absent_state)
+        validate_tags(item=absent_state)
 
 
 def test_validate_tags_on_invalid_state():
-    invalid_state = {'account:holder': 'a@b.com',
-                     'account:state': '*alien*'}
+    invalid_state = SimpleNamespace(id='123456789012',
+                                    tags={'account:holder': 'a@b.com', 'account:state': '*alien*'})
     with pytest.raises(ValueError):
-        validate_tags(account='123456789012', tags=invalid_state)
+        validate_tags(item=invalid_state)

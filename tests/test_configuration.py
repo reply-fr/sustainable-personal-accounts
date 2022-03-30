@@ -64,9 +64,9 @@ def test_set_default_values(toggles):
 
 
 def test_set_from_settings(toggles):
-    settings = dict(organizational_units=[dict(identifier='ou', budget_cost='500')])
+    settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(cost_budget='500'))])
     Configuration.set_from_settings(settings)
-    assert toggles.organizational_units == {'ou': {'budget_cost': '500'}}
+    assert toggles.organizational_units == {'ou': {'preparation': {'cost_budget': '500'}}}
 
 
 @pytest.mark.slow
@@ -82,26 +82,7 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_tags == {'CostCenter': 'shared'}
     assert toggles.automation_verbosity == 'ERROR'
     assert toggles.environment_identifier == 'SpaDemo'
-    organizational_units = {
-        'ou-1234': {
-            'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-            'budget_name': 'DataTeamBudget',
-            'cost_budget': 500.0,
-            'note': 'a container for some accounts',
-            'preparation_variables': {'HELLO': 'WORLD'},
-            'purge_variables': {'DRY_RUN': 'TRUE'}
-        },
-        'ou-5678': {
-            'account_tags': {'CostCenter': 'xyz', 'Sponsor': 'Mister Jones'},
-            'budget_name': 'DevelopmentTeamBudget',
-            'cost_budget': 300,
-            'note': 'another account container',
-            'preparation_variables': {'HELLO': 'UNIVERSE'},
-            'purge_variables': {'DRY_RUN': 'FALSE'},
-            'skipped': ['preparation', 'purge']
-        },
-    }
-    assert toggles.organizational_units == organizational_units
+    assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
     assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
 
@@ -109,3 +90,56 @@ def test_set_from_yaml(toggles):
 def test_set_from_yaml_invalid(toggles):
     with pytest.raises(AttributeError):
         Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))
+
+
+def test_validate_organizational_unit():
+    ou = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'identifier': 'ou-1234',
+        'note': 'a container for some accounts',
+        'preparation': {
+            'mode': 'enabled',
+            'budget_name': 'DataTeamBudget',
+            'cost_budget': 500.0,
+            'variables': {'HELLO': 'WORLD'}
+        },
+        'purge': {
+            'mode': 'disabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
+    }
+    Configuration.validate_organizational_unit(ou)
+
+
+def test_validate_organizational_unit_on_invalid_keys():
+    ou = {
+        'identifier': 'ou-5678',
+        'account_tags': {'CostCenter': 'xyz', 'Sponsor': 'Mister Jones'},
+        'budget_name': 'DevelopmentTeamBudget',
+        'cost_budget': 300,
+        'note': 'another account container',
+        'preparation_variables': {'HELLO': 'UNIVERSE'},
+        'purge_variables': {'DRY_RUN': 'FALSE'},
+        'skipped': ['preparation', 'purge']
+    }
+    with pytest.raises(AttributeError):
+        Configuration.validate_organizational_unit(ou)
+
+
+def test_validate_organizational_unit_on_missing_identifier():
+    ou = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'note': 'a container for some accounts',
+        'preparation': {
+            'mode': 'enabled',
+            'budget_name': 'DataTeamBudget',
+            'cost_budget': 500.0,
+            'variables': {'HELLO': 'WORLD'}
+        },
+        'purge': {
+            'mode': 'disabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
+    }
+    with pytest.raises(AttributeError):
+        Configuration.validate_organizational_unit(ou)
