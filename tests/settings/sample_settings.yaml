@@ -108,7 +108,8 @@ organizational_units:
 
       # passed to Codebuild project for the purge of an account
       variables:
-        DRY_RUN: 'TRUE'
+        MAXIMUM_AGE: 6M  # '5d', '3M', '1y', etc.
+        PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
 
   # settings specific to accounts placed in this organizational unit
   #
@@ -148,4 +149,5 @@ organizational_units:
 
       # passed to Codebuild project for the purge of an account
       variables:
-        DRY_RUN: 'FALSE'
+        MAXIMUM_AGE: 6M  # '5d', '3M', '1y', etc.
+        PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'

@@ -2,6 +2,7 @@ version: 0.2
 
 env:
   variables:
+    MAXIMUM_AGE: 6M
     PURGE_EMAIL: a@b.com
     PURGE_MESSAGE: SpaPurgeMessage
     PURGE_MODE: --dry-run
@@ -14,6 +15,13 @@ phases:
     commands:
       - echo "Account purge started on $(date)"
       - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+      - |
+        cat <<EOF > regions.txt
+        eu-west-1
+        eu-west-3
+        eu-central-1
+        us-east-1
+        EOF
       # full list of resource types at https://github.com/jckuester/awsweeper#supported-resources
       - |
         cat <<EOF > filter.yaml
@@ -48,17 +56,53 @@ phases:
         aws_sqs_queue:
         EOF
       - |
-        cat <<EOF > regions.txt
-        eu-west-1
-        eu-west-3
-        eu-central-1
-        us-east-1
+        while read REGION
+        do
+          echo "Running AWSWEEPER on account $ACCOUNT in region $REGION" >> awsweeper.log
+          ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
+        done < regions.txt
+      - |
+        cat <<EOF > filter.yaml
+        aws_cloudformation_stack:
+        - id: NOT((stack/StackSet-AWSControlTowerBP|CDKToolkit))
+          created:
+            before: ${MAXIMUM_AGE}
+        aws_cloudwatch_log_group:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_ami:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_ebs_snapshot:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_ebs_volume:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_ec2_fleet:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_instance:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_efs_file_system:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_fsx_lustre_file_system:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_fsx_windows_file_system:
+        - created:
+            before: ${MAXIMUM_AGE}
+        aws_db_instance:
+        - created:
+            before: ${MAXIMUM_AGE}
         EOF
       - |
         while read REGION
         do
           echo "Running AWSWEEPER on account $ACCOUNT in region $REGION" >> awsweeper.log
-          ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
+          ./bin/awsweeper --force --region ${REGION} filter.yaml | tee -a awsweeper.log
         done < regions.txt
       - cat awsweeper.log | tail -c 4000 >purge-message.txt
       - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
