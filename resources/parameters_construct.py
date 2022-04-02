@@ -39,21 +39,23 @@ class Parameters(Construct):
             parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER,
             tier=ParameterTier.STANDARD)
 
+        string_value = self.get_buildspec_for_preparation()
         StringParameter(
             self, "PreparationTemplate",
-            string_value=self.get_buildspec_for_preparation(),
+            string_value=string_value,
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for account preparation",
             parameter_name=toggles.environment_identifier + self.PREPARATION_BUILDSPEC_PARAMETER,
-            tier=ParameterTier.STANDARD)
+            tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
+        string_value = self.get_buildspec_for_purge()
         StringParameter(
             self, "PurgeTemplate",
-            string_value=self.get_buildspec_for_purge(),
+            string_value=string_value,
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for the purge of accounts",
             parameter_name=toggles.environment_identifier + self.PURGE_BUILDSPEC_PARAMETER,
-            tier=ParameterTier.ADVANCED)  # up to 8k template
+            tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
     def get_buildspec_for_preparation(self):
         logging.debug("Getting buildspec for account preparation")
