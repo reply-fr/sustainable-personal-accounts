@@ -102,7 +102,7 @@ phases:
         while read REGION
         do
           echo "Running AWSWEEPER on account $ACCOUNT in region $REGION" >> awsweeper.log
-          ./bin/awsweeper --force --region ${REGION} filter.yaml | tee -a awsweeper.log
+          ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
         done < regions.txt
       - cat awsweeper.log | tail -c 4000 >purge-message.txt
       - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
