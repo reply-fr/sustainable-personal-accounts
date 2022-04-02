@@ -94,7 +94,8 @@ phases:
           created:
             before: ${MAXIMUM_AGE}
         aws_cloudwatch_log_group:
-        - created:
+        - id: NOT((/aws/lambda/aws-controltower|aws-controltower/CloudTrailLogs))
+          created:
             before: ${MAXIMUM_AGE}
         aws_ami:
         - created:
