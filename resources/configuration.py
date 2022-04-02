@@ -156,13 +156,13 @@ class Configuration:
     @classmethod
     def validate_preparation_parameters(cls, preparation, ou):
         for label in preparation.keys():
-            if label not in ['budget_name', 'cost_budget', 'mode', 'variables']:
+            if label not in ['budget_name', 'cost_budget', 'feature', 'variables']:
                 raise AttributeError(f"Unexpected preparation parameter '{label}' for organizational unit '{ou}'")
 
     @classmethod
     def validate_purge_parameters(cls, purge, ou):
         for label in purge.keys():
-            if label not in ['mode', 'variables']:
+            if label not in ['feature', 'variables']:
                 raise AttributeError(f"Unexpected purge parameter '{label}' for organizational unit '{ou}'")
 
     @staticmethod

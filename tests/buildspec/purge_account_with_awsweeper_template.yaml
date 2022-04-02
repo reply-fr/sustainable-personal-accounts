@@ -27,7 +27,7 @@ phases:
         cat <<EOF > filter.yaml
         aws_cloudformation_stack:
         - id: NOT((stack/StackSet-AWSControlTowerBP|CDKToolkit))
-          tagged:false
+          tagged: false
         aws_dynamodb_global_table:
         - tagged: false
         aws_dynamodb_table:

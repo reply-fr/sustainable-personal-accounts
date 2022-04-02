@@ -44,7 +44,7 @@ def handle_account(account, session=None):
         raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
     result = Events.emit('ExpiredAccount', account)
     settings = all_settings[details.unit]
-    if 'purge' not in settings.keys() or settings['purge'].get('mode') != 'enabled':
+    if 'purge' not in settings.keys() or settings['purge'].get('feature') != 'enabled':
         logging.info("Skipping the purge of the account")
         Account.move(account=account, state=State.ASSIGNED, session=session)
     else:

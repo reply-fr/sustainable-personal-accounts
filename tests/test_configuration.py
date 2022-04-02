@@ -98,13 +98,13 @@ def test_validate_organizational_unit():
         'identifier': 'ou-1234',
         'note': 'a container for some accounts',
         'preparation': {
-            'mode': 'enabled',
+            'feature': 'enabled',
             'budget_name': 'DataTeamBudget',
             'cost_budget': 500.0,
             'variables': {'HELLO': 'WORLD'}
         },
         'purge': {
-            'mode': 'disabled',
+            'feature': 'disabled',
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }
@@ -131,13 +131,13 @@ def test_validate_organizational_unit_on_missing_identifier():
         'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
         'note': 'a container for some accounts',
         'preparation': {
-            'mode': 'enabled',
+            'feature': 'enabled',
             'budget_name': 'DataTeamBudget',
             'cost_budget': 500.0,
             'variables': {'HELLO': 'WORLD'}
         },
         'purge': {
-            'mode': 'disabled',
+            'feature': 'disabled',
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }

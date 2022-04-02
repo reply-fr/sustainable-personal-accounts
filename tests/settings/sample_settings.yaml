@@ -87,7 +87,7 @@ organizational_units:
     preparation:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
-      mode: enabled
+      feature: enabled
 
       # name of the budget created in each account
       budget_name: 'DataTeamBudget'
@@ -105,7 +105,7 @@ organizational_units:
     purge:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
-      mode: enabled
+      feature: enabled
 
       # passed to Codebuild project for the purge of an account
       variables:
@@ -129,7 +129,7 @@ organizational_units:
     preparation:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
-      mode: disabled
+      feature: disabled
 
       # name of the budget created in each account
       budget_name: 'DevelopmentTeamBudget'
@@ -147,7 +147,7 @@ organizational_units:
     purge:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
-      mode: disabled
+      feature: disabled
 
       # passed to Codebuild project for the purge of an account
       variables:

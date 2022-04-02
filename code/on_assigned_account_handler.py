@@ -45,7 +45,7 @@ def handle_account(account, session=None):
         raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
     result = Events.emit('AssignedAccount', account)
     settings = all_settings[details.unit]
-    if 'preparation' not in settings.keys() or settings['preparation'].get('mode') != 'enabled':
+    if 'preparation' not in settings.keys() or settings['preparation'].get('feature') != 'enabled':
         logging.info("Skipping the preparation of the account")
         Account.move(account=account, state=State.RELEASED, session=session)
     else:
