@@ -64,9 +64,9 @@ def test_set_default_values(toggles):
 
 
 def test_set_from_settings(toggles):
-    settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(cost_budget='500'))])
+    settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
     Configuration.set_from_settings(settings)
-    assert toggles.organizational_units == {'ou': {'preparation': {'cost_budget': '500'}}}
+    assert toggles.organizational_units == {'ou': {'preparation': {'variables': {'BUDGET_AMOUNT': '500'}}}}
 
 
 @pytest.mark.slow
@@ -84,7 +84,7 @@ def test_set_from_yaml(toggles):
     assert toggles.environment_identifier == 'SpaDemo'
     assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
     assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
-    assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
+    assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_with_awsweeper_template.yaml'
 
 
 def test_set_from_yaml_invalid(toggles):
@@ -99,8 +99,6 @@ def test_validate_organizational_unit():
         'note': 'a container for some accounts',
         'preparation': {
             'feature': 'enabled',
-            'budget_name': 'DataTeamBudget',
-            'cost_budget': 500.0,
             'variables': {'HELLO': 'WORLD'}
         },
         'purge': {
@@ -132,8 +130,6 @@ def test_validate_organizational_unit_on_missing_identifier():
         'note': 'a container for some accounts',
         'preparation': {
             'feature': 'enabled',
-            'budget_name': 'DataTeamBudget',
-            'cost_budget': 500.0,
             'variables': {'HELLO': 'WORLD'}
         },
         'purge': {

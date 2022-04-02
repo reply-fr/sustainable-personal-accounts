@@ -50,7 +50,7 @@ def test_deploy_project(session):
 
 def test_get_preparation_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    settings = {'preparation': {'cost_budget': '500.0'}}
+    settings = dict(preparation=dict(variables=dict(BUDGET_AMOUNT='500.0')))
     topic_arn = 'arn:aws'
     variables = Worker.get_preparation_variables(account=account, settings=settings, topic_arn=topic_arn)
     assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com', 'TOPIC_ARN': 'arn:aws'}
@@ -58,9 +58,9 @@ def test_get_preparation_variables():
 
 def test_get_purge_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    settings = {'preparation': {'cost_budget': '300'}}
+    settings = dict(purge=dict(variables=dict(MAXIMUM_AGE='1M')))
     variables = Worker.get_purge_variables(account=account, settings=settings)
-    assert variables == {'PURGE_EMAIL': 'a@b.com'}
+    assert variables == {'MAXIMUM_AGE': '1M', 'PURGE_EMAIL': 'a@b.com'}
 
 
 @mock_sns

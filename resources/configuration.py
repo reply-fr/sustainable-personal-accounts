@@ -156,7 +156,7 @@ class Configuration:
     @classmethod
     def validate_preparation_parameters(cls, preparation, ou):
         for label in preparation.keys():
-            if label not in ['budget_name', 'cost_budget', 'feature', 'variables']:
+            if label not in ['feature', 'variables']:
                 raise AttributeError(f"Unexpected preparation parameter '{label}' for organizational unit '{ou}'")
 
     @classmethod

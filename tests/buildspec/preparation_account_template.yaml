@@ -2,6 +2,7 @@ version: 0.2
 
 env:
   variables:
+    ALERT_THRESHOLD: 80 # percentage of budget
     BUDGET_AMOUNT: 500.0
     BUDGET_EMAIL: a@b.com
     BUDGET_NAME: SPA-budget
@@ -12,6 +13,7 @@ phases:
     commands:
     - aws --version
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+    - echo $ALERT_THRESHOLD
     - echo $BUDGET_AMOUNT
     - echo $BUDGET_EMAIL
     - echo $BUDGET_NAME
@@ -56,7 +58,7 @@ phases:
           "Notification": {
             "ComparisonOperator": "GREATER_THAN",
             "NotificationType": "ACTUAL",
-            "Threshold": 80,
+            "Threshold": ${ALERT_THRESHOLD},
             "ThresholdType": "PERCENTAGE"
           },
           "Subscribers": [

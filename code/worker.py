@@ -258,7 +258,7 @@ class Worker:
 
     @staticmethod
     def get_preparation_variables(account, settings, topic_arn) -> dict:
-        variables = dict(BUDGET_AMOUNT=str(settings.get('preparation', {}).get('cost_budget', 200)),
+        variables = dict(BUDGET_AMOUNT=200,
                          BUDGET_EMAIL=account.email)
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
