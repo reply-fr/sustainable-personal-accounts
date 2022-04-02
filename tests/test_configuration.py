@@ -48,7 +48,7 @@ def test_expand_text(toggles):
 @patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1"))
 def test_initialize():
 
-    Configuration.initialize(stream='tests/settings/sample_settings.yaml')
+    Configuration.initialize(stream='tests/settings/settings.yaml')
     assert builtins.toggles.aws_account is not None
     assert builtins.toggles.aws_environment is not None
     assert builtins.toggles.aws_region is not None
@@ -71,7 +71,7 @@ def test_set_from_settings(toggles):
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
-    Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
+    Configuration.set_from_yaml('tests/settings/settings.yaml')
     assert toggles.automation_account_id == '123456789012'
     assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (beta)'
     assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
