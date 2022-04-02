@@ -18,7 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from constructs import Construct
 from aws_cdk import Duration, Stack, Tags
 from aws_cdk.aws_iam import Effect, PolicyStatement
-from aws_cdk.aws_lambda import AssetCode, Runtime, Tracing
+from aws_cdk.aws_lambda import Architecture, AssetCode, Runtime, Tracing
 from aws_cdk.aws_logs import RetentionDays
 
 from .check_accounts_construct import CheckAccounts
@@ -87,6 +87,7 @@ class ServerlessStack(Stack):
 
     def get_parameters(self, environment) -> dict:  # passed to every lambda functions
         parameters = dict(
+            architecture=Architecture.ARM_64,
             code=AssetCode("code"),
             environment=environment,
             log_retention=RetentionDays.THREE_MONTHS,
