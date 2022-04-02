@@ -80,6 +80,7 @@ organizational_units:
     account_tags:
       CostCenter: 'abc'
       Sponsor: 'Foo Bar'
+      "account:owner": foo.bar@acme.com
 
     # preparation of assigned account
     #
@@ -121,6 +122,7 @@ organizational_units:
     account_tags:
       CostCenter: 'xyz'
       Sponsor: 'Mister Jones'
+      "account:owner": jones@acme.com
 
     # preparation of assigned account
     #
