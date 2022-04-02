@@ -27,33 +27,59 @@ phases:
         cat <<EOF > filter.yaml
         aws_cloudformation_stack:
         - id: NOT((stack/StackSet-AWSControlTowerBP|CDKToolkit))
+          tagged:false
         aws_dynamodb_global_table:
+        - tagged: false
         aws_dynamodb_table:
+        - tagged: false
         aws_rds_cluster:
+        - tagged: false
         aws_rds_global_cluster:
+        - tagged: false
         aws_db_instance:  # rds
+        - tagged: false
         aws_db_snapshot:
+        - tagged: false
         aws_ebs_snapshot:
+        - tagged: false
         aws_ebs_volume:
+        - tagged: false
         aws_ecs_cluster:
+        - tagged: false
         aws_efs_file_system:
+        - tagged: false
         aws_eip:
+        - tagged: false
         aws_eks_cluster:
+        - tagged: false
         aws_fsx_lustre_file_system:
+        - tagged: false
         aws_fsx_windows_file_system:
+        - tagged: false
         aws_instance:  # ec2
+        - tagged: false
         aws_iam_group:  # forbidden!
+        - tagged: false
         aws_iam_user:  # forbidden!
+        - tagged: false
         aws_kinesis_stream:
+        - tagged: false
         aws_lambda_function:
         - id: NOT(aws-controltower)
+          tagged: false
         aws_msk_cluster:
+        - tagged: false
         aws_redshift_cluster:
+        - tagged: false
         aws_route53_zone:
+        - tagged: false
         aws_sfn_state_machine:
+        - tagged: false
         aws_sns_topic:
         - id: NOT(aws-controltower)
+          tagged: false
         aws_sqs_queue:
+        - tagged: false
         EOF
       - |
         while read REGION
