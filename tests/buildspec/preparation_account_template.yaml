@@ -11,7 +11,6 @@ env:
 phases:
   install:
     commands:
-    - aws --version
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
     - echo $ALERT_THRESHOLD
     - echo $BUDGET_AMOUNT
