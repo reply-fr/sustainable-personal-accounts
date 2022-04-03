@@ -73,5 +73,14 @@ phases:
         }
       ]
       EOF
-    - aws budgets delete-budget --account-id $ACCOUNT --budget-name $BUDGET_NAME || true
-    - aws budgets create-budget --account-id $ACCOUNT --budget file://budget.json --notifications-with-subscribers file://notifications-with-subscribers.json
+    - CURRENT_AMOUNT=$(aws budgets describe-budget --account-id $ACCOUNT --budget-name $BUDGET_NAME --query 'Budget.BudgetLimit.Amount' --output text) || true
+    - |
+      if [ -z "$CURRENT_AMOUNT" ]; then
+        echo "Creating new budget"
+        aws budgets create-budget --account-id $ACCOUNT --budget file://budget.json --notifications-with-subscribers file://notifications-with-subscribers.json
+      elif [ "$CURRENT_AMOUNT" != "$BUDGET_AMOUNT" ]; then
+        echo "Updating budget"
+        aws budgets update-budget --account-id $ACCOUNT --new-budget file://budget.json
+      else
+        echo "No budget modification"
+      fi
