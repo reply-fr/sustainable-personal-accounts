@@ -64,7 +64,7 @@ class Worker:
     def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
         session = session or Session()
         client = session.client('codebuild')
-        environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
+        environment_variables = [dict(name=k, value=str(variables[k]), type="PLAINTEXT") for k in variables.keys()]
         retries = 0
         while retries < 5:  # we may have to wait for IAM role to be really available
             logging.debug("Deploying Codebuild project")
