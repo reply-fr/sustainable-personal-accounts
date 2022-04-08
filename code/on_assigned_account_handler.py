@@ -27,7 +27,7 @@ from boto3.session import Session
 
 from account import Account, State
 from events import Events
-from session import get_organizational_units
+from session import get_organizational_units_settings
 from worker import Worker
 
 
@@ -39,19 +39,20 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    units = get_organizational_units(session=session)
+    all_settings = get_organizational_units_settings(session=session)
     details = Account.describe(account, session=session)
-    if details.unit not in units.keys():
+    if details.unit not in all_settings.keys():
         raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
     result = Events.emit('AssignedAccount', account)
-    unit = units[details.unit]
-    if 'preparation' in unit.get('skipped', []):
+    settings = all_settings[details.unit]
+    if 'preparation' not in settings.keys() or settings['preparation'].get('feature') != 'enabled':
+        logging.info("Skipping the preparation of the account")
         Account.move(account=account, state=State.RELEASED, session=session)
     else:
         topic_arn = Worker.deploy_topic_for_alerts(account=details)
         subscribe_queue_to_topic(topic_arn=topic_arn, queue_arn=get_queue_arn(), session=session)
         Worker.prepare(account=details,
-                       organizational_units=units,
+                       settings=settings,
                        event_bus_arn=os.environ['EVENT_BUS_ARN'],
                        topic_arn=topic_arn,
                        buildspec=get_buildspec(session=session),

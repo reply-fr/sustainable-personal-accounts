@@ -50,17 +50,17 @@ def test_deploy_project(session):
 
 def test_get_preparation_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
+    settings = dict(preparation=dict(variables=dict(BUDGET_AMOUNT='500.0')))
     topic_arn = 'arn:aws'
-    variables = Worker.get_preparation_variables(account=account, organizational_units=organizational_units, topic_arn=topic_arn)
+    variables = Worker.get_preparation_variables(account=account, settings=settings, topic_arn=topic_arn)
     assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com', 'TOPIC_ARN': 'arn:aws'}
 
 
 def test_get_purge_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    organizational_units = {'ou-1234': {'cost_budget': '500.0'}, 'ou-5678': {'cost_budget': '300'}}
-    variables = Worker.get_purge_variables(account=account, organizational_units=organizational_units)
-    assert variables == {'PURGE_EMAIL': 'a@b.com'}
+    settings = dict(purge=dict(variables=dict(MAXIMUM_AGE='1M')))
+    variables = Worker.get_purge_variables(account=account, settings=settings)
+    assert variables == {'MAXIMUM_AGE': '1M', 'PURGE_EMAIL': 'a@b.com'}
 
 
 @mock_sns
@@ -82,9 +82,9 @@ def test_grant_publishing_from_budgets():
 @patch.dict(os.environ, dict(AUTOMATION_ACCOUNT="123456789012"))
 def test_prepare(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    Worker.prepare(account=account, organizational_units={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
+    Worker.prepare(account=account, settings={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
 
 
 def test_purge(session):
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    Worker.purge(account=account, organizational_units={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)
+    Worker.purge(account=account, settings={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)

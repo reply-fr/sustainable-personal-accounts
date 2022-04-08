@@ -64,7 +64,7 @@ class Worker:
     def deploy_project(cls, name, description, buildspec, role, variables={}, session=None):
         session = session or Session()
         client = session.client('codebuild')
-        environment_variables = [dict(name=k, value=variables[k], type="PLAINTEXT") for k in variables.keys()]
+        environment_variables = [dict(name=k, value=str(variables[k]), type="PLAINTEXT") for k in variables.keys()]
         retries = 0
         while retries < 5:  # we may have to wait for IAM role to be really available
             logging.debug("Deploying Codebuild project")
@@ -257,26 +257,24 @@ class Worker:
                                session=session)
 
     @staticmethod
-    def get_preparation_variables(account, organizational_units, topic_arn) -> dict:
-        configuration = organizational_units.get(account.unit, {})
-        variables = dict(BUDGET_AMOUNT=str(configuration.get('cost_budget', 200)),
+    def get_preparation_variables(account, settings, topic_arn) -> dict:
+        variables = dict(BUDGET_AMOUNT=200,
                          BUDGET_EMAIL=account.email)
-        variables.update(configuration.get('preparation_variables', {}))
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
         if topic_arn:
             variables['TOPIC_ARN'] = topic_arn
+        variables.update(settings.get('preparation', {}).get('variables', {}))
         return variables
 
     @staticmethod
-    def get_purge_variables(account, organizational_units) -> dict:
-        configuration = organizational_units.get(account.unit, {})
+    def get_purge_variables(account, settings) -> dict:
         variables = dict(PURGE_EMAIL=account.email)
-        variables.update(configuration.get('purge_variables', {}))
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
         if value := os.environ.get('TOPIC_ARN'):
             variables['TOPIC_ARN'] = value
+        variables.update(settings.get('purge', {}).get('variables', {}))
         return variables
 
     @classmethod
@@ -323,25 +321,25 @@ class Worker:
         return json.dumps(policy)
 
     @classmethod
-    def prepare(cls, account, organizational_units, buildspec, event_bus_arn, topic_arn, session=None):
+    def prepare(cls, account, settings, buildspec, event_bus_arn, topic_arn, session=None):
         session = session or cls.get_session(account.id)
 
         logging.info(f"Preparing account '{account.id}'...")
         logging.debug(f"account: {account.__dict__}")
-        logging.debug(f"organizational_units: {organizational_units}")
+        logging.debug(f"settings: {settings}")
         cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_preparation_variables(account, organizational_units, topic_arn),
+                           variables=cls.get_preparation_variables(account, settings, topic_arn),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
         logging.info(f"Account '{account.id}' is being prepared")
 
     @classmethod
-    def purge(cls, account, organizational_units, buildspec, event_bus_arn, session=None):
+    def purge(cls, account, settings, buildspec, event_bus_arn, session=None):
         session = session or cls.get_session(account.id)
 
         logging.info(f"Purging account '{account.id}'...")
@@ -350,7 +348,7 @@ class Worker:
                            description="This project purges an AWS account of cloud resources",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_purge_variables(account, organizational_units),
+                           variables=cls.get_purge_variables(account, settings),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
@@ -360,7 +358,7 @@ class Worker:
     def run_project(cls, name, session=None):
         session = session or Session()
         client = session.client('codebuild')
-        logging.info(f"Starting project build {name}")
+        logging.info(f"Starting project build '{name}'")
         result = client.start_build(projectName=name)
         logging.debug(result.get('build'))
         logging.debug("Done")

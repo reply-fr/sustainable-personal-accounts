@@ -93,7 +93,7 @@ def test_handle_codebuild_event_on_unexpected_project(session):
                                            project="SampleProject",
                                            status="SUCCEEDED"))
     result = handle_codebuild_event(event=event, context=None, session=session)
-    assert result == "[DEBUG] Ignored project 'SampleProject'"
+    assert result == "[DEBUG] Ignoring project 'SampleProject'"
 
 
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
@@ -103,7 +103,7 @@ def test_handle_codebuild_event_on_unexpected_status(session):
                                            project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                                            status="FAILED"))
     result = handle_codebuild_event(event=event, context=None, session=session)
-    assert result == "[DEBUG] Ignored status 'FAILED'"
+    assert result == "[DEBUG] Ignoring status 'FAILED'"
 
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",

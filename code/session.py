@@ -23,7 +23,7 @@ from boto3.session import Session
 import botocore
 
 
-def get_organizational_units(session=None) -> dict:
+def get_organizational_units_settings(session=None) -> dict:
     session = session or Session()
     item = session.client('ssm').get_parameter(Name=os.environ['ORGANIZATIONAL_UNITS_PARAMETER'])
     return json.loads(item['Parameter']['Value'])

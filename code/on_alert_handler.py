@@ -24,8 +24,20 @@ from boto3.session import Session
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from account import Account
+from events import Events
 
-MESSAGE_TEMPLATE = """
+
+CODEBUILD_TEMPLATE = """
+You will find below details on failing CodeBuild project ran on account '{account}':
+
+- account: {account}
+- project: {project}
+- status: {status}
+"""
+
+
+NOTIFICATION_TEMPLATE = """
 You will find below a copy of the alert that has been sent automatically to the holder of account '{account_id}':
 
 ----
@@ -35,6 +47,18 @@ You will find below a copy of the alert that has been sent automatically to the 
 
 
 SUBJECT_TEMPLATE = "Alert on account '{account_id}'"
+
+
+@trap_exception
+def handle_codebuild_event(event, context, session=None):
+    logging.info("Receiving failures from CodeBuild")
+    logging.debug(event)
+    input = Events.decode_codebuild_event(event)
+    label = get_account_label(account_id=input.account, session=session)
+    notification = dict(Message=get_codebuild_message(account=label, project=input.project, status=input.status),
+                        Subject=get_subject(account_id=input.account))
+    publish_notification(notification=notification, session=session)
+    return '[OK]'
 
 
 @trap_exception
@@ -55,7 +79,7 @@ def handle_record(record, session=None):
 
 
 def handle_sqs_record(record, session=None):
-    logging.info("Processing one record")
+    logging.debug("Processing one record")
     logging.debug(record)
     try:
         body = json.loads(record['body'])
@@ -66,15 +90,16 @@ def handle_sqs_record(record, session=None):
 
 
 def relay_notification(account_id, message, session=None):
-    notification = dict(TopicArn=os.environ['TOPIC_ARN'],
-                        Message=get_message(account_id=account_id, message=message),
+    logging.debug("Relaying alert notification")
+    label = get_account_label(account_id=account_id, session=session)
+    notification = dict(Message=get_notification_message(account_id=label, message=message),
                         Subject=get_subject(account_id=account_id))
     publish_notification(notification=notification, session=session)
 
 
 def relay_message(message, session=None):
-    notification = dict(TopicArn=os.environ['TOPIC_ARN'],
-                        Message=message,
+    logging.debug("Relaying message")
+    notification = dict(Message=message,
                         Subject="Alert message")
     publish_notification(notification=notification, session=session)
 
@@ -82,11 +107,20 @@ def relay_message(message, session=None):
 def publish_notification(notification, session=None):
     logging.info(f"Publishing notification: {notification}")
     session = session or Session()
-    session.client('sns').publish(**notification)
+    session.client('sns').publish(TopicArn=os.environ['TOPIC_ARN'], **notification)
 
 
-def get_message(account_id, message) -> str:
-    return MESSAGE_TEMPLATE.format(account_id=account_id, message=message).strip()
+def get_account_label(account_id, session=None) -> str:
+    account = Account.describe(account_id, session=session)
+    return f"{account.id} ({account.email})"
+
+
+def get_codebuild_message(account, project, status) -> str:
+    return CODEBUILD_TEMPLATE.format(account=account, project=project, status=status).strip()
+
+
+def get_notification_message(account_id, message) -> str:
+    return NOTIFICATION_TEMPLATE.format(account_id=account_id, message=message).strip()
 
 
 def get_subject(account_id) -> str:

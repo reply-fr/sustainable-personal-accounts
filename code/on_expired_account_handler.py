@@ -26,7 +26,7 @@ from boto3.session import Session
 
 from account import Account, State
 from events import Events
-from session import get_organizational_units
+from session import get_organizational_units_settings
 from worker import Worker
 
 
@@ -38,17 +38,18 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    units = get_organizational_units(session=session)
+    all_settings = get_organizational_units_settings(session=session)
     details = Account.describe(account, session=session)
-    if details.unit not in units.keys():
+    if details.unit not in all_settings.keys():
         raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
     result = Events.emit('ExpiredAccount', account)
-    unit = units[details.unit]
-    if 'purge' in unit.get('skipped', []):
+    settings = all_settings[details.unit]
+    if 'purge' not in settings.keys() or settings['purge'].get('feature') != 'enabled':
+        logging.info("Skipping the purge of the account")
         Account.move(account=account, state=State.ASSIGNED, session=session)
     else:
         Worker.purge(account=details,
-                     organizational_units=units,
+                     settings=settings,
                      event_bus_arn=os.environ['EVENT_BUS_ARN'],
                      buildspec=get_buildspec(session=session),
                      session=session)

@@ -178,50 +178,10 @@ def test_list():
         next(iterator)
 
 
-def test_describe():
-
-    mock = Mock()
-
-    attributes = {
-        'Account': {
-            'Id': '345678901234',
-            'Arn': 'arn:aws:some-arn',
-            'Email': 'a@b.com',
-            'Name': 'account-three',
-            'Status': 'ACTIVE',
-            'JoinedMethod': 'CREATED',
-            'JoinedTimestamp': '20150101'
-        }
-    }
-    mock.client.return_value.describe_account.return_value = attributes
-
-    tags = {
-        'Tags': [
-            {
-                'Key': 'account:holder',
-                'Value': 'a@b.com'
-            },
-
-            {
-                'Key': 'account:state',
-                'Value': 'vanilla'
-            }
-        ]
-    }
-    mock.client.return_value.list_tags_for_resource.return_value = tags
-
-    parents = {
-        'Parents': [
-            {
-                'Id': 'ou-1234',
-                'Type': 'ORGANIZATIONAL_UNIT'
-            },
-        ]
-    }
-    mock.client.return_value.list_parents.return_value = parents
+def test_describe(account_describe_mock):
 
     item = Account.describe(id='123456789012',
-                            session=mock)
+                            session=account_describe_mock)
     assert item.id == '123456789012'
     assert item.arn == 'arn:aws:some-arn'
     assert item.email == 'a@b.com'

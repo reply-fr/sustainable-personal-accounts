@@ -88,7 +88,7 @@ __We influence corporate culture with recycling__ - Maintenance windows enforce 
 __We scale with automated guardrails and with insourced blueprints__
 
 ---
-![bg left 55%](./media/state-machine-vertical.svg)
+![bg left 80%](./media/state-machine-vertical.png)
 
 ## State Machine
 
@@ -149,6 +149,15 @@ section {
 }
 </style>
 ![bg 80%](./media/budget-alarm-message.png)
+
+---
+<!-- _paginate: false -->
+<style scoped>
+section {
+  background: orange;
+}
+</style>
+![bg 80%](./media/budget-administrator-message.png)
 
 ---
 <!-- _paginate: false -->

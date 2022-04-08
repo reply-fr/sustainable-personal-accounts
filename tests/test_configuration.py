@@ -48,7 +48,7 @@ def test_expand_text(toggles):
 @patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1"))
 def test_initialize():
 
-    Configuration.initialize(stream='tests/settings/sample_settings.yaml')
+    Configuration.initialize(stream='tests/settings/settings.yaml')
     assert builtins.toggles.aws_account is not None
     assert builtins.toggles.aws_environment is not None
     assert builtins.toggles.aws_region is not None
@@ -64,14 +64,14 @@ def test_set_default_values(toggles):
 
 
 def test_set_from_settings(toggles):
-    settings = dict(organizational_units=[dict(identifier='ou', budget_cost='500')])
+    settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
     Configuration.set_from_settings(settings)
-    assert toggles.organizational_units == {'ou': {'budget_cost': '500'}}
+    assert toggles.organizational_units == {'ou': {'preparation': {'variables': {'BUDGET_AMOUNT': '500'}}}}
 
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
-    Configuration.set_from_yaml('tests/settings/sample_settings.yaml')
+    Configuration.set_from_yaml('tests/settings/settings.yaml')
     assert toggles.automation_account_id == '123456789012'
     assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (beta)'
     assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
@@ -82,30 +82,60 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_tags == {'CostCenter': 'shared'}
     assert toggles.automation_verbosity == 'ERROR'
     assert toggles.environment_identifier == 'SpaDemo'
-    organizational_units = {
-        'ou-1234': {
-            'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-            'budget_name': 'DataTeamBudget',
-            'cost_budget': 500.0,
-            'note': 'a container for some accounts',
-            'preparation_variables': {'HELLO': 'WORLD'},
-            'purge_variables': {'DRY_RUN': 'TRUE'}
-        },
-        'ou-5678': {
-            'account_tags': {'CostCenter': 'xyz', 'Sponsor': 'Mister Jones'},
-            'budget_name': 'DevelopmentTeamBudget',
-            'cost_budget': 300,
-            'note': 'another account container',
-            'preparation_variables': {'HELLO': 'UNIVERSE'},
-            'purge_variables': {'DRY_RUN': 'FALSE'},
-            'skipped': ['preparation', 'purge']
-        },
-    }
-    assert toggles.organizational_units == organizational_units
+    assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
     assert toggles.worker_preparation_buildspec_template_file == 'tests/buildspec/preparation_account_template.yaml'
-    assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_template.yaml'
+    assert toggles.worker_purge_buildspec_template_file == 'tests/buildspec/purge_account_with_awsweeper_template.yaml'
 
 
 def test_set_from_yaml_invalid(toggles):
     with pytest.raises(AttributeError):
         Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))
+
+
+def test_validate_organizational_unit():
+    ou = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'identifier': 'ou-1234',
+        'note': 'a container for some accounts',
+        'preparation': {
+            'feature': 'enabled',
+            'variables': {'HELLO': 'WORLD'}
+        },
+        'purge': {
+            'feature': 'disabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
+    }
+    Configuration.validate_organizational_unit(ou)
+
+
+def test_validate_organizational_unit_on_invalid_keys():
+    ou = {
+        'identifier': 'ou-5678',
+        'account_tags': {'CostCenter': 'xyz', 'Sponsor': 'Mister Jones'},
+        'budget_name': 'DevelopmentTeamBudget',
+        'cost_budget': 300,
+        'note': 'another account container',
+        'preparation_variables': {'HELLO': 'UNIVERSE'},
+        'purge_variables': {'DRY_RUN': 'FALSE'},
+        'skipped': ['preparation', 'purge']
+    }
+    with pytest.raises(AttributeError):
+        Configuration.validate_organizational_unit(ou)
+
+
+def test_validate_organizational_unit_on_missing_identifier():
+    ou = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'note': 'a container for some accounts',
+        'preparation': {
+            'feature': 'enabled',
+            'variables': {'HELLO': 'WORLD'}
+        },
+        'purge': {
+            'feature': 'disabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
+    }
+    with pytest.raises(AttributeError):
+        Configuration.validate_organizational_unit(ou)

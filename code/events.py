@@ -72,11 +72,9 @@ class Events:
         decoded.project = event['detail']['project-name']
         if match and match != decoded.project:
             logging.debug(f"Expecting project name '{match}'")
-            raise ValueError(f"Ignored project '{decoded.project}'")
+            raise ValueError(f"Ignoring project '{decoded.project}'")
 
         decoded.status = event['detail']['build-status']
-        if decoded.status != 'SUCCEEDED':
-            raise ValueError(f"Ignored status '{decoded.status}'")
 
         return decoded
 

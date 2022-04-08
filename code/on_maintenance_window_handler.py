@@ -21,14 +21,14 @@ from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
-from session import get_organizational_units
+from session import get_organizational_units_settings
 
 
 @trap_exception
 def handle_schedule_event(event, context, session=None):
     logging.info("Expiring personal accounts")
-    units = get_organizational_units(session=session)
-    for unit in units.keys():
+    all_settings = get_organizational_units_settings(session=session)
+    for unit in all_settings.keys():
         logging.info(f"Scanning organizational unit '{unit}'")
         for account in Account.list(parent=unit, session=session):
             item = Account.describe(account, session=session)

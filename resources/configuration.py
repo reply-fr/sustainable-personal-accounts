@@ -56,16 +56,13 @@ class Configuration:
         return text
 
     @classmethod
-    def initialize(cls, stream=None, features: SimpleNamespace = None):
+    def initialize(cls, stream=None):
         builtins.toggles = SimpleNamespace()
         cls.set_default_values()
         if stream:
             cls.set_from_yaml(stream=stream)
         else:
             cls.set_from_yaml(stream=toggles.settings_file)
-        if features:  # allow test injection
-            for key in features.__dict__.keys():
-                toggles.__dict__[key] = features.__dict__[key]
         for key in sorted(toggles.__dict__.keys()):
             value = toggles.__dict__.get(key)
             logging.debug("{0} = {1}".format(key, value))
@@ -134,14 +131,39 @@ class Configuration:
         else:
             raise AttributeError(f"Unknown configuration attribute '{key}'")
 
-    @staticmethod
-    def transform_organizational_units(units):
+    @classmethod
+    def transform_organizational_units(cls, units):
         ''' make a dictionary out of a list of OU, using identifier as key '''
         transformed = {}
         for unit in units:
+            cls.validate_organizational_unit(unit)
             key = unit['identifier']
             transformed[key] = {k: unit[k] for k in unit.keys() if k != 'identifier'}
         return transformed
+
+    @classmethod
+    def validate_organizational_unit(cls, unit):
+        if 'identifier' not in unit.keys():
+            raise AttributeError("Missing organizational unit 'identifier'")
+        if not isinstance(unit['identifier'], str):
+            raise AttributeError("Invalid value for organizational unit 'identifier'")
+        for label in unit.keys():
+            if label not in ['account_tags', 'identifier', 'note', 'preparation', 'purge']:
+                raise AttributeError(f"Unexpected organizational unit parameter '{label}'")
+        cls.validate_preparation_parameters(preparation=unit.get('preparation', {}), ou=unit['identifier'])
+        cls.validate_purge_parameters(purge=unit.get('purge', {}), ou=unit['identifier'])
+
+    @classmethod
+    def validate_preparation_parameters(cls, preparation, ou):
+        for label in preparation.keys():
+            if label not in ['feature', 'variables']:
+                raise AttributeError(f"Unexpected preparation parameter '{label}' for organizational unit '{ou}'")
+
+    @classmethod
+    def validate_purge_parameters(cls, purge, ou):
+        for label in purge.keys():
+            if label not in ['feature', 'variables']:
+                raise AttributeError(f"Unexpected purge parameter '{label}' for organizational unit '{ou}'")
 
     @staticmethod
     def set_aws_environment():
