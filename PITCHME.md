@@ -137,6 +137,12 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 
 ---
 <!-- _class: lead -->
+![width:800px](./media/organizational-units.svg)
+
+# Settings per Organizational Unit
+
+---
+<!-- _class: lead -->
 <!-- _paginate: false -->
 ![](https://icongr.am/octicons/gift.svg?size=256&color=f96d00)
 ## Ok, walk me through the solution
