@@ -35,6 +35,10 @@ Note that the scope of SPA is limited to the effective part of AWS accounts life
 
 The best fit for Sustainable Personal Account is to add it to an AWS Organizations deployed as part of Control Tower.
 
+Reference:
+- [AWS Control Tower Workshops](https://controltower.aws-management.tools/)
+- [AWS Control Tower Documentation](https://docs.aws.amazon.com/controltower/)
+
 ### Step 2 - Select an AWS account and a region to deploy Sustainable Personal Account
 
 We recommend to rename the "Sandbox" account created by Control Tower to "Automation". This is leaving in the Sandbox Organizational Unit.
