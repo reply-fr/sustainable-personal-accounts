@@ -49,15 +49,25 @@ def handle_account(account, session=None):
         logging.info("Skipping the preparation of the account")
         Account.move(account=account, state=State.RELEASED, session=session)
     else:
-        topic_arn = Worker.deploy_topic_for_alerts(account=details)
-        subscribe_queue_to_topic(topic_arn=topic_arn, queue_arn=get_queue_arn(), session=session)
-        Worker.prepare(account=details,
-                       settings=settings,
-                       event_bus_arn=os.environ['EVENT_BUS_ARN'],
-                       topic_arn=topic_arn,
-                       buildspec=get_buildspec(session=session),
-                       session=session)
+        tag_account(account=account, settings=settings, session=session)
+        prepare_account(details=details, settings=settings, session=session)
     return result
+
+
+def tag_account(account, settings, session=None):
+    if tags := settings.get("account_tags", {}):
+        Account.tag(account, tags, session=session)
+
+
+def prepare_account(details, settings, session=None):
+    topic_arn = Worker.deploy_topic_for_alerts(account=details)
+    subscribe_queue_to_topic(topic_arn=topic_arn, queue_arn=get_queue_arn(), session=session)
+    Worker.prepare(account=details,
+                   settings=settings,
+                   event_bus_arn=os.environ['EVENT_BUS_ARN'],
+                   topic_arn=topic_arn,
+                   buildspec=get_buildspec(session=session),
+                   session=session)
 
 
 def get_buildspec(session=None):

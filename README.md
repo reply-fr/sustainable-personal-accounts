@@ -6,7 +6,7 @@ Note that alternate projects are available if SPA does not suit your specific ne
 - [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
 - [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
 
-## Maintenance window for personal accounts
+## SPA brings maintenance windows to AWS accounts
 
 Since we want to purge and to reset accounts assigned to individuals, this can be represented as a state machine that features following states and transitions.
 
@@ -16,7 +16,7 @@ Since we want to purge and to reset accounts assigned to individuals, this can b
 
 --->
 
-![state machine](./media/state-machine.svg)
+![state machine](./media/state-machine.png)
 
 - **Vanilla Accounts** - When an account has just been created by Control Tower, ServiceNow, or by any other mean, it is linked to a specific identity. Note that Control Tower does a pretty good job to create an identity in AWS Single Sign-On (SSO) before creating a new account. For accounts in this state, the most important activity is to add tags to the account itself. Then the tagged account can be moved to the next state.
 
@@ -29,27 +29,71 @@ Since we want to purge and to reset accounts assigned to individuals, this can b
 
 Note that the scope of SPA is limited to the effective part of AWS accounts life cycle. Since the creation and the deletion of accounts are not specified, there are multiple options available for actual implementation. If SPA is deployed within an environment managed by Control Tower, then you can benefit from the account factory and other tools exposed to you. For other environments, it is up to you to create new accounts and to delete them when appropriate.
 
-## Event-driven architecture
+## Get started with Sustainable Personal Accounts
 
-![architecture](./media/reference-architecture.svg)
+### Step 1 - Deploy AWS Control Tower
 
-## Guiding principles for sustainable personal accounts
+The best fit for Sustainable Personal Account is to add it to an AWS Organizations deployed as part of Control Tower.
 
-**We drive innovation by experimentations** - Professionals who can access the AWS console, APIs or SDK have a strong advantage to build systems out of available software and data constructs, and to prove the business opportunity or to fail fast. Large enterprises are advised to connect thousands of employees to AWS native capabilities so as to foster innovation at scale. A key performance indicator is the number of AWS accounts assigned to individuals across the corporation.
+Reference:
+- [AWS Control Tower Workshops](https://controltower.aws-management.tools/)
+- [AWS Control Tower Documentation](https://docs.aws.amazon.com/controltower/)
 
-**We trust our employees and colleagues** - In most cases, temporary resources used on cloud infrastructure for some experimentation will require a very limited budget, and will stay isolated from corporate mainstream systems. This is creating an opportunity for a distinct responsibility models, where controls that are traditionally used for production and for large systems are relaxed on personal cloud accounts. For each personal cloud account, a monthly budget can be consumed without additional financial control. A key performance indicator is the number of personal cloud accounts that go above budget and that deserve specific scrutiny and corrective action.
+### Step 2 - Select an AWS account and a region to deploy Sustainable Personal Account
 
-**We influence corporate culture with recycling** - While production information systems have life cycles of multiple years, experimental information systems may be deployed for some hours only. Performing enterprises do clear cloud personal accounts used by their software engineers and data engineers for experiments and for labs. This is leading employees towards Continuous Integration (CI) practice in their day to day activities, that is foundational for sustainable agility. Business stakeholders can set the recycling horizon as a corporate policy. We recommend to start with monthly clearing of personal cloud accounts, and then move progressively towards weekly or even daily expirations. One key performance indicator is the cost saving incurred by deleted cloud resources on recycle. Another key performance indicator is the level of activity around git repositories initiated by individual persons.
+We recommend to rename the "Sandbox" account created by Control Tower to "Automation". This is leaving in the Sandbox Organizational Unit.
 
-**We scale with automated guardrails and with insourced blueprints** - Jeff Bezos has a saying: “Good intentions don't work. Mechanisms do.” In the context of this project, guardrails mean that corporate policies should apply automatically to personal cloud accounts. In addition, these accounts are recycled periodically. These cycles are giving security teams periodic opportunities to update security controls and, therefore, to adapt continuously to cyber-threats. On the other hand, the tooling provided to employees working on the cloud is specific to each enterprise. Also, this tooling is evolving over time. In the context of this project, we provide complete freedom regarding the execution of custom software on each personal cloud account. In addition, with periodic recycling of these accounts there is an opportunity to continuously update the toolbox provided to employees.
+### Step 3 - Create Organizational Units for personal accounts
+
+We recommend to create several OUs under the Sandbox Organizational Unit. Each OU can feature specific SCP and specific settings in SPA.
+
+### Step 4 - Clone the SPA repository on your workstation
+
+```
+$ git clone git@github.com:reply-fr/sustainable-personal-accounts.git
+$ cd sustainable-personal-accounts
+$ make setup
+```
+
+### Step 5 - Configure SPA
+
+You can duplicate the file `tests/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment.
+
+### Step 6 - Deploy SPA
+
+```
+$ make deploy
+```
+
+### Step 7 - Inspect the solution
+
+Use the AWS Console on the "Automation" account. There is a CloudWatch dashboard that reflects metrics for SPA. Code execution is reflected into the Lambda console.
 
 ## Frequently asked questions
 
 In this question we address frequent questions about Sustainable Personal Accounts. We also explain most important design decisions on the architecture of the system.
 
-### Q. Can you provide an overview of this initiative and of the architecture?
+### Q. Can I use this software for my company?
 
-An overview of Sustainable Personal Accounts is provided with this repository.
+Yes. Sustainable Personal Account is copyright from [Reply](http://www.reply.com) and licensed with [Apache License Version 2.0](./LICENSE)
+
+Copyright 2022 Reply.com
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+### Q. Can I get a presentation of this project and of the architecture?
+
+Yes. A presentation of Sustainable Personal Accounts is provided with this repository.
 You may have to install the MARP toolbox if this not available at your workstation.
 
 ```
@@ -71,7 +115,7 @@ If you do need to export overview slides, then following will produce a file tha
 $ make pptx
 ```
 
-### Q. How to demonstrate this project within Cloud9?
+### Q. How to run the presentation of project within Cloud9?
 
 If you have access to the AWS Console, then you are encouraged to work within a Cloud9 environment for this project. Here are the steps to upload and run the presentation:
 - Got to AWS Cloud9 Console
@@ -118,6 +162,8 @@ Credit:
 
 ### Q. Is this a centralised or a distributed architecture?
 
+![architecture](./media/reference-architecture.svg)
+
 SPA is featuring an event-driven architecture, and serverless infrastructure. By default, centralised lambda functions take care of changing states of accounts. However, the preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These specific activities can be either centralised in one AWS account, or distributed into the personal accounts themselves.
 
 With centralised processing, you can deploy code only once and manage configuration files adapted to target accounts. Also, you need specific cross-account permissions to allow the creation and the destruction of resources from another account. With centralised processing, the scaling is limited by quotas related to underlying resources. For example, with CodeBuild there is a limit of 60 concurrent builds in one account, that would limit the number of accounts managed in SPA if CodeBuild projects were started into one centralised account.
@@ -151,3 +197,13 @@ Sure. Sustainable Personal Accounts features following building blocks:
 - **PrepareAccount** and **PurgeAccount** - These templated CodeBuild projects are actually deployed in personal accounts, and started asynchronously, by Lambda functions **OnAssignedAccount** and **OnExpiredAccount**.
 
 - **Parameter store** - Parameters used by SPA code, including templates for CodeBuild projects, are placed in SSM Parameter Store of the Automation account.
+
+### Q. What are the guiding principles for Sustainable Personal Accounts?
+
+**We drive innovation by experimentations** - Professionals who can access the AWS console, APIs or SDK have a strong advantage to build systems out of available software and data constructs, and to prove the business opportunity or to fail fast. Large enterprises are advised to connect thousands of employees to AWS native capabilities so as to foster innovation at scale. A key performance indicator is the number of AWS accounts assigned to individuals across the corporation.
+
+**We trust our employees and colleagues** - In most cases, temporary resources used on cloud infrastructure for some experimentation will require a very limited budget, and will stay isolated from corporate mainstream systems. This is creating an opportunity for a distinct responsibility models, where controls that are traditionally used for production and for large systems are relaxed on personal cloud accounts. For each personal cloud account, a monthly budget can be consumed without additional financial control. A key performance indicator is the number of personal cloud accounts that go above budget and that deserve specific scrutiny and corrective action.
+
+**We influence corporate culture with recycling** - While production information systems have life cycles of multiple years, experimental information systems may be deployed for some hours only. Performing enterprises do clear cloud personal accounts used by their software engineers and data engineers for experiments and for labs. This is leading employees towards Continuous Integration (CI) practice in their day to day activities, that is foundational for sustainable agility. Business stakeholders can set the recycling horizon as a corporate policy. We recommend to start with monthly clearing of personal cloud accounts, and then move progressively towards weekly or even daily expirations. One key performance indicator is the cost saving incurred by deleted cloud resources on recycle. Another key performance indicator is the level of activity around git repositories initiated by individual persons.
+
+**We scale with automated guardrails and with insourced blueprints** - Jeff Bezos has a saying: “Good intentions don't work. Mechanisms do.” In the context of this project, guardrails mean that corporate policies should apply automatically to personal cloud accounts. In addition, these accounts are recycled periodically. These cycles are giving security teams periodic opportunities to update security controls and, therefore, to adapt continuously to cyber-threats. On the other hand, the tooling provided to employees working on the cloud is specific to each enterprise. Also, this tooling is evolving over time. In the context of this project, we provide complete freedom regarding the execution of custom software on each personal cloud account. In addition, with periodic recycling of these accounts there is an opportunity to continuously update the toolbox provided to employees.
