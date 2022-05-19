@@ -77,6 +77,20 @@ In this question we address frequent questions about Sustainable Personal Accoun
 
 Yes. Sustainable Personal Account is copyright from [Reply](http://www.reply.com) and licensed with [Apache License Version 2.0](./LICENSE)
 
+Copyright 2022 Reply.com
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
 ### Q. Can I get a presentation of this project and of the architecture?
 
 Yes. A presentation of Sustainable Personal Accounts is provided with this repository.
