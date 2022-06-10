@@ -1,6 +1,6 @@
 # Sustainable Personal Accounts
 
-With this project we promote the idea that each AWS practitioner should have direct access to some AWS account, so as to practice almost freely on the platform and to accelerate innovation of their company. At the same time, in corporate environment there is a need for enforcing policies, for managing costs and for fostering software automation. For this reason, with Sustainable Personal Accounts (SPA), AWS accounts are purged at regular intervals, and recycled.
+With this project we promote the idea that each AWS practitioner should have direct access to some AWS account, so as to practice almost freely on the platform and to accelerate innovation of their company. At the same time, in corporate environment there is a need for enforcing policies, for managing costs and for fostering software automation. For this reason, with Sustainable Personal Accounts (SPA), we introduce maintenance windows on AWS accounts and alerts. Central teams can customise code ran on each maintenance window, for example to set billing alerts, to deploy SIEM agents, and to purge cloud resources.
 
 Note that alternate projects are available if SPA does not suit your specific needs:
 - [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
@@ -8,7 +8,7 @@ Note that alternate projects are available if SPA does not suit your specific ne
 
 ## SPA brings maintenance windows to AWS accounts
 
-Since we want to purge and to reset accounts assigned to individuals, this can be represented as a state machine that features following states and transitions.
+Since we want to clean AWS accounts assigned to individuals, this can be represented as a state machine with following states and transitions.
 
 <!--- you can use mermaid live with following link, and then save in ./media
 
@@ -33,7 +33,7 @@ Note that the scope of SPA is limited to the effective part of AWS accounts life
 
 ### Step 1 - Deploy AWS Control Tower
 
-The best fit for Sustainable Personal Account is to add it to an AWS Organizations deployed as part of Control Tower.
+The sweet spot for Sustainable Personal Account is to add it to an AWS Organizations deployed as part of Control Tower.
 
 Reference:
 - [AWS Control Tower Workshops](https://controltower.aws-management.tools/)
@@ -41,11 +41,11 @@ Reference:
 
 ### Step 2 - Select an AWS account and a region to deploy Sustainable Personal Account
 
-We recommend to rename the "Sandbox" account created by Control Tower to "Automation". This is leaving in the Sandbox Organizational Unit.
+We recommend to rename the "Sandbox" account created by Control Tower to "Automation". This is living in the Sandbox Organizational Unit. Alternatively, you can create a new account for automated background activities in your organisation, for example with the Account Factory created by Control Tower.
 
 ### Step 3 - Create Organizational Units for personal accounts
 
-We recommend to create several OUs under the Sandbox Organizational Unit. Each OU can feature specific SCP and specific settings in SPA.
+We recommend to create several OUs under the Sandbox Organizational Unit. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behaviour on AWS accounts that they contain.
 
 ### Step 4 - Clone the SPA repository on your workstation
 
@@ -93,7 +93,7 @@ limitations under the License.
 
 ### Q. Can I get a presentation of this project and of the architecture?
 
-Yes. A presentation of Sustainable Personal Accounts is provided with this repository.
+Yes. An interactive presentation of Sustainable Personal Accounts is included with this repository.
 You may have to install the MARP toolbox if this not available at your workstation.
 
 ```
@@ -134,7 +134,7 @@ If you have access to the AWS Console, then you are encouraged to work within a 
 
 ### Q. How many accounts do we want to support in a single SPA state machine?
 
-Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. As a rule of thumb, the basic requirement is that up to 10,000 AWS accounts are purged and recycled on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.
+Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. Our long-term objective is that up to 10,000 AWS accounts are purged and prepared on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.
 
 ### Q. How are transitions detected and managed?
 
@@ -154,27 +154,11 @@ We have selected CodeBuild for heavy processing of personal AWS accounts. CodeBu
 
 Options that may be considered include at least Lambda, ECS, Automation and CodeBuild. Lambda is not adapted because execution is limited to 15 minutes, which is not enough for the provisioning or the destruction of complex resources such as Active Directory, FSx for Windows volume, etc. ECS does not have timing limitations, but it requires some VPC context that, strictly speaking, we do not need at all. SSM Automation is a powerful and VPC-less construct that can do almost anything. However, it is more designed to orchestrate code execution than to implement it. For example, SSM Automation can run python scripts but they are limited to a maximum duration of 10 minutes, which is not enough for our use case. At the end of the day, CodeBuild is a great candidate to automate preparation and purge activities within each account.
 
-Note that CodeBuild can be expensive compared to other compute options. We recommend to stick to `arm1.small`compute instance type if possible.
+Note that costs of CodeBuild are optimized with `arm1.small` compute instance type.
 
 Credit:
 - (1Strategy blog) [Automated Clean-up with AWS-Nuke in Multiple Accounts](https://www.1strategy.com/blog/2019/07/16/automated-clean-up-with-aws-nuke-in-multiple-accounts/)
 - (AWS blog) [Using AWS CodeBuild to execute administrative tasks](https://aws.amazon.com/blogs/devops/using-aws-codebuild-to-execute-administrative-tasks/)
-
-### Q. Is this a centralised or a distributed architecture?
-
-![architecture](./media/reference-architecture.svg)
-
-SPA is featuring an event-driven architecture, and serverless infrastructure. By default, centralised lambda functions take care of changing states of accounts. However, the preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These specific activities can be either centralised in one AWS account, or distributed into the personal accounts themselves.
-
-With centralised processing, you can deploy code only once and manage configuration files adapted to target accounts. Also, you need specific cross-account permissions to allow the creation and the destruction of resources from another account. With centralised processing, the scaling is limited by quotas related to underlying resources. For example, with CodeBuild there is a limit of 60 concurrent builds in one account, that would limit the number of accounts managed in SPA if CodeBuild projects were started into one centralised account.
-
-With distributed processing, you have to deploy code within each target account and then execute it. You need cross-account permissions only to deploy code into target accounts. CodeBuild quota limits are not an issue anymore. Because of the scaling that it enables, and because of the reduced IAM permissions required, we prefer a distributed design for heavy processing.
-
-At the end of the day, some parts of SPA are centralised, while other parts are distributed:
-
-- A single AWS account is used for centralised automation, with one EventBridge bus, some Lambda functions and SSM Parameter store.
-
-- Personal AWS accounts managed by SPA host heavy processing required for their preparation and for their purge.
 
 ### Q. Can you list the components of the SPA architecture?
 
@@ -197,6 +181,24 @@ Sure. Sustainable Personal Accounts features following building blocks:
 - **PrepareAccount** and **PurgeAccount** - These templated CodeBuild projects are actually deployed in personal accounts, and started asynchronously, by Lambda functions **OnAssignedAccount** and **OnExpiredAccount**.
 
 - **Parameter store** - Parameters used by SPA code, including templates for CodeBuild projects, are placed in SSM Parameter Store of the Automation account.
+
+### Q. Is this a centralised or a distributed architecture?
+
+![architecture](./media/reference-architecture.svg)
+
+SPA is featuring an event-driven architecture, and serverless infrastructure. By default, centralised lambda functions take care of changing states of accounts. However, the preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These specific activities can be either centralised in one AWS account, or distributed into the personal accounts themselves.
+
+At the end of the day, some parts of SPA are centralised, while other parts are distributed:
+
+- A single AWS account is used for centralised automation, with one EventBridge bus, some Lambda functions and SSM Parameter store.
+
+- Personal AWS accounts managed by SPA host heavy processing required for their preparation and for their purge.
+
+The segmentation of computing resources in SPA is coming from following considerations and design decisions.
+
+With centralised processing, you can deploy code only once and manage configuration files adapted to target accounts. Also, you need specific cross-account permissions to allow the creation and the destruction of resources from another account. With centralised processing, the scaling is limited by quotas related to underlying resources. For example, with CodeBuild there is a limit of 60 concurrent builds in one account, that would limit the number of accounts managed in SPA if CodeBuild projects were started into one centralised account.
+
+With distributed processing, you have to deploy code within each target account and then execute it. You need cross-account permissions to deploy code into target accounts. CodeBuild quota limits are not an issue anymore. Because of the scaling that it enables, and because of the reduced IAM permissions required, we prefer a distributed design for heavy processing.
 
 ### Q. What are the guiding principles for Sustainable Personal Accounts?
 
