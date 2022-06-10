@@ -98,3 +98,5 @@ phases:
       else
         echo "No budget modification"
       fi
+    - echo "Removing automatically past budget"
+    - aws budgets delete-budget --account-id $ACCOUNT --budget-name SPA-budget || true
