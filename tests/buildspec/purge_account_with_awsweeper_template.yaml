@@ -44,7 +44,7 @@ phases:
       us-east-1
       EOF
     # full list of resource types at https://github.com/jckuester/awsweeper#supported-resources
-    - echo "Wave 1 - Purge resources without tags, or with tag '${TAG_KEY}'='${TAG_VALUE}'"
+    - echo "Wave 1 - Purge resources without tags, or with tag '${TAG_KEY}'='${TAG_VALUE}'" | tee -a awsweeper.log
     - |
       cat <<EOF > filter.yaml
       aws_cloudformation_stack:
@@ -112,8 +112,6 @@ phases:
       - tagged: false
       - tags:
           ${TAG_KEY}: ${TAG_VALUE}
-      aws_iam_group:  # forbidden!
-      aws_iam_user:  # forbidden!
       aws_kinesis_stream:
       - tagged: false
       - tags:
@@ -152,10 +150,10 @@ phases:
     - |
       while read REGION
       do
-        echo "Running AWSWEEPER on account $ACCOUNT in region $REGION" >> awsweeper.log
+        echo "Looking for purgeable resources on account $ACCOUNT in region $REGION" >> awsweeper.log
         ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
       done < regions.txt
-    - echo "Wave 2 - Purge resources created ${MAXIMUM_AGE} ago"
+    - echo "Wave 2 - Purge resources created ${MAXIMUM_AGE} ago" | tee -a awsweeper.log
     - |
       cat <<EOF > filter.yaml
       aws_cloudformation_stack:
@@ -193,7 +191,7 @@ phases:
     - |
       while read REGION
       do
-        echo "Running AWSWEEPER on account $ACCOUNT in region $REGION" >> awsweeper.log
+        echo "Looking for obsolete resources (${MAXIMUM_AGE}) on account $ACCOUNT in region $REGION" >> awsweeper.log
         ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
       done < regions.txt
     - cat awsweeper.log | tail -c 4000 >purge-message.txt
