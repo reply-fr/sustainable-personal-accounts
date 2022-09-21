@@ -28,19 +28,21 @@ import pytest
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
 def test_emit():
     mock = Mock()
-    Events.emit(label='CreatedAccount', account='123456789012', session=mock)
+    Events.emit(label='CreatedAccount', account='123456789012', message='message', session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Account": "123456789012", "Environment": "FromHere"}',
+        {'Detail': '{"Account": "123456789012", "Environment": "FromHere", "Message": "message"}',
          'DetailType': 'CreatedAccount',
          'Source': 'SustainablePersonalAccounts'}])
 
 
 def test_build_event():
-    event = Events.build_event(label='CreatedAccount', account='123456789012')
-    assert json.loads(event['Detail'])['Account'] == '123456789012'
-    assert event['DetailType'] == 'CreatedAccount'
+    event = Events.build_event(label='PurgeReport', account='123456789012', message='some log')
     assert event['Source'] == 'SustainablePersonalAccounts'
+    assert event['DetailType'] == 'PurgeReport'
+    details = json.loads(event['Detail'])
+    assert details['Account'] == '123456789012'
+    assert details['Message'] == 'some log'
 
 
 def test_build_event_on_invalid_account():
@@ -125,6 +127,19 @@ def test_decode_local_event_on_unexpected_label():
                                                          environment="envt1"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event, match='PurgedAccount')
+
+
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_report_event():
+    event = Events.load_event_from_template(template="tests/events/report-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="PurgeReport",
+                                                         message="some log",
+                                                         environment="envt1"))
+    decoded = Events.decode_local_event(event)
+    assert decoded.account == "123456789012"
+    assert decoded.label == "PurgeReport"
+    assert decoded.message == "some log"
 
 
 def test_decode_move_account_event():

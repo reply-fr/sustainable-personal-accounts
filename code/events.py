@@ -31,22 +31,27 @@ class Events:
         'ExpiredAccount',
         'PreparedAccount',
         'PurgedAccount',
-        'ReleasedAccount']
+        'ReleasedAccount',
+        'PreparationReport',
+        'PurgeReport']
 
     @classmethod
-    def emit(cls, label, account, session=None):
-        event = cls.build_event(label=label, account=account)
+    def emit(cls, label, account, message=None, session=None):
+        event = cls.build_event(label=label, account=account, message=message)
         cls.put_event(event=event, session=session)
         return event
 
     @classmethod
-    def build_event(cls, label, account):
+    def build_event(cls, label, account, message=None):
         if label not in cls.EVENT_LABELS:
             raise ValueError(f"Invalid event label '{label}'")
         if len(account) != 12:
             raise ValueError(f"Invalid account identifier '{account}'")
-        return dict(Detail=json.dumps(dict(Account=account,
-                                           Environment=cls.get_environment())),
+        details = dict(Account=account,
+                       Environment=cls.get_environment())
+        if message:
+            details['Message'] = message
+        return dict(Detail=json.dumps(details),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
 
@@ -82,17 +87,19 @@ class Events:
     def decode_local_event(cls, event, match=None):
         decoded = SimpleNamespace()
 
-        decoded.environment = event['detail'].get('Environment', 'None')
+        decoded.environment = event['detail'].get('Environment', None)
         if decoded.environment != cls.get_environment():
             raise ValueError(f"Unexpected environment '{decoded.environment}'")
 
-        decoded.account = event['detail'].get('Account', 'None')
+        decoded.account = event['detail'].get('Account', None)
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
         decoded.label = event['detail-type']
         if match and match != decoded.label:
             raise ValueError(f"Unexpected event label '{decoded.label}'")
+
+        decoded.message = event['detail'].get('Message', None)
 
         return decoded
 
