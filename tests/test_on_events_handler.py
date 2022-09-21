@@ -32,10 +32,10 @@ from code.on_events_handler import handle_event
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_event():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount",
-                                           environment="envt1"))
+    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
     mock = Mock()
     assert handle_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
 
@@ -43,9 +43,9 @@ def test_handle_event():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
 def test_handle_local_event_on_unexpected_environment():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount",
-                                           environment="alien*environment"))
+    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="CreatedAccount",
+                                                         environment="alien*environment"))
     mock = Mock()
     assert handle_event(event=event, context=None, session=mock) == "[DEBUG] Unexpected environment 'alien*environment'"

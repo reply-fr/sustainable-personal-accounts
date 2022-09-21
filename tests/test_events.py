@@ -58,10 +58,10 @@ def test_build_event_with_labels():
 
 
 def test_decode_codebuild_event():
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="123456789012",
-                                           project="SampleProject",
-                                           status="SUCCEEDED"))
+    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+                                            context=dict(account="123456789012",
+                                                         project="SampleProject",
+                                                         status="SUCCEEDED"))
     decoded = Events.decode_codebuild_event(event)
     assert decoded.account == "123456789012"
     assert decoded.project == "SampleProject"
@@ -69,29 +69,29 @@ def test_decode_codebuild_event():
 
 
 def test_decode_codebuild_event_on_malformed_account():
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="short",
-                                           project="SampleProject",
-                                           status="SUCCEEDED"))
+    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+                                            context=dict(account="short",
+                                                         project="SampleProject",
+                                                         status="SUCCEEDED"))
     with pytest.raises(ValueError):
         Events.decode_codebuild_event(event)
 
 
 def test_decode_codebuild_event_on_unexpected_project():
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="123456789012",
-                                           project="NotMyProjectProject",
-                                           status="SUCCEEDED"))
+    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+                                            context=dict(account="123456789012",
+                                                         project="NotMyProjectProject",
+                                                         status="SUCCEEDED"))
     with pytest.raises(ValueError):
         Events.decode_codebuild_event(event, match="ExpectedProject")
 
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount",
-                                           environment="envt1"))
+    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
     decoded = Events.decode_local_event(event)
     assert decoded.account == "123456789012"
     assert decoded.label == "CreatedAccount"
@@ -99,90 +99,90 @@ def test_decode_local_event():
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_environment():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="short",
-                                           label="CreatedAccount",
-                                           environment="alien*environment"))
+    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+                                            context=dict(account="short",
+                                                         label="CreatedAccount",
+                                                         environment="alien*environment"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event)
 
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_malformed_account():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="short",
-                                           label="CreatedAccount",
-                                           environment="envt1"))
+    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+                                            context=dict(account="short",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event)
 
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_label():
-    event = Events.make_event(template="tests/events/local-event-template.json",
-                              context=dict(account="123456789012",
-                                           label="CreatedAccount",
-                                           environment="envt1"))
+    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
     with pytest.raises(ValueError):
         Events.decode_local_event(event, match='PurgedAccount')
 
 
 def test_decode_move_account_event():
-    event = Events.make_event(template="tests/events/move-account-template.json",
-                              context=dict(account="123456789012",
-                                           destination_organizational_unit="ou-destination",
-                                           source_organizational_unit="ou-source"))
+    event = Events.load_event_from_template(template="tests/events/move-account-template.json",
+                                            context=dict(account="123456789012",
+                                                         destination_organizational_unit="ou-destination",
+                                                         source_organizational_unit="ou-source"))
     decoded = Events.decode_move_account_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
 
 
 def test_decode_move_account_event_on_malformed_account():
-    event = Events.make_event(template="tests/events/move-account-template.json",
-                              context=dict(account="short",
-                                           destination_organizational_unit="ou-destination",
-                                           source_organizational_unit="ou-source"))
+    event = Events.load_event_from_template(template="tests/events/move-account-template.json",
+                                            context=dict(account="short",
+                                                         destination_organizational_unit="ou-destination",
+                                                         source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
         Events.decode_move_account_event(event)
 
 
 def test_decode_move_account_event_on_unexpected_organizational_unit():
-    event = Events.make_event(template="tests/events/move-account-template.json",
-                              context=dict(account="123456789012",
-                                           destination_organizational_unit="ou-expected",
-                                           source_organizational_unit="ou-source"))
+    event = Events.load_event_from_template(template="tests/events/move-account-template.json",
+                                            context=dict(account="123456789012",
+                                                         destination_organizational_unit="ou-expected",
+                                                         source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
         Events.decode_move_account_event(event, matches=["ou-destination"])
 
 
 def test_decode_tag_account_event():
-    event = Events.make_event(template="tests/events/tag-account-template.json",
-                              context=dict(account="123456789012",
-                                           new_state="assigned"))
+    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+                                            context=dict(account="123456789012",
+                                                         new_state="assigned"))
     decoded = Events.decode_tag_account_event(event)
     assert decoded.account == "123456789012"
     assert decoded.state == "assigned"
 
 
 def test_decode_tag_account_event_on_malformed_account():
-    event = Events.make_event(template="tests/events/tag-account-template.json",
-                              context=dict(account="short",
-                                           new_state="assigned"))
+    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+                                            context=dict(account="short",
+                                                         new_state="assigned"))
     with pytest.raises(ValueError):
         Events.decode_tag_account_event(event)
 
 
 def test_decode_tag_account_event_on_unexpected_state():
-    event = Events.make_event(template="tests/events/tag-account-template.json",
-                              context=dict(account="123456789012",
-                                           new_state="assigned"))
+    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+                                            context=dict(account="123456789012",
+                                                         new_state="assigned"))
     with pytest.raises(ValueError):
         Events.decode_tag_account_event(event, match=State.EXPIRED)
 
 
 def test_decode_tag_account_event_on_missing_state():
-    event = Events.make_event(template="tests/events/tag-account-template.json",
-                              context=dict(account="123456789012"))
+    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+                                            context=dict(account="123456789012"))
 
     # remove tag 'account:state' from regular fixture
     tags = event["detail"]["requestParameters"]["tags"]

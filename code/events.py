@@ -128,7 +128,7 @@ class Events:
         raise ValueError("Missing tag 'account:state' in this event")
 
     @staticmethod
-    def make_event(template, context):
+    def load_event_from_template(template, context):
         with open(template) as stream:
             text = stream.read()
             for key, value in context.items():

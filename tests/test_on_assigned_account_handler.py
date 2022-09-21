@@ -89,9 +89,9 @@ def session():
 @mock_events
 @mock_sns
 def test_handle_tag_event(session):
-    event = Events.make_event(template="tests/events/tag-account-template.json",
-                              context=dict(account="123456789012",
-                                           new_state=State.ASSIGNED.value))
+    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+                                            context=dict(account="123456789012",
+                                                         new_state=State.ASSIGNED.value))
     result = handle_tag_event(event=event, context=None, session=session)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Test"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
 
@@ -100,8 +100,8 @@ def test_handle_tag_event(session):
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_state(session):
-    event = Events.make_event(template="tests/events/tag-account-template.json",
-                              context=dict(account="123456789012",
-                                           new_state=State.VANILLA.value))
+    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+                                            context=dict(account="123456789012",
+                                                         new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None, session=session)
     assert result == "[DEBUG] Unexpected state 'vanilla' for this function"
