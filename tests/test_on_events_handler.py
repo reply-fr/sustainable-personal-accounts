@@ -41,6 +41,30 @@ def test_handle_event():
 
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='DEBUG'))
+def test_handle_preparation_report_event():
+    event = Events.load_event_from_template(template="tests/events/report-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="PreparationReport",
+                                                         message="some log",
+                                                         environment="envt1"))
+    mock = Mock()
+    assert handle_event(event=event, context=None, session=mock) == '[OK] PreparationReport 123456789012'
+
+
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='DEBUG'))
+def test_handle_purge_report_event():
+    event = Events.load_event_from_template(template="tests/events/report-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="PurgeReport",
+                                                         message="some log",
+                                                         environment="envt1"))
+    mock = Mock()
+    assert handle_event(event=event, context=None, session=mock) == '[OK] PurgeReport 123456789012'
+
+
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
 def test_handle_local_event_on_unexpected_environment():
     event = Events.load_event_from_template(template="tests/events/local-event-template.json",

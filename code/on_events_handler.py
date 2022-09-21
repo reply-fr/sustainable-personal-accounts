@@ -31,7 +31,12 @@ def handle_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
     input = Events.decode_local_event(event)
-    logging.info(f"Listening '{input.label}' '{input.account}'")
+
+    if input.__dict__.get('message', None):
+        logging.info(f"Logging '{input.label}' '{input.account}'\n{input.message}")
+    else:
+        logging.info(f"Listening '{input.label}' '{input.account}'")
+
     put_metric_data(name='AccountEventByAccount',
                     dimensions=[dict(Name='Account', Value=input.account),
                                 dict(Name='Environment', Value=Events.get_environment())],
