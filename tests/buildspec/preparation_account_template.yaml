@@ -20,17 +20,19 @@ env:
     BUDGET_AMOUNT: 500.0
     BUDGET_EMAIL: a@b.com
     BUDGET_NAME: SPA-budget
+    EVENT_BUS_ARN: None
     TOPIC_ARN: None
 
 phases:
   install:
     commands:
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    - echo $ALERT_THRESHOLD
-    - echo $BUDGET_AMOUNT
-    - echo $BUDGET_EMAIL
-    - echo $BUDGET_NAME
-    - echo $TOPIC_ARN
+    - echo "ALERT_THRESHOLD=$ALERT_THRESHOLD"
+    - echo "BUDGET_AMOUNT=$BUDGET_AMOUNT"
+    - echo "BUDGET_EMAIL=$BUDGET_EMAIL"
+    - echo "BUDGET_NAME=$BUDGET_NAME"
+    - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
+    - echo "TOPIC_ARN=$TOPIC_ARN"
 
   build:
     commands:

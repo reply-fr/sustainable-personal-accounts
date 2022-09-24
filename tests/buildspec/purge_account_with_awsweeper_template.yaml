@@ -16,6 +16,7 @@ version: 0.2
 
 env:
   variables:
+    EVENT_BUS_ARN: None
     MAXIMUM_AGE: 6M
     PURGE_EMAIL: a@b.com
     PURGE_MESSAGE: SpaPurgeMessage
@@ -27,11 +28,12 @@ phases:
   install:
     commands:
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    - echo $MAXIMUM_AGE
-    - echo $PURGE_EMAIL
-    - echo $PURGE_MESSAGE
-    - echo $PURGE_MODE
-    - echo "${TAG_KEY}=${TAG_VALUE}"
+    - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
+    - echo "MAXIMUM_AGE=$MAXIMUM_AGE"
+    - echo "PURGE_EMAIL=$PURGE_EMAIL"
+    - echo "PURGE_MESSAGE=$PURGE_MESSAGE"
+    - echo "PURGE_MODE=$PURGE_MODE"
+    - echo "TAG ${TAG_KEY}=${TAG_VALUE}"
     - curl -sSfL --retry 3 https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.11.1
   build:
     commands:
