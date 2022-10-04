@@ -257,23 +257,25 @@ class Worker:
                                session=session)
 
     @staticmethod
-    def get_preparation_variables(account, settings, topic_arn) -> dict:
+    def get_preparation_variables(account, settings, event_bus_arn, topic_arn) -> dict:
         variables = dict(BUDGET_AMOUNT=200,
                          BUDGET_EMAIL=account.email)
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
         if topic_arn:
             variables['TOPIC_ARN'] = topic_arn
+        variables['EVENT_BUS_ARN'] = event_bus_arn
         variables.update(settings.get('preparation', {}).get('variables', {}))
         return variables
 
     @staticmethod
-    def get_purge_variables(account, settings) -> dict:
+    def get_purge_variables(account, settings, event_bus_arn) -> dict:
         variables = dict(PURGE_EMAIL=account.email)
         if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
             variables['ENVIRONMENT_IDENTIFIER'] = value
         if value := os.environ.get('TOPIC_ARN'):
             variables['TOPIC_ARN'] = value
+        variables['EVENT_BUS_ARN'] = event_bus_arn
         variables.update(settings.get('purge', {}).get('variables', {}))
         return variables
 
@@ -332,7 +334,7 @@ class Worker:
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_preparation_variables(account, settings, topic_arn),
+                           variables=cls.get_preparation_variables(account, settings, event_bus_arn, topic_arn),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
@@ -348,7 +350,7 @@ class Worker:
                            description="This project purges an AWS account of cloud resources",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_purge_variables(account, settings),
+                           variables=cls.get_purge_variables(account, settings, event_bus_arn),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)

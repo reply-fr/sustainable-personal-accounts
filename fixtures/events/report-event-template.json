@@ -5,8 +5,7 @@
   "source": "SustainablePersonalAccounts",
   "account": "111111111111",
   "time": "2022-02-07T15:44:15Z",
-  "region":
-  "eu-west-1",
+  "region": "eu-west-1",
   "resources": [],
-  "detail": {"Account": "___account___", "Environment": "___environment___"}
+  "detail": {"Account": "___account___", "Environment": "___environment___", "Message": "___message___"}
 }

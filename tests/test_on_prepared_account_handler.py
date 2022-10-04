@@ -78,30 +78,30 @@ def session():
 @patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_codebuild_event(session):
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="123456789012",
-                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
-                                           status="SUCCEEDED"))
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
+                                            context=dict(account="123456789012",
+                                                         project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
+                                                         status="SUCCEEDED"))
     result = handle_codebuild_event(event=event, context=None, session=session)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_project(session):
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="123456789012",
-                                           project="SampleProject",
-                                           status="SUCCEEDED"))
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
+                                            context=dict(account="123456789012",
+                                                         project="SampleProject",
+                                                         status="SUCCEEDED"))
     result = handle_codebuild_event(event=event, context=None, session=session)
     assert result == "[DEBUG] Ignoring project 'SampleProject'"
 
 
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_status(session):
-    event = Events.make_event(template="tests/events/codebuild-template.json",
-                              context=dict(account="123456789012",
-                                           project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
-                                           status="FAILED"))
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
+                                            context=dict(account="123456789012",
+                                                         project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
+                                                         status="FAILED"))
     result = handle_codebuild_event(event=event, context=None, session=session)
     assert result == "[DEBUG] Ignoring status 'FAILED'"
 
