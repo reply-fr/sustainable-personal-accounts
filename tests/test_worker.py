@@ -56,10 +56,10 @@ def test_get_preparation_variables():
     event_bus_arn = 'arn:aws:bus'
     topic_arn = 'arn:aws:topic'
     variables = Worker.get_preparation_variables(account=account, settings=settings, event_bus_arn=event_bus_arn, topic_arn=topic_arn)
-    assert variables == {'BUDGET_AMOUNT': '500.0', 
-                         'BUDGET_EMAIL': 'a@b.com', 
-                         'ENVIRONMENT_IDENTIFIER': 'JustForTest', 
-                         'EVENT_BUS_ARN': 'arn:aws:bus', 
+    assert variables == {'BUDGET_AMOUNT': '500.0',
+                         'BUDGET_EMAIL': 'a@b.com',
+                         'ENVIRONMENT_IDENTIFIER': 'JustForTest',
+                         'EVENT_BUS_ARN': 'arn:aws:bus',
                          'TOPIC_ARN': 'arn:aws:topic'}
 
 
@@ -70,9 +70,9 @@ def test_get_purge_variables():
     settings = dict(purge=dict(variables=dict(MAXIMUM_AGE='1M')))
     event_bus_arn = 'arn:aws:bus'
     variables = Worker.get_purge_variables(account=account, settings=settings, event_bus_arn=event_bus_arn)
-    assert variables == {'EVENT_BUS_ARN': 'arn:aws:bus', 
-                         'ENVIRONMENT_IDENTIFIER': 'JustForTest', 
-                         'MAXIMUM_AGE': '1M', 
+    assert variables == {'EVENT_BUS_ARN': 'arn:aws:bus',
+                         'ENVIRONMENT_IDENTIFIER': 'JustForTest',
+                         'MAXIMUM_AGE': '1M',
                          'PURGE_EMAIL': 'a@b.com',
                          'TOPIC_ARN': 'arn:aws:test'}
 
