@@ -50,7 +50,7 @@ class Configuration:
         for key in context.__dict__.keys():
             needle = "___{}___".format(key)
             index = text.find(needle)
-            while(index >= 0):
+            while (index >= 0):
                 text = text[:index] + str(context.__dict__.get(key)) + text[index + len(needle):]
                 index = text.find(needle)
         return text
