@@ -48,21 +48,33 @@ def test_deploy_project(session):
     session.client.return_value.create_project.assert_called()
 
 
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
+                             TOPIC_ARN='arn:aws:test'))
 def test_get_preparation_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     settings = dict(preparation=dict(variables=dict(BUDGET_AMOUNT='500.0')))
     event_bus_arn = 'arn:aws:bus'
     topic_arn = 'arn:aws:topic'
     variables = Worker.get_preparation_variables(account=account, settings=settings, event_bus_arn=event_bus_arn, topic_arn=topic_arn)
-    assert variables == {'BUDGET_AMOUNT': '500.0', 'BUDGET_EMAIL': 'a@b.com', 'EVENT_BUS_ARN': 'arn:aws:bus', 'TOPIC_ARN': 'arn:aws:topic'}
+    assert variables == {'BUDGET_AMOUNT': '500.0', 
+                         'BUDGET_EMAIL': 'a@b.com', 
+                         'ENVIRONMENT_IDENTIFIER': 'JustForTest', 
+                         'EVENT_BUS_ARN': 'arn:aws:bus', 
+                         'TOPIC_ARN': 'arn:aws:topic'}
 
 
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
+                             TOPIC_ARN='arn:aws:test'))
 def test_get_purge_variables():
     account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     settings = dict(purge=dict(variables=dict(MAXIMUM_AGE='1M')))
     event_bus_arn = 'arn:aws:bus'
     variables = Worker.get_purge_variables(account=account, settings=settings, event_bus_arn=event_bus_arn)
-    assert variables == {'EVENT_BUS_ARN': 'arn:aws:bus', 'MAXIMUM_AGE': '1M', 'PURGE_EMAIL': 'a@b.com'}
+    assert variables == {'EVENT_BUS_ARN': 'arn:aws:bus', 
+                         'ENVIRONMENT_IDENTIFIER': 'JustForTest', 
+                         'MAXIMUM_AGE': '1M', 
+                         'PURGE_EMAIL': 'a@b.com',
+                         'TOPIC_ARN': 'arn:aws:test'}
 
 
 @mock_sns
