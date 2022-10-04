@@ -140,7 +140,7 @@ lint-json:
 	venv/bin/python -m json.tool package.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 
 stats: venv/bin/activate
-	pygount --format=summary ${CODE_PATH} documents features media tests
+	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks
 
 rebase:
 	git stash
