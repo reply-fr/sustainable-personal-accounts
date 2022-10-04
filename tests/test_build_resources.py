@@ -31,4 +31,4 @@ from build_resources import build_resources
 @pytest.mark.slow
 @patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1"))
 def test_build_resources():
-    build_resources(settings='tests/settings/settings.yaml')
+    build_resources(settings='fixtures/settings/settings.yaml')

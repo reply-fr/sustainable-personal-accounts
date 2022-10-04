@@ -157,7 +157,7 @@ destroy: venv/bin/activate
 	cdk destroy --all
 
 put-events:
-	aws events put-events --cli-input-json file://tests/events/cli-put-events.json
+	aws events put-events --cli-input-json file://fixtures/events/cli-put-events.json
 
 clean:
 	rm -rf ${PRESENTATION_NAME}.html

@@ -78,7 +78,7 @@ def session():
 @patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_codebuild_event(session):
-    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
                                                          project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                                                          status="SUCCEEDED"))
@@ -88,7 +88,7 @@ def test_handle_codebuild_event(session):
 
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_project(session):
-    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
                                                          project="SampleProject",
                                                          status="SUCCEEDED"))
@@ -98,7 +98,7 @@ def test_handle_codebuild_event_on_unexpected_project(session):
 
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_status(session):
-    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
                                                          project=Worker.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                                                          status="FAILED"))

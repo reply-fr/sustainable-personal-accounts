@@ -32,7 +32,7 @@ from code.on_events_handler import handle_event
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_event():
-    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="envt1"))
@@ -43,7 +43,7 @@ def test_handle_event():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_preparation_report_event():
-    event = Events.load_event_from_template(template="tests/events/report-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="PreparationReport",
                                                          message="some log",
@@ -55,7 +55,7 @@ def test_handle_preparation_report_event():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_purge_report_event():
-    event = Events.load_event_from_template(template="tests/events/report-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="PurgeReport",
                                                          message="some log",
@@ -67,7 +67,7 @@ def test_handle_purge_report_event():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
 def test_handle_local_event_on_unexpected_environment():
-    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="alien*environment"))

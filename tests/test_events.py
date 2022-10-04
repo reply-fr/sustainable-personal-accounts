@@ -60,7 +60,7 @@ def test_build_event_with_labels():
 
 
 def test_decode_codebuild_event():
-    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
                                                          project="SampleProject",
                                                          status="SUCCEEDED"))
@@ -71,7 +71,7 @@ def test_decode_codebuild_event():
 
 
 def test_decode_codebuild_event_on_malformed_account():
-    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="short",
                                                          project="SampleProject",
                                                          status="SUCCEEDED"))
@@ -80,7 +80,7 @@ def test_decode_codebuild_event_on_malformed_account():
 
 
 def test_decode_codebuild_event_on_unexpected_project():
-    event = Events.load_event_from_template(template="tests/events/codebuild-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
                                                          project="NotMyProjectProject",
                                                          status="SUCCEEDED"))
@@ -90,7 +90,7 @@ def test_decode_codebuild_event_on_unexpected_project():
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event():
-    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="envt1"))
@@ -101,7 +101,7 @@ def test_decode_local_event():
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_environment():
-    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
                                             context=dict(account="short",
                                                          label="CreatedAccount",
                                                          environment="alien*environment"))
@@ -111,7 +111,7 @@ def test_decode_local_event_on_unexpected_environment():
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_malformed_account():
-    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
                                             context=dict(account="short",
                                                          label="CreatedAccount",
                                                          environment="envt1"))
@@ -121,7 +121,7 @@ def test_decode_local_event_on_malformed_account():
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_label():
-    event = Events.load_event_from_template(template="tests/events/local-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="envt1"))
@@ -131,7 +131,7 @@ def test_decode_local_event_on_unexpected_label():
 
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_report_event():
-    event = Events.load_event_from_template(template="tests/events/report-event-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="PurgeReport",
                                                          message="some log",
@@ -143,7 +143,7 @@ def test_decode_report_event():
 
 
 def test_decode_move_account_event():
-    event = Events.load_event_from_template(template="tests/events/move-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-destination",
                                                          source_organizational_unit="ou-source"))
@@ -153,7 +153,7 @@ def test_decode_move_account_event():
 
 
 def test_decode_move_account_event_on_malformed_account():
-    event = Events.load_event_from_template(template="tests/events/move-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="short",
                                                          destination_organizational_unit="ou-destination",
                                                          source_organizational_unit="ou-source"))
@@ -162,7 +162,7 @@ def test_decode_move_account_event_on_malformed_account():
 
 
 def test_decode_move_account_event_on_unexpected_organizational_unit():
-    event = Events.load_event_from_template(template="tests/events/move-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-expected",
                                                          source_organizational_unit="ou-source"))
@@ -171,7 +171,7 @@ def test_decode_move_account_event_on_unexpected_organizational_unit():
 
 
 def test_decode_tag_account_event():
-    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
                                                          new_state="assigned"))
     decoded = Events.decode_tag_account_event(event)
@@ -180,7 +180,7 @@ def test_decode_tag_account_event():
 
 
 def test_decode_tag_account_event_on_malformed_account():
-    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="short",
                                                          new_state="assigned"))
     with pytest.raises(ValueError):
@@ -188,7 +188,7 @@ def test_decode_tag_account_event_on_malformed_account():
 
 
 def test_decode_tag_account_event_on_unexpected_state():
-    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
                                                          new_state="assigned"))
     with pytest.raises(ValueError):
@@ -196,7 +196,7 @@ def test_decode_tag_account_event_on_unexpected_state():
 
 
 def test_decode_tag_account_event_on_missing_state():
-    event = Events.load_event_from_template(template="tests/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012"))
 
     # remove tag 'account:state' from regular fixture
