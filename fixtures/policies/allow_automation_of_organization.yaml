@@ -1,0 +1,33 @@
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect":"Allow",
+         "Action":[
+            "organizations:AttachPolicy",
+            "organizations:CreatePolicy",
+            "organizations:Describe*",
+            "organizations:DetachPolicy",
+            "organizations:List*",
+            "organizations:TagResource",
+            "organizations:UntagResource",
+            "organizations:UpdatePolicy"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "account:GetAlternateContact"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "sts:AssumeRole"
+         ],
+         "Resource":"*"
+      }
+   ]
+}
