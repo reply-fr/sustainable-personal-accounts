@@ -16,6 +16,7 @@ version: 0.2
 
 env:
   variables:
+    ENVIRONMENT_IDENTIFIER: None
     EVENT_BUS_ARN: None
     MAXIMUM_AGE: 6M
     PURGE_EMAIL: a@b.com
@@ -28,6 +29,7 @@ phases:
   install:
     commands:
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+    - echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
     - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
     - echo "MAXIMUM_AGE=$MAXIMUM_AGE"
     - echo "PURGE_EMAIL=$PURGE_EMAIL"
@@ -198,4 +200,10 @@ phases:
       done < regions.txt
     - cat awsweeper.log | tail -c 4000 >purge-message.txt
     - aws ssm put-parameter --name "$PURGE_MESSAGE" --type String --value file://purge-message.txt --overwrite
+    - LOG_MESSAGE=$(cat purge-message.txt)
+    - DETAIL=$(jq -n --arg aa "$ACCOUNT" --arg ei "$ENVIRONMENT_IDENTIFIER" --arg lm "$LOG_MESSAGE" '{"Account":$aa,"Environment":$ei,"Message":$lm}')
+    - |
+      jq -n --arg ed "$DETAIL" --arg eb "$EVENT_BUS_ARN" \
+        '{Entries: [{"Source":"SustainablePersonalAccounts","DetailType":"PurgeReport","Detail":$ed,"EventBusName":$eb}]}' >event-entries.json
+    - aws events put-events --cli-input-json file://event-entries.json
     - echo "Account purge completed on $(date)"
