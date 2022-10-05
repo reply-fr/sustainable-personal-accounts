@@ -70,6 +70,46 @@ worker:
 #
 organizational_units:
 
+  # default settings for all organizational units
+  #
+  - identifier: 'default'
+
+    # added to every account, accross all organizational units, except if overriden
+    #
+    account_tags:
+      ManagementSystem: SPA
+
+    # default preparation settings
+    #
+    preparation:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: disabled
+
+      # passed to Codebuild project for the preparation of an account
+      #
+      variables:
+        ALERT_THRESHOLD: 80 # percentage of budget
+        BUDGET_AMOUNT: 500.0 # USD
+        BUDGET_NAME: SpaBudget
+
+    # default purge settings
+    #
+    purge:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: disabled
+
+      # passed to Codebuild project for the purge of an account
+      variables:
+        MAXIMUM_AGE: 9M  # '5d', '2w', '3M', '1y', etc.
+        PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
+        TAG_KEY: purge
+        TAG_VALUE: me
+
+
   # settings specific to accounts placed in this organizational unit
   #
   - identifier: 'ou-1234'
@@ -87,12 +127,12 @@ organizational_units:
     preparation:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
       feature: enabled
 
       # passed to Codebuild project for the preparation of an account
+      #
       variables:
-        ALERT_THRESHOLD: 80 # percentage of budget
-        BUDGET_AMOUNT: 500.0 # USD
         BUDGET_NAME: DataTeamBudget
 
     # purge of expired account
@@ -100,14 +140,13 @@ organizational_units:
     purge:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
       feature: enabled
 
       # passed to Codebuild project for the purge of an account
       variables:
         MAXIMUM_AGE: 6M  # '5d', '2w', '3M', '1y', etc.
         PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
-        TAG_KEY: purge
-        TAG_VALUE: me
 
   # settings specific to accounts placed in this organizational unit
   #
@@ -126,11 +165,12 @@ organizational_units:
     preparation:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
       feature: disabled
 
       # passed to Codebuild project for the preparation of an account
+      #
       variables:
-        ALERT_THRESHOLD: 90
         ALERT_THRESHOLD: 90 # percentage of budget
         BUDGET_AMOUNT: 300 # USD
         BUDGET_NAME: DevelopmentTeamBudget
@@ -141,11 +181,21 @@ organizational_units:
     purge:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
       feature: disabled
 
       # passed to Codebuild project for the purge of an account
+      #
       variables:
-        MAXIMUM_AGE: 6M  # '5d', '2w', '3M', '1y', etc.
-        PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
+        MAXIMUM_AGE: 1w  # '5d', '2w', '3M', '1y', etc.
+        PURGE_MODE: '--force'  # '--dry-run' or '--force'
         TAG_KEY: test
         TAG_VALUE: test
+
+# additional features that can be activated optionnally
+#
+features:
+
+  # use ARM architecture for Lambda and Codebuild projects instead of Intel/AMD architecture
+  #
+  with_arm: true

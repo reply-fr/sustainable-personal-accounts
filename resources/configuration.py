@@ -39,9 +39,28 @@ class Configuration:
         automation_tags='dict',
         automation_verbosity='str',
         environment_identifier='str',
+        features_with_arm='bool',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
         worker_purge_buildspec_template_file='str',
+    )
+
+    ALLOWED_ORGANIZATIONAL_UNIT_ATTRIBUTES = dict(
+        account_tags='dict',
+        identifier='str',
+        note='str',
+        preparation='dict',
+        purge='dict'
+    )
+
+    ALLOWED_PREPARATION_ATTRIBUTES = dict(
+        feature='str',
+        variables='dict'
+    )
+
+    ALLOWED_PURGE_ATTRIBUTES = dict(
+        feature='str',
+        variables='dict'
     )
 
     @staticmethod
@@ -85,6 +104,7 @@ class Configuration:
         toggles.automation_subscribed_email_addresses = []
         toggles.automation_tags = {}
         toggles.automation_verbosity = 'INFO'
+        toggles.features_with_arm = False
 
     @classmethod
     def set_from_settings(cls, settings={}):
@@ -110,14 +130,15 @@ class Configuration:
 
     @classmethod
     def set_attribute(cls, key, value):
-        cls.validate_attribute(key, value)
+        cls.validate_attribute(key, value, context=cls.ALLOWED_ATTRIBUTES)
         if key == 'organizational_units':
-            value = cls.transform_organizational_units(units=value)
+            units = cls.transform_organizational_units(units=value)
+            value = cls.set_organizational_units_default_values(units)
         setattr(toggles, key, value)
 
     @classmethod
-    def validate_attribute(cls, key, value):
-        kind = cls.ALLOWED_ATTRIBUTES.get(key)
+    def validate_attribute(cls, key, value, context):
+        kind = context.get(key)
         if kind:
             if (kind == 'bool') and not isinstance(value, bool):
                 raise AttributeError(f"Invalid value for configuration attribute '{key}'")
@@ -143,14 +164,36 @@ class Configuration:
         return transformed
 
     @classmethod
+    def set_organizational_units_default_values(cls, units):
+        default = units.get('default', {})
+        result = {}
+        for unit_id in units.keys():
+            if unit_id == 'default':
+                continue
+            values = units.get(unit_id)
+            updated = dict(preparation={}, purge={})
+            updated['account_tags'] = default.get('account_tags', {})
+            updated['account_tags'].update(values.get('account_tags', {}))
+            updated['note'] = values.get('note', '')
+            default_preparation = default.get('preparation', {})
+            preparation = values.get('preparation', {})
+            updated['preparation']['feature'] = preparation.get('feature', default_preparation.get('feature', 'disabled'))
+            updated['preparation']['variables'] = default_preparation.get('variables', {})
+            updated['preparation']['variables'].update(preparation.get('variables', {}))
+            default_purge = default.get('purge', {})
+            purge = values.get('purge', {})
+            updated['purge']['feature'] = purge.get('feature', default_purge.get('feature', 'disabled'))
+            updated['purge']['variables'] = default_purge.get('variables', {})
+            updated['purge']['variables'].update(purge.get('variables', {}))
+            result[unit_id] = updated
+        return result
+
+    @classmethod
     def validate_organizational_unit(cls, unit):
         if 'identifier' not in unit.keys():
             raise AttributeError("Missing organizational unit 'identifier'")
-        if not isinstance(unit['identifier'], str):
-            raise AttributeError("Invalid value for organizational unit 'identifier'")
-        for label in unit.keys():
-            if label not in ['account_tags', 'identifier', 'note', 'preparation', 'purge']:
-                raise AttributeError(f"Unexpected organizational unit parameter '{label}'")
+        for key in unit.keys():
+            cls.validate_attribute(key, unit.get(key), context=cls.ALLOWED_ORGANIZATIONAL_UNIT_ATTRIBUTES)
         cls.validate_preparation_parameters(preparation=unit.get('preparation', {}), ou=unit['identifier'])
         cls.validate_purge_parameters(purge=unit.get('purge', {}), ou=unit['identifier'])
 
