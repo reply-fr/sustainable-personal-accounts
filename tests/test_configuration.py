@@ -66,7 +66,30 @@ def test_set_default_values(toggles):
 def test_set_from_settings(toggles):
     settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
     Configuration.set_from_settings(settings)
-    assert toggles.organizational_units == {'ou': {'preparation': {'variables': {'BUDGET_AMOUNT': '500'}}}}
+    assert toggles.organizational_units == {'ou': {'account_tags': {},
+                                                   'note': '',
+                                                   'preparation': {'feature': 'disabled', 'variables': {'BUDGET_AMOUNT': '500'}},
+                                                   'purge': {'feature': 'disabled', 'variables': {}}}}
+
+
+def test_set_from_settings_with_default_values(toggles):
+    settings = dict(organizational_units=[
+        dict(identifier='default',
+             account_tags=dict(a='a', b='b'),
+             note='some note',
+             preparation=dict(feature='disabled', variables=dict(BUDGET_AMOUNT='500')),
+             purge=dict(feature='disabled', variables=dict(KEY='a key', MAX_AGE='3w'))),
+        dict(identifier='ou',
+             account_tags=dict(b='z',c='c'),
+             note='ou description',
+             preparation=dict(feature='enabled', variables=dict(BUDGET_THRESHOLD='80')),
+             purge=dict(feature='enabled', variables=dict(KEY='another key', VALUE='value')))],
+        features=dict(with_arm=True))
+    Configuration.set_from_settings(settings)
+    assert toggles.organizational_units ==  {'ou': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
+                                                    'note': 'ou description',
+                                                    'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '80'}},
+                                                    'purge': {'feature': 'enabled', 'variables': {'KEY': 'another key', 'MAX_AGE': '3w', 'VALUE': 'value'}}}}
 
 
 @pytest.mark.slow
@@ -85,6 +108,7 @@ def test_set_from_yaml(toggles):
     assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
     assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/preparation_account_template.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'fixtures/buildspec/purge_account_with_awsweeper_template.yaml'
+    assert toggles.features_with_arm is True
 
 
 def test_set_from_yaml_invalid(toggles):

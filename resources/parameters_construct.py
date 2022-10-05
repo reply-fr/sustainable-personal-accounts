@@ -58,7 +58,7 @@ class Parameters(Construct):
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
     def get_buildspec_for_preparation(self):
-        logging.debug("Getting buildspec for account preparation")
+        logging.debug("Getting buildspec for the preparation of accounts")
         with open(toggles.worker_preparation_buildspec_template_file) as stream:
             return stream.read()
 
