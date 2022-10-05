@@ -260,7 +260,8 @@ class Worker:
     def get_preparation_variables(account, settings, event_bus_arn, topic_arn) -> dict:
         variables = dict(BUDGET_AMOUNT=200,
                          BUDGET_EMAIL=account.email)
-        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+        value = os.environ.get('ENVIRONMENT_IDENTIFIER')
+        if value:
             variables['ENVIRONMENT_IDENTIFIER'] = value
         if topic_arn:
             variables['TOPIC_ARN'] = topic_arn
@@ -271,9 +272,11 @@ class Worker:
     @staticmethod
     def get_purge_variables(account, settings, event_bus_arn) -> dict:
         variables = dict(PURGE_EMAIL=account.email)
-        if value := os.environ.get('ENVIRONMENT_IDENTIFIER'):
+        value = os.environ.get('ENVIRONMENT_IDENTIFIER')
+        if value:
             variables['ENVIRONMENT_IDENTIFIER'] = value
-        if value := os.environ.get('TOPIC_ARN'):
+        value = os.environ.get('TOPIC_ARN')
+        if value:
             variables['TOPIC_ARN'] = value
         variables['EVENT_BUS_ARN'] = event_bus_arn
         variables.update(settings.get('purge', {}).get('variables', {}))
