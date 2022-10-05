@@ -6,6 +6,8 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 ## Pre-conditions
 - You have credentials to access the AWS Console for the Master Account of the target AWS Organization.
 - You have needed permissions to manage Control Tower and Account Factory
+- Under Windows WSL, you may have to install python3-venv, gcc, rustc, libffi-dev
+- Packages installed on your workstation include: make, python
 
 ## Step 1 - Deploy AWS Control Tower
 
@@ -32,7 +34,7 @@ The full sequence of actions to complete this step:
 - For a trusted entity type, check `AWS Account`
 - Select "Another AWS account" and paste the 12 digits of the Automation account identifier
 - Let options cleared
-- Selec the managed permission policy `AWSOrganizationsFullAccess` 
+- Selec the managed permission policy `AWSOrganizationsFullAccess`
 - Click on button `Next`
 - On the following page, enter a role name such as `SpaAssumedRole` and a description, for example: "This role is assumed by SPA from the Automation account"
 - Click on button `Create role`
@@ -60,6 +62,7 @@ You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` 
 One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can deploy SPA with one command:
 
 ```
+$ make shell
 $ make deploy
 ```
 
