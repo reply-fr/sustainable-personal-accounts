@@ -80,7 +80,7 @@ organizational_units:
     account_tags:
       CostCenter: 'abc'
       Sponsor: 'Foo Bar'
-      "account:owner": foo.bar@acme.com
+      "account:manager": foo.bar@acme.com
 
     # preparation of assigned account
     #
@@ -104,7 +104,7 @@ organizational_units:
 
       # passed to Codebuild project for the purge of an account
       variables:
-        MAXIMUM_AGE: 6M  # '5d', '3M', '1y', etc.
+        MAXIMUM_AGE: 6M  # '5d', '2w', '3M', '1y', etc.
         PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
         TAG_KEY: purge
         TAG_VALUE: me
@@ -119,7 +119,7 @@ organizational_units:
     account_tags:
       CostCenter: 'xyz'
       Sponsor: 'Mister Jones'
-      "account:owner": jones@acme.com
+      "account:manager": jones@acme.com
 
     # preparation of assigned account
     #
@@ -145,7 +145,7 @@ organizational_units:
 
       # passed to Codebuild project for the purge of an account
       variables:
-        MAXIMUM_AGE: 6M  # '5d', '3M', '1y', etc.
+        MAXIMUM_AGE: 6M  # '5d', '2w', '3M', '1y', etc.
         PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
         TAG_KEY: test
         TAG_VALUE: test
