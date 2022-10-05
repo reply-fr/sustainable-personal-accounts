@@ -117,7 +117,8 @@ class Configuration:
 
     @classmethod
     def validate_attribute(cls, key, value):
-        if kind := cls.ALLOWED_ATTRIBUTES.get(key):
+        kind = cls.ALLOWED_ATTRIBUTES.get(key)
+        if kind:
             if (kind == 'bool') and not isinstance(value, bool):
                 raise AttributeError(f"Invalid value for configuration attribute '{key}'")
             elif (kind == 'dict') and not isinstance(value, dict):
