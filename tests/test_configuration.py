@@ -19,7 +19,6 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import builtins
 from io import BytesIO
 from unittest.mock import patch
 import os
@@ -33,8 +32,7 @@ from resources import Configuration
 
 @pytest.fixture
 def toggles():
-    builtins.toggles = SimpleNamespace()
-    return builtins.toggles
+    return SimpleNamespace()
 
 
 def test_expand_text(toggles):
@@ -44,28 +42,44 @@ def test_expand_text(toggles):
     assert test == 'this is some sample text with =value= to replace'
 
 
-@pytest.mark.slow
-@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1"))
-def test_initialize():
+@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"))
+def test_initialize(toggles):
 
-    Configuration.initialize(stream='fixtures/settings/settings.yaml')
-    assert builtins.toggles.aws_account is not None
-    assert builtins.toggles.aws_environment is not None
-    assert builtins.toggles.aws_region is not None
+    Configuration.initialize(stream='fixtures/settings/settings.yaml', toggles=toggles)
+    assert toggles.automation_account_id == "012345678901"
+    assert toggles.automation_region == "eu-west-9"
+    assert toggles.aws_environment is not None
 
     with pytest.raises(FileNotFoundError):
         Configuration.initialize(stream='this*file*does*not*exist')
 
 
+def test_set_aws_environment(toggles):
+    Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
+    Configuration.set_aws_environment(toggles=toggles)
+    assert toggles.automation_account_id == "123456789012"
+    assert toggles.automation_region == "eu-west-1"
+    assert toggles.aws_environment is not None
+
+
+@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"))
+def test_set_aws_environment_from_environment_variables(toggles):
+    Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
+    Configuration.set_aws_environment(toggles=toggles)
+    assert toggles.automation_account_id == "012345678901"
+    assert toggles.automation_region == "eu-west-9"
+    assert toggles.aws_environment is not None
+
+
 def test_set_default_values(toggles):
-    Configuration.set_default_values()
+    Configuration.set_default_values(toggles=toggles)
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.automation_verbosity == 'INFO'
 
 
 def test_set_from_settings(toggles):
     settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
-    Configuration.set_from_settings(settings)
+    Configuration.set_from_settings(settings, toggles=toggles)
     assert toggles.organizational_units == {'ou': {'account_tags': {},
                                                    'note': '',
                                                    'preparation': {'feature': 'disabled', 'variables': {'BUDGET_AMOUNT': '500'}},
@@ -80,21 +94,21 @@ def test_set_from_settings_with_default_values(toggles):
              preparation=dict(feature='disabled', variables=dict(BUDGET_AMOUNT='500')),
              purge=dict(feature='disabled', variables=dict(KEY='a key', MAX_AGE='3w'))),
         dict(identifier='ou',
-             account_tags=dict(b='z',c='c'),
+             account_tags=dict(b='z', c='c'),
              note='ou description',
              preparation=dict(feature='enabled', variables=dict(BUDGET_THRESHOLD='80')),
              purge=dict(feature='enabled', variables=dict(KEY='another key', VALUE='value')))],
         features=dict(with_arm=True))
-    Configuration.set_from_settings(settings)
-    assert toggles.organizational_units ==  {'ou': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
-                                                    'note': 'ou description',
-                                                    'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '80'}},
-                                                    'purge': {'feature': 'enabled', 'variables': {'KEY': 'another key', 'MAX_AGE': '3w', 'VALUE': 'value'}}}}
+    Configuration.set_from_settings(settings, toggles=toggles)
+    assert toggles.organizational_units == {'ou': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
+                                                   'note': 'ou description',
+                                                   'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '80'}},
+                                                   'purge': {'feature': 'enabled', 'variables': {'KEY': 'another key', 'MAX_AGE': '3w', 'VALUE': 'value'}}}}
 
 
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
-    Configuration.set_from_yaml('fixtures/settings/settings.yaml')
+    Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
     assert toggles.automation_account_id == '123456789012'
     assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (beta)'
     assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
