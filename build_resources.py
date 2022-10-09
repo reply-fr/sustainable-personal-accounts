@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import builtins
 import os
 import logging
 
@@ -29,7 +30,7 @@ def build_resources(settings=None):
     Configuration.initialize(stream=settings)
 
     app = App()
-    ServerlessStack(app, toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
+    ServerlessStack(app, builtins.toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
     app.synth()
 
 

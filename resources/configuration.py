@@ -75,20 +75,19 @@ class Configuration:
         return text
 
     @classmethod
-    def initialize(cls, stream=None):
+    def initialize(cls, stream=None, toggles=None):
         builtins.toggles = SimpleNamespace()
-        cls.set_default_values()
+        toggles = toggles or builtins.toggles
+        cls.set_default_values(toggles=toggles)
         if stream:
-            cls.set_from_yaml(stream=stream)
+            cls.set_from_yaml(stream=stream, toggles=toggles)
         else:
-            cls.set_from_yaml(stream=toggles.settings_file)
-        for key in sorted(toggles.__dict__.keys()):
-            value = toggles.__dict__.get(key)
-            logging.debug("{0} = {1}".format(key, value))
-        cls.set_aws_environment()
+            cls.set_from_yaml(stream=toggles.settings_file, toggles=toggles)
+        cls.set_aws_environment(toggles=toggles)
 
     @staticmethod
-    def set_default_values():
+    def set_default_values(toggles=None):
+        toggles = toggles or builtins.toggles
 
         # identifier for this specific environment
         toggles.environment_identifier = "{}{}".format(
@@ -106,34 +105,40 @@ class Configuration:
         toggles.automation_verbosity = 'INFO'
         toggles.features_with_arm = False
 
+        for key in sorted(toggles.__dict__.keys()):
+            value = toggles.__dict__.get(key)
+            logging.debug("{0} = {1}".format(key, value))
+
     @classmethod
-    def set_from_settings(cls, settings={}):
+    def set_from_yaml(cls, stream, toggles=None):
+        if type(stream) == str:
+            with open(stream) as handle:
+                logging.info(f"Loading configuration from '{stream}'")
+                settings = yaml.safe_load(handle)
+                cls.set_from_settings(settings=settings, toggles=toggles)
+        else:
+            settings = yaml.safe_load(stream)
+            cls.set_from_settings(settings=settings, toggles=toggles)
+
+    @classmethod
+    def set_from_settings(cls, settings={}, toggles=None):
         for key in settings.keys():
             if type(settings[key]) == dict:
                 for subkey in settings[key].keys():
                     flatten = "{0}_{1}".format(key, subkey)
                     value = settings[key].get(subkey)
-                    cls.set_attribute(flatten, value)
+                    cls.set_attribute(flatten, value, toggles=toggles)
             else:
-                cls.set_attribute(key, settings[key])
+                cls.set_attribute(key, settings[key], toggles=toggles)
 
     @classmethod
-    def set_from_yaml(cls, stream):
-        if type(stream) == str:
-            with open(stream) as handle:
-                logging.info(f"Loading configuration from '{stream}'")
-                settings = yaml.safe_load(handle)
-                cls.set_from_settings(settings)
-        else:
-            settings = yaml.safe_load(stream)
-            cls.set_from_settings(settings)
-
-    @classmethod
-    def set_attribute(cls, key, value):
+    def set_attribute(cls, key, value, toggles=None):
         cls.validate_attribute(key, value, context=cls.ALLOWED_ATTRIBUTES)
         if key == 'organizational_units':
             units = cls.transform_organizational_units(units=value)
             value = cls.set_organizational_units_default_values(units)
+        logging.debug("{0} = {1}".format(key, value))
+        toggles = toggles or builtins.toggles
         setattr(toggles, key, value)
 
     @classmethod
@@ -210,18 +215,33 @@ class Configuration:
                 raise AttributeError(f"Unexpected purge parameter '{label}' for organizational unit '{ou}'")
 
     @staticmethod
-    def set_aws_environment():
+    def set_aws_environment(toggles=None):
+        toggles = toggles or builtins.toggles
+
         account = os.environ.get('CDK_DEFAULT_ACCOUNT', None)
-        if not account:  # fall back on current aws profile
-            sts = boto3.client('sts')
-            account = sts.get_caller_identity().get('Account')
-        toggles.aws_account = account
+        if account:
+            logging.debug(f"using CDK_DEFAULT_ACCOUNT = {account}")
+        else:
+            account = toggles.automation_account_id
+            if account:
+                logging.debug(f"using account = {account}")
+            else:  # fall back to current aws profile
+                sts = boto3.client('sts')
+                account = sts.get_caller_identity().get('Account')
+        toggles.automation_account_id = account
 
         region = os.environ.get('CDK_DEFAULT_REGION', None)
-        if not region:  # fall back on default region for current profile
-            session = boto3.session.Session()
-            region = session.region_name
-        toggles.aws_region = region
+        if region:
+            logging.debug(f"using CDK_DEFAULT_REGION = {region}")
+        else:
+            region = toggles.automation_region
+            if region:
+                logging.debug(f"using region = {region}")
+            else:  # fall back to default region for current profile
+                session = boto3.session.Session()
+                region = session.region_name
+        toggles.automation_region = region
 
-        logging.debug("AWS environment is account '{0}' and region '{1}'".format(account, region))
-        toggles.aws_environment = Environment(account=account, region=region)
+        logging.debug("AWS environment is account '{0}' and region '{1}'".format(toggles.automation_account_id,
+                                                                                 toggles.automation_region))
+        toggles.aws_environment = Environment(account=toggles.automation_account_id, region=toggles.automation_region)
