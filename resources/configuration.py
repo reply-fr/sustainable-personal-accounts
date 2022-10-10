@@ -22,7 +22,6 @@ from types import SimpleNamespace
 import yaml
 
 from aws_cdk import Environment
-import boto3
 
 
 class Configuration:
@@ -218,28 +217,26 @@ class Configuration:
     def set_aws_environment(toggles=None):
         toggles = toggles or builtins.toggles
 
-        account = os.environ.get('CDK_DEFAULT_ACCOUNT', None)
+        account = os.environ.get('AWS_ACCOUNT', None)
         if account:
-            logging.debug(f"using CDK_DEFAULT_ACCOUNT = {account}")
+            logging.debug(f"using AWS_ACCOUNT = {account}")
         else:
             account = toggles.automation_account_id
             if account:
                 logging.debug(f"using account = {account}")
             else:  # fall back to current aws profile
-                sts = boto3.client('sts')
-                account = sts.get_caller_identity().get('Account')
+                account = os.environ.get('CDK_DEFAULT_ACCOUNT', None)
         toggles.automation_account_id = account
 
-        region = os.environ.get('CDK_DEFAULT_REGION', None)
+        region = os.environ.get('AWS_REGION', None)
         if region:
-            logging.debug(f"using CDK_DEFAULT_REGION = {region}")
+            logging.debug(f"using AWS_REGION = {region}")
         else:
             region = toggles.automation_region
             if region:
                 logging.debug(f"using region = {region}")
             else:  # fall back to default region for current profile
-                session = boto3.session.Session()
-                region = session.region_name
+                region = os.environ.get('CDK_DEFAULT_REGION', None)
         toggles.automation_region = region
 
         logging.debug("AWS environment is account '{0}' and region '{1}'".format(toggles.automation_account_id,
