@@ -42,7 +42,7 @@ def test_expand_text(toggles):
     assert test == 'this is some sample text with =value= to replace'
 
 
-@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"))
+@patch.dict(os.environ, dict(AWS_ACCOUNT="012345678901", AWS_REGION="eu-west-9"))
 def test_initialize(toggles):
 
     Configuration.initialize(stream='fixtures/settings/settings.yaml', toggles=toggles)
@@ -54,6 +54,7 @@ def test_initialize(toggles):
         Configuration.initialize(stream='this*file*does*not*exist')
 
 
+@patch.dict(os.environ, {}, clear=True)
 def test_set_aws_environment(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
     Configuration.set_aws_environment(toggles=toggles)
@@ -62,9 +63,22 @@ def test_set_aws_environment(toggles):
     assert toggles.aws_environment is not None
 
 
-@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"))
+@patch.dict(os.environ, dict(AWS_ACCOUNT="987654321098", AWS_REGION="eu-central-1"))
 def test_set_aws_environment_from_environment_variables(toggles):
+    logging.debug("here AWS_ACCOUNT={}".format(os.environ.get("AWS_ACCOUNT", 'not found')))
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
+    Configuration.set_aws_environment(toggles=toggles)
+    assert toggles.automation_account_id == "987654321098"
+    assert toggles.automation_region == "eu-central-1"
+    assert toggles.aws_environment is not None
+
+
+@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"), clear=True)
+def test_set_aws_environment_from_cdk_runtime(toggles):
+    Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
+    print(toggles)
+    toggles.automation_account_id = None
+    toggles.automation_region = None
     Configuration.set_aws_environment(toggles=toggles)
     assert toggles.automation_account_id == "012345678901"
     assert toggles.automation_region == "eu-west-9"
