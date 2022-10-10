@@ -88,8 +88,6 @@ CodeBuild has been selected for heavy processing of personal AWS accounts. CodeB
 
 Options that may be considered include at least Lambda, ECS, Automation and CodeBuild. Lambda is not adapted because execution is limited to 15 minutes, which is not enough for the provisioning or the destruction of complex resources such as Active Directory, FSx for Windows volume, etc. ECS does not have timing limitations, but it requires some VPC context that, strictly speaking, we do not need at all. SSM Automation is a powerful and VPC-less construct that can do almost anything. However, it is more designed to orchestrate code execution than to implement it. For example, SSM Automation can run python scripts but they are limited to a maximum duration of 10 minutes, which is not enough for our use case. At the end of the day, CodeBuild is a great candidate to automate preparation and purge activities within each account.
 
-Note that costs of CodeBuild are optimized with `arm1.small` compute instance type.
-
 Credit:
 - (1Strategy blog) [Automated Clean-up with AWS-Nuke in Multiple Accounts](https://www.1strategy.com/blog/2019/07/16/automated-clean-up-with-aws-nuke-in-multiple-accounts/)
 - (AWS blog) [Using AWS CodeBuild to execute administrative tasks](https://aws.amazon.com/blogs/devops/using-aws-codebuild-to-execute-administrative-tasks/)
@@ -128,7 +126,7 @@ At the end of the day, some parts of SPA are centralised, while other parts are 
 
 In addition, some resources deployed in the Automation account are accessible from all accounts of the target AWS Organization:
 - A SQS queue consolidates alerts from managed accounts. For example, when billing alerts are raised in one account, these are forwarded to the central SQS queu and forwarded to the configured administrators.
-- The default event bus of the Automation account can receive events directly from managed accounts, for example from within Codebuild projects. This allow distributed processing to be reported centrally. 
+- The default event bus of the Automation account can receive events directly from managed accounts, for example from within Codebuild projects. This allow distributed processing to be reported centrally.
 
 ### Q. What are the guiding principles for Sustainable Personal Accounts?
 
