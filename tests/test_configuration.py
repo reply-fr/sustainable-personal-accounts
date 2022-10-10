@@ -54,6 +54,7 @@ def test_initialize(toggles):
         Configuration.initialize(stream='this*file*does*not*exist')
 
 
+@patch.dict(os.environ, {}, clear=True)
 def test_set_aws_environment(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
     Configuration.set_aws_environment(toggles=toggles)
@@ -72,7 +73,7 @@ def test_set_aws_environment_from_environment_variables(toggles):
     assert toggles.aws_environment is not None
 
 
-@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"))
+@patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"), clear=True)
 def test_set_aws_environment_from_cdk_runtime(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
     print(toggles)
