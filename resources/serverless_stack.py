@@ -65,7 +65,7 @@ class ServerlessStack(Stack):
             monitored_functions.extend(construct.functions)
 
         Cockpit(self,
-                "{}Cockpit".format(toggles.environment_identifier),
+                "{}Cockpit-{}".format(toggles.environment_identifier, toggles.automation_region),
                 functions=monitored_functions)
 
         for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
