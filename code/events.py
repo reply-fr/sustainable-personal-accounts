@@ -104,7 +104,7 @@ class Events:
         return decoded
 
     @staticmethod
-    def decode_move_account_event(event, matches=None):
+    def decode_account_event(event, matches=None):
         decoded = SimpleNamespace()
 
         decoded.account = event['detail']['requestParameters']['accountId']

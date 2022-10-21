@@ -27,10 +27,10 @@ from session import get_organizational_units_settings
 
 
 @trap_exception
-def handle_move_event(event, context, session=None):
+def handle_account_event(event, context, session=None):
     logging.debug(json.dumps(event))
     units = get_organizational_units_settings(session=session)
-    input = Events.decode_move_account_event(event=event, matches=list(units.keys()))
+    input = Events.decode_account_event(event=event, matches=list(units.keys()))
     return handle_account(input.account, session=session)
 
 

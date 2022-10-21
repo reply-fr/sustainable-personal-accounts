@@ -25,7 +25,7 @@ from moto import mock_events
 import os
 
 from code import Events, State
-from code.on_vanilla_account_handler import handle_move_event, handle_tag_event
+from code.on_vanilla_account_handler import handle_account_event, handle_tag_event
 
 import pytest
 # pytestmark = pytest.mark.wip
@@ -85,23 +85,23 @@ def valid_tags():
 @patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
 @mock_events
-def test_handle_move_event(valid_tags):
+def test_handle_account_event(valid_tags):
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-1234",
                                                          origin_organizational_unit="ou-origin"))
-    result = handle_move_event(event=event, context=None, session=valid_tags)
+    result = handle_account_event(event=event, context=None, session=valid_tags)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
-def test_handle_move_event_on_unexpected_event(valid_tags):
+def test_handle_account_event_on_unexpected_event(valid_tags):
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-unexpected",
                                                          origin_organizational_unit="ou-origin"))
-    result = handle_move_event(event=event, context=None, session=valid_tags)
+    result = handle_account_event(event=event, context=None, session=valid_tags)
     assert result == "[DEBUG] Unexpected event source 'ou-unexpected'"
 
 
