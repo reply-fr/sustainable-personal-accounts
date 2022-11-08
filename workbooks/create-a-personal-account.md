@@ -9,7 +9,7 @@ Note: The integration of an existing AWS account has proven painful. It is a far
 - You have credentials to access the AWS Console for the Master Account of the target AWS Organization.
 - You have needed permissions to manage Control Tower and Account Factory
 
-### Step 1 - Validate capabilities of the candidate
+### Step 1 - Validate capabilities of the requester
 
 Accessing an AWS account is equivalent, in the virtual world, or accessing freely a data center in the physical world. You can rack servers, deploy networks and a variety of appliances, etc. With such powers come great responsibilities, including the prevention of security breaches and the containing of costs.
 
@@ -23,7 +23,7 @@ Therefore, we suggest to provide AWS account only to people who are in capacity 
 Following details have to be provided to provision a new personal AWS account:
 - First name
 - Last name
-- Corporate e-mail address with `.com` extension (e.g., `j.foo@acme.com`)
+- Corporate e-mail address, e.g., `j.foo@acme.com`
 - Organisation that is owning the budget for cloud resources (aka, name of a business unit or of a team)
 
 Ideally, the request should be submitted by the owner of cloud budget, for proper separation of duties. Also, the request should be accepted by the team in charge of SPA operations.
@@ -55,7 +55,7 @@ The person will receive messages over e-mail for the connection to new AWS accou
 
 The person who created the account should arrange a quick enablement session with the person receiving an account. During this interactive session:
 
-1. Invite the person to open an incognito window and visit the Start URL 
+1. Invite the person to open an incognito window and visit the Start URL
 2. Sign in into AWS SSO, including MFA
 3. When the Start URL is displayed, listing all accessible accounts, invite the person to bookmark this page in the toolbar for easy retrieval
 4. Ask the person to navigate the AWS Console for his personal account. Notice that he/she has `AWSAdministratorAccess` to everything, therefore the responsibility on security and costs.
