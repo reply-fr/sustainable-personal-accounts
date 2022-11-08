@@ -142,32 +142,32 @@ def test_decode_report_event():
     assert decoded.message == "some log"
 
 
-def test_decode_move_account_event():
+def test_decode_account_event():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-destination",
                                                          source_organizational_unit="ou-source"))
-    decoded = Events.decode_move_account_event(event)
+    decoded = Events.decode_account_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
 
 
-def test_decode_move_account_event_on_malformed_account():
+def test_decode_account_event_on_malformed_account():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="short",
                                                          destination_organizational_unit="ou-destination",
                                                          source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        Events.decode_move_account_event(event)
+        Events.decode_account_event(event)
 
 
-def test_decode_move_account_event_on_unexpected_organizational_unit():
+def test_decode_account_event_on_unexpected_organizational_unit():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-expected",
                                                          source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        Events.decode_move_account_event(event, matches=["ou-destination"])
+        Events.decode_account_event(event, matches=["ou-destination"])
 
 
 def test_decode_tag_account_event():
