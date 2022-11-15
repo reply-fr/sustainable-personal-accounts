@@ -38,7 +38,7 @@ You will find below details on failing CodeBuild project ran on account '{accoun
 
 
 NOTIFICATION_TEMPLATE = """
-You will find below a copy of the alert that has been sent automatically to the holder of account '{account_id}':
+You will find below a copy of the alert that has been sent automatically to the holder of account '{account}':
 
 ----
 
@@ -46,7 +46,7 @@ You will find below a copy of the alert that has been sent automatically to the 
 """
 
 
-SUBJECT_TEMPLATE = "Alert on account '{account_id}'"
+SUBJECT_TEMPLATE = "Alert on account '{account}'"
 
 
 @trap_exception
@@ -56,7 +56,7 @@ def handle_codebuild_event(event, context, session=None):
     input = Events.decode_codebuild_event(event)
     label = get_account_label(account_id=input.account, session=session)
     notification = dict(Message=get_codebuild_message(account=label, project=input.project, status=input.status),
-                        Subject=get_subject(account_id=input.account))
+                        Subject=get_subject(account=label))
     publish_notification(notification=notification, session=session)
     return '[OK]'
 
@@ -92,8 +92,8 @@ def handle_sqs_record(record, session=None):
 def relay_notification(account_id, message, session=None):
     logging.debug("Relaying alert notification")
     label = get_account_label(account_id=account_id, session=session)
-    notification = dict(Message=get_notification_message(account_id=label, message=message),
-                        Subject=get_subject(account_id=account_id))
+    notification = dict(Message=get_notification_message(account=label, message=message),
+                        Subject=get_subject(account=label))
     publish_notification(notification=notification, session=session)
 
 
@@ -119,9 +119,9 @@ def get_codebuild_message(account, project, status) -> str:
     return CODEBUILD_TEMPLATE.format(account=account, project=project, status=status).strip()
 
 
-def get_notification_message(account_id, message) -> str:
-    return NOTIFICATION_TEMPLATE.format(account_id=account_id, message=message).strip()
+def get_notification_message(account, message) -> str:
+    return NOTIFICATION_TEMPLATE.format(account=account, message=message).strip()
 
 
-def get_subject(account_id) -> str:
-    return SUBJECT_TEMPLATE.format(account_id=account_id).strip()
+def get_subject(account) -> str:
+    return SUBJECT_TEMPLATE.format(account=account).strip()
