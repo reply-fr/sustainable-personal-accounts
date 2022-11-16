@@ -31,8 +31,6 @@ This step can be completed with following activities:
 - Click on the button `Next` at the very bottom right
 - On third step, review the overall configuration. Ensure that Organisational-level logging has been enabled then click on button `Update landing zone`
 
-To validate this step, look at ...
-
 ## Step 3 - Select an AWS account and a region to deploy Sustainable Personal Account
 
 We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organisational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams. As a result, out of all shared accounts created by Control Tower, the `Sandbox` account seems a good candidate to automate business operations with tools such as SPA.
@@ -174,7 +172,7 @@ You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` 
 
 ## Step 10 - Deploy SPA
 
-One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can deploy SPA with one command:
+One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can deploy SPA:
 
 ```
 $ make shell

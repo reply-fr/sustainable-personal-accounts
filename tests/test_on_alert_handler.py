@@ -25,7 +25,7 @@ from moto import mock_sns
 import os
 import pytest
 
-from code.on_alert_handler import handle_queue_event, get_codebuild_message
+from code.on_alert_handler import get_codebuild_message, handle_queue_event, publish_notification_on_microsoft_webhook
 
 pytestmark = pytest.mark.wip
 
@@ -68,7 +68,19 @@ def test_handle_queue_event(queued_message, account_describe_mock):
         assert result == '[OK]'
     account_describe_mock.client.return_value.publish.assert_called_with(TopicArn='arn:aws:sns:eu-west-1:123456789012:test-topic',
                                                                          Message="You will find below a copy of the alert that has been sent automatically to the holder of account '111111111111 (a@b.com)':\n\n----\n\nsome message",
-                                                                         Subject="Alert on account '111111111111'")
+                                                                         Subject="Alert on account '111111111111 (a@b.com)'")
+
+@patch.dict(os.environ, dict(MICROSOFT_WEBHOOK='https://webhook/'))
+@patch('pymsteams.connectorcard')
+def test_publish_notification_on_microsoft_webhook(patched):
+    notification = dict(Message='hello world',
+                        Subject='some subject')
+    publish_notification_on_microsoft_webhook(notification=notification)
+    patched.assert_called_once_with('https://webhook/')
+    message = patched('https://webhook/')
+    message.title.assert_called_once_with('some subject')
+    message.text.assert_called_once_with('hello world')
+    message.send.assert_called_once()
 
 
 """
