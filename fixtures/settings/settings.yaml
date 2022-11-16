@@ -35,12 +35,6 @@ automation:
   #
   role_name_to_manage_codebuild: 'AWSControlTowerExecution'
 
-  # these e-mail addresses receive messages on alerts
-  #
-  subscribed_email_addresses:
-  - finops_alerts@acme.com
-  - cloud_operations@acme.com
-
   # these tags are used on resources deployed in automation account
   #
   tags:
@@ -196,6 +190,22 @@ organizational_units:
 #
 features:
 
-  # use ARM architecture for Lambda and Codebuild projects instead of Intel/AMD architecture
+  # use ARM architecture for Lambda and for Codebuild projects instead of Intel/AMD architecture
+  # - allowed values: true, false
+  # - default value: false
   #
-  with_arm: true
+  with_arm_architecture: true
+
+  # these e-mail addresses receive messages on alerts, e.g., billing alerts, CodeBuild failures, etc.
+  # - allowed values: a list of valid e-mail addresses
+  # - default value: empty list
+  #
+  with_email_subscriptions_on_alerts:
+  - finops_alerts@acme.com
+  - cloud_operations@acme.com
+
+  # this webhook receives messages on alerts, e.g., billing alerts, CodeBuild failures, etc.
+  # - allowed values: URL provided from a configured incoming Webhook in Microsoft Teams
+  # - default value: no value
+  #
+  with_microsoft_webhook_on_alerts: https://acme.webhook.office.com/webhookb2/892ca8xf-9423

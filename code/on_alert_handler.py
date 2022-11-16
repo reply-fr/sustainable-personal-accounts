@@ -18,6 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import logging
 import os
+import pymsteams
 
 from boto3.session import Session
 
@@ -107,7 +108,26 @@ def relay_message(message, session=None):
 def publish_notification(notification, session=None):
     logging.info(f"Publishing notification: {notification}")
     session = session or Session()
-    session.client('sns').publish(TopicArn=os.environ['TOPIC_ARN'], **notification)
+    publish_notification_on_microsoft_webhook(notification=notification)
+    publish_notification_on_sns(notification=notification, session=session)
+
+
+def publish_notification_on_microsoft_webhook(notification):
+    microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK', None)
+    if microsoft_webhook:
+        logging.info(f"Publishing on Microsoft Webhook: {microsoft_webhook}")
+        message = pymsteams.connectorcard(microsoft_webhook)
+        message.title(notification['Subject'])
+        message.text(notification['Message'])
+        message.send()
+
+
+def publish_notification_on_sns(notification, session=None):
+    topic_arn = os.environ.get('TOPIC_ARN', None)
+    if topic_arn:
+        logging.info(f"Publishing on SNS: {topic_arn}")
+        session = session or Session()
+        session.client('sns').publish(TopicArn=topic_arn, **notification)
 
 
 def get_account_label(account_id, session=None) -> str:

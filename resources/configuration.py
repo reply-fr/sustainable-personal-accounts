@@ -34,11 +34,12 @@ class Configuration:
         automation_region='str',
         automation_role_arn_to_manage_accounts='str',
         automation_role_name_to_manage_codebuild='str',
-        automation_subscribed_email_addresses='list',
         automation_tags='dict',
         automation_verbosity='str',
         environment_identifier='str',
-        features_with_arm='bool',
+        features_with_arm_architecture='bool',
+        features_with_email_subscriptions_on_alerts='list',
+        features_with_microsoft_webhook_on_alerts='str',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
         worker_purge_buildspec_template_file='str',
@@ -102,7 +103,9 @@ class Configuration:
         toggles.automation_subscribed_email_addresses = []
         toggles.automation_tags = {}
         toggles.automation_verbosity = 'INFO'
-        toggles.features_with_arm = False
+        toggles.features_with_arm_architecture = False
+        toggles.features_with_email_subscriptions_on_alerts = []
+        toggles.features_with_microsoft_webhook_on_alerts = None
 
         for key in sorted(toggles.__dict__.keys()):
             value = toggles.__dict__.get(key)

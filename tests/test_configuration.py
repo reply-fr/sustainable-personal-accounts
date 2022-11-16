@@ -89,6 +89,9 @@ def test_set_default_values(toggles):
     Configuration.set_default_values(toggles=toggles)
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.automation_verbosity == 'INFO'
+    assert toggles.features_with_arm_architecture is False
+    assert toggles.features_with_email_subscriptions_on_alerts == []
+    assert toggles.features_with_microsoft_webhook_on_alerts is None
 
 
 def test_set_from_settings(toggles):
@@ -112,7 +115,7 @@ def test_set_from_settings_with_default_values(toggles):
              note='ou description',
              preparation=dict(feature='enabled', variables=dict(BUDGET_THRESHOLD='80')),
              purge=dict(feature='enabled', variables=dict(KEY='another key', VALUE='value')))],
-        features=dict(with_arm=True))
+        features=dict(with_arm_architecture=True))
     Configuration.set_from_settings(settings, toggles=toggles)
     assert toggles.organizational_units == {'ou': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
                                                    'note': 'ou description',
@@ -129,14 +132,15 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_region == 'eu-west-1'
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
-    assert toggles.automation_subscribed_email_addresses == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
     assert toggles.automation_tags == {'CostCenter': 'shared'}
     assert toggles.automation_verbosity == 'ERROR'
     assert toggles.environment_identifier == 'SpaDemo'
     assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
     assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/preparation_account_template.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'fixtures/buildspec/purge_account_with_awsweeper_template.yaml'
-    assert toggles.features_with_arm is True
+    assert toggles.features_with_arm_architecture is True
+    assert toggles.features_with_email_subscriptions_on_alerts == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
+    assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
 
 
 def test_set_from_yaml_invalid(toggles):

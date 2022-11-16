@@ -39,6 +39,7 @@ setuptools.setup(
         "aws-cdk-lib>=2.0.0rc1",
         "constructs>=10.0.0",
         "boto3",
+        "pymsteams",
         "pyyaml",
         "requests",
     ],
