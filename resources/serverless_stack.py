@@ -84,7 +84,7 @@ class ServerlessStack(Stack):
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             VERBOSITY=toggles.automation_verbosity)
         if toggles.features_with_microsoft_webhook_on_alerts:
-            environment['MICROSOFT_WEBHOOK'] = toggles.features_with_microsoft_webhook_on_alerts
+            environment['MICROSOFT_WEBHOOK_ON_ALERTS'] = toggles.features_with_microsoft_webhook_on_alerts
         return environment
 
     def get_parameters(self, environment) -> dict:  # passed to every lambda functions

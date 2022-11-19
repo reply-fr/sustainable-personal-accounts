@@ -113,7 +113,7 @@ def publish_notification(notification, session=None):
 
 
 def publish_notification_on_microsoft_webhook(notification):
-    microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK', None)
+    microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK_ON_ALERTS', None)
     if microsoft_webhook:
         logging.info(f"Publishing on Microsoft Webhook: {microsoft_webhook}")
         message = pymsteams.connectorcard(microsoft_webhook)
