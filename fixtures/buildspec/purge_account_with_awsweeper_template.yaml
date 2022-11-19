@@ -35,8 +35,8 @@ phases:
     - echo "PURGE_EMAIL=$PURGE_EMAIL"
     - echo "PURGE_MESSAGE=$PURGE_MESSAGE"
     - echo "PURGE_MODE=$PURGE_MODE"
-    - echo "TAG ${TAG_KEY}=${TAG_VALUE}"
-    - curl -sSfL --retry 3 https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.11.1
+    - echo "PURGE TAG ${TAG_KEY}=${TAG_VALUE}"
+    - curl -sSfL --retry 3 https://raw.githubusercontent.com/jckuester/awsweeper/master/install.sh | sh -s v0.12.0
   build:
     commands:
     - echo "Purge of account ${ACCOUNT} started on $(date)"
@@ -133,7 +133,7 @@ phases:
         echo "Looking for purgeable resources on account $ACCOUNT in region $REGION" >> awsweeper.log
         ./bin/awsweeper ${PURGE_MODE} --region ${REGION} filter.yaml | tee -a awsweeper.log
       done < regions.txt
-    - echo "Wave 2 - Purge resources created ${MAXIMUM_AGE} ago" | tee -a awsweeper.log
+    - echo "Wave 2 - Purge resources created more than ${MAXIMUM_AGE} ago" | tee -a awsweeper.log
     - |
       cat <<EOF > filter.yaml
       aws_cloudformation_stack:
