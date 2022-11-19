@@ -1,37 +1,35 @@
 {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Sid": "SpaDenyCreationOfPrivateCertificateAuthority",
-        "Effect": "Deny",
-        "Action": "acm-pca:CreateCertificateAuthority",
-        "Resource": [
-          "arn:aws:acm-pca:*:*:certificate-authority/*"
-        ]
-      },
-      {
-        "Sid": "SpaDenyUsageOfGlobalAccelerator",
-        "Effect": "Allow",
-        "Action": [
-            "globalaccelerator:*"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "SpaDenySubscriptionOfShieldAdvanced",
-        "Effect": "Allow",
-        "Action": [
-            "shield:CreateSubscription"
-        ],
-        "Resource": "*"
-      },
-      {
-        "Sid": "SpaDenyCreationOfRedshiftWithoutSpectrum",
-        "Effect": "Deny",
-        "Action": "redshift:*",
-        "Resource": [
-          "arn:aws:redshift:*:*:cluster:*"
-        ]
-      }
-    ]
-  }
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SpaDenyCreationOfPrivateCertificateAuthority",
+      "Effect": "Deny",
+      "Action": "acm-pca:CreateCertificateAuthority",
+      "Resource": "*"
+    },
+    {
+      "Sid": "SpaDenyUsageOfGlobalAccelerator",
+      "Effect": "Allow",
+      "Action": [
+        "globalaccelerator:CreateAccelerator"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SpaDenySubscriptionOfShieldAdvanced",
+      "Effect": "Allow",
+      "Action": [
+        "shield:CreateSubscription"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SpaDenyCreationOfRedshiftWithoutSpectrum",
+      "Effect": "Deny",
+      "Action": [
+        "redshift:CreateCluster"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
