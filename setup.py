@@ -35,19 +35,15 @@ setuptools.setup(
     package_dir={"": "code"},
     packages=setuptools.find_packages(where="code"),
 
-    install_requires=[
-        "aws-cdk-lib>=2.0.0rc1",
-        "constructs>=10.0.0",
+    install_requires=[  # list here only dependencies for lambda functions; other go to requirements.txt
         "boto3",
         "pymsteams",
-        "pyyaml",
-        "requests",
     ],
 
     python_requires=">=3.7",
 
     classifiers=[  # as per https://pypi.org/classifiers/
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 3 - Beta",
 
         "Framework :: AWS CDK",
         "Framework :: Flake8",
@@ -58,7 +54,6 @@ setuptools.setup(
 
         "License :: OSI Approved :: Apache Software License",
 
-        "Programming Language :: JavaScript",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.8",

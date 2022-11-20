@@ -147,10 +147,16 @@ rebase:
 	git pull --rebase origin main
 	git stash pop
 
-diff: venv/bin/activate
+lambda.out: setup.py code/*.py
+	mkdir -p lambda.out
+	pip install -e . -t lambda.out
+	cp code/*.py lambda.out
+	touch lambda.out
+
+diff: venv/bin/activate lambda.out
 	cdk diff
 
-deploy: venv/bin/activate
+deploy: venv/bin/activate lambda.out
 	cdk deploy --all
 
 destroy: venv/bin/activate

@@ -70,6 +70,7 @@ def test_handle_queue_event(queued_message, account_describe_mock):
                                                                          Message="You will find below a copy of the alert that has been sent automatically to the holder of account '111111111111 (a@b.com)':\n\n----\n\nsome message",
                                                                          Subject="Alert on account '111111111111 (a@b.com)'")
 
+
 @patch.dict(os.environ, dict(MICROSOFT_WEBHOOK_ON_ALERTS='https://webhook/'))
 @patch('pymsteams.connectorcard')
 def test_publish_notification_on_microsoft_webhook(patched):

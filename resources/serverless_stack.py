@@ -90,7 +90,7 @@ class ServerlessStack(Stack):
     def get_parameters(self, environment) -> dict:  # passed to every lambda functions
         parameters = dict(
             architecture=Architecture.ARM_64 if toggles.features_with_arm_architecture else Architecture.X86_64,
-            code=AssetCode("code"),
+            code=AssetCode("lambda.out"),  # code and dependencies are copied there in Makefile
             environment=environment,
             log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
