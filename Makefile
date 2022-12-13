@@ -145,7 +145,7 @@ stats: venv/bin/activate
 rebase:
 	git stash
 	git pull --rebase origin main
-	git stash pop
+	git stash pop || true
 
 lambda.out: setup.py code/*.py
 	mkdir -p lambda.out
