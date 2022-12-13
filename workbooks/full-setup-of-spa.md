@@ -186,3 +186,4 @@ Use the AWS Console on the `Automation` account. There is a CloudWatch dashboard
 ## Post-conditions
 
 - You can now [create new AWS accounts](./create-a-personal-account.md) and let SPA manage them automatically
+- You can [forward consolidated alerts to Microsoft Teams](./add-microsoft-teams-webhook.md) and look for collective efficiency of your entire team
