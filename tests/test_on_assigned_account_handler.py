@@ -82,6 +82,7 @@ def session():
 @patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
                              AUTOMATION_ACCOUNT="123456789012",
                              AUTOMATION_REGION="eu-west-12",
+                             AWS_DEFAULT_REGION='eu-west-1',
                              EVENT_BUS_ARN='arn:aws',
                              ENVIRONMENT_IDENTIFIER='Test',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',

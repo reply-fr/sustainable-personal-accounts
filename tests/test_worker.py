@@ -77,6 +77,7 @@ def test_get_purge_variables():
                          'TOPIC_ARN': 'arn:aws:test'}
 
 
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
 @mock_sns
 def test_grant_publishing_from_budgets():
     session = Session()

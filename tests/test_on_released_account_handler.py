@@ -76,7 +76,8 @@ def session():
     return mock
 
 
-@patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+                             PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER='here',
                              VERBOSITY='DEBUG'))

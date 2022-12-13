@@ -82,7 +82,8 @@ def valid_tags():
     return mock
 
 
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+                             ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_account_event(valid_tags):
@@ -105,7 +106,8 @@ def test_handle_account_event_on_unexpected_event(valid_tags):
     assert result == "[DEBUG] Unexpected event source 'ou-unexpected'"
 
 
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+                             ORGANIZATIONAL_UNITS_PARAMETER="here",
                              VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_tag_event(valid_tags):

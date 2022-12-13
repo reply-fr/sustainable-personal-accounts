@@ -60,6 +60,7 @@ def test_get_codebuild_message():
     assert result == "You will find below details on failing CodeBuild project ran on account '123456789012':\n\n- account: 123456789012\n- project: someProject\n- status: FAILED"
 
 
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
 @mock_sns
 def test_handle_queue_event(queued_message, account_describe_mock):
     topic = boto3.client('sns').create_topic(Name="test-topic")
