@@ -186,6 +186,121 @@ organizational_units:
         TAG_KEY: test
         TAG_VALUE: test
 
+# these are specific settings for individual accounts managed by the solution
+#
+accounts:
+
+  # default settings for all listed accounts
+  #
+  - identifier: 'default'
+
+    # added to every listed account
+    #
+    account_tags:
+      ManagementSystem: SPA
+
+    # default preparation settings
+    #
+    preparation:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: disabled
+
+      # passed to Codebuild project for the preparation of an account
+      #
+      variables:
+        ALERT_THRESHOLD: 80 # percentage of budget
+        BUDGET_AMOUNT: 500.0 # USD
+        BUDGET_NAME: SpaBudget
+
+    # default purge settings
+    #
+    purge:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: disabled
+
+      # passed to Codebuild project for the purge of an account
+      variables:
+        MAXIMUM_AGE: 9M  # '5d', '2w', '3M', '1y', etc.
+        PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
+        TAG_KEY: purge
+        TAG_VALUE: me
+
+
+  # settings specific to this acount
+  #
+  - identifier: '123456789012'
+    note: 'one specific account'
+
+    # added to this account
+    #
+    account_tags:
+      CostCenter: 'SB-123'
+      Sponsor: 'Alice'
+      "account:manager": alice@acme.com
+
+    # preparation of this account
+    #
+    preparation:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: enabled
+
+      # passed to Codebuild project for the preparation of this account
+      #
+      variables:
+        ALERT_THRESHOLD: 90 # percentage of budget
+        BUDGET_AMOUNT: 3000 # USD
+        BUDGET_NAME: SpecificAliceBudget
+
+    # purge of expired account
+    #
+    purge:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: disabled
+
+  # settings specific to accounts placed in this organizational unit
+  #
+  - identifier: '210987654321'
+    note: 'another specific account'
+
+    # added to every account
+    #
+    account_tags:
+      CostCenter: 'SB-456'
+      Sponsor: 'Bob'
+      "account:manager": bob@acme.com
+
+    # preparation of assigned account
+    #
+    preparation:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: enabled
+
+      # passed to Codebuild project for the preparation of an account
+      #
+      variables:
+        ALERT_THRESHOLD: 90 # percentage of budget
+        BUDGET_AMOUNT: 4000 # USD
+        BUDGET_NAME: SpecificBobBudget
+
+
+    # purge of expired account
+    #
+    purge:
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      #
+      feature: disabled
+
 # additional features that can be activated optionnally
 #
 features:
