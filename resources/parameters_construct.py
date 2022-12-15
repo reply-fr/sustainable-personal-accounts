@@ -31,13 +31,23 @@ class Parameters(Construct):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
-        StringParameter(
-            self, "OrganisationalUnits",
-            string_value=json.dumps(toggles.organizational_units, indent=4),
-            data_type=ParameterDataType.TEXT,
-            description="Parameters for managed organizational units",
-            parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER,
-            tier=ParameterTier.STANDARD)
+        for identifier in toggles.accounts.keys():
+            StringParameter(
+                self, f"a-{identifier}",
+                string_value=json.dumps(toggles.accounts[identifier], indent=4),
+                data_type=ParameterDataType.TEXT,
+                description="Parameters for managed account {}".format(identifier),
+                parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER + '-' + identifier,
+                tier=ParameterTier.STANDARD)
+
+        for identifier in toggles.organizational_units.keys():
+            StringParameter(
+                self, identifier,
+                string_value=json.dumps(toggles.organizational_units[identifier], indent=4),
+                data_type=ParameterDataType.TEXT,
+                description="Parameters for managed organizational unit {}".format(identifier),
+                parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER + '-' + identifier,
+                tier=ParameterTier.STANDARD)
 
         string_value = self.get_buildspec_for_preparation()
         StringParameter(
