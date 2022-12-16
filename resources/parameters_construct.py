@@ -24,6 +24,8 @@ from aws_cdk.aws_ssm import ParameterDataType, ParameterTier, StringParameter
 
 class Parameters(Construct):
 
+    PARAMETER_SEPARATOR = "/"
+    ACCOUNTS_PARAMETER = "Accounts"
     ORGANIZATIONAL_UNITS_PARAMETER = "OrganizationalUnits"
     PREPARATION_BUILDSPEC_PARAMETER = "PreparationBuildspecTemplate"
     PURGE_BUILDSPEC_PARAMETER = "PurgeBuildspecTemplate"
@@ -37,7 +39,7 @@ class Parameters(Construct):
                 string_value=json.dumps(toggles.accounts[identifier], indent=4),
                 data_type=ParameterDataType.TEXT,
                 description="Parameters for managed account {}".format(identifier),
-                parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER + '-' + identifier,
+                parameter_name=self.PARAMETER_SEPARATOR.join(['', toggles.environment_identifier, self.ACCOUNTS_PARAMETER, identifier]),
                 tier=ParameterTier.STANDARD)
 
         for identifier in toggles.organizational_units.keys():
@@ -46,7 +48,7 @@ class Parameters(Construct):
                 string_value=json.dumps(toggles.organizational_units[identifier], indent=4),
                 data_type=ParameterDataType.TEXT,
                 description="Parameters for managed organizational unit {}".format(identifier),
-                parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER + '-' + identifier,
+                parameter_name=self.PARAMETER_SEPARATOR.join(['', toggles.environment_identifier, self.ORGANIZATIONAL_UNITS_PARAMETER, identifier]),
                 tier=ParameterTier.STANDARD)
 
         string_value = self.get_buildspec_for_preparation()
