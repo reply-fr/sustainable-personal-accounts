@@ -123,7 +123,7 @@ class ServerlessStack(Stack):
                             resources=['*']),
 
             PolicyStatement(effect=Effect.ALLOW,
-                            actions=['ssm:GetParameter'],
+                            actions=['ssm:GetParameter', 'ssm:GetParametersByPath'],
                             resources=['*']),
 
             PolicyStatement(effect=Effect.ALLOW,
