@@ -15,18 +15,10 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
-import os
 import uuid
 
 from boto3.session import Session
 import botocore
-
-
-def get_organizational_units_settings(session=None) -> dict:
-    session = session or Session()
-    item = session.client('ssm').get_parameter(Name=os.environ['ORGANIZATIONAL_UNITS_PARAMETER'])
-    return json.loads(item['Parameter']['Value'])
 
 
 def make_session(role_arn, region=None, name=None, session=None):

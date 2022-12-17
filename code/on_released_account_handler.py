@@ -21,9 +21,9 @@ import logging
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from account import Account, State
+from account import State
 from events import Events
-from session import get_organizational_units_settings
+from settings import Settings
 
 
 @trap_exception
@@ -34,6 +34,5 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    units = get_organizational_units_settings(session=session)
-    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    Settings.get_settings_for_account(environment=toggles.environment_identifier, identifier=account, session=session)  # error if account is not managed
     return Events.emit('ReleasedAccount', account)

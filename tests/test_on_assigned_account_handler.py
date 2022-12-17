@@ -19,90 +19,136 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from boto3.session import Session
 import json
-from unittest.mock import Mock, patch
-from moto import mock_events, mock_sns
+from moto import mock_events, mock_ssm
 import os
-import pytest
+from types import SimpleNamespace
+from unittest.mock import Mock, patch
 
+from account import Account
 from code import Events, State
 from code.on_assigned_account_handler import handle_tag_event
+from worker import Worker
 
-# pytestmark = pytest.mark.wip
+import pytest
+pytestmark = pytest.mark.wip
 
 
-@pytest.fixture
-def session():
-    mock = Mock()
+def given_some_context(prefix='/Fake/'):
 
-    mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
+    session = Session(aws_access_key_id='testing',
+                      aws_secret_access_key='testing',
+                      aws_session_token='testing',
+                      region_name='eu-west-1')
 
-    mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
+    context = SimpleNamespace(session=session)
 
-    mock.client.return_value.describe_account.return_value = dict(Account=dict(Arn='arn:aws',
-                                                                               Email='a@b.com',
-                                                                               Name='Some-Account',
-                                                                               Status='ACTIVE'))
-
-    parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_2 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_3 = dict(Parameter=dict(Value='buildspec_content'))
-    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2, parameter_3]
-
-    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
-
-    parents = {
-        'Parents': [
-            {
-                'Id': 'ou-1234',
-                'Type': 'ORGANIZATIONAL_UNIT'
-            },
-        ]
+    context.settings_123456789012 = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'identifier': '123456789012',
+        'note': 'a specific account',
+        'preparation': {
+            'feature': 'enabled',
+            'variables': {'HELLO': 'WORLD'}
+        },
+        'purge': {
+            'feature': 'enabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
     }
-    mock.client.return_value.list_parents.return_value = parents
+    session.client('ssm').put_parameter(Name=prefix + 'Accounts/123456789012',
+                                        Value=json.dumps(context.settings_123456789012),
+                                        Type='String')
 
-    tags = {
-        'Tags': [
-            {
-                'Key': 'account:holder',
-                'Value': 'a@b.com'
-            },
-
-            {
-                'Key': 'account:state',
-                'Value': 'vanilla'
-            }
-        ]
+    context.settings_567890123456 = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'identifier': '567890123456',
+        'note': 'another specific account',
+        'preparation': {
+            'feature': 'disabled',
+            'variables': {'HELLO': 'MOON'}
+        },
+        'purge': {
+            'feature': 'disabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
     }
-    mock.client.return_value.list_tags_for_resource.return_value = tags
+    session.client('ssm').put_parameter(Name=prefix + 'Accounts/567890123456',
+                                        Value=json.dumps(context.settings_567890123456),
+                                        Type='String')
 
-    return mock
+    session.client('ssm').put_parameter(Name='buildspec',
+                                        Value='some text',
+                                        Type='String')
+
+    return context
 
 
-@patch.dict(os.environ, dict(PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             PREPARATION_BUILDSPEC_PARAMETER="buildspec",
                              AUTOMATION_ACCOUNT="123456789012",
                              AUTOMATION_REGION="eu-west-12",
                              AWS_DEFAULT_REGION='eu-west-1',
                              EVENT_BUS_ARN='arn:aws',
                              ENVIRONMENT_IDENTIFIER='Test',
-                             ORGANIZATIONAL_UNITS_PARAMETER='here',
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
+                             TOPIC_ARN='arn:aws',
                              VERBOSITY='DEBUG'))
 @mock_events
-@mock_sns
-def test_handle_tag_event(session):
+@mock_ssm
+def test_handle_tag_event(monkeypatch):
+    context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
+
+    # preparation has been enabled on "123456789012"
+    processed = []
+
+    def mock_worker_prepare(details, *args, **kwargs):
+        processed.append(details.id)
+
+    monkeypatch.setattr(Worker, 'prepare', mock_worker_prepare)
+    monkeypatch.setattr(Account, 'tag', Mock())
+
+    def mock_account_describe(id, *args, **kwargs):
+        return SimpleNamespace(id=id, email='a@b.com')
+
+    monkeypatch.setattr(Account, 'describe', mock_account_describe)
+
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
                                                          new_state=State.ASSIGNED.value))
-    result = handle_tag_event(event=event, context=None, session=session)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Test"}', 'DetailType': 'AssignedAccount', 'Source': 'SustainablePersonalAccounts'}
+    with patch('code.on_assigned_account_handler.prepare_topic', return_value='aws:arn'):
+        result = handle_tag_event(event=event, context=None, session=context.session)
+    assert result["DetailType"] == 'AssignedAccount'
+    assert processed == ["123456789012"]
+
+    # preparation has not been enabled on "567890123456"
+    processed = []
+
+    def mock_account_move(account, *args, **kwargs):
+        processed.append(account)
+
+    monkeypatch.setattr(Account, 'move', mock_account_move)
+
+    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
+                                            context=dict(account="567890123456",
+                                                         new_state=State.ASSIGNED.value))
+    result = handle_tag_event(event=event, context=None, session=context.session)
+    assert result["DetailType"] == 'AssignedAccount'
+    assert processed == ["567890123456"]
 
 
-@patch.dict(os.environ, dict(EVENT_BUS_ARN='arn:aws',
-                             ORGANIZATIONAL_UNITS_PARAMETER='here',
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             ENVIRONMENT_IDENTIFIER='Test',
+                             EVENT_BUS_ARN='arn:aws',
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='INFO'))
-def test_handle_tag_event_on_unexpected_state(session):
+@mock_ssm
+def test_handle_tag_event_on_unexpected_state():
+    context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
+
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
                                                          new_state=State.VANILLA.value))
-    result = handle_tag_event(event=event, context=None, session=session)
+    result = handle_tag_event(event=event, context=None, session=context.session)
     assert result == "[DEBUG] Unexpected state 'vanilla' for this function"

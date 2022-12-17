@@ -16,34 +16,52 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import logging
+import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
-from session import get_organizational_units_settings
+from settings import Settings
 
 
 @trap_exception
 def handle_event(event, context, session=None):
-    logging.info("Checking personal accounts")
-    units = get_organizational_units_settings(session=session)
-    for unit in units.keys():
-        logging.info(f"Scanning organizational unit '{unit}'")
-        logging.debug(units[unit])
-        for account in Account.list(parent=unit, session=session):
-            handle_account(account=account, unit=units[unit], session=session)
-    logging.info("All configured organizational units have been scanned")
+    handle_managed_accounts(session=session)
+    handle_managed_organizational_units(session=session)
     return '[OK]'
 
 
-def handle_account(account, unit=None, session=None):
+def handle_managed_accounts(session=None):
+    logging.info("Checking managed accounts")
+    for identifier in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
+        logging.info(f"Scanning account '{identifier}'")
+        settings = Settings.get_account_settings(environment=os.environ['ENVIRONMENT_IDENTIFIER'],
+                                                 identifier=identifier,
+                                                 session=session)
+        logging.debug(settings)
+        handle_account(account=identifier, settings=settings, session=session)
+    logging.info("All configured accounts have been scanned")
+
+
+def handle_managed_organizational_units(session=None):
+    logging.info("Checking managed organizational units")
+    for identifier in Settings.enumerate_organizational_units(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
+        logging.info(f"Scanning organizational unit '{identifier}'")
+        settings = Settings.get_organizational_unit_settings(environment=os.environ['ENVIRONMENT_IDENTIFIER'],
+                                                             identifier=identifier,
+                                                             session=session)
+        for account in Account.list(parent=identifier, session=session):
+            handle_account(account=account, settings=settings, session=session)
+    logging.info("All configured organizational units have been scanned")
+
+
+def handle_account(account, settings=None, session=None):
     item = Account.describe(account, session=session)
     try:
         validate_tags(item)
-        if unit:
-            expected_tags = unit.get("account_tags", {})
-            validate_additional_tags(item, expected_tags=expected_tags)
+        if settings:
+            validate_additional_tags(item, expected_tags=settings.get("account_tags", {}))
     except ValueError as error:
         logging.error(error)
 

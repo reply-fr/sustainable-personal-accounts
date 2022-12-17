@@ -19,81 +19,126 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from boto3.session import Session
 import json
-from unittest.mock import Mock, patch
-from moto import mock_events
+from moto import mock_events, mock_ssm
 import os
-import pytest
+from types import SimpleNamespace
+from unittest.mock import patch
 
+from account import Account
 from code import Events, State
 from code.on_expired_account_handler import handle_tag_event
+from worker import Worker
 
-# pytestmark = pytest.mark.wip
+import pytest
+pytestmark = pytest.mark.wip
 
 
-@pytest.fixture
-def session():
-    mock = Mock()
-    mock.client.return_value.create_policy.return_value = dict(Policy=dict(Arn='arn:aws'))
-    mock.client.return_value.create_project.return_value = dict(project=dict(arn='arn:aws'))
-    mock.client.return_value.get_role.return_value = dict(Role=dict(Arn='arn:aws'))
-    mock.client.return_value.describe_account.return_value = dict(Account=dict(Arn='arn:aws',
-                                                                               Email='a@b.com',
-                                                                               Name='Some-Account',
-                                                                               Status='ACTIVE'))
-    parents = {
-        'Parents': [
-            {
-                'Id': 'ou-1234',
-                'Type': 'ORGANIZATIONAL_UNIT'
-            },
-        ]
+def given_some_context(prefix='/Fake/'):
+
+    session = Session(aws_access_key_id='testing',
+                      aws_secret_access_key='testing',
+                      aws_session_token='testing',
+                      region_name='eu-west-1')
+
+    context = SimpleNamespace(session=session)
+
+    context.settings_123456789012 = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'identifier': '123456789012',
+        'note': 'a specific account',
+        'preparation': {
+            'feature': 'enabled',
+            'variables': {'HELLO': 'WORLD'}
+        },
+        'purge': {
+            'feature': 'enabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
     }
-    mock.client.return_value.list_parents.return_value = parents
+    session.client('ssm').put_parameter(Name=prefix + 'Accounts/123456789012',
+                                        Value=json.dumps(context.settings_123456789012),
+                                        Type='String')
 
-    parameter_1 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_2 = dict(Parameter=dict(Value=json.dumps({'ou-1234': {'budget_cost': 500.0}, 'ou-5678': {'budget_cost': 300}})))
-    parameter_3 = dict(Parameter=dict(Value='buildspec_content'))
-    mock.client.return_value.get_parameter.side_effect = [parameter_1, parameter_2, parameter_3]
-
-    tags = {
-        'Tags': [
-            {
-                'Key': 'account:holder',
-                'Value': 'a@b.com'
-            },
-
-            {
-                'Key': 'account:state',
-                'Value': 'vanilla'
-            }
-        ]
+    context.settings_567890123456 = {
+        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
+        'identifier': '567890123456',
+        'note': 'another specific account',
+        'preparation': {
+            'feature': 'disabled',
+            'variables': {'HELLO': 'MOON'}
+        },
+        'purge': {
+            'feature': 'disabled',
+            'variables': {'DRY_RUN': 'TRUE'}
+        }
     }
-    mock.client.return_value.list_tags_for_resource.return_value = tags
+    session.client('ssm').put_parameter(Name=prefix + 'Accounts/567890123456',
+                                        Value=json.dumps(context.settings_567890123456),
+                                        Type='String')
 
-    return mock
+    session.client('ssm').put_parameter(Name='buildspec',
+                                        Value='some text',
+                                        Type='String')
+
+    return context
 
 
-@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
-                             PURGE_BUILDSPEC_PARAMETER="parameter-name",
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             AWS_DEFAULT_REGION='eu-west-1',
+                             PURGE_BUILDSPEC_PARAMETER="buildspec",
+                             ENVIRONMENT_IDENTIFIER='Fake',
                              EVENT_BUS_ARN='arn:aws',
-                             ORGANIZATIONAL_UNITS_PARAMETER='here',
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
-def test_handle_tag_event(session):
+@mock_ssm
+def test_handle_tag_event(monkeypatch):
+    context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
+
+    # purge has been enabled on "123456789012"
+    processed = []
+
+    def mock_worker_purge(account_id, *args, **kwargs):
+        processed.append(account_id)
+
+    monkeypatch.setattr(Worker, 'purge', mock_worker_purge)
+
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
                                                          new_state=State.EXPIRED.value))
-    result = handle_tag_event(event=event, context=None, session=session)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'ExpiredAccount', 'Source': 'SustainablePersonalAccounts'}
+    result = handle_tag_event(event=event, context=None, session=context.session)
+    assert result["DetailType"] == 'ExpiredAccount'
+    assert processed == ["123456789012"]
+
+    # purge has not been enabled on "567890123456"
+    processed = []
+
+    def mock_account_move(account, *args, **kwargs):
+        processed.append(account)
+
+    monkeypatch.setattr(Account, 'move', mock_account_move)
+
+    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
+                                            context=dict(account="567890123456",
+                                                         new_state=State.EXPIRED.value))
+    result = handle_tag_event(event=event, context=None, session=context.session)
+    assert result["DetailType"] == 'ExpiredAccount'
+    assert processed == ["567890123456"]
 
 
-@patch.dict(os.environ, dict(EVENT_BUS_ARN='arn:aws',
-                             ORGANIZATIONAL_UNITS_PARAMETER='here',
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             ENVIRONMENT_IDENTIFIER='Fake',
+                             EVENT_BUS_ARN='arn:aws',
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='INFO'))
-def test_handle_tag_event_on_unexpected_state(session):
+@mock_ssm
+def test_handle_tag_event_on_unexpected_state(monkeypatch):
+    context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
+
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
                                                          new_state=State.VANILLA.value))
-    result = handle_tag_event(event=event, context=None, session=session)
+    result = handle_tag_event(event=event, context=None, session=context.session)
     assert result == "[DEBUG] Unexpected state 'vanilla' for this function"
