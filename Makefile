@@ -149,7 +149,7 @@ rebase:
 
 lambda.out: setup.py code/*.py
 	mkdir -p lambda.out
-	pip install -e . -t lambda.out
+	pip install --upgrade -e . -t lambda.out
 	cp code/*.py lambda.out
 	touch lambda.out
 
