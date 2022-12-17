@@ -33,6 +33,7 @@ from .on_purged_account_construct import OnPurgedAccount
 from .on_released_account_construct import OnReleasedAccount
 from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
+from .release_accounts_construct import ReleaseAccounts
 
 
 class ServerlessStack(Stack):
@@ -57,7 +58,8 @@ class ServerlessStack(Stack):
             'OnPreparedAccount',
             'OnPurgedAccount',
             'OnReleasedAccount',
-            'OnVanillaAccount']
+            'OnVanillaAccount',
+            'ReleaseAccounts']
 
         monitored_functions = []
         for label in labels:
