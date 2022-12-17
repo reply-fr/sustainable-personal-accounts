@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -41,7 +42,7 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    settings = Settings.get_settings_for_account(environment=toggles.environment_identifier, identifier=account, session=session)
+    settings = Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)
     item = Account.describe(account, session=session)
     updated = inspect_tags(item=item, settings=settings)
     if item.tags != updated:

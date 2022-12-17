@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -34,5 +35,5 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    Settings.get_settings_for_account(environment=toggles.environment_identifier, identifier=account, session=session)  # error if account is not managed
+    Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)  # error if account is not managed
     return Events.emit('ReleasedAccount', account)

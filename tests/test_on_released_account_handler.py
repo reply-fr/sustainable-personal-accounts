@@ -78,9 +78,10 @@ def session():
 
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
-                             PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
+                             ENVIRONMENT_IDENTIFIER="envt1",
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
+                             PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
                              VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_tag_event(session):
@@ -88,7 +89,7 @@ def test_handle_tag_event(session):
                                             context=dict(account="123456789012",
                                                          new_state=State.RELEASED.value))
     result = handle_tag_event(event=event, context=None, session=session)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",

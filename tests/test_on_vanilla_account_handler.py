@@ -84,6 +84,7 @@ def valid_tags():
 
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
+                             ENVIRONMENT_IDENTIFIER="envt1",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
@@ -93,11 +94,12 @@ def test_handle_account_event(valid_tags):
                                                          destination_organizational_unit="ou-1234",
                                                          origin_organizational_unit="ou-origin"))
     result = handle_account_event(event=event, context=None, session=valid_tags)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
+                             ENVIRONMENT_IDENTIFIER="envt1",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
@@ -106,7 +108,7 @@ def test_handle_tag_event(valid_tags):
                                             context=dict(account="123456789012",
                                                          new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None, session=valid_tags)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
