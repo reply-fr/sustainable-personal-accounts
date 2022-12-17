@@ -84,7 +84,7 @@ class Settings:
         except botocore.exceptions.ClientError:
             details = Account.describe(id=identifier, session=session)
             try:
-                settings = cls.get_organizational_unit_settings(environment=environment, identifier=details['unit'], session=session)
+                settings = cls.get_organizational_unit_settings(environment=environment, identifier=details.unit, session=session)
             except botocore.exceptions.ClientError:
                 raise ValueError(f"No settings could be found for account {identifier}")
         return settings

@@ -194,7 +194,7 @@ def test_get_settings_for_account(monkeypatch):
     context = given_some_context(prefix='/Fake/')
 
     def mock_describe(id, session):
-        return dict(unit='ou-5678')
+        return SimpleNamespace(unit='ou-5678')
 
     monkeypatch.setattr(Account, 'describe', mock_describe)
 

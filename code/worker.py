@@ -220,7 +220,7 @@ class Worker:
 
     @classmethod
     def grant_publishing_from_budgets(cls, topic_arn, account=None):
-        session = cls.get_session(account.id) if (account and account.id != '123456789012') else Session()
+        session = cls.get_session(account) if account else Session()
         sns = session.client('sns')
 
         try:
