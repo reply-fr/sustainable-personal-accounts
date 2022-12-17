@@ -27,31 +27,33 @@ from settings import Settings
 
 @trap_exception
 def handle_event(event, context, session=None):
-    handle_managed_accounts(session=session)
-    handle_managed_organizational_units(session=session)
+    logging.info("Checking managed accounts")
+    processed = handle_managed_accounts(session=session)
+    handle_managed_organizational_units(skip=processed, session=session)
     return '[OK]'
 
 
 def handle_managed_accounts(session=None):
-    logging.info("Checking managed accounts")
-    for identifier in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
+    logging.info("Scanning configured accounts")
+    ids = [id for id in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session)]
+    for identifier in ids:
         logging.info(f"Scanning account '{identifier}'")
         settings = Settings.get_account_settings(environment=os.environ['ENVIRONMENT_IDENTIFIER'],
                                                  identifier=identifier,
                                                  session=session)
-        logging.debug(settings)
         handle_account(account=identifier, settings=settings, session=session)
     logging.info("All configured accounts have been scanned")
+    return ids
 
 
-def handle_managed_organizational_units(session=None):
-    logging.info("Checking managed organizational units")
+def handle_managed_organizational_units(skip=[], session=None):
+    logging.info("Scanning configured organizational units")
     for identifier in Settings.enumerate_organizational_units(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
         logging.info(f"Scanning organizational unit '{identifier}'")
         settings = Settings.get_organizational_unit_settings(environment=os.environ['ENVIRONMENT_IDENTIFIER'],
                                                              identifier=identifier,
                                                              session=session)
-        for account in Account.list(parent=identifier, session=session):
+        for account in Account.list(parent=identifier, skip=skip, session=session):
             handle_account(account=account, settings=settings, session=session)
     logging.info("All configured organizational units have been scanned")
 

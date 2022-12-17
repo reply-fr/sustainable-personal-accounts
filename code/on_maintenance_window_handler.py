@@ -34,7 +34,7 @@ def handle_schedule_event(event, context, session=None):
 
 
 def handle_managed_accounts(session=None):
-    logging.info("Handling managed accounts")
+    logging.info("Scanning configured accounts")
     ids = [id for id in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session)]
     for id in ids:
         handle_account(account=id, session=session)
@@ -43,7 +43,7 @@ def handle_managed_accounts(session=None):
 
 
 def handle_managed_organizational_units(skip=[], session=None):
-    logging.info("Handling managed organizational units")
+    logging.info("Scanning configured organizational units")
     for identifier in Settings.enumerate_organizational_units(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
         logging.info(f"Scanning organizational unit '{identifier}'")
         for account in Account.list(parent=identifier, skip=skip, session=session):
