@@ -19,7 +19,6 @@ env:
     ENVIRONMENT_IDENTIFIER: None
     EVENT_BUS_ARN: None
     MAXIMUM_AGE: 6M
-    PURGE_EMAIL: a@b.com
     PURGE_MESSAGE: SpaPurgeMessage
     PURGE_MODE: --dry-run
     TAG_KEY: purge

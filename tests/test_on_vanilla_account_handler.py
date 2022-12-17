@@ -82,7 +82,10 @@ def valid_tags():
     return mock
 
 
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             AWS_DEFAULT_REGION='eu-west-1',
+                             ENVIRONMENT_IDENTIFIER="envt1",
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_account_event(valid_tags):
@@ -91,21 +94,13 @@ def test_handle_account_event(valid_tags):
                                                          destination_organizational_unit="ou-1234",
                                                          origin_organizational_unit="ou-origin"))
     result = handle_account_event(event=event, context=None, session=valid_tags)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
-                             VERBOSITY='DEBUG'))
-def test_handle_account_event_on_unexpected_event(valid_tags):
-    event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
-                                            context=dict(account="123456789012",
-                                                         destination_organizational_unit="ou-unexpected",
-                                                         origin_organizational_unit="ou-origin"))
-    result = handle_account_event(event=event, context=None, session=valid_tags)
-    assert result == "[DEBUG] Unexpected event source 'ou-unexpected'"
-
-
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             AWS_DEFAULT_REGION='eu-west-1',
+                             ENVIRONMENT_IDENTIFIER="envt1",
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_tag_event(valid_tags):
@@ -113,10 +108,11 @@ def test_handle_tag_event(valid_tags):
                                             context=dict(account="123456789012",
                                                          new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None, session=valid_tags)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
-@patch.dict(os.environ, dict(ORGANIZATIONAL_UNITS_PARAMETER="here",
+@patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
+                             ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='INFO'))
 def test_handle_tag_event_on_unexpected_event(valid_tags):
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",

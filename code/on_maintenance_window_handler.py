@@ -15,31 +15,48 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import os
 import logging
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
-from session import get_organizational_units_settings
+from settings import Settings
 
 
 @trap_exception
 def handle_schedule_event(event, context, session=None):
-    logging.info("Expiring personal accounts")
-    all_settings = get_organizational_units_settings(session=session)
-    for unit in all_settings.keys():
-        logging.info(f"Scanning organizational unit '{unit}'")
-        for account in Account.list(parent=unit, session=session):
-            item = Account.describe(account, session=session)
-            if not item.is_active:
-                logging.info(f"Ignoring inactive account '{account}'")
-                continue
-            state = item.tags.get('account:state')
-            if state != State.RELEASED.value:
-                logging.info(f"Ignoring account '{account}' that is in state '{state}'")
-                continue
-            Account.move(account=account, state=State.EXPIRED, session=session)
-    logging.info("All configured organizational units have been scanned")
-
+    logging.info("Expiring managed accounts")
+    processed = handle_managed_accounts(session=session)
+    handle_managed_organizational_units(skip=processed, session=session)
     return '[OK]'
+
+
+def handle_managed_accounts(session=None):
+    logging.info("Handling managed accounts")
+    ids = [id for id in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session)]
+    for id in ids:
+        handle_account(account=id, session=session)
+    logging.info("All configured accounts have been processed")
+    return ids
+
+
+def handle_managed_organizational_units(skip=[], session=None):
+    logging.info("Handling managed organizational units")
+    for identifier in Settings.enumerate_organizational_units(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
+        logging.info(f"Scanning organizational unit '{identifier}'")
+        for account in Account.list(parent=identifier, skip=skip, session=session):
+            handle_account(account=account, session=session)
+    logging.info("All configured organizational units have been processed")
+
+
+def handle_account(account, session=None):
+    item = Account.describe(account, session=session)
+    state = item.tags.get('account:state')
+    if not item.is_active:
+        logging.info(f"Ignoring inactive account '{account}'")
+    elif state and state != State.RELEASED.value:
+        logging.info(f"Ignoring account '{account}' that is in state '{state}'")
+    else:
+        Account.move(account=account, state=State.EXPIRED, session=session)

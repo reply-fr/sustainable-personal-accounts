@@ -16,7 +16,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from .configuration import Configuration
+from .parameters_construct import Parameters
 from .serverless_stack import ServerlessStack
 
 __all__ = ['Configuration',
+           'Parameters',
            'ServerlessStack']

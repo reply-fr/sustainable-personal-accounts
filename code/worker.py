@@ -185,7 +185,7 @@ class Worker:
 
     @classmethod
     def deploy_topic_for_alerts(cls, name="SpaAlertTopic", account=None):
-        session = cls.get_session(account.id) if (account and account.id != '123456789012') else Session()
+        session = cls.get_session(account) if account else Session()
         sns = session.client('sns')
 
         logging.info(f"Deploying topic '{name}' for budget alerts")
@@ -220,7 +220,7 @@ class Worker:
 
     @classmethod
     def grant_publishing_from_budgets(cls, topic_arn, account=None):
-        session = cls.get_session(account.id) if (account and account.id != '123456789012') else Session()
+        session = cls.get_session(account) if account else Session()
         sns = session.client('sns')
 
         try:
@@ -257,27 +257,19 @@ class Worker:
                                session=session)
 
     @staticmethod
-    def get_preparation_variables(account, settings, event_bus_arn, topic_arn) -> dict:
+    def get_preparation_variables(details, settings, event_bus_arn, topic_arn) -> dict:
         variables = dict(BUDGET_AMOUNT=200,
-                         BUDGET_EMAIL=account.email)
-        value = os.environ.get('ENVIRONMENT_IDENTIFIER')
-        if value:
-            variables['ENVIRONMENT_IDENTIFIER'] = value
-        if topic_arn:
-            variables['TOPIC_ARN'] = topic_arn
+                         BUDGET_EMAIL=details.email)
+        variables['ENVIRONMENT_IDENTIFIER'] = os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')
         variables['EVENT_BUS_ARN'] = event_bus_arn
+        variables['TOPIC_ARN'] = topic_arn
         variables.update(settings.get('preparation', {}).get('variables', {}))
         return variables
 
     @staticmethod
-    def get_purge_variables(account, settings, event_bus_arn) -> dict:
-        variables = dict(PURGE_EMAIL=account.email)
-        value = os.environ.get('ENVIRONMENT_IDENTIFIER')
-        if value:
-            variables['ENVIRONMENT_IDENTIFIER'] = value
-        value = os.environ.get('TOPIC_ARN')
-        if value:
-            variables['TOPIC_ARN'] = value
+    def get_purge_variables(settings, event_bus_arn) -> dict:
+        variables = {}
+        variables['ENVIRONMENT_IDENTIFIER'] = os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')
         variables['EVENT_BUS_ARN'] = event_bus_arn
         variables.update(settings.get('purge', {}).get('variables', {}))
         return variables
@@ -326,38 +318,38 @@ class Worker:
         return json.dumps(policy)
 
     @classmethod
-    def prepare(cls, account, settings, buildspec, event_bus_arn, topic_arn, session=None):
-        session = session or cls.get_session(account.id)
+    def prepare(cls, details, settings, buildspec, event_bus_arn, topic_arn, session=None):
+        session = session or cls.get_session(details.id)
 
-        logging.info(f"Preparing account '{account.id}'...")
-        logging.debug(f"account: {account.__dict__}")
+        logging.info(f"Preparing account '{details.id}'...")
+        logging.debug(f"account: {details.__dict__}")
         logging.debug(f"settings: {settings}")
         cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_preparation_variables(account, settings, event_bus_arn, topic_arn),
+                           variables=cls.get_preparation_variables(details, settings, event_bus_arn, topic_arn),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                         session=session)
-        logging.info(f"Account '{account.id}' is being prepared")
+        logging.info(f"Account '{details.id}' is being prepared")
 
     @classmethod
-    def purge(cls, account, settings, buildspec, event_bus_arn, session=None):
-        session = session or cls.get_session(account.id)
+    def purge(cls, account_id, settings, buildspec, event_bus_arn, session=None):
+        session = session or cls.get_session(account_id)
 
-        logging.info(f"Purging account '{account.id}'...")
+        logging.info(f"Purging account '{account_id}'...")
         cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                            description="This project purges an AWS account of cloud resources",
                            buildspec=buildspec,
                            role=cls.deploy_role_for_codebuild(session=session),
-                           variables=cls.get_purge_variables(account, settings, event_bus_arn),
+                           variables=cls.get_purge_variables(settings, event_bus_arn),
                            session=session)
         cls.run_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                         session=session)
-        logging.info(f"Account '{account.id}' is being purged")
+        logging.info(f"Account '{account_id}' is being purged")
 
     @classmethod
     def run_project(cls, name, session=None):

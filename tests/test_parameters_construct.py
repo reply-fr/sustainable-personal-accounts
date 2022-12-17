@@ -15,25 +15,27 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import logging
-import os
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from logger import setup_logging, trap_exception
-setup_logging()
+from resources import Parameters
 
-from account import State
-from events import Events
-from settings import Settings
-
-
-@trap_exception
-def handle_tag_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-    input = Events.decode_tag_account_event(event=event, match=State.RELEASED)
-    return handle_account(input.account, session=session)
+# import pytest
+# pytestmark = pytest.mark.wip
 
 
-def handle_account(account, session=None):
-    Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)  # error if account is not managed
-    return Events.emit('ReleasedAccount', account)
+def test_get_account_parameter():
+    test = Parameters.get_account_parameter(environment='Fake')
+    assert test == '/Fake/Accounts'
+
+    test = Parameters.get_account_parameter(environment='Fake', identifier='123456789012')
+    assert test == '/Fake/Accounts/123456789012'
+
+
+def test_get_organizational_unit_parameter():
+    test = Parameters.get_organizational_unit_parameter(environment='Fake')
+    assert test == '/Fake/OrganizationalUnits'
+
+    test = Parameters.get_organizational_unit_parameter(environment='Fake', identifier='ou-abc')
+    assert test == '/Fake/OrganizationalUnits/ou-abc'

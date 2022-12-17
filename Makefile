@@ -140,7 +140,7 @@ lint-json:
 	venv/bin/python -m json.tool package.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 
 stats: venv/bin/activate
-	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks
+	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks *.ini cdk.json package.json *.md *.py *.txt Makefile
 
 rebase:
 	git stash
@@ -149,7 +149,7 @@ rebase:
 
 lambda.out: setup.py code/*.py
 	mkdir -p lambda.out
-	pip install -e . -t lambda.out
+	pip install --upgrade -e . -t lambda.out
 	cp code/*.py lambda.out
 	touch lambda.out
 

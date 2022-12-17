@@ -52,13 +52,6 @@ class Account:
         return re.fullmatch(cls.VALID_EMAIL, text)
 
     @classmethod
-    def validate_organizational_unit(cls, account, expected, session=None):
-        session = session or cls.get_session()
-        actual = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
-        if actual not in expected:
-            raise ValueError(f"Unexpected organizational unit '{actual}' for account '{account}'")
-
-    @classmethod
     def validate_state(cls, text):
         return text in [state.value for state in State]
 
@@ -111,7 +104,7 @@ class Account:
         logging.debug("Done")
 
     @classmethod
-    def list(cls, parent, session=None):
+    def list(cls, parent, skip=[], session=None):
         session = session or cls.get_session()
         token = None
         while True:
@@ -122,6 +115,8 @@ class Account:
             chunk = session.client('organizations').list_accounts_for_parent(**parameters)
 
             for item in chunk['Accounts']:
+                if item['Id'] in skip:
+                    continue
                 yield item['Id']
 
             token = chunk.get('NextToken')

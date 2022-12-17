@@ -98,6 +98,7 @@ def test_set_from_settings(toggles):
     settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
     Configuration.set_from_settings(settings, toggles=toggles)
     assert toggles.organizational_units == {'ou': {'account_tags': {},
+                                                   'identifier': 'ou',
                                                    'note': '',
                                                    'preparation': {'feature': 'disabled', 'variables': {'BUDGET_AMOUNT': '500'}},
                                                    'purge': {'feature': 'disabled', 'variables': {}}}}
@@ -118,6 +119,7 @@ def test_set_from_settings_with_default_values(toggles):
         features=dict(with_arm_architecture=True))
     Configuration.set_from_settings(settings, toggles=toggles)
     assert toggles.organizational_units == {'ou': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
+                                                   'identifier': 'ou',
                                                    'note': 'ou description',
                                                    'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '80'}},
                                                    'purge': {'feature': 'enabled', 'variables': {'KEY': 'another key', 'MAX_AGE': '3w', 'VALUE': 'value'}}}}

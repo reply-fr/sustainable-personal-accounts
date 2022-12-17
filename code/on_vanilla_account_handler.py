@@ -17,20 +17,20 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account, State
 from events import Events
-from session import get_organizational_units_settings
+from settings import Settings
 
 
 @trap_exception
 def handle_account_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    units = get_organizational_units_settings(session=session)
-    input = Events.decode_account_event(event=event, matches=list(units.keys()))
+    input = Events.decode_account_event(event=event)
     return handle_account(input.account, session=session)
 
 
@@ -42,24 +42,24 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    units = get_organizational_units_settings(session=session)
-    Account.validate_organizational_unit(account, expected=units.keys(), session=session)
+    settings = Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)
     item = Account.describe(account, session=session)
-    if updated := inspect_tags(item=item, unit=units[item.unit]):
+    updated = inspect_tags(item=item, settings=settings)
+    if item.tags != updated:
         Account.tag(account, updated, session=session)
     return Events.emit('CreatedAccount', account)
 
 
-def inspect_tags(item, unit):
-    updated = {'account:state': State.ASSIGNED.value}
+def inspect_tags(item, settings):
+    updated = item.tags.copy()
+
+    updated.update(settings.get("account_tags", {}))
+
+    updated['account:state'] = State.ASSIGNED.value
 
     holder = item.tags.get('account:holder') or item.email
     if not Account.validate_holder(holder):
         raise ValueError(f"Account '{item.id}' has invalid holder '{holder}'")
     updated['account:holder'] = holder
-
-    account_tags = unit.get("account_tags", {})
-    for key in account_tags.keys():
-        updated[key] = account_tags[key]
 
     return updated

@@ -15,18 +15,17 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
-import os
 import logging
-
 from logger import setup_logging, trap_exception
 setup_logging()
 
 from boto3.session import Session
+import json
+import os
 
 from account import Account, State
 from events import Events
-from session import get_organizational_units_settings
+from settings import Settings
 from worker import Worker
 
 
@@ -38,17 +37,13 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    all_settings = get_organizational_units_settings(session=session)
-    details = Account.describe(account, session=session)
-    if details.unit not in all_settings.keys():
-        raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
+    settings = Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)
     result = Events.emit('ExpiredAccount', account)
-    settings = all_settings[details.unit]
     if 'purge' not in settings.keys() or settings['purge'].get('feature') != 'enabled':
         logging.info("Skipping the purge of the account")
         Account.move(account=account, state=State.ASSIGNED, session=session)
     else:
-        Worker.purge(account=details,
+        Worker.purge(account_id=account,
                      settings=settings,
                      event_bus_arn=os.environ['EVENT_BUS_ARN'],
                      buildspec=get_buildspec(session=session),

@@ -24,6 +24,8 @@ from aws_cdk.aws_ssm import ParameterDataType, ParameterTier, StringParameter
 
 class Parameters(Construct):
 
+    PARAMETER_SEPARATOR = "/"  # /!\ to be duplicated in code/settings.py
+    ACCOUNTS_PARAMETER = "Accounts"
     ORGANIZATIONAL_UNITS_PARAMETER = "OrganizationalUnits"
     PREPARATION_BUILDSPEC_PARAMETER = "PreparationBuildspecTemplate"
     PURGE_BUILDSPEC_PARAMETER = "PurgeBuildspecTemplate"
@@ -31,15 +33,27 @@ class Parameters(Construct):
     def __init__(self, scope: Construct, id: str) -> None:
         super().__init__(scope, id)
 
-        StringParameter(
-            self, "OrganisationalUnits",
-            string_value=json.dumps(toggles.organizational_units, indent=4),
-            data_type=ParameterDataType.TEXT,
-            description="Parameters for managed organizational units",
-            parameter_name=toggles.environment_identifier + self.ORGANIZATIONAL_UNITS_PARAMETER,
-            tier=ParameterTier.STANDARD)
+        for identifier in toggles.accounts.keys():  # one parameter per managed account
+            StringParameter(
+                self, f"a-{identifier}",
+                string_value=json.dumps(toggles.accounts[identifier], indent=4),
+                data_type=ParameterDataType.TEXT,
+                description="Parameters for managed account {}".format(identifier),
+                parameter_name=self.get_account_parameter(environment=toggles.environment_identifier,
+                                                          identifier=identifier),
+                tier=ParameterTier.STANDARD)
 
-        string_value = self.get_buildspec_for_preparation()
+        for identifier in toggles.organizational_units.keys():  # one parameter per managed organizational unit
+            StringParameter(
+                self, identifier,
+                string_value=json.dumps(toggles.organizational_units[identifier], indent=4),
+                data_type=ParameterDataType.TEXT,
+                description="Parameters for managed organizational unit {}".format(identifier),
+                parameter_name=self.get_organizational_unit_parameter(environment=toggles.environment_identifier,
+                                                                      identifier=identifier),
+                tier=ParameterTier.STANDARD)
+
+        string_value = self.get_buildspec_for_preparation()  # the buildspec for account preparation
         StringParameter(
             self, "PreparationTemplate",
             string_value=string_value,
@@ -48,7 +62,7 @@ class Parameters(Construct):
             parameter_name=toggles.environment_identifier + self.PREPARATION_BUILDSPEC_PARAMETER,
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
-        string_value = self.get_buildspec_for_purge()
+        string_value = self.get_buildspec_for_purge()  # the buildspec for account purge
         StringParameter(
             self, "PurgeTemplate",
             string_value=string_value,
@@ -56,6 +70,20 @@ class Parameters(Construct):
             description="Buildspec template used for the purge of accounts",
             parameter_name=toggles.environment_identifier + self.PURGE_BUILDSPEC_PARAMETER,
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+
+    @classmethod
+    def get_account_parameter(cls, environment, identifier=None):
+        attributes = ['', environment, cls.ACCOUNTS_PARAMETER]
+        if identifier:
+            attributes.append(identifier)
+        return cls.PARAMETER_SEPARATOR.join(attributes)
+
+    @classmethod
+    def get_organizational_unit_parameter(cls, environment, identifier=None):
+        attributes = ['', environment, cls.ORGANIZATIONAL_UNITS_PARAMETER]
+        if identifier:
+            attributes.append(identifier)
+        return cls.PARAMETER_SEPARATOR.join(attributes)
 
     def get_buildspec_for_preparation(self):
         logging.debug("Getting buildspec for the preparation of accounts")

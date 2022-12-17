@@ -27,7 +27,7 @@ from boto3.session import Session
 
 from account import Account, State
 from events import Events
-from session import get_organizational_units_settings
+from settings import Settings
 from worker import Worker
 
 
@@ -39,30 +39,32 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    all_settings = get_organizational_units_settings(session=session)
-    details = Account.describe(account, session=session)
-    if details.unit not in all_settings.keys():
-        raise ValueError(f"Unexpected organizational unit '{details.unit}' for account '{account}'")
+    settings = Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)
     result = Events.emit('AssignedAccount', account)
-    settings = all_settings[details.unit]
     if 'preparation' not in settings.keys() or settings['preparation'].get('feature') != 'enabled':
         logging.info("Skipping the preparation of the account")
         Account.move(account=account, state=State.RELEASED, session=session)
     else:
         tag_account(account=account, settings=settings, session=session)
-        prepare_account(details=details, settings=settings, session=session)
+        topic_arn = prepare_topic(account=account, session=session)
+        prepare_account(account=account, settings=settings, topic_arn=topic_arn, session=session)
     return result
 
 
 def tag_account(account, settings, session=None):
-    if tags := settings.get("account_tags", {}):
+    tags = settings.get("account_tags", {})
+    if tags:
         Account.tag(account, tags, session=session)
 
 
-def prepare_account(details, settings, session=None):
-    topic_arn = Worker.deploy_topic_for_alerts(account=details)
+def prepare_topic(account, session=None):
+    topic_arn = Worker.deploy_topic_for_alerts(account=account)
     subscribe_queue_to_topic(topic_arn=topic_arn, queue_arn=get_queue_arn(), session=session)
-    Worker.prepare(account=details,
+    return topic_arn
+
+
+def prepare_account(account, settings, topic_arn, session=None):
+    Worker.prepare(details=Account.describe(id=account, session=session),
                    settings=settings,
                    event_bus_arn=os.environ['EVENT_BUS_ARN'],
                    topic_arn=topic_arn,

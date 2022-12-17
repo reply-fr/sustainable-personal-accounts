@@ -24,7 +24,7 @@ with open("README.md") as fp:
 
 setuptools.setup(
     name="sustainable_personal_accounts",
-    version="0.0.1",
+    version="22.12.17",
 
     description="a set of cloud resources suited to manage thousands of AWS accounts assigned to individual innovators",
     long_description=long_description,

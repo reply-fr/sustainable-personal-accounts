@@ -51,11 +51,11 @@ def test_deploy_project(session):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
                              TOPIC_ARN='arn:aws:test'))
 def test_get_preparation_variables():
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     settings = dict(preparation=dict(variables=dict(BUDGET_AMOUNT='500.0')))
     event_bus_arn = 'arn:aws:bus'
     topic_arn = 'arn:aws:topic'
-    variables = Worker.get_preparation_variables(account=account, settings=settings, event_bus_arn=event_bus_arn, topic_arn=topic_arn)
+    variables = Worker.get_preparation_variables(details=details, settings=settings, event_bus_arn=event_bus_arn, topic_arn=topic_arn)
     assert variables == {'BUDGET_AMOUNT': '500.0',
                          'BUDGET_EMAIL': 'a@b.com',
                          'ENVIRONMENT_IDENTIFIER': 'JustForTest',
@@ -66,17 +66,15 @@ def test_get_preparation_variables():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
                              TOPIC_ARN='arn:aws:test'))
 def test_get_purge_variables():
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     settings = dict(purge=dict(variables=dict(MAXIMUM_AGE='1M')))
     event_bus_arn = 'arn:aws:bus'
-    variables = Worker.get_purge_variables(account=account, settings=settings, event_bus_arn=event_bus_arn)
+    variables = Worker.get_purge_variables(settings=settings, event_bus_arn=event_bus_arn)
     assert variables == {'EVENT_BUS_ARN': 'arn:aws:bus',
                          'ENVIRONMENT_IDENTIFIER': 'JustForTest',
-                         'MAXIMUM_AGE': '1M',
-                         'PURGE_EMAIL': 'a@b.com',
-                         'TOPIC_ARN': 'arn:aws:test'}
+                         'MAXIMUM_AGE': '1M'}
 
 
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
 @mock_sns
 def test_grant_publishing_from_budgets():
     session = Session()
@@ -95,10 +93,9 @@ def test_grant_publishing_from_budgets():
 
 @patch.dict(os.environ, dict(AUTOMATION_ACCOUNT="123456789012"))
 def test_prepare(session):
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    Worker.prepare(account=account, settings={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
+    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    Worker.prepare(details=details, settings={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
 
 
 def test_purge(session):
-    account = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
-    Worker.purge(account=account, settings={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)
+    Worker.purge(account_id='123456789012', settings={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)

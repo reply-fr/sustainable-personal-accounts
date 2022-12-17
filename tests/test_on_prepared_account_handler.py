@@ -75,7 +75,8 @@ def session():
     return mock
 
 
-@patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+                             VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_codebuild_event(session):
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
@@ -106,7 +107,8 @@ def test_handle_codebuild_event_on_unexpected_status(session):
     assert result == "[DEBUG] Ignoring status 'FAILED'"
 
 
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+                             ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 @mock_events
 def test_handle_account(session):

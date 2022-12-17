@@ -19,21 +19,47 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from boto3.session import Session
 import boto3
-from unittest.mock import patch
 from moto import mock_sns
 import os
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from account import Account
+from code.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_queue_event, publish_notification_on_microsoft_webhook
+from events import Events
+
 import pytest
-
-from code.on_alert_handler import get_codebuild_message, handle_queue_event, publish_notification_on_microsoft_webhook
-
 pytestmark = pytest.mark.wip
 
 
-@pytest.fixture
-def queued_message():
+def test_handle_codebuild_event(monkeypatch):
 
-    return {
+    def mock_account_describe(id, *args, **kwargs):
+        return SimpleNamespace(id=id, email='a@b.com')
+
+    monkeypatch.setattr(Account, 'describe', mock_account_describe)
+
+    session = Session(aws_access_key_id='testing',
+                      aws_secret_access_key='testing',
+                      aws_session_token='testing',
+                      region_name='eu-west-1')
+
+    event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
+                                            context=dict(account="567890123456",
+                                                         project="some project",
+                                                         status="some status"))
+
+    result = handle_codebuild_event(event=event, context=None, session=session)
+    assert result == '[OK]'
+
+
+@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
+@mock_sns
+def test_handle_queue_event(account_describe_mock):
+
+    queued_message = {
         "Records": [
             {
                 "messageId": "testtest-test-test-test-testtesttest",
@@ -54,14 +80,6 @@ def queued_message():
         ]
     }
 
-
-def test_get_codebuild_message():
-    result = get_codebuild_message(account='123456789012', project='someProject', status='FAILED')
-    assert result == "You will find below details on failing CodeBuild project ran on account '123456789012':\n\n- account: 123456789012\n- project: someProject\n- status: FAILED"
-
-
-@mock_sns
-def test_handle_queue_event(queued_message, account_describe_mock):
     topic = boto3.client('sns').create_topic(Name="test-topic")
     with patch.dict(os.environ, dict(TOPIC_ARN=topic['TopicArn'])):
         result = handle_queue_event(event=queued_message, context=None, session=account_describe_mock)
@@ -82,6 +100,11 @@ def test_publish_notification_on_microsoft_webhook(patched):
     message.title.assert_called_once_with('some subject')
     message.text.assert_called_once_with('hello world')
     message.send.assert_called_once()
+
+
+def test_get_codebuild_message():
+    result = get_codebuild_message(account='123456789012', project='someProject', status='FAILED')
+    assert result == "You will find below details on failing CodeBuild project ran on account '123456789012':\n\n- account: 123456789012\n- project: someProject\n- status: FAILED"
 
 
 """
