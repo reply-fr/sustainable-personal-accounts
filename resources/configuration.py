@@ -183,7 +183,7 @@ class Configuration:
         for account in accounts:
             cls.validate_account(account)
             key = account['identifier']
-            transformed[key] = {k: account[k] for k in account.keys() if k != 'identifier'}
+            transformed[key] = account.copy()
         return transformed
 
     @classmethod
@@ -193,7 +193,7 @@ class Configuration:
         for unit in units:
             cls.validate_organizational_unit(unit)
             key = unit['identifier']
-            transformed[key] = {k: unit[k] for k in unit.keys() if k != 'identifier'}
+            transformed[key] = unit.copy()
         return transformed
 
     @classmethod
@@ -205,9 +205,10 @@ class Configuration:
                 continue
             values = accounts.get(account_id)
             updated = dict(preparation={}, purge={})
+            updated['identifier'] = values['identifier']
+            updated['note'] = values.get('note', '')
             updated['account_tags'] = default.get('account_tags', {})
             updated['account_tags'].update(values.get('account_tags', {}))
-            updated['note'] = values.get('note', '')
             default_preparation = default.get('preparation', {})
             preparation = values.get('preparation', {})
             updated['preparation']['feature'] = preparation.get('feature', default_preparation.get('feature', 'disabled'))
@@ -230,9 +231,10 @@ class Configuration:
                 continue
             values = units.get(unit_id)
             updated = dict(preparation={}, purge={})
+            updated['identifier'] = values['identifier']
+            updated['note'] = values.get('note', '')
             updated['account_tags'] = default.get('account_tags', {})
             updated['account_tags'].update(values.get('account_tags', {}))
-            updated['note'] = values.get('note', '')
             default_preparation = default.get('preparation', {})
             preparation = values.get('preparation', {})
             updated['preparation']['feature'] = preparation.get('feature', default_preparation.get('feature', 'disabled'))
