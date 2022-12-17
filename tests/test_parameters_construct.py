@@ -15,10 +15,27 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from .configuration import Configuration
-from .parameters_construct import Parameters
-from .serverless_stack import ServerlessStack
+import logging
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-__all__ = ['Configuration',
-           'Parameters',
-           'ServerlessStack']
+from resources import Parameters
+
+# import pytest
+# pytestmark = pytest.mark.wip
+
+
+def test_get_account_parameter():
+    test = Parameters.get_account_parameter(environment='Fake')
+    assert test == '/Fake/Accounts'
+
+    test = Parameters.get_account_parameter(environment='Fake', identifier='123456789012')
+    assert test == '/Fake/Accounts/123456789012'
+
+
+def test_get_organizational_unit_parameter():
+    test = Parameters.get_organizational_unit_parameter(environment='Fake')
+    assert test == '/Fake/OrganizationalUnits'
+
+    test = Parameters.get_organizational_unit_parameter(environment='Fake', identifier='ou-abc')
+    assert test == '/Fake/OrganizationalUnits/ou-abc'
