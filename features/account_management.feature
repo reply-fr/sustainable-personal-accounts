@@ -77,19 +77,19 @@ Scenario: where maintenance window is configured
       And SPA is deployed with the settings file 'settings.yaml'
      Then the maintenance window is triggered by SPA according to 'maintenance_window_expression'
 
-Scenario: where buildspec is set for account preparation
+Scenario: where buildspec is set for the preparation of accounts
     Given a settings file 'settings.yaml' adapted to SPA semantics
      When the attribute 'preparation_buildspec_template_file' is set in the section 'worker'
       And SPA is deployed with the settings file 'settings.yaml'
      Then the content of file 'preparation_buildspec_template_file' is saved as 'preparation_buildspec' at the time of SPA deployment
-      And 'preparation_buildspec' is used for subsequent Codebuild projects during account preparation
+      And 'preparation_buildspec' is used for subsequent Codebuild projects during the preparation of accounts
 
-Scenario: where buildspec is set for account purge
+Scenario: where buildspec is set for the purge of accounts
     Given a settings file 'settings.yaml' adapted to SPA semantics
      When the attribute 'purge_buildspec_template_file' is set in the section 'worker'
       And SPA is deployed with the settings file 'settings.yaml'
      Then the content of file 'purge_buildspec_template_file' is saved as 'purge_buildspec' at the time of SPA deployment
-      And 'purge_buildspec' is used for subsequent Codebuild projects during account purge
+      And 'purge_buildspec' is used for subsequent Codebuild projects during the purge of accounts
 
 Scenario: where SPA is deployed on AWS
     Given a settings file 'settings.yaml' adapted to SPA semantics
