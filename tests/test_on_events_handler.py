@@ -21,14 +21,15 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import Mock, patch
 import os
+import pytest
 
 from code import Events
 from code.on_events_handler import handle_event
 
-# import pytest
 # pytestmark = pytest.mark.wip
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_event():
@@ -40,6 +41,7 @@ def test_handle_event():
     assert handle_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_preparation_report_event():
@@ -52,6 +54,7 @@ def test_handle_preparation_report_event():
     assert handle_event(event=event, context=None, session=mock) == '[OK] PreparationReport 123456789012'
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_purge_report_event():
@@ -64,6 +67,7 @@ def test_handle_purge_report_event():
     assert handle_event(event=event, context=None, session=mock) == '[OK] PurgeReport 123456789012'
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
 def test_handle_local_event_on_unexpected_environment():

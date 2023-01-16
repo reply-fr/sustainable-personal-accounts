@@ -22,12 +22,12 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 from boto3.session import Session
 import json
 from moto import mock_ssm
+import pytest
 from types import SimpleNamespace
 
 from account import Account
 from settings import Settings
 
-# import pytest
 # pytestmark = pytest.mark.wip
 
 
@@ -145,6 +145,7 @@ def given_some_context(prefix='/Fake/'):
     return context
 
 
+@pytest.mark.unit_tests
 @mock_ssm
 def test_enumerate_accounts():
     context = given_some_context(prefix='/Fake/')
@@ -152,6 +153,7 @@ def test_enumerate_accounts():
     assert accounts == ['123456789012', '567890123456', '901234567890']
 
 
+@pytest.mark.unit_tests
 @mock_ssm
 def test_enumerate_organizational_units():
     context = given_some_context(prefix='/Fake/')
@@ -159,6 +161,7 @@ def test_enumerate_organizational_units():
     assert accounts == ['ou-1234', 'ou-5678', 'ou-9012']
 
 
+@pytest.mark.unit_tests
 def test_get_account_parameter_name():
     name = Settings.get_account_parameter_name(environment='yo')
     assert name == '/yo/Accounts'
@@ -167,6 +170,7 @@ def test_get_account_parameter_name():
     assert name == '/yo/Accounts/1234'
 
 
+@pytest.mark.unit_tests
 def test_get_organizational_unit_parameter_name():
     name = Settings.get_organizational_unit_parameter_name(environment='yo')
     assert name == '/yo/OrganizationalUnits'
@@ -175,6 +179,7 @@ def test_get_organizational_unit_parameter_name():
     assert name == '/yo/OrganizationalUnits/ou-abc'
 
 
+@pytest.mark.unit_tests
 @mock_ssm
 def test_get_account_settings():
     context = given_some_context(prefix='/Fake/')
@@ -182,6 +187,7 @@ def test_get_account_settings():
     assert settings == context.settings_567890123456
 
 
+@pytest.mark.unit_tests
 @mock_ssm
 def test_get_organizational_unit_settings():
     context = given_some_context(prefix='/Fake/')
@@ -189,6 +195,7 @@ def test_get_organizational_unit_settings():
     assert settings == context.settings_ou_5678
 
 
+@pytest.mark.unit_tests
 @mock_ssm
 def test_get_settings_for_account(monkeypatch):
     context = given_some_context(prefix='/Fake/')

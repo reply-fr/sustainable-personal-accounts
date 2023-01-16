@@ -141,6 +141,7 @@ def given_some_context():
     return context
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='Fake',
                              ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
                              VERBOSITY='DEBUG'))

@@ -21,17 +21,17 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from boto3.session import Session
 import json
+from unittest.mock import patch
 from moto import mock_events, mock_ssm
 import os
+import pytest
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from account import Account
 from code import Events, State
 from code.on_expired_account_handler import handle_tag_event
 from worker import Worker
 
-import pytest
 pytestmark = pytest.mark.wip
 
 
@@ -85,6 +85,7 @@ def given_some_context(prefix='/Fake/'):
     return context
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
                              PURGE_BUILDSPEC_PARAMETER="buildspec",
@@ -128,6 +129,7 @@ def test_handle_tag_event(monkeypatch):
     assert processed == ["567890123456"]
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              ENVIRONMENT_IDENTIFIER='Fake',
                              EVENT_BUS_ARN='arn:aws',

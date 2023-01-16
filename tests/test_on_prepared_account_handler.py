@@ -75,6 +75,7 @@ def session():
     return mock
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
                              VERBOSITY='DEBUG'))
 @mock_events
@@ -87,6 +88,7 @@ def test_handle_codebuild_event(session):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'PreparedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_project(session):
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
@@ -97,6 +99,7 @@ def test_handle_codebuild_event_on_unexpected_project(session):
     assert result == "[DEBUG] Ignoring project 'SampleProject'"
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(VERBOSITY='INFO'))
 def test_handle_codebuild_event_on_unexpected_status(session):
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
@@ -107,6 +110,7 @@ def test_handle_codebuild_event_on_unexpected_status(session):
     assert result == "[DEBUG] Ignoring status 'FAILED'"
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))

@@ -76,6 +76,7 @@ def session():
     return mock
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
@@ -92,6 +93,7 @@ def test_handle_tag_event(session):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'ReleasedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",

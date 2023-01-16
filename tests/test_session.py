@@ -19,12 +19,12 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from boto3.session import Session
+import pytest
 from unittest.mock import Mock
 
-from boto3.session import Session
 from code import make_session
 
-import pytest
 # pytestmark = pytest.mark.wip
 
 
@@ -37,12 +37,14 @@ def mock():
     return handle
 
 
+@pytest.mark.unit_tests
 def test_make_session_minimum(mock):
     session = make_session(role_arn='arn:aws:iam::222222222222:role/role-on-source-account',
                            session=mock)
     assert isinstance(session, Session)
 
 
+@pytest.mark.unit_tests
 def test_make_session_maximum(mock):
     session = make_session(role_arn='arn:aws:iam::222222222222:role/role-on-source-account',
                            region='eu-west-12',
@@ -55,6 +57,7 @@ def test_make_session_maximum(mock):
         RoleSessionName='a-name')
 
 
+@pytest.mark.unit_tests
 def test_make_session_invalid_arn():
     with pytest.raises(ValueError):
         make_session(role_arn='arn')

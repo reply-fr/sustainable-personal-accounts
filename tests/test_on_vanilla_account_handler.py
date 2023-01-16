@@ -23,11 +23,11 @@ import json
 from unittest.mock import patch, Mock
 from moto import mock_events
 import os
+import pytest
 
 from code import Events, State
 from code.on_vanilla_account_handler import handle_account_event, handle_tag_event
 
-import pytest
 # pytestmark = pytest.mark.wip
 
 
@@ -82,6 +82,7 @@ def valid_tags():
     return mock
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
@@ -97,6 +98,7 @@ def test_handle_account_event(valid_tags):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              AWS_DEFAULT_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
@@ -111,6 +113,7 @@ def test_handle_tag_event(valid_tags):
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='INFO'))

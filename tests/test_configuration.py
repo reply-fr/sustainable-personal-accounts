@@ -35,6 +35,7 @@ def toggles():
     return SimpleNamespace()
 
 
+@pytest.mark.unit_tests
 def test_expand_text(toggles):
     text = 'this is some sample text with ___parameter___ to replace'
     toggles.parameter = '=value='
@@ -42,6 +43,7 @@ def test_expand_text(toggles):
     assert test == 'this is some sample text with =value= to replace'
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(AWS_ACCOUNT="012345678901", AWS_REGION="eu-west-9"))
 def test_initialize(toggles):
 
@@ -54,6 +56,7 @@ def test_initialize(toggles):
         Configuration.initialize(stream='this*file*does*not*exist')
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, {}, clear=True)
 def test_set_aws_environment(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
@@ -63,6 +66,7 @@ def test_set_aws_environment(toggles):
     assert toggles.aws_environment is not None
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(AWS_ACCOUNT="987654321098", AWS_REGION="eu-central-1"))
 def test_set_aws_environment_from_environment_variables(toggles):
     logging.debug("here AWS_ACCOUNT={}".format(os.environ.get("AWS_ACCOUNT", 'not found')))
@@ -73,6 +77,7 @@ def test_set_aws_environment_from_environment_variables(toggles):
     assert toggles.aws_environment is not None
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="012345678901", CDK_DEFAULT_REGION="eu-west-9"), clear=True)
 def test_set_aws_environment_from_cdk_runtime(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
@@ -85,6 +90,7 @@ def test_set_aws_environment_from_cdk_runtime(toggles):
     assert toggles.aws_environment is not None
 
 
+@pytest.mark.unit_tests
 def test_set_default_values(toggles):
     Configuration.set_default_values(toggles=toggles)
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
@@ -94,6 +100,7 @@ def test_set_default_values(toggles):
     assert toggles.features_with_microsoft_webhook_on_alerts is None
 
 
+@pytest.mark.unit_tests
 def test_set_from_settings(toggles):
     settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
     Configuration.set_from_settings(settings, toggles=toggles)
@@ -104,6 +111,7 @@ def test_set_from_settings(toggles):
                                                    'purge': {'feature': 'disabled', 'variables': {}}}}
 
 
+@pytest.mark.unit_tests
 def test_set_from_settings_with_default_values(toggles):
     settings = dict(organizational_units=[
         dict(identifier='default',
@@ -125,6 +133,7 @@ def test_set_from_settings_with_default_values(toggles):
                                                    'purge': {'feature': 'enabled', 'variables': {'KEY': 'another key', 'MAX_AGE': '3w', 'VALUE': 'value'}}}}
 
 
+@pytest.mark.integration_tests
 @pytest.mark.slow
 def test_set_from_yaml(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
@@ -145,11 +154,13 @@ def test_set_from_yaml(toggles):
     assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
 
 
+@pytest.mark.unit_tests
 def test_set_from_yaml_invalid(toggles):
     with pytest.raises(AttributeError):
         Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))
 
 
+@pytest.mark.unit_tests
 def test_validate_organizational_unit():
     ou = {
         'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
@@ -167,6 +178,7 @@ def test_validate_organizational_unit():
     Configuration.validate_organizational_unit(ou)
 
 
+@pytest.mark.unit_tests
 def test_validate_organizational_unit_on_invalid_keys():
     ou = {
         'identifier': 'ou-5678',
@@ -182,6 +194,7 @@ def test_validate_organizational_unit_on_invalid_keys():
         Configuration.validate_organizational_unit(ou)
 
 
+@pytest.mark.unit_tests
 def test_validate_organizational_unit_on_missing_identifier():
     ou = {
         'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},

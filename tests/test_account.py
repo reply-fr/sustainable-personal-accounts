@@ -20,11 +20,11 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import Mock
+import pytest
 from types import SimpleNamespace
 
 from code import Account, State
 
-import pytest
 # pytestmark = pytest.mark.wip
 
 
@@ -76,6 +76,7 @@ def test_iterate_tags(valid_tags):
         next(iterator)
 
 
+@pytest.mark.unit_tests
 def test_move_to_vanilla():
     session = Mock()
     Account.move(account='0123456789012',
@@ -87,6 +88,7 @@ def test_move_to_vanilla():
         Tags=[{'Key': 'account:state', 'Value': 'vanilla'}])
 
 
+@pytest.mark.unit_tests
 def test_move_to_assigned():
     session = Mock()
     Account.move(account='0123456789012',
@@ -98,6 +100,7 @@ def test_move_to_assigned():
         Tags=[{'Key': 'account:state', 'Value': 'assigned'}])
 
 
+@pytest.mark.unit_tests
 def test_move_to_released():
     session = Mock()
     Account.move(account='0123456789012',
@@ -109,6 +112,7 @@ def test_move_to_released():
         Tags=[{'Key': 'account:state', 'Value': 'released'}])
 
 
+@pytest.mark.unit_tests
 def test_move_to_expired():
     session = Mock()
     Account.move(account='0123456789012',
@@ -120,12 +124,14 @@ def test_move_to_expired():
         Tags=[{'Key': 'account:state', 'Value': 'expired'}])
 
 
+@pytest.mark.unit_tests
 def test_move_with_exception():
     with pytest.raises(ValueError):
         Account.move(account='0123456789012',
                      state=SimpleNamespace(value='*something*'))
 
 
+@pytest.mark.unit_tests
 def test_list():
 
     chunk_1 = {

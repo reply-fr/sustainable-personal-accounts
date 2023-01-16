@@ -19,12 +19,14 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import pytest
+
 from resources import Parameters
 
-# import pytest
 # pytestmark = pytest.mark.wip
 
 
+@pytest.mark.unit_tests
 def test_get_account_parameter():
     test = Parameters.get_account_parameter(environment='Fake')
     assert test == '/Fake/Accounts'
@@ -33,6 +35,7 @@ def test_get_account_parameter():
     assert test == '/Fake/Accounts/123456789012'
 
 
+@pytest.mark.unit_tests
 def test_get_organizational_unit_parameter():
     test = Parameters.get_organizational_unit_parameter(environment='Fake')
     assert test == '/Fake/OrganizationalUnits'

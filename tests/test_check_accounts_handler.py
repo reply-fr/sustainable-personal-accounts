@@ -141,6 +141,7 @@ def given_some_context():
     return context
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='Fake',
                              ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
                              VERBOSITY='DEBUG'))
@@ -162,12 +163,14 @@ def test_handle_event(monkeypatch):
     assert processed == {context.crm_account, context.erp_account, context.alice_account, context.bob_account}
 
 
+@pytest.mark.unit_tests
 def test_validate_tags():
     valid_tags = SimpleNamespace(id='123456789012',
                                  tags={'account:holder': 'a@b.com', 'account:state': 'released'})
     validate_tags(item=valid_tags)
 
 
+@pytest.mark.unit_tests
 def test_validate_tags_on_absent_holder():
     absent_holder = SimpleNamespace(id='123456789012',
                                     tags={'account:state': 'released'})
@@ -175,6 +178,7 @@ def test_validate_tags_on_absent_holder():
         validate_tags(item=absent_holder)
 
 
+@pytest.mark.unit_tests
 def test_validate_tags_on_invalid_holder():
     invalid_holder = SimpleNamespace(id='123456789012',
                                      tags={'account:holder': 'a_b.com', 'account:state': 'released'})
@@ -182,6 +186,7 @@ def test_validate_tags_on_invalid_holder():
         validate_tags(item=invalid_holder)
 
 
+@pytest.mark.unit_tests
 def test_validate_tags_on_absent_state():
     absent_state = SimpleNamespace(id='123456789012',
                                    tags={'account:holder': 'a@b.com'})
@@ -189,6 +194,7 @@ def test_validate_tags_on_absent_state():
         validate_tags(item=absent_state)
 
 
+@pytest.mark.unit_tests
 def test_validate_tags_on_invalid_state():
     invalid_state = SimpleNamespace(id='123456789012',
                                     tags={'account:holder': 'a@b.com', 'account:state': '*alien*'})

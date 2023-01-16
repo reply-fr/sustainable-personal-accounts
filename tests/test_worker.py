@@ -42,12 +42,14 @@ def session():
     return mock
 
 
+@pytest.mark.unit_tests
 def test_deploy_project(session):
     Worker.deploy_project(name='name', description='description', buildspec='buildspec', role='role', session=session)
     session.client.assert_called_with('codebuild')
     session.client.return_value.create_project.assert_called()
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
                              TOPIC_ARN='arn:aws:test'))
 def test_get_preparation_variables():
@@ -63,6 +65,7 @@ def test_get_preparation_variables():
                          'TOPIC_ARN': 'arn:aws:topic'}
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
                              TOPIC_ARN='arn:aws:test'))
 def test_get_purge_variables():
@@ -74,6 +77,7 @@ def test_get_purge_variables():
                          'MAXIMUM_AGE': '1M'}
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
 @mock_sns
 def test_grant_publishing_from_budgets():
@@ -91,11 +95,13 @@ def test_grant_publishing_from_budgets():
     assert found
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AUTOMATION_ACCOUNT="123456789012"))
 def test_prepare(session):
     details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     Worker.prepare(details=details, settings={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
 
 
+@pytest.mark.integration_tests
 def test_purge(session):
     Worker.purge(account_id='123456789012', settings={}, buildspec='hello_again', event_bus_arn='arn:aws', session=session)

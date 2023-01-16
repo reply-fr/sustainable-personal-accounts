@@ -21,9 +21,10 @@ help:
 	@echo "make shell - load python local environment"
 	@echo "make lint - analyze python code"
 	@echo "make lint-json - check json syntax"
-	@echo "make test-all - perform all python tests"
-	@echo "make test - perform python tests not marked with @pytest.mark.slow"
-	@echo "make test-wip - run tests marked with @pytest.mark.wip"
+	@echo "make all-tests - perform all python tests"
+	@echo "make unitary-tests - run tests marked with @pytest.mark.unit_tests"
+	@echo "make integration-tests - run tests marked with @pytest.mark.integration_tests"
+	@echo "make wip-tests - run tests marked with @pytest.mark.wip"
 	@echo "make coverage - track untested code in web browser"
 	@echo "make bandit - look for secret strings in the code"
 	@echo "make stats - count lines of code and more"
@@ -105,14 +106,18 @@ pre-commit: lint test bandit
 lint: venv/bin/activate
 	venv/bin/python -m flake8 --max-complexity 8 --ignore E402,E501,F841,W503 --builtins="toggles" --per-file-ignores="resources/serverless_stack.py:F401 tests/conftest.py:F401" ${CODE_PATH} tests
 
-test: venv/bin/activate
-	venv/bin/python -m pytest -ra --durations=0 -m "not slow" tests/
+all-tests: venv/bin/activate
+	venv/bin/python -m pytest -ra --durations=0 tests/
 
-test-wip: venv/bin/activate
+unit-tests: venv/bin/activate
+	venv/bin/python -m pytest -m unit_tests -v tests/
+
+integration-tests: venv/bin/activate
+	venv/bin/python -m pytest -m integration_tests -v tests/
+
+wip-tests: venv/bin/activate
 	venv/bin/python -m pytest -m wip -v tests/
 
-test-all: venv/bin/activate
-	venv/bin/python -m pytest -ra --durations=0 tests/
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys

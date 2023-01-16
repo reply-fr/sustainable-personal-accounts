@@ -23,13 +23,13 @@ from boto3.session import Session
 import json
 from moto import mock_organizations, mock_ssm
 import os
+import pytest
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from account import Account
 from code.on_maintenance_window_handler import handle_schedule_event
 
-import pytest
 pytestmark = pytest.mark.wip
 
 
@@ -136,6 +136,7 @@ def given_some_context():
     return context
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='Spa',
                              VERBOSITY='DEBUG'))
 @mock_organizations

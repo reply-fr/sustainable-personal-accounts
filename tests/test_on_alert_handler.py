@@ -21,19 +21,20 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from boto3.session import Session
 import boto3
+from unittest.mock import patch
 from moto import mock_sns
 import os
+import pytest
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from account import Account
 from code.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_queue_event, publish_notification_on_microsoft_webhook
 from events import Events
 
-import pytest
 pytestmark = pytest.mark.wip
 
 
+@pytest.mark.integration_tests
 def test_handle_codebuild_event(monkeypatch):
 
     def mock_account_describe(id, *args, **kwargs):
@@ -55,6 +56,7 @@ def test_handle_codebuild_event(monkeypatch):
     assert result == '[OK]'
 
 
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
 @mock_sns
 def test_handle_queue_event(account_describe_mock):
@@ -89,6 +91,7 @@ def test_handle_queue_event(account_describe_mock):
                                                                          Subject="Alert on account '111111111111 (a@b.com)'")
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(MICROSOFT_WEBHOOK_ON_ALERTS='https://webhook/'))
 @patch('pymsteams.connectorcard')
 def test_publish_notification_on_microsoft_webhook(patched):
@@ -102,12 +105,14 @@ def test_publish_notification_on_microsoft_webhook(patched):
     message.send.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_get_codebuild_message():
     result = get_codebuild_message(account='123456789012', project='someProject', status='FAILED')
     assert result == "You will find below details on failing CodeBuild project ran on account '123456789012':\n\n- account: 123456789012\n- project: someProject\n- status: FAILED"
 
 
 """
+@pytest.mark.integration_tests
 @mock_sqs
 @mock_sns
 def test_high_number_of_topics_per_queue():

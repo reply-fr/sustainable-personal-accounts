@@ -18,13 +18,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 from unittest.mock import Mock, patch
 import os
+import pytest
 
 from code import Events, State
 
-import pytest
 # pytestmark = pytest.mark.wip
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
 def test_emit():
     mock = Mock()
@@ -36,6 +37,7 @@ def test_emit():
          'Source': 'SustainablePersonalAccounts'}])
 
 
+@pytest.mark.unit_tests
 def test_build_event():
     event = Events.build_event(label='PurgeReport', account='123456789012', message='some log')
     assert event['Source'] == 'SustainablePersonalAccounts'
@@ -45,11 +47,13 @@ def test_build_event():
     assert details['Message'] == 'some log'
 
 
+@pytest.mark.unit_tests
 def test_build_event_on_invalid_account():
     with pytest.raises(ValueError):
         Events.build_event(label='CreatedAccount', account='short')
 
 
+@pytest.mark.unit_tests
 def test_build_event_with_labels():
     for label in Events.EVENT_LABELS:
         event = Events.build_event(label=label, account='123456789012')
@@ -59,6 +63,7 @@ def test_build_event_with_labels():
         Events.build_event(label='*perfectly*unknown*', account='123456789012')
 
 
+@pytest.mark.unit_tests
 def test_decode_codebuild_event():
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
@@ -70,6 +75,7 @@ def test_decode_codebuild_event():
     assert decoded.status == "SUCCEEDED"
 
 
+@pytest.mark.unit_tests
 def test_decode_codebuild_event_on_malformed_account():
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="short",
@@ -79,6 +85,7 @@ def test_decode_codebuild_event_on_malformed_account():
         Events.decode_codebuild_event(event)
 
 
+@pytest.mark.unit_tests
 def test_decode_codebuild_event_on_unexpected_project():
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
@@ -88,6 +95,7 @@ def test_decode_codebuild_event_on_unexpected_project():
         Events.decode_codebuild_event(event, match="ExpectedProject")
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event():
     event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
@@ -99,6 +107,7 @@ def test_decode_local_event():
     assert decoded.label == "CreatedAccount"
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_environment():
     event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
@@ -109,6 +118,7 @@ def test_decode_local_event_on_unexpected_environment():
         Events.decode_local_event(event)
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_malformed_account():
     event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
@@ -119,6 +129,7 @@ def test_decode_local_event_on_malformed_account():
         Events.decode_local_event(event)
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_local_event_on_unexpected_label():
     event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
@@ -129,6 +140,7 @@ def test_decode_local_event_on_unexpected_label():
         Events.decode_local_event(event, match='PurgedAccount')
 
 
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_report_event():
     event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
@@ -142,6 +154,7 @@ def test_decode_report_event():
     assert decoded.message == "some log"
 
 
+@pytest.mark.unit_tests
 def test_decode_account_event():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
@@ -152,6 +165,7 @@ def test_decode_account_event():
     assert decoded.organizational_unit == "ou-destination"
 
 
+@pytest.mark.unit_tests
 def test_decode_account_event_on_malformed_account():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="short",
@@ -161,6 +175,7 @@ def test_decode_account_event_on_malformed_account():
         Events.decode_account_event(event)
 
 
+@pytest.mark.unit_tests
 def test_decode_account_event_on_unexpected_organizational_unit():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
@@ -170,6 +185,7 @@ def test_decode_account_event_on_unexpected_organizational_unit():
         Events.decode_account_event(event, matches=["ou-destination"])
 
 
+@pytest.mark.unit_tests
 def test_decode_tag_account_event():
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
@@ -179,6 +195,7 @@ def test_decode_tag_account_event():
     assert decoded.state == "assigned"
 
 
+@pytest.mark.unit_tests
 def test_decode_tag_account_event_on_malformed_account():
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="short",
@@ -187,6 +204,7 @@ def test_decode_tag_account_event_on_malformed_account():
         Events.decode_tag_account_event(event)
 
 
+@pytest.mark.unit_tests
 def test_decode_tag_account_event_on_unexpected_state():
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",
@@ -195,6 +213,7 @@ def test_decode_tag_account_event_on_unexpected_state():
         Events.decode_tag_account_event(event, match=State.EXPIRED)
 
 
+@pytest.mark.unit_tests
 def test_decode_tag_account_event_on_missing_state():
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012"))
@@ -208,6 +227,7 @@ def test_decode_tag_account_event_on_missing_state():
         Events.decode_tag_account_event(event)
 
 
+@pytest.mark.unit_tests
 def test_put_event():
     mock = Mock()
     Events.put_event(event='hello', session=mock)
