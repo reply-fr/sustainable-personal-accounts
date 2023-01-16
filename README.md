@@ -41,8 +41,12 @@ Note that the scope of SPA is limited to the effective part of AWS accounts life
 
 ## Get started with Sustainable Personal Accounts
 
-A set of workbooks are available for common operations on Sustainable Personal Accounts. Some common workbooks include:
+A set of workbooks are available for common operations on Sustainable Personal Accounts, such as:
 - [Full Setup of SPA](./workbooks/full-setup-of-spa.md) - Start here for initial installation
+- [Create a personal account](./workbooks/create-a-personal-account.md) - Add manually an account handled by SPA
+- [Add Microsoft Teams webhook](./workbooks/add-microsoft-teams-webhook.md) - Forward SPA notifications to ChatOps channels
+- [Release managed accounts](./workbooks/release-managed-accounts.md) - Reset all state machines at once
+
 
 ## Frequently asked questions
 
