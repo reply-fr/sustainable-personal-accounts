@@ -22,7 +22,7 @@ help:
 	@echo "make lint - analyze python code"
 	@echo "make lint-json - check json syntax"
 	@echo "make all-tests - perform all python tests"
-	@echo "make unitary-tests - run tests marked with @pytest.mark.unit_tests"
+	@echo "make unit-tests - run tests marked with @pytest.mark.unit_tests"
 	@echo "make integration-tests - run tests marked with @pytest.mark.integration_tests"
 	@echo "make wip-tests - run tests marked with @pytest.mark.wip"
 	@echo "make coverage - track untested code in web browser"
