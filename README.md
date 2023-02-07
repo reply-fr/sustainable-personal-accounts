@@ -6,6 +6,20 @@ Note that alternate projects are available if SPA does not suit your specific ne
 - [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
 - [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
 
+## What can you do with SPA?
+
+With SPA you can:
+- on AWS account creation, align them with corporate policies on security, cost control, and automation
+- configure AWS Budgets automatically within each managed account, and consolidate budget alerts
+- continuously deploy the DevOps and SIEM toolboxes of your enterprise to AWS sandbox accounts
+- force the purge of cloud resources and enforce Infrastructure-as-Code and Continuous Integration (CI) culture
+- tag AWS accounts, and evolve tags to follow FinOps and CloudOps corporate policies
+- manage AWS accounts collectively (by Organization Unit) or individually
+- set maintenance window of your choice
+- adjust maintenance actions to your exact needs (with CodeBuild scripts)
+
+## How is this implemented?
+
 Sustainable Personal Accounts has been designed with following principles:
 - the entire solution is configured with one single YAML file
 - the entire infrastructure is deployed with python code and AWS CDK
@@ -14,7 +28,16 @@ Sustainable Personal Accounts has been designed with following principles:
 - processing is driven by events, powered by AWS EventBridge
 - the preparation of an AWS account is done with a customizable Codebuild project -- adapt it to your corporate policy
 - the purge of an AWS account is done with a customisable Codebuild project -- adapt it to your FinOps best practices
-- observability is implemented with a CloudWatch dashboard deployed automatically
+- monitoring is implemented with a CloudWatch dashboard deployed automatically
+- system can be extended to specific needs via custom event processing
+
+![architecture](./media/reference-architecture.svg)
+
+SPA is featuring an event-driven architecture, and serverless infrastructure. Centralised lambda functions take care of changing states of accounts. The preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These activities run directly into target accounts as CodeBuild projects.
+
+In addition, some resources deployed with SPA are accessible from all accounts of the target AWS Organization:
+- A SQS queue consolidates alerts from managed accounts. For example, when billing alerts are raised in one account, these are forwarded to the central SQS queu and forwarded to the configured administrators.
+- The default event bus of the Automation account can receive events directly from managed accounts, for example from within Codebuild projects. This allow distributed processing to be reported centrally.
 
 ## SPA brings maintenance windows to AWS accounts
 
@@ -72,7 +95,7 @@ limitations under the License.
 
 ### Q. How many accounts can be managed in a single SPA state machine?
 
-Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. Our long-term objective is that up to 10,000 AWS accounts are purged and prepared on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.
+Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. Today the solution can accomodate for 100 AWS accounts or more. Our long-term objective is that up to 10,000 AWS accounts are purged and prepared on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.
 
 ### Q. How are transitions detected and managed?
 
@@ -117,20 +140,6 @@ Sure. Sustainable Personal Accounts features following building blocks:
 - **PrepareAccount** and **PurgeAccount** - These templated CodeBuild projects are actually deployed in personal accounts, and started asynchronously, by Lambda functions **OnAssignedAccount** and **OnExpiredAccount**.
 
 - **Parameter store** - Parameters used by SPA code, including templates for CodeBuild projects, are placed in SSM Parameter Store of the Automation account.
-
-### Q. Is this a centralised or a distributed architecture?
-
-![architecture](./media/reference-architecture.svg)
-
-SPA is featuring an event-driven architecture, and serverless infrastructure. By default, centralised lambda functions take care of changing states of accounts. However, the preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These specific activities can be either centralised in one AWS account, or distributed into the personal accounts themselves.
-
-At the end of the day, some parts of SPA are centralised, while other parts are distributed:
-- A single AWS account is used for centralised automation, with one EventBridge bus, some Lambda functions and SSM Parameter store.
-- Personal AWS accounts managed by SPA host heavy processing required for their preparation and for their purge.
-
-In addition, some resources deployed in the Automation account are accessible from all accounts of the target AWS Organization:
-- A SQS queue consolidates alerts from managed accounts. For example, when billing alerts are raised in one account, these are forwarded to the central SQS queu and forwarded to the configured administrators.
-- The default event bus of the Automation account can receive events directly from managed accounts, for example from within Codebuild projects. This allow distributed processing to be reported centrally.
 
 ### Q. What are the guiding principles for Sustainable Personal Accounts?
 
