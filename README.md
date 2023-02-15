@@ -2,10 +2,6 @@
 
 With this project we promote the idea that each AWS practitioner should have direct access to some AWS account, so as to practice almost freely on the platform and to accelerate innovation of their company. At the same time, in corporate environment there is a need for enforcing policies, for managing costs and for fostering software automation. For this reason, with Sustainable Personal Accounts (SPA), we introduce maintenance windows on AWS accounts and alerts. Central teams can customise code ran on each maintenance window, for example to set billing alerts, to deploy SIEM agents, and to purge cloud resources.
 
-Note that alternate projects are available if SPA does not suit your specific needs:
-- [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
-- [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
-
 ## What can you do with SPA?
 
 With SPA you can:
@@ -38,6 +34,21 @@ SPA is featuring an event-driven architecture, and serverless infrastructure. Ce
 In addition, some resources deployed with SPA are accessible from all accounts of the target AWS Organization:
 - A SQS queue consolidates alerts from managed accounts. For example, when billing alerts are raised in one account, these are forwarded to the central SQS queu and forwarded to the configured administrators.
 - The default event bus of the Automation account can receive events directly from managed accounts, for example from within Codebuild projects. This allow distributed processing to be reported centrally.
+
+## What do you need to deploy SPA in your environment?
+
+Mandatory requirements:
+* SPA is leveraging AWS Organization for events management and for account management across AWS accounts. The deployment of AWS Organizations can be managed by Amazon Control Tower, but Amazon Control Tower itself is not mandatory.
+* SPA should be deployed on a dedicated AWS account. This facilitates the management of permissions accross a large number of AWS accounts, and contributes to the separation of concerns.
+* SPA needs an assume role with permissions on the AWS Organization
+* SPA needs an assume role with permissions within each AWS account that it manages
+
+We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO).
+
+Note that alternate projects are available if Amazon Control Tower does not suit your specific needs. More specifically, if you are looking for an account vending machine, you can consider following solutions:
+- [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
+- [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
+
 
 ## SPA brings maintenance windows to AWS accounts
 

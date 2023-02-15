@@ -4,14 +4,19 @@
 This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on one AWS account of a target AWS Organization.
 
 ## Pre-conditions
-- You have credentials to access the AWS Console for the top-level account of the target AWS Organization.
-- You have needed permissions to manage Control Tower and Account Factory
-- Under Windows WSL, you may have to install python3-venv, gcc, rustc, libffi-dev
+- You have credentials to access the AWS Console
+- You have received permissions to create a new AWS account
+- Under Windows WSL, you may have to install python3-venv, gcc, rustc, libffi-dev -- else use Cloud9
 - Packages installed on your workstation include: make, python
 
-## Step 1 - Deploy AWS Control Tower
+## Step 1 - Create an AWS Organization
 
-The sweet spot for Sustainable Personal Account is an AWS Organization deployed as part of AWS Control Tower.
+SPA is leveraging AWS Organization for events management and for account management across AWS accounts.
+
+If you do not have an AWS Organizations yet, then you have to create one. There are multiple options to consider and you have to select the one that will work best for you:
+* The deployment of AWS Organizations can be managed by AWS Control Tower, and this is our recommended approach if you start from a single account.
+* You can use an alternative account management solution from some AWS Partner
+* You deploy a new AWS Organizations by yourself
 
 Reference:
 - [AWS Control Tower Workshops](https://controltower.aws-management.tools/)
@@ -21,7 +26,7 @@ Reference:
 
 SPA is using events related to multiple AWS accounts. The collection and aggregation of these events can be done by CloudTrail, but this needs explicit activation.
 
-This step can be completed with following activities:
+When you have deployed Control Tower, this step can be completed with following activities:
 - From the AWS Console of the top-level account of the AWS Organization, select Control Tower service
 - In the left pane, click on `Landing zone settings`
 - Click on button `Modify settings`
@@ -31,11 +36,13 @@ This step can be completed with following activities:
 - Click on the button `Next` at the very bottom right
 - On third step, review the overall configuration. Ensure that Organisational-level logging has been enabled then click on button `Update landing zone`
 
+If you do not have Control Tower, then configure your landing zone to generate EventBridge events related to AWS Organizations.
+
 ## Step 3 - Select an AWS account and a region to deploy Sustainable Personal Account
 
-We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organisational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams. As a result, out of all shared accounts created by Control Tower, the `Sandbox` account seems a good candidate to automate business operations with tools such as SPA.
+We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organisational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams.
 
-We recommend to rename the `Sandbox` account created by Control Tower to `Automation`. This is living in the Sandbox Organizational Unit. Alternatively, you can create a new account for automated background activities in your organisation, for example with the Account Factory created by Control Tower.
+We recommend to create an AWS account named `Automation` to host SPA code. This should be considered production level, and put in the appropriate OU.
 
 Take a note of the `Automation` account identifier, a string of 12 digits. This will be used in the next step to create a trusted relationship with the top-level account of the AWS Organization.
 
@@ -87,7 +94,7 @@ Following activities are related to this step:
   }
   ```
 
-- Ensure that the mention JSON is valid appears before you hit the button `Update` at the bottom of the form. In case of error, ensure that statements are separated by commas.
+- Ensure that the mention "JSON is valid" appears before you hit the button `Update` at the bottom of the form. In case of error, ensure that statements are separated by commas.
 
 After the update you can control that the resource-based policy for the default event bus is looking like the following:
 
@@ -168,7 +175,7 @@ $ make setup
 
 ## Step 9 - Configure SPA
 
-You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
+You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
 
 ## Step 10 - Deploy SPA
 
