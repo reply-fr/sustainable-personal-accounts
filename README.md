@@ -43,9 +43,7 @@ Mandatory requirements:
 * SPA needs an assume role with permissions on the AWS Organization
 * SPA needs an assume role with permissions within each AWS account that it manages
 
-We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO).
-
-Note that alternate projects are available if Amazon Control Tower does not suit your specific needs. More specifically, if you are looking for an account vending machine, you can consider following solutions:
+We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO). If Amazon Control Tower does not suit your specific needs, and if you are looking for an account vending machine, you can consider following solutions or similar:
 - [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
 - [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
 
