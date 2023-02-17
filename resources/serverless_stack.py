@@ -23,9 +23,9 @@ from aws_cdk.aws_logs import RetentionDays
 
 from .check_accounts_construct import CheckAccounts
 from .cockpit_construct import Cockpit
+from .on_account_event_construct import OnAccountEvent
 from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
-from .on_events_construct import OnEvents
 from .on_expired_account_construct import OnExpiredAccount
 from .on_maintenance_window_construct import OnMaintenanceWindow
 from .on_prepared_account_construct import OnPreparedAccount
@@ -34,6 +34,7 @@ from .on_released_account_construct import OnReleasedAccount
 from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
 from .release_accounts_construct import ReleaseAccounts
+from .to_microsoft_teams_construct import ToMicrosoftTeams
 
 
 class ServerlessStack(Stack):
@@ -50,16 +51,17 @@ class ServerlessStack(Stack):
 
         labels = [
             'CheckAccounts',
+            'OnAccountEvent',
             'OnAlert',
             'OnAssignedAccount',
-            'OnEvents',
             'OnExpiredAccount',
             'OnMaintenanceWindow',
             'OnPreparedAccount',
             'OnPurgedAccount',
             'OnReleasedAccount',
             'OnVanillaAccount',
-            'ReleaseAccounts']
+            'ReleaseAccounts',
+            'ToMicrosoftTeams']
 
         monitored_functions = []
         for label in labels:
@@ -86,8 +88,6 @@ class ServerlessStack(Stack):
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             VERBOSITY=toggles.automation_verbosity)
-        if toggles.features_with_microsoft_webhook_on_alerts:
-            environment['MICROSOFT_WEBHOOK_ON_ALERTS'] = toggles.features_with_microsoft_webhook_on_alerts
         return environment
 
     def get_parameters(self, environment) -> dict:  # passed to every lambda functions

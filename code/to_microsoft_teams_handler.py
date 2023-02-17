@@ -17,24 +17,30 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
+import pymsteams
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from account import Account, State
 from events import Events
-from worker import Worker
 
 
 @trap_exception
-def handle_codebuild_event(event, context, session=None):
+def handle_spa_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE)
-    if input.status != "SUCCEEDED":
-        raise ValueError(f"Ignoring status '{input.status}'")
-    return handle_account(input.account, session=session)
+
+    item = Events.decode_spa_event(event)
+    post_message(message=item.payload, session=session)
+    return '[OK]'
 
 
-def handle_account(account, session=None):
-    Account.move(account=account, state=State.ASSIGNED, session=session)
-    return Events.emit_account_event('PurgedAccount', account)
+def post_message(message, session=None):
+    logging.debug("Relaying message")
+    microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK_ON_ALERTS', None)
+    if microsoft_webhook:
+        logging.info(f"Publishing on Microsoft Webhook: {microsoft_webhook}")
+        handler = pymsteams.connectorcard(microsoft_webhook)
+        handler.title(message['Subject'])
+        handler.text(message['Message'])
+        handler.send()

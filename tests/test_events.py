@@ -26,20 +26,8 @@ from code import Events, State
 
 
 @pytest.mark.unit_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
-def test_emit():
-    mock = Mock()
-    Events.emit(label='CreatedAccount', account='123456789012', message='message', session=mock)
-    mock.client.assert_called_with('events')
-    mock.client.return_value.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Account": "123456789012", "Environment": "FromHere", "Message": "message"}',
-         'DetailType': 'CreatedAccount',
-         'Source': 'SustainablePersonalAccounts'}])
-
-
-@pytest.mark.unit_tests
-def test_build_event():
-    event = Events.build_event(label='PurgeReport', account='123456789012', message='some log')
+def test_build_account_event():
+    event = Events.build_account_event(label='PurgeReport', account='123456789012', message='some log')
     assert event['Source'] == 'SustainablePersonalAccounts'
     assert event['DetailType'] == 'PurgeReport'
     details = json.loads(event['Detail'])
@@ -48,19 +36,83 @@ def test_build_event():
 
 
 @pytest.mark.unit_tests
-def test_build_event_on_invalid_account():
+def test_build_account_event_on_invalid_account():
     with pytest.raises(ValueError):
-        Events.build_event(label='CreatedAccount', account='short')
+        Events.build_account_event(label='CreatedAccount', account='short')
 
 
 @pytest.mark.unit_tests
-def test_build_event_with_labels():
-    for label in Events.EVENT_LABELS:
-        event = Events.build_event(label=label, account='123456789012')
+def test_build_account_event_with_labels():
+    for label in Events.ACCOUNT_EVENT_LABELS:
+        event = Events.build_account_event(label=label, account='123456789012')
         assert event['DetailType'] == label
 
     with pytest.raises(ValueError):
-        Events.build_event(label='*perfectly*unknown*', account='123456789012')
+        Events.build_account_event(label='*perfectly*unknown*', account='123456789012')
+
+
+@pytest.mark.unit_tests
+def test_build_spa_event():
+    event = Events.build_spa_event(label='MessageToMicrosoftTeams', payload='hello world')
+    assert event['Source'] == 'SustainablePersonalAccounts'
+    assert event['DetailType'] == 'MessageToMicrosoftTeams'
+    details = json.loads(event['Detail'])
+    assert details['Payload'] == 'hello world'
+
+
+@pytest.mark.unit_tests
+def test_build_spa_event_with_labels():
+    for label in Events.SPA_EVENT_LABELS:
+        event = Events.build_spa_event(label=label)
+        assert event['DetailType'] == label
+
+    with pytest.raises(ValueError):
+        Events.build_spa_event(label='*perfectly*unknown*')
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_account_event():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
+    decoded = Events.decode_account_event(event)
+    assert decoded.account == "123456789012"
+    assert decoded.label == "CreatedAccount"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_account_event_on_unexpected_environment():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                            context=dict(account="short",
+                                                         label="CreatedAccount",
+                                                         environment="alien*environment"))
+    with pytest.raises(ValueError):
+        Events.decode_account_event(event)
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_account_event_on_malformed_account():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                            context=dict(account="short",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
+    with pytest.raises(ValueError):
+        Events.decode_account_event(event)
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_account_event_on_unexpected_label():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="CreatedAccount",
+                                                         environment="envt1"))
+    with pytest.raises(ValueError):
+        Events.decode_account_event(event, match='PurgedAccount')
 
 
 @pytest.mark.unit_tests
@@ -97,92 +149,81 @@ def test_decode_codebuild_event_on_unexpected_project():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
-def test_decode_local_event():
-    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
-                                            context=dict(account="123456789012",
-                                                         label="CreatedAccount",
-                                                         environment="envt1"))
-    decoded = Events.decode_local_event(event)
-    assert decoded.account == "123456789012"
-    assert decoded.label == "CreatedAccount"
-
-
-@pytest.mark.unit_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
-def test_decode_local_event_on_unexpected_environment():
-    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
-                                            context=dict(account="short",
-                                                         label="CreatedAccount",
-                                                         environment="alien*environment"))
-    with pytest.raises(ValueError):
-        Events.decode_local_event(event)
-
-
-@pytest.mark.unit_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
-def test_decode_local_event_on_malformed_account():
-    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
-                                            context=dict(account="short",
-                                                         label="CreatedAccount",
-                                                         environment="envt1"))
-    with pytest.raises(ValueError):
-        Events.decode_local_event(event)
-
-
-@pytest.mark.unit_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
-def test_decode_local_event_on_unexpected_label():
-    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
-                                            context=dict(account="123456789012",
-                                                         label="CreatedAccount",
-                                                         environment="envt1"))
-    with pytest.raises(ValueError):
-        Events.decode_local_event(event, match='PurgedAccount')
-
-
-@pytest.mark.unit_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
 def test_decode_report_event():
     event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="PurgeReport",
                                                          message="some log",
                                                          environment="envt1"))
-    decoded = Events.decode_local_event(event)
+    decoded = Events.decode_account_event(event)
     assert decoded.account == "123456789012"
     assert decoded.label == "PurgeReport"
     assert decoded.message == "some log"
 
 
 @pytest.mark.unit_tests
-def test_decode_account_event():
+def test_decode_organization_event():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-destination",
                                                          source_organizational_unit="ou-source"))
-    decoded = Events.decode_account_event(event)
+    decoded = Events.decode_organization_event(event)
     assert decoded.account == "123456789012"
     assert decoded.organizational_unit == "ou-destination"
 
 
 @pytest.mark.unit_tests
-def test_decode_account_event_on_malformed_account():
+def test_decode_organization_event_on_malformed_account():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="short",
                                                          destination_organizational_unit="ou-destination",
                                                          source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        Events.decode_account_event(event)
+        Events.decode_organization_event(event)
 
 
 @pytest.mark.unit_tests
-def test_decode_account_event_on_unexpected_organizational_unit():
+def test_decode_organization_event_on_unexpected_organizational_unit():
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-expected",
                                                          source_organizational_unit="ou-source"))
     with pytest.raises(ValueError):
-        Events.decode_account_event(event, matches=["ou-destination"])
+        Events.decode_organization_event(event, matches=["ou-destination"])
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_spa_event():
+    event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
+                                            context=dict(label="MessageToMicrosoftTeams",
+                                                         payload="hello world",
+                                                         environment="envt1"))
+    decoded = Events.decode_spa_event(event)
+    assert decoded.label == "MessageToMicrosoftTeams"
+    assert decoded.payload == "hello world"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_spa_event_on_unexpected_environment():
+    event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
+                                            context=dict(label="MessageToMicrosoftTeams",
+                                                         payload="hello world",
+                                                         environment="alien*environment"))
+    with pytest.raises(ValueError):
+        Events.decode_spa_event(event)
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
+def test_decode_spa_event_on_unexpected_label():
+    event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
+                                            context=dict(label="CreatedAccount",
+                                                         payload="hello world",
+                                                         environment="envt1"))
+    with pytest.raises(ValueError):
+        Events.decode_spa_event(event, match='MessageToMicrosoftTeams')
 
 
 @pytest.mark.unit_tests
@@ -225,6 +266,30 @@ def test_decode_tag_account_event_on_missing_state():
 
     with pytest.raises(ValueError):
         Events.decode_tag_account_event(event)
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
+def test_emit_account_event():
+    mock = Mock()
+    Events.emit_account_event(label='CreatedAccount', account='123456789012', message='message', session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=[
+        {'Detail': '{"Account": "123456789012", "Environment": "FromHere", "Message": "message"}',
+         'DetailType': 'CreatedAccount',
+         'Source': 'SustainablePersonalAccounts'}])
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
+def test_emit_spa_event():
+    mock = Mock()
+    Events.emit_spa_event(label='MessageToMicrosoftTeams', payload='payload', session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=[
+        {'Detail': '{"Environment": "FromHere", "Payload": "payload"}',
+         'DetailType': 'MessageToMicrosoftTeams',
+         'Source': 'SustainablePersonalAccounts'}])
 
 
 @pytest.mark.unit_tests

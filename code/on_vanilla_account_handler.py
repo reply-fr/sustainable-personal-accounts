@@ -28,9 +28,9 @@ from settings import Settings
 
 
 @trap_exception
-def handle_account_event(event, context, session=None):
+def handle_organization_event(event, context, session=None):
     logging.debug(json.dumps(event))
-    input = Events.decode_account_event(event=event)
+    input = Events.decode_organization_event(event=event)
     return handle_account(input.account, session=session)
 
 
@@ -47,7 +47,7 @@ def handle_account(account, session=None):
     updated = inspect_tags(item=item, settings=settings)
     if item.tags != updated:
         Account.tag(account, updated, session=session)
-    return Events.emit('CreatedAccount', account)
+    return Events.emit_account_event('CreatedAccount', account)
 
 
 def inspect_tags(item, settings):

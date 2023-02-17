@@ -6,8 +6,7 @@ Feature: Microsoft Teams integration
 
 
 Scenario: where a message is posted to a Microsoft Teams webhook
-    Given Lambda function "ToMicrosoftTeams" is listening from the event bus
-     When an event "PostMicrosoftTeamsMessage" is posted to the bus
-     Then Lambda function "ToMicrosoftTeams" handles the event "PostMicrosoftTeamsMessage"
-      And mesage is posted to provided webhook
+     When an event "MessageToMicrosoftTeams" is posted to the bus
+     Then Lambda function "ToMicrosoftTeams" handles the event "MessageToMicrosoftTeams"
+      And message is posted to provided webhook
 

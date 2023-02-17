@@ -27,10 +27,10 @@ from events import Events
 
 
 @trap_exception
-def handle_event(event, context, session=None):
+def handle_account_event(event, context, session=None):
     logging.debug(json.dumps(event))
 
-    input = Events.decode_local_event(event)
+    input = Events.decode_account_event(event)
 
     if input.__dict__.get('message', None):
         logging.info(f"Logging '{input.label}' '{input.account}'\n{input.message}")

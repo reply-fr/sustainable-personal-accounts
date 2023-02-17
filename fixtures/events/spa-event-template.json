@@ -1,0 +1,11 @@
+{
+  "version": "0",
+  "id": "e3d4cf11-xxxx-yyyy-zzzz-1b14401b30fb",
+  "detail-type": "___label___",
+  "source": "SustainablePersonalAccounts",
+  "account": "111111111111",
+  "time": "2022-02-07T15:44:15Z",
+  "region": "eu-west-1",
+  "resources": [],
+  "detail": {"Payload": "___payload___", "Environment": "___environment___"}
+}

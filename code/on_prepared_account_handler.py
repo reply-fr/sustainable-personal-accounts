@@ -37,4 +37,4 @@ def handle_codebuild_event(event, context, session=None):
 
 def handle_account(account, session=None):
     Account.move(account=account, state=State.RELEASED, session=session)
-    return Events.emit('PreparedAccount', account)
+    return Events.emit_account_event('PreparedAccount', account)

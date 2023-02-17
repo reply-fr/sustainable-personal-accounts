@@ -24,7 +24,7 @@ import os
 import pytest
 
 from code import Events
-from code.on_events_handler import handle_event
+from code.on_account_event_handler import handle_account_event
 
 # pytestmark = pytest.mark.wip
 
@@ -32,13 +32,13 @@ from code.on_events_handler import handle_event
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
-def test_handle_event():
-    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
+def test_handle_account_event():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="envt1"))
     mock = Mock()
-    assert handle_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
+    assert handle_account_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
 
 
 @pytest.mark.unit_tests
@@ -51,7 +51,7 @@ def test_handle_preparation_report_event():
                                                          message="some log",
                                                          environment="envt1"))
     mock = Mock()
-    assert handle_event(event=event, context=None, session=mock) == '[OK] PreparationReport 123456789012'
+    assert handle_account_event(event=event, context=None, session=mock) == '[OK] PreparationReport 123456789012'
 
 
 @pytest.mark.unit_tests
@@ -64,16 +64,16 @@ def test_handle_purge_report_event():
                                                          message="some log",
                                                          environment="envt1"))
     mock = Mock()
-    assert handle_event(event=event, context=None, session=mock) == '[OK] PurgeReport 123456789012'
+    assert handle_account_event(event=event, context=None, session=mock) == '[OK] PurgeReport 123456789012'
 
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-def test_handle_local_event_on_unexpected_environment():
-    event = Events.load_event_from_template(template="fixtures/events/local-event-template.json",
+def test_handle_account_event_on_unexpected_environment():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="alien*environment"))
     mock = Mock()
-    assert handle_event(event=event, context=None, session=mock) == "[DEBUG] Unexpected environment 'alien*environment'"
+    assert handle_account_event(event=event, context=None, session=mock) == "[DEBUG] Unexpected environment 'alien*environment'"

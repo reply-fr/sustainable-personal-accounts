@@ -36,4 +36,4 @@ def handle_tag_event(event, context, session=None):
 
 def handle_account(account, session=None):
     Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)  # error if account is not managed
-    return Events.emit('ReleasedAccount', account)
+    return Events.emit_account_event('ReleasedAccount', account)

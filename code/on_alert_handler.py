@@ -18,7 +18,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import logging
 import os
-import pymsteams
 
 from boto3.session import Session
 
@@ -108,18 +107,12 @@ def relay_message(message, session=None):
 def publish_notification(notification, session=None):
     logging.info(f"Publishing notification: {notification}")
     session = session or Session()
-    publish_notification_on_microsoft_webhook(notification=notification)
+    publish_notification_on_microsoft_teams(notification=notification, session=session)
     publish_notification_on_sns(notification=notification, session=session)
 
 
-def publish_notification_on_microsoft_webhook(notification):
-    microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK_ON_ALERTS', None)
-    if microsoft_webhook:
-        logging.info(f"Publishing on Microsoft Webhook: {microsoft_webhook}")
-        message = pymsteams.connectorcard(microsoft_webhook)
-        message.title(notification['Subject'])
-        message.text(notification['Message'])
-        message.send()
+def publish_notification_on_microsoft_teams(notification, session=None):
+    Events.emit_spa_event("MessageToMicrosoftTeams", payload=json.dumps(notification), session=session)
 
 
 def publish_notification_on_sns(notification, session=None):

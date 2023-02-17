@@ -38,7 +38,7 @@ class OnVanillaAccount(Construct):
             self, "FromAccount",
             function_name="{}OnVanillaAccount".format(toggles.environment_identifier),
             description="Change state of created accounts to assigned",
-            handler="on_vanilla_account_handler.handle_account_event",
+            handler="on_vanilla_account_handler.handle_organization_event",
             **parameters)
 
         for permission in permissions:

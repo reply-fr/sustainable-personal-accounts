@@ -26,7 +26,7 @@ import os
 import pytest
 
 from code import Events, State
-from code.on_vanilla_account_handler import handle_account_event, handle_tag_event
+from code.on_vanilla_account_handler import handle_organization_event, handle_tag_event
 
 # pytestmark = pytest.mark.wip
 
@@ -89,12 +89,12 @@ def valid_tags():
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
-def test_handle_account_event(valid_tags):
+def test_handle_organization_event(valid_tags):
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
                                             context=dict(account="123456789012",
                                                          destination_organizational_unit="ou-1234",
                                                          origin_organizational_unit="ou-origin"))
-    result = handle_account_event(event=event, context=None, session=valid_tags)
+    result = handle_organization_event(event=event, context=None, session=valid_tags)
     assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
 
 

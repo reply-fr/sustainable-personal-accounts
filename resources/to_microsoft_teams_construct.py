@@ -20,31 +20,34 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
-from code import Events
 
-
-class OnEvents(Construct):
+class ToMicrosoftTeams(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
         self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
     def on_event(self, parameters, permissions) -> Function:
-        function = Function(self, "FromEvent",
-                            function_name="{}OnEvents".format(toggles.environment_identifier),
-                            description="Listen events from the bus",
-                            handler="on_events_handler.handle_event",
-                            **parameters)
+
+        if toggles.features_with_microsoft_webhook_on_alerts:
+            parameters['environment']['MICROSOFT_WEBHOOK_ON_ALERTS'] = toggles.features_with_microsoft_webhook_on_alerts
+
+        function = Function(
+            self, "OnEvent",
+            function_name="{}ToMicrosoftTeams".format(toggles.environment_identifier),
+            description="Transmit information to Microsoft Teams",
+            handler="to_microsoft_teams_handler.handle_spa_event",
+            **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
-             description="Route custom events from SPA to listening lambda function",
+             description="Route an event to Microsoft Teams",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
-                 detail_type=Events.EVENT_LABELS),
+                 detail_type=["MessageToMicrosoftteams"]),
              targets=[LambdaFunction(function)])
 
         return function

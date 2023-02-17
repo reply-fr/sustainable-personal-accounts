@@ -19,22 +19,22 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from boto3.session import Session
 import boto3
-from unittest.mock import patch
-from moto import mock_sns
+from unittest.mock import Mock, patch
+from moto import mock_events, mock_sns
 import os
 import pytest
 from types import SimpleNamespace
 
 from account import Account
-from code.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_queue_event, publish_notification_on_microsoft_webhook
+from code.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_queue_event, publish_notification_on_microsoft_teams
 from events import Events
 
 pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests
+@mock_events
 def test_handle_codebuild_event(monkeypatch):
 
     def mock_account_describe(id, *args, **kwargs):
@@ -42,22 +42,18 @@ def test_handle_codebuild_event(monkeypatch):
 
     monkeypatch.setattr(Account, 'describe', mock_account_describe)
 
-    session = Session(aws_access_key_id='testing',
-                      aws_secret_access_key='testing',
-                      aws_session_token='testing',
-                      region_name='eu-west-1')
-
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="567890123456",
                                                          project="some project",
                                                          status="some status"))
 
-    result = handle_codebuild_event(event=event, context=None, session=session)
+    result = handle_codebuild_event(event=event, context=None, session=Mock())
     assert result == '[OK]'
 
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
+@mock_events
 @mock_sns
 def test_handle_queue_event(account_describe_mock):
 
@@ -93,16 +89,17 @@ def test_handle_queue_event(account_describe_mock):
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(MICROSOFT_WEBHOOK_ON_ALERTS='https://webhook/'))
-@patch('pymsteams.connectorcard')
-def test_publish_notification_on_microsoft_webhook(patched):
+@mock_events
+def test_publish_notification_on_microsoft_teams():
+    mock = Mock()
     notification = dict(Message='hello world',
                         Subject='some subject')
-    publish_notification_on_microsoft_webhook(notification=notification)
-    patched.assert_called_once_with('https://webhook/')
-    message = patched('https://webhook/')
-    message.title.assert_called_once_with('some subject')
-    message.text.assert_called_once_with('hello world')
-    message.send.assert_called_once()
+    publish_notification_on_microsoft_teams(notification=notification, session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=[{
+        'Detail': '{"Environment": "Spa", "Payload": "{\\"Message\\": \\"hello world\\", \\"Subject\\": \\"some subject\\"}"}',
+        'DetailType': 'MessageToMicrosoftTeams',
+        'Source': 'SustainablePersonalAccounts'}])
 
 
 @pytest.mark.unit_tests
