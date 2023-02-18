@@ -61,7 +61,7 @@ worker:
 
 # default settings for accounts
 #
-default:
+defaults:
 
   # added to every account, accross all organizational units, except if overriden
   #

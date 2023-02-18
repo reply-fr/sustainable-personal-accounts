@@ -30,7 +30,7 @@ from unittest.mock import patch
 from account import Account
 from code.release_accounts_handler import handle_event
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def create_account(name, ou, session, tags={}):

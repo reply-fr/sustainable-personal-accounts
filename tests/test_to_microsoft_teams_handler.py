@@ -29,7 +29,7 @@ from account import Account
 from code.to_microsoft_teams_handler import handle_spa_event, post_message
 from events import Events
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests

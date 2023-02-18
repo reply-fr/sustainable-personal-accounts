@@ -30,7 +30,7 @@ from account import Account
 from code.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_queue_event, publish_notification_on_microsoft_teams
 from events import Events
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests

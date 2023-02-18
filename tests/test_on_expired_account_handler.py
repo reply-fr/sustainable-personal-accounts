@@ -32,7 +32,7 @@ from code import Events, State
 from code.on_expired_account_handler import handle_tag_event
 from worker import Worker
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 def given_some_context(prefix='/Fake/'):

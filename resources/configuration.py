@@ -37,6 +37,7 @@ class Configuration:
         automation_role_name_to_manage_codebuild='str',
         automation_tags='dict',
         automation_verbosity='str',
+        defaults='dict',
         environment_identifier='str',
         features_with_arm_architecture='bool',
         features_with_email_subscriptions_on_alerts='list',
@@ -47,14 +48,6 @@ class Configuration:
     )
 
     ALLOWED_ACCOUNT_ATTRIBUTES = dict(
-        account_tags='dict',
-        identifier='str',
-        note='str',
-        preparation='dict',
-        purge='dict'
-    )
-
-    ALLOWED_ORGANIZATIONAL_UNIT_ATTRIBUTES = dict(
         account_tags='dict',
         identifier='str',
         note='str',
@@ -137,8 +130,12 @@ class Configuration:
 
     @classmethod
     def set_from_settings(cls, settings={}, toggles=None):
+        if 'defaults' in settings.keys():
+            cls.set_attribute('defaults', settings['defaults'], toggles=toggles)
         for key in settings.keys():
-            if type(settings[key]) == dict:
+            if key == 'defaults':
+                continue
+            elif type(settings[key]) == dict:
                 for subkey in settings[key].keys():
                     flatten = "{0}_{1}".format(key, subkey)
                     value = settings[key].get(subkey)
@@ -148,16 +145,83 @@ class Configuration:
 
     @classmethod
     def set_attribute(cls, key, value, toggles=None):
+        toggles = toggles or builtins.toggles
         cls.validate_attribute(key, value, context=cls.ALLOWED_ATTRIBUTES)
         if key == 'accounts':
-            accounts = cls.transform_accounts(accounts=value)
-            value = cls.set_accounts_default_values(accounts)
+            for account in value:
+                cls.set_configuration_item_default_attributes(item=account, defaults=toggles.defaults)
+                cls.validate_account(account)
+            value = cls.transform_list_to_dictionary(value)
         elif key == 'organizational_units':
-            units = cls.transform_organizational_units(units=value)
-            value = cls.set_organizational_units_default_values(units)
+            for unit in value:
+                cls.set_configuration_item_default_attributes(item=unit, defaults=toggles.defaults)
+                cls.validate_organizational_unit(unit)
+            value = cls.transform_list_to_dictionary(value)
         logging.debug("{0} = {1}".format(key, value))
-        toggles = toggles or builtins.toggles
         setattr(toggles, key, value)
+
+    @classmethod
+    def set_configuration_item_default_attributes(cls, item, defaults):
+        for attribute in ['account_tags', 'preparation', 'purge']:
+            if attribute not in defaults.keys():
+                defaults[attribute] = {}
+            if attribute not in item.keys():
+                item[attribute] = {}
+
+        missing = {k: v for k, v in defaults.items() if k not in item.keys()}
+        item.update(missing)
+
+        missing = {k: v for k, v in defaults['account_tags'].items() if k not in item['account_tags'].keys()}
+        item['account_tags'].update(missing)
+
+        for attribute in ['preparation', 'purge']:
+            cls.set_configuration_item_worker_attributes(item[attribute], defaults[attribute])
+
+    @classmethod
+    def set_configuration_item_worker_attributes(cls, item, defaults):
+        if 'feature' not in defaults.keys():
+            defaults['feature'] = 'disabled'
+        if 'variables' not in defaults.keys():
+            defaults['variables'] = {}
+        if 'feature' not in item.keys():
+            item['feature'] = defaults['feature']
+        if 'variables' not in item.keys():
+            item['variables'] = {}
+
+        missing = {k: v for k, v in defaults['variables'].items() if k not in item['variables'].keys()}
+        item['variables'].update(missing)
+
+    @classmethod
+    def transform_list_to_dictionary(cls, items):
+        ''' make a dictionary out of a list, using identifier as key '''
+        transformed = {}
+        for item in items:
+            key = item['identifier']
+            transformed[key] = item.copy()
+        return transformed
+
+    @classmethod
+    def validate_account(cls, account):
+        if 'identifier' not in account.keys():
+            raise AttributeError("Missing account 'identifier'")
+        if (not account['identifier'].isdigit()) or (len(account['identifier']) != 12):
+            raise AttributeError("The identifier '{}' is not valid for an AWS account".format(account['identifier']))
+        cls.validate_configuration_item(item=account)
+
+    @classmethod
+    def validate_organizational_unit(cls, unit):
+        if 'identifier' not in unit.keys():
+            raise AttributeError("Missing organizational unit 'identifier'")
+        if not unit['identifier'].startswith('ou-'):
+            raise AttributeError("The identifier '{}' is not valid for an AWS Organizational Unit".format(unit['identifier']))
+        cls.validate_configuration_item(item=unit)
+
+    @classmethod
+    def validate_configuration_item(cls, item):
+        for key in item.keys():
+            cls.validate_attribute(key, item.get(key), context=cls.ALLOWED_ACCOUNT_ATTRIBUTES)
+        cls.validate_preparation_attributes(item)
+        cls.validate_purge_attributes(item)
 
     @classmethod
     def validate_attribute(cls, key, value, context):
@@ -177,106 +241,20 @@ class Configuration:
             raise AttributeError(f"Unknown configuration attribute '{key}'")
 
     @classmethod
-    def transform_accounts(cls, accounts):
-        ''' make a dictionary out of a list of accounts, using identifier as key '''
-        transformed = {}
-        for account in accounts:
-            cls.validate_account(account)
-            key = account['identifier']
-            transformed[key] = account.copy()
-        return transformed
-
-    @classmethod
-    def transform_organizational_units(cls, units):
-        ''' make a dictionary out of a list of OU, using identifier as key '''
-        transformed = {}
-        for unit in units:
-            cls.validate_organizational_unit(unit)
-            key = unit['identifier']
-            transformed[key] = unit.copy()
-        return transformed
-
-    @classmethod
-    def set_accounts_default_values(cls, accounts):
-        default = accounts.get('default', {})
-        result = {}
-        for account_id in accounts.keys():
-            if account_id == 'default':
-                continue
-            values = accounts.get(account_id)
-            updated = dict(preparation={}, purge={})
-            updated['identifier'] = values['identifier']
-            updated['note'] = values.get('note', '')
-            updated['account_tags'] = default.get('account_tags', {})
-            updated['account_tags'].update(values.get('account_tags', {}))
-            default_preparation = default.get('preparation', {})
-            preparation = values.get('preparation', {})
-            updated['preparation']['feature'] = preparation.get('feature', default_preparation.get('feature', 'disabled'))
-            updated['preparation']['variables'] = default_preparation.get('variables', {})
-            updated['preparation']['variables'].update(preparation.get('variables', {}))
-            default_purge = default.get('purge', {})
-            purge = values.get('purge', {})
-            updated['purge']['feature'] = purge.get('feature', default_purge.get('feature', 'disabled'))
-            updated['purge']['variables'] = default_purge.get('variables', {})
-            updated['purge']['variables'].update(purge.get('variables', {}))
-            result[account_id] = updated
-        return result
-
-    @classmethod
-    def set_organizational_units_default_values(cls, units):
-        default = units.get('default', {})
-        result = {}
-        for unit_id in units.keys():
-            if unit_id == 'default':
-                continue
-            values = units.get(unit_id)
-            updated = dict(preparation={}, purge={})
-            updated['identifier'] = values['identifier']
-            updated['note'] = values.get('note', '')
-            updated['account_tags'] = default.get('account_tags', {})
-            updated['account_tags'].update(values.get('account_tags', {}))
-            default_preparation = default.get('preparation', {})
-            preparation = values.get('preparation', {})
-            updated['preparation']['feature'] = preparation.get('feature', default_preparation.get('feature', 'disabled'))
-            updated['preparation']['variables'] = default_preparation.get('variables', {})
-            updated['preparation']['variables'].update(preparation.get('variables', {}))
-            default_purge = default.get('purge', {})
-            purge = values.get('purge', {})
-            updated['purge']['feature'] = purge.get('feature', default_purge.get('feature', 'disabled'))
-            updated['purge']['variables'] = default_purge.get('variables', {})
-            updated['purge']['variables'].update(purge.get('variables', {}))
-            result[unit_id] = updated
-        return result
-
-    @classmethod
-    def validate_account(cls, account):
-        if 'identifier' not in account.keys():
-            raise AttributeError("Missing account 'identifier'")
-        for key in account.keys():
-            cls.validate_attribute(key, account.get(key), context=cls.ALLOWED_ACCOUNT_ATTRIBUTES)
-        cls.validate_preparation_parameters(preparation=account.get('preparation', {}), target="account '{}'".format(account['identifier']))
-        cls.validate_purge_parameters(purge=account.get('purge', {}), target="account '{}'".format(account['identifier']))
-
-    @classmethod
-    def validate_organizational_unit(cls, unit):
-        if 'identifier' not in unit.keys():
-            raise AttributeError("Missing organizational unit 'identifier'")
-        for key in unit.keys():
-            cls.validate_attribute(key, unit.get(key), context=cls.ALLOWED_ORGANIZATIONAL_UNIT_ATTRIBUTES)
-        cls.validate_preparation_parameters(preparation=unit.get('preparation', {}), target="organizational unit '{}'".format(unit['identifier']))
-        cls.validate_purge_parameters(purge=unit.get('purge', {}), target="organizational unit '{}'".format(unit['identifier']))
-
-    @classmethod
-    def validate_preparation_parameters(cls, preparation, target):
+    def validate_preparation_attributes(cls, item):
+        preparation = item.get('preparation', {})
         for label in preparation.keys():
             if label not in ['feature', 'variables']:
-                raise AttributeError(f"Unexpected preparation parameter '{label}' for {target}")
+                identifier = item['identifier']
+                raise AttributeError(f"Unexpected preparation parameter '{label}' for {identifier}")
 
     @classmethod
-    def validate_purge_parameters(cls, purge, target):
+    def validate_purge_attributes(cls, item):
+        purge = item.get('purge', {})
         for label in purge.keys():
             if label not in ['feature', 'variables']:
-                raise AttributeError(f"Unexpected purge parameter '{label}' for {target}")
+                identifier = item['identifier']
+                raise AttributeError(f"Unexpected purge parameter '{label}' for {identifier}")
 
     @staticmethod
     def set_aws_environment(toggles=None):

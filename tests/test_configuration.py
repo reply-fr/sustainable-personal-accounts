@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from resources import Configuration
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -110,35 +110,48 @@ def test_set_default_values(toggles):
 
 @pytest.mark.unit_tests
 def test_set_from_settings(toggles):
-    settings = dict(organizational_units=[dict(identifier='ou', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
+    settings = dict(defaults=dict(note='a note'), organizational_units=[dict(identifier='ou-1234', preparation=dict(variables=dict(BUDGET_AMOUNT='500')))])
     Configuration.set_from_settings(settings, toggles=toggles)
-    assert toggles.organizational_units == {'ou': {'account_tags': {},
-                                                   'identifier': 'ou',
-                                                   'note': '',
-                                                   'preparation': {'feature': 'disabled', 'variables': {'BUDGET_AMOUNT': '500'}},
-                                                   'purge': {'feature': 'disabled', 'variables': {}}}}
+    assert toggles.organizational_units == {'ou-1234': {'account_tags': {},
+                                                        'identifier': 'ou-1234',
+                                                        'note': 'a note',
+                                                        'preparation': {'feature': 'disabled', 'variables': {'BUDGET_AMOUNT': '500'}},
+                                                        'purge': {'feature': 'disabled', 'variables': {}}}}
 
 
 @pytest.mark.unit_tests
 def test_set_from_settings_with_default_values(toggles):
-    settings = dict(organizational_units=[
-        dict(identifier='default',
-             account_tags=dict(a='a', b='b'),
-             note='some note',
-             preparation=dict(feature='disabled', variables=dict(BUDGET_AMOUNT='500')),
-             purge=dict(feature='disabled', variables=dict(KEY='a key', MAX_AGE='3w'))),
-        dict(identifier='ou',
-             account_tags=dict(b='z', c='c'),
-             note='ou description',
-             preparation=dict(feature='enabled', variables=dict(BUDGET_THRESHOLD='80')),
-             purge=dict(feature='enabled', variables=dict(KEY='another key', VALUE='value')))],
+    settings = dict(
+        defaults=dict(account_tags=dict(a='a', b='b'),
+                      note='some note',
+                      preparation=dict(feature='disabled', variables=dict(BUDGET_AMOUNT='500')),
+                      purge=dict(feature='disabled', variables=dict([('operations-class', 'unknown')]))),
+        organizational_units=[dict(identifier='ou-1234',
+                                   account_tags=dict(b='z', c='c'),
+                                   note='ou description',
+                                   preparation=dict(feature='enabled', variables=dict(BUDGET_THRESHOLD='80')),
+                                   purge=dict(feature='enabled', variables=dict([('operations-class', 'sandbox')])))],
+        accounts=[dict(identifier='123456789012',
+                       account_tags=dict(b='z', c='c'),
+                       note='account description',
+                       preparation=dict(feature='enabled', variables=dict(BUDGET_THRESHOLD='800')),
+                       purge=dict(feature='disabled', variables=dict([('operations-class', 'committed')])))],
         features=dict(with_arm_architecture=True))
     Configuration.set_from_settings(settings, toggles=toggles)
-    assert toggles.organizational_units == {'ou': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
-                                                   'identifier': 'ou',
-                                                   'note': 'ou description',
-                                                   'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '80'}},
-                                                   'purge': {'feature': 'enabled', 'variables': {'KEY': 'another key', 'MAX_AGE': '3w', 'VALUE': 'value'}}}}
+    assert toggles.defaults == {'account_tags': {'a': 'a', 'b': 'b'},
+                                'note': 'some note',
+                                'preparation': {'feature': 'disabled', 'variables': {'BUDGET_AMOUNT': '500'}},
+                                'purge': {'feature': 'disabled', 'variables': {'operations-class': 'unknown'}}}
+    assert toggles.organizational_units == {'ou-1234': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
+                                                        'identifier': 'ou-1234',
+                                                        'note': 'ou description',
+                                                        'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '80'}},
+                                                        'purge': {'feature': 'enabled', 'variables': {'operations-class': 'sandbox'}}}}
+    assert toggles.accounts == {'123456789012': {'account_tags': {'a': 'a', 'b': 'z', 'c': 'c'},
+                                                 'identifier': '123456789012',
+                                                 'note': 'account description',
+                                                 'preparation': {'feature': 'enabled', 'variables': {'BUDGET_AMOUNT': '500', 'BUDGET_THRESHOLD': '800'}},
+                                                 'purge': {'feature': 'disabled', 'variables': {'operations-class': 'committed'}}}}
 
 
 @pytest.mark.integration_tests
