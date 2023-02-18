@@ -57,6 +57,14 @@ def test_initialize(toggles):
 
 
 @pytest.mark.unit_tests
+@patch.dict(os.environ, dict(AWS_ACCOUNT="012345678901", AWS_REGION="eu-west-9"))
+def test_initialize_on_malformed_settings_file(toggles):
+
+    with pytest.raises(AttributeError):
+        Configuration.initialize(stream='fixtures/settings/settings-with-old-default-settings.yaml', toggles=toggles)
+
+
+@pytest.mark.unit_tests
 @patch.dict(os.environ, {}, clear=True)
 def test_set_aws_environment(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings.yaml', toggles=toggles)
