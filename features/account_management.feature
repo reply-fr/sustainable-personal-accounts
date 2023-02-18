@@ -61,15 +61,15 @@ Scenario: where purge is configured for all accounts of an organizational unit
 
 Scenario: where default settings are provided for managed accounts
     Given a settings file 'settings.yaml' adapted to SPA semantics
-     When a configuration item with identifier 'default' is added to the section 'accounts'
+     When a section 'default' is added to 'settings.yaml'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then configuration item 'default' is used as default values for other items listed in the section 'accounts'
+     Then attributes of the 'default' section are used as default values for items listed in the section 'accounts'
 
 Scenario: where default settings are provided for managed organizational units
     Given a settings file 'settings.yaml' adapted to SPA semantics
-     When a configuration item with identifier 'default' is added to the section 'organizational_units'
+     When a section 'default' is added to 'settings.yaml'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then configuration item 'default' is used as default values for other items listed in the section 'organizational_units'
+     Then attributes of the 'default' section are used as default values for items listed in the section 'organizational_units'
 
 Scenario: where maintenance window is configured
     Given a settings file 'settings.yaml' adapted to SPA semantics
