@@ -22,7 +22,7 @@ import pytest
 
 from code import Events, State
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
@@ -58,6 +58,7 @@ def test_build_spa_event():
     assert event['DetailType'] == 'MessageToMicrosoftTeams'
     details = json.loads(event['Detail'])
     assert details['Payload'] == 'hello world'
+    assert details['Content-Type'] == 'application/json'
 
 
 @pytest.mark.unit_tests
@@ -287,7 +288,7 @@ def test_emit_spa_event():
     Events.emit_spa_event(label='MessageToMicrosoftTeams', payload='payload', session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Environment": "FromHere", "Payload": "payload"}',
+        {'Detail': '{"Content-Type": "application/json", "Environment": "FromHere", "Payload": "payload"}',
          'DetailType': 'MessageToMicrosoftTeams',
          'Source': 'SustainablePersonalAccounts'}])
 

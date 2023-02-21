@@ -46,6 +46,8 @@ class Events:
 
     EVENT_LABELS = ACCOUNT_EVENT_LABELS + SPA_EVENT_LABELS
 
+    DEFAULT_CONTENT_TYPE = 'application/json'
+
     @classmethod
     def build_account_event(cls, label, account, message=None):
         if label not in cls.ACCOUNT_EVENT_LABELS:
@@ -61,11 +63,13 @@ class Events:
                     Source='SustainablePersonalAccounts')
 
     @classmethod
-    def build_spa_event(cls, label, payload=None):
+    def build_spa_event(cls, label, payload=None, content_type=None):
         if label not in cls.SPA_EVENT_LABELS:
             raise ValueError(f"Invalid event label '{label}'")
-        details = dict(Environment=cls.get_environment(),
-                       Payload=payload)
+        details = {
+            'Content-Type': content_type or cls.DEFAULT_CONTENT_TYPE,
+            'Environment': cls.get_environment(),
+            'Payload': payload}
         return dict(Detail=json.dumps(details),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
@@ -135,6 +139,7 @@ class Events:
             raise ValueError(f"Unexpected event label '{decoded.label}'")
 
         decoded.payload = event['detail'].get('Payload', None)
+        decoded.content_type = event['detail'].get('Content-Type', cls.DEFAULT_CONTENT_TYPE)
 
         return decoded
 
