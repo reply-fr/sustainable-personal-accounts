@@ -99,9 +99,12 @@ class Configuration:
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
 
-        # the list of managed accounts and managed organizational units
+        # the list of managed accounts and of managed organizational units
         toggles.accounts = {}
         toggles.organizational_units = {}
+
+        # default settings for accounts
+        toggles.defaults = {}
 
         # other default values
         toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
