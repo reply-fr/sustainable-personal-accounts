@@ -60,12 +60,12 @@ def session():
     tags = {
         'Tags': [
             {
-                'Key': 'account:holder',
+                'Key': 'account-holder',
                 'Value': 'a@b.com'
             },
 
             {
-                'Key': 'account:state',
+                'Key': 'account-state',
                 'Value': 'vanilla'
             }
         ]

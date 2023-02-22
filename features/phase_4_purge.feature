@@ -9,7 +9,7 @@ so as to enforce software engineering best practices
 Scenario: where account expiration is detected and processed
 Given a buildspec configuration for the purge of accounts
 And SCP policies have been configured for expired accounts in hosting organizational unit
-When the account is tagged with key 'account:state' and value 'expired'
+When the account is tagged with key 'account-state' and value 'expired'
 Then lambda function 'OnExpiredAccount' is executed
 And code emits an event 'ExpiredAccount'
 And code attachs SCP policies configured for expired accounts of the hosting organizational unit
@@ -22,7 +22,7 @@ Given a central event bus
 And codebuild events are forwarded to central event bus
 When codebuild project 'PurgeAccount' is completed or has failed
 Then lambda function 'OnPurgedAccount' is executed
-And code tags account with key 'account:state' and value 'assigned'
+And code tags account with key 'account-state' and value 'assigned'
 And code emits an event 'PurgedAccount'
 
 Scenario: where authenticated employee is prevented to create resources in expired account

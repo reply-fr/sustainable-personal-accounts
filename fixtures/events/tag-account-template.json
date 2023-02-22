@@ -44,11 +44,11 @@
                 },
                 {
                     "value": "alfa@omega.cloud",
-                    "key": "account:holder"
+                    "key": "account-holder"
                 },
                 {
                     "value": "___new_state___",
-                    "key": "account:state"
+                    "key": "account-state"
                 }
             ],
             "resourceId": "___account___"

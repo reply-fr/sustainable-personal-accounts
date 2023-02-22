@@ -12,7 +12,7 @@ Scenario: where account assignment is detected and processed
 Given a central event bus
 And a central queue for budget alerts
 And a buildspec configuration for the preparation of accounts
-When the account is tagged with key 'account:state' and value 'assigned'
+When the account is tagged with key 'account-state' and value 'assigned'
 Then lambda function 'OnAssignedAccount' is executed
 And code emits an event 'AssignedAccount'
 And code creates SNS topic in target account
@@ -27,7 +27,7 @@ And codebuild events are forwarded to central event bus
 And SCP policies have been configured for released accounts in hosting organizational unit
 When codebuild project 'PrepareAccount' is completed or has failed
 Then lambda function 'OnPreparedAccount' is executed
-And code tags account with key 'account:state' and value 'released'
+And code tags account with key 'account-state' and value 'released'
 And code attachs SCP policies configured for released accounts of the hosting organizational unit
 And code emits an event 'ReleasedAccount'
 # event is emitted for observability and for system extension

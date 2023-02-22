@@ -5,7 +5,7 @@ During normal operations of SPA, accounts are in state `released` most of the ti
 
 In other terms, since SPA features an event-driven architecture, it breaks when transitions are not processed as expected. Accounts that are not in state `released` are invisible to the maintenance windows of SPA. In such situations, accounts stay in transient state without additional processing.
 
-Since the state of an account is contained in a tag attached to it, for such situations you can use AWS Organizations to change the state of any account. For this you would visit the page of each account and then change the tag `account:state` to the value `released`. This operation is feasible for some dozens of accounts, but can become tedious for large number of accounts. Therefore the need to reset accounts to the state released with a simple invocation of a Lambda function devoted to this usage. If you are stuck, one day, with hundreds of AWS accounts in strange state, then you can restore normal operations with this workbook.
+Since the state of an account is contained in a tag attached to it, for such situations you can use AWS Organizations to change the state of any account. For this you would visit the page of each account and then change the tag `account-state` to the value `released`. This operation is feasible for some dozens of accounts, but can become tedious for large number of accounts. Therefore the need to reset accounts to the state released with a simple invocation of a Lambda function devoted to this usage. If you are stuck, one day, with hundreds of AWS accounts in strange state, then you can restore normal operations with this workbook.
 
 ## Pre-conditions
 - You suspect that multiple AWS accounts are not in RELEASED state

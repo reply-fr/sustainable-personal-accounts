@@ -38,7 +38,7 @@ def create_account(name, ou, session, tags={}):
                                                             AccountName=f"{name}")
     my_id = result["CreateAccountStatus"]["AccountId"]
     session.client('organizations').tag_resource(ResourceId=my_id,
-                                                 Tags=[dict(Key='account:holder', Value=f"{name}@acme.com")])
+                                                 Tags=[dict(Key='account-holder', Value=f"{name}@acme.com")])
     session.client('organizations').tag_resource(ResourceId=my_id,
                                                  Tags=[dict(Key=k, Value=v) for k, v in tags.items()])
     my_ou = session.client('organizations').list_parents(ChildId=my_id)["Parents"][0]["Id"]
@@ -71,7 +71,7 @@ def given_some_context():
     context.bob_account = create_account(name='bob', ou=context.sandbox_ou, session=session)
 
     context.settings_crm_account = {
-        'account_tags': {'CostCenter': 'crm', 'Sponsor': 'Claudio Roger Marciano'},
+        'account_tags': {'cost-center': 'crm', 'workload-sponsor': 'Claudio Roger Marciano'},
         'identifier': context.crm_account,
         'note': 'the production account for our CRM system',
         'preparation': {
@@ -88,7 +88,7 @@ def given_some_context():
                                         Type='String')
 
     context.settings_erp_account = {
-        'account_tags': {'CostCenter': 'erp', 'Sponsor': 'Eric Roger Plea'},
+        'account_tags': {'cost-center': 'erp', 'workload-sponsor': 'Eric Roger Plea'},
         'identifier': context.erp_account,
         'note': 'the production account for our ERP system',
         'preparation': {
@@ -105,7 +105,7 @@ def given_some_context():
                                         Type='String')
 
     context.settings_committed_ou = {
-        'account_tags': {'CostCenter': 'committed', 'Sponsor': 'CFO'},
+        'account_tags': {'cost-center': 'committed', 'workload-sponsor': 'CFO'},
         'identifier': context.committed_ou,
         'note': 'the collection of production accounts for actual business',
         'preparation': {
@@ -122,7 +122,7 @@ def given_some_context():
                                         Type='String')
 
     context.settings_sandbox_ou = {
-        'account_tags': {'CostCenter': 'sandbox', 'Sponsor': 'CTO'},
+        'account_tags': {'cost-center': 'sandbox', 'workload-sponsor': 'CTO'},
         'identifier': context.sandbox_ou,
         'note': 'the collection of sandbox accounts for individual innovation',
         'preparation': {
@@ -166,14 +166,14 @@ def test_handle_event(monkeypatch):
 @pytest.mark.unit_tests
 def test_validate_tags():
     valid_tags = SimpleNamespace(id='123456789012',
-                                 tags={'account:holder': 'a@b.com', 'account:state': 'released'})
+                                 tags={'account-holder': 'a@b.com', 'account-state': 'released'})
     validate_tags(item=valid_tags)
 
 
 @pytest.mark.unit_tests
 def test_validate_tags_on_absent_holder():
     absent_holder = SimpleNamespace(id='123456789012',
-                                    tags={'account:state': 'released'})
+                                    tags={'account-state': 'released'})
     with pytest.raises(ValueError):
         validate_tags(item=absent_holder)
 
@@ -181,7 +181,7 @@ def test_validate_tags_on_absent_holder():
 @pytest.mark.unit_tests
 def test_validate_tags_on_invalid_holder():
     invalid_holder = SimpleNamespace(id='123456789012',
-                                     tags={'account:holder': 'a_b.com', 'account:state': 'released'})
+                                     tags={'account-holder': 'a_b.com', 'account-state': 'released'})
     with pytest.raises(ValueError):
         validate_tags(item=invalid_holder)
 
@@ -189,7 +189,7 @@ def test_validate_tags_on_invalid_holder():
 @pytest.mark.unit_tests
 def test_validate_tags_on_absent_state():
     absent_state = SimpleNamespace(id='123456789012',
-                                   tags={'account:holder': 'a@b.com'})
+                                   tags={'account-holder': 'a@b.com'})
     with pytest.raises(ValueError):
         validate_tags(item=absent_state)
 
@@ -197,6 +197,6 @@ def test_validate_tags_on_absent_state():
 @pytest.mark.unit_tests
 def test_validate_tags_on_invalid_state():
     invalid_state = SimpleNamespace(id='123456789012',
-                                    tags={'account:holder': 'a@b.com', 'account:state': '*alien*'})
+                                    tags={'account-holder': 'a@b.com', 'account-state': '*alien*'})
     with pytest.raises(ValueError):
         validate_tags(item=invalid_state)

@@ -53,7 +53,7 @@ def handle_managed_organizational_units(skip=[], session=None):
 
 def handle_account(account, session=None):
     item = Account.describe(account, session=session)
-    state = item.tags.get('account:state')
+    state = item.tags.get(Account.get_tag_key('state'))
     if not item.is_active:
         logging.info(f"Ignoring inactive account '{account}'")
     elif state and state == State.RELEASED.value:

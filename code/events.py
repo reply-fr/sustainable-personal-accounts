@@ -22,6 +22,8 @@ from types import SimpleNamespace
 
 from boto3.session import Session
 
+from account import Account
+
 
 class Events:
 
@@ -151,13 +153,14 @@ class Events:
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
+        expected = Account.get_tag_key('state')
         for item in event['detail']['requestParameters']['tags']:
-            if item['key'] == 'account:state':
+            if item['key'] == expected:
                 decoded.state = item['value']
                 if match and match.value != decoded.state:
                     raise ValueError(f"Unexpected state '{decoded.state}' for this function")
                 return decoded
-        raise ValueError("Missing tag 'account:state' in this event")
+        raise ValueError(f"Missing tag '{expected}' in this event")
 
     @classmethod
     def emit_account_event(cls, label, account, message=None, session=None):

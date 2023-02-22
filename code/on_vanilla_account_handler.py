@@ -55,11 +55,12 @@ def inspect_tags(item, settings):
 
     updated.update(settings.get("account_tags", {}))
 
-    updated['account:state'] = State.ASSIGNED.value
+    updated[Account.get_tag_key('state')] = State.ASSIGNED.value
 
-    holder = item.tags.get('account:holder') or item.email
+    key = Account.get_tag_key('holder')
+    holder = item.tags.get(key) or item.email
     if not Account.validate_holder(holder):
         raise ValueError(f"Account '{item.id}' has invalid holder '{holder}'")
-    updated['account:holder'] = holder
+    updated[key] = holder
 
     return updated

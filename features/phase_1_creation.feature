@@ -33,17 +33,17 @@ Then lambda function 'OnVanillaAccount' is executed
 Scenario: where a cloud account is set to vanilla state
 Given a cloud environment managed with Control Tower
 And a decision has been made to validate an individual cloud account
-When the account is tagged with key 'account:state' and value 'vanilla'
+When the account is tagged with key 'account-state' and value 'vanilla'
 Then lambda function 'OnVanillaAccount' is executed
-# implementation: EventBridge detects the tagging of the account on tag 'account:state'
+# implementation: EventBridge detects the tagging of the account on tag 'account-state'
 
 Scenario: where vanilla account is processed
 Given tags have been configured for hosting organizational unit
 And SCP policies have been configured for assigned accounts in hosting organizational unit
 When lambda function 'OnVanillaAccount' is executed
-Then code tags the account with key 'account:holder' and value is the e-mail address of assigned employee
+Then code tags the account with key 'account-holder' and value is the e-mail address of assigned employee
 And code tags the account account with tags configured for the organizational unit
-And code tags account with key 'account:state' and value 'assigned'
+And code tags account with key 'account-state' and value 'assigned'
 And code attachs SCP policies configured for assigned accounts of the hosting organizational unit
 And code emits an event 'CreatedAccount'
 # configuration parameters are set per organizational unit id -- tags and SCP

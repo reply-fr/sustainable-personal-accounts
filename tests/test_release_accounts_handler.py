@@ -38,7 +38,7 @@ def create_account(name, ou, session, tags={}):
                                                             AccountName=f"{name}")
     my_id = result["CreateAccountStatus"]["AccountId"]
     session.client('organizations').tag_resource(ResourceId=my_id,
-                                                 Tags=[dict(Key='account:holder', Value=f"{name}@acme.com")])
+                                                 Tags=[dict(Key='account-holder', Value=f"{name}@acme.com")])
     session.client('organizations').tag_resource(ResourceId=my_id,
                                                  Tags=[dict(Key=k, Value=v) for k, v in tags.items()])
     my_ou = session.client('organizations').list_parents(ChildId=my_id)["Parents"][0]["Id"]
@@ -63,12 +63,12 @@ def given_some_context():
     context.root_id = session.client('organizations').create_organization(FeatureSet="ALL")["Organization"]["MasterAccountId"]
 
     context.committed_ou = create_organizational_unit(parent=context.root_id, name='committed', session=session)
-    context.crm_account = create_account(name='crm', ou=context.committed_ou, session=session, tags={'account:state': 'vanilla'})
-    context.erp_account = create_account(name='erp', ou=context.committed_ou, session=session, tags={'account:state': 'assigned'})
+    context.crm_account = create_account(name='crm', ou=context.committed_ou, session=session, tags={'account-state': 'vanilla'})
+    context.erp_account = create_account(name='erp', ou=context.committed_ou, session=session, tags={'account-state': 'assigned'})
 
     context.sandbox_ou = create_organizational_unit(parent=context.root_id, name='sandbox', session=session)
-    context.alice_account = create_account(name='alice', ou=context.sandbox_ou, session=session, tags={'account:state': 'released'})
-    context.bob_account = create_account(name='bob', ou=context.sandbox_ou, session=session, tags={'account:state': 'expired'})
+    context.alice_account = create_account(name='alice', ou=context.sandbox_ou, session=session, tags={'account-state': 'released'})
+    context.bob_account = create_account(name='bob', ou=context.sandbox_ou, session=session, tags={'account-state': 'expired'})
 
     context.settings_crm_account = {
         'account_tags': {'CostCenter': 'crm', 'Sponsor': 'Claudio Roger Marciano'},

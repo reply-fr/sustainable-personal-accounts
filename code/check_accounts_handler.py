@@ -69,24 +69,29 @@ def handle_account(account, settings=None, session=None):
 
 
 def validate_tags(item):
-    if 'account:holder' not in item.tags.keys():
-        raise ValueError(f"Account '{item.id}' has no tag 'account:holder'")
-    holder = item.tags['account:holder']
+    key = Account.get_tag_key('holder')
+    if key not in item.tags.keys():
+        raise ValueError(f"Account '{item.id}' has no tag '{key}'")
+    holder = item.tags[key]
     if not Account.validate_holder(holder):
-        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value for tag 'account:holder'")
-    if 'account:state' not in item.tags.keys():
-        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has no tag 'account:state'")
-    state = item.tags['account:state']
+        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value for tag '{key}'")
+
+
+    key = Account.get_tag_key('state')
+    if key not in item.tags.keys():
+        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has no tag '{key}'")
+    state = item.tags[key]
     if not Account.validate_state(state):
-        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value '{state}' for tag 'account:state'")
+        raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value '{state}' for tag '{key}'")
     if state not in [State.RELEASED.value]:
         logging.warning(f"Account '{item.id}' assigned to '{holder}' is in transient state '{state}'")
     logging.info(f"Account '{item.id}' assigned to '{holder}' is valid")
 
 
 def validate_additional_tags(item, expected_tags):
+    holder = item.tags.get(Account.get_tag_key('holder'))
     for key in expected_tags.keys():
         if key not in item.tags.keys():
-            logging.warning(f"Account '{item.id}' assigned to '{item.tags['account:holder']}' has no tag '{key}'")
+            logging.warning(f"Account '{item.id}' assigned to '{holder}' has no tag '{key}'")
         elif item.tags[key] != expected_tags[key]:
-            logging.warning(f"Account '{item.id}' assigned to '{item.tags['account:holder']}' has unexpected value '{item.tags[key]}' for tag '{key}'")
+            logging.warning(f"Account '{item.id}' assigned to '{holder}' has unexpected value '{item.tags[key]}' for tag '{key}'")

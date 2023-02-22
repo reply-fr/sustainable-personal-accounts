@@ -28,7 +28,7 @@ from session import make_session
 
 
 @unique
-class State(Enum):  # value is given to tag 'account:state'
+class State(Enum):  # value is given to tag 'account-state'
     VANILLA = 'vanilla'
     ASSIGNED = 'assigned'
     RELEASED = 'released'
@@ -46,6 +46,11 @@ class Account:
             role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
             cls.session = make_session(role_arn=role) if role else Session()
         return cls.session
+
+    @classmethod
+    def get_tag_key(cls, suffix):
+        prefix = os.environ.get('TAG_PREFIX', 'account-')
+        return prefix + suffix
 
     @classmethod
     def validate_holder(cls, text):
@@ -91,7 +96,7 @@ class Account:
         session = session or cls.get_session()
         session.client('organizations').tag_resource(
             ResourceId=account,
-            Tags=[dict(Key='account:state', Value=state.value)])
+            Tags=[dict(Key=cls.get_tag_key('state'), Value=state.value)])
         logging.debug("Done")
 
     @classmethod
