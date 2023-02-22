@@ -87,6 +87,7 @@ class ServerlessStack(Stack):
             PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
+            TAG_PREFIX=toggles.features_with_tag_prefix,
             VERBOSITY=toggles.automation_verbosity)
         return environment
 
