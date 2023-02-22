@@ -106,6 +106,7 @@ def test_set_default_values(toggles):
     assert toggles.features_with_arm_architecture is False
     assert toggles.features_with_email_subscriptions_on_alerts == []
     assert toggles.features_with_microsoft_webhook_on_alerts is None
+    assert toggles.features_with_tag_prefix == 'account-'
 
 
 @pytest.mark.unit_tests
@@ -173,6 +174,7 @@ def test_set_from_yaml(toggles):
     assert toggles.features_with_arm_architecture is True
     assert toggles.features_with_email_subscriptions_on_alerts == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
     assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
+    assert toggles.features_with_tag_prefix == 'account-'
 
 
 @pytest.mark.unit_tests

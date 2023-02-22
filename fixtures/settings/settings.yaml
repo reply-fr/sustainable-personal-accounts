@@ -224,3 +224,8 @@ features:
   # - default value: no value
   #
   with_microsoft_webhook_on_alerts: https://acme.webhook.office.com/webhookb2/892ca8xf-9423
+
+  # this prefix is used for tags added programmatically
+  # - default value: "account-""
+  #
+  with_tag_prefix: "account-"

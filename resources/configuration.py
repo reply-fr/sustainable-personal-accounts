@@ -42,6 +42,7 @@ class Configuration:
         features_with_arm_architecture='bool',
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
+        features_with_tag_prefix='str',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
         worker_purge_buildspec_template_file='str',
@@ -86,6 +87,7 @@ class Configuration:
         else:
             cls.set_from_yaml(stream=toggles.settings_file, toggles=toggles)
         cls.set_aws_environment(toggles=toggles)
+        toggles.state_tag = toggles.features_with_tag_prefix + 'state'  # for EventBridge rule
 
     @staticmethod
     def set_default_values(toggles=None):
@@ -115,6 +117,7 @@ class Configuration:
         toggles.features_with_arm_architecture = False
         toggles.features_with_email_subscriptions_on_alerts = []
         toggles.features_with_microsoft_webhook_on_alerts = None
+        toggles.features_with_tag_prefix = 'account-'
 
         for key in sorted(toggles.__dict__.keys()):
             value = toggles.__dict__.get(key)

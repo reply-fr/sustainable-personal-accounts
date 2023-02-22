@@ -134,7 +134,7 @@ Sure. Sustainable Personal Accounts features following building blocks:
 
 - **The Organisation** - This is the specific instance of AWS Organisation that is hosting  all personal accounts managed by SPA. We recommend to land SPA into an organisation deployed by AWS Control Tower, so as to benefit from integrated SSO.
 
-- **Vanilla Accounts**, **Assigned Accounts**, **Released Accounts** and **Expired Accounts** - These are the managed with tags attached to AWS accounts. Tag key is `account:state` and possible values are `vanilla`, `assigned`, `released` and `expired`.
+- **Vanilla Accounts**, **Assigned Accounts**, **Released Accounts** and **Expired Accounts** - These are the managed with tags attached to AWS accounts. Tag key is `account-state` and possible values are `vanilla`, `assigned`, `released` and `expired`.
 
 - **Personal AWS accounts** - In the context of Control Tower, the creation of a personal account can be streamlined with the account factory in Service Catalog. Each account is tagged with the e-mail address of the person using it. In addition, each account handled with SPA can be put into one Organizational Unit, and leverage settings defined for this Organisational Unit.
 

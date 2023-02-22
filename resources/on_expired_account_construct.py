@@ -20,8 +20,6 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
-from account import Account
-
 
 class OnExpiredAccount(Construct):
 
@@ -49,7 +47,7 @@ class OnExpiredAccount(Construct):
                      errorCode=[{"exists": False}],
                      eventName=["TagResource"],
                      eventSource=["organizations.amazonaws.com"],
-                     requestParameters=dict(tags=dict(key=[Account.get_tag_key("state")], value=["expired"])))),
+                     requestParameters=dict(tags=dict(key=[toggles.state_tag], value=["expired"])))),
              targets=[LambdaFunction(function)])
 
         return function
