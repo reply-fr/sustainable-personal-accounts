@@ -64,11 +64,24 @@ I want to test emerging technology breakthroughs and stick at competitive edge.
 
 ## :sparkles: Sustainable Personal Accounts
 
-__What?__ SPA provides an entire AWS account to every cloud practitioner of an enterprise. Yes, this can mean 10,000s of AWS accounts to manage.
+__What?__ SPA provides an entire AWS account to software engineers of an enterprise. Yes, this can mean thousands of AWS accounts to manage.
 
 __Why?__ Collective business agility relies on individuals. Democratize access to AWS console and tools to accelerate innovation.
 
 __How?__ SPA automates the management of AWS personal accounts at scale, with maintenance windows on each account. Central teams can purge resources, enforce corporate guardrails and update shared blueprints periodically and automatically.
+
+---
+
+## :telescope: Use Sustainable Personal Accounts to:
+
+- align newly created AWS account with corporate policies
+- configure AWS Budgets, and consolidate budget alerts
+- continuously deploy the DevOps and SIEM tools of your enterprise
+- force the purge of cloud resources at regular points in time
+- tag AWS accounts as per FinOps and CloudOps changing needs
+- manage AWS accounts collectively (by Organization Unit) or individually
+- set maintenance window of your choice
+- adjust CodeBuild scripts to your exact needs
 
 ---
 ## :rainbow: Guiding Principles
@@ -170,17 +183,17 @@ section {
 ![bg 100%](./media/cloudwatch-dashboard.png)
 
 ---
-## :clapper: Initiative progress
+## :clapper: Initiative timeline
 
-🥚 Validate the concept with AWS Control Tower specialists (Dec)
+🥚 Validate the concept with AWS Control Tower specialists (Dec 2021)
 
-🐣 Develop the solution for internal usage of Reply
+🐣 Introduce SPA at AWS Summit in Paris (April 2022)
 
-🐤 Release of public GitHub repository of SPA
+🐤 Release of public GitHub repository of SPA (Summer 2022)
 
-🐥 Present SPA at AWS Summit in Paris (April)
+🐥 Adapt the solution to multiple enterprises
 
-🐦 Adapt the solution to multiple enterprises
+🐦 Present SPA governance capabilities at AWS Summit in Paris (April 2023)
 
 🐧 Release of technical blog post on the SPA design (H2)
 
