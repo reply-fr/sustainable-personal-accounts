@@ -31,9 +31,9 @@ class OnAccountEvent(Construct):
 
     def on_event(self, parameters, permissions) -> Function:
         function = Function(self, "FromEvent",
-                            function_name="{}OnEvents".format(toggles.environment_identifier),
+                            function_name="{}OnAccountEvents".format(toggles.environment_identifier),
                             description="Listen events from the bus",
-                            handler="on_events_handler.handle_account_event",
+                            handler="on_account_event_handler.handle_account_event",
                             **parameters)
 
         for permission in permissions:
