@@ -184,6 +184,19 @@ def test_set_from_yaml_invalid(toggles):
 
 
 @pytest.mark.unit_tests
+def test_transform_list_to_dictionary():
+
+    input = [dict(identifier='a', attribute='a'), dict(identifier='b', attribute='b')]
+    output = Configuration.transform_list_to_dictionary(input)
+    assert output == {'a': {'attribute': 'a', 'identifier': 'a'},
+                      'b': {'attribute': 'b', 'identifier': 'b'}}
+
+    with pytest.raises(AttributeError):
+        input = [dict(identifier='a', attribute='a'), dict(identifier='a', attribute='b')]
+        output = Configuration.transform_list_to_dictionary(input)
+
+
+@pytest.mark.unit_tests
 def test_validate_organizational_unit():
     ou = {
         'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},

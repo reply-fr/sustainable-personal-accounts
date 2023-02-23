@@ -203,6 +203,8 @@ class Configuration:
         transformed = {}
         for item in items:
             key = item['identifier']
+            if key in transformed.keys():
+                raise AttributeError(f"Duplicate identifier'{key}' in settings")
             transformed[key] = item.copy()
         return transformed
 
