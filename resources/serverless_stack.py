@@ -34,6 +34,7 @@ from .on_released_account_construct import OnReleasedAccount
 from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
 from .release_accounts_construct import ReleaseAccounts
+from .reset_accounts_construct import ResetAccounts
 from .to_microsoft_teams_construct import ToMicrosoftTeams
 
 
@@ -61,6 +62,7 @@ class ServerlessStack(Stack):
             'OnReleasedAccount',
             'OnVanillaAccount',
             'ReleaseAccounts',
+            'ResetAccounts',
             'ToMicrosoftTeams']
 
         monitored_functions = []
