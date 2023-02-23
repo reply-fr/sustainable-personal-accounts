@@ -102,5 +102,6 @@ phases:
       else
         echo "No budget modification"
       fi
-    - echo "Removing automatically past budget"
-    - aws budgets delete-budget --account-id $ACCOUNT --budget-name SPA-budget || true
+    - echo "Removing obsolete budget names"
+    - aws budgets delete-budget --account-id $ACCOUNT --budget-name DataReplyBudget || true
+    - aws budgets delete-budget --account-id $ACCOUNT --budget-name StormReplyBudget || true
