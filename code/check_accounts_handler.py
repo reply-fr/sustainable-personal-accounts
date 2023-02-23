@@ -76,7 +76,6 @@ def validate_tags(item):
     if not Account.validate_holder(holder):
         raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value for tag '{key}'")
 
-
     key = Account.get_tag_key('state')
     if key not in item.tags.keys():
         raise ValueError(f"Account '{item.id}' assigned to '{holder}' has no tag '{key}'")

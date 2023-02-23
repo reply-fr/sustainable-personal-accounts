@@ -53,7 +53,8 @@ class Configuration:
         identifier='str',
         note='str',
         preparation='dict',
-        purge='dict'
+        purge='dict',
+        unset_tags='list'
     )
 
     ALLOWED_PREPARATION_ATTRIBUTES = dict(

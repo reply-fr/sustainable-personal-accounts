@@ -43,6 +43,11 @@ def handle_tag_event(event, context, session=None):
 
 def handle_account(account, session=None):
     settings = Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)
+
+    keys = settings.get("unset_tags", [])
+    if keys:
+        Account.untag(account, keys, session=session)
+
     item = Account.describe(account, session=session)
     updated = inspect_tags(item=item, settings=settings)
     if item.tags != updated:
@@ -51,9 +56,7 @@ def handle_account(account, session=None):
 
 
 def inspect_tags(item, settings):
-    updated = item.tags.copy()
-
-    updated.update(settings.get("account_tags", {}))
+    updated = settings.get("account_tags", {})
 
     updated[Account.get_tag_key('state')] = State.ASSIGNED.value
 

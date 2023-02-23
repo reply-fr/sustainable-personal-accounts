@@ -109,6 +109,15 @@ class Account:
         logging.debug("Done")
 
     @classmethod
+    def untag(cls, account, keys, session=None):
+        logging.info(f"Untagging account '{account}' with tags '{keys}'")
+        session = session or cls.get_session()
+        session.client('organizations').untag_resource(
+            ResourceId=account,
+            TagKeys=list(keys))
+        logging.debug("Done")
+
+    @classmethod
     def list(cls, parent, skip=[], session=None):
         session = session or cls.get_session()
         token = None

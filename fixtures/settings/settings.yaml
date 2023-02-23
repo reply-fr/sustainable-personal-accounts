@@ -80,6 +80,9 @@ defaults:
       TAG_KEY: purge
       TAG_VALUE: me
 
+  unset_tags: ['CostCenter', 'account:holder', 'account:manager', 'account:state']  # remove obsolete tags
+
+
 # these are organizational units where accounts are managed by the solution
 organizational_units:
 
@@ -201,6 +204,7 @@ accounts:
 
       # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
       feature: disabled
+
 
 # additional features that can be activated optionnally
 features:
