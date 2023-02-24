@@ -63,7 +63,7 @@ def inspect_tags(item, settings):
     key = Account.get_tag_key('holder')
     holder = item.tags.get(key) or item.email
     if not Account.validate_holder(holder):
-        raise ValueError(f"Account '{item.id}' has invalid holder '{holder}'")
+        logging.warning(f"Account '{item.id}' has invalid holder '{holder}'")
     updated[key] = holder
 
     return updated

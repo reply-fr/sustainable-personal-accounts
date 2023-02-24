@@ -212,3 +212,8 @@ def test_describe(account_describe_mock):
 
 def test_get_session():
     assert Account.get_session() is not None
+
+
+@pytest.mark.unit_tests
+def test_validate_holder():
+    Account.validate_holder('alpha-nc.aws.cloudops.fr@acme.com')
