@@ -30,5 +30,11 @@ Scenario: where accounts are released globally
     Given an existing SPA system
      When the Lambda function 'ReleaseAccounts' is invoked
      Then code inspects all accounts managed in the system
-      And all accounts that are not in release state are tagged to this state
+      And all accounts that are not in release state are tagged with key 'account-state' and value 'released'
 
+Scenario: where accounts are reset globally
+    Given an existing SPA system
+     When the Lambda function 'ResetAccounts' is invoked
+     Then code inspects all accounts managed in the system
+      And all accounts that are not in release state are tagged with key 'account-state' and value 'vanilla'
+      And accounts moved to vanilla state are prepared then released
