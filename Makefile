@@ -154,7 +154,6 @@ rebase:
 
 lambda.out: setup.py code/*.py
 	mkdir -p lambda.out
-	rm -rf lambda.out/*
 	pip install --upgrade -e . -t lambda.out
 	cp code/*.py lambda.out
 	touch lambda.out
@@ -171,7 +170,13 @@ destroy: venv/bin/activate
 put-events:
 	aws events put-events --cli-input-json file://fixtures/events/cli-put-events.json
 
+check-accounts:
+	aws lambda invoke --function-name SpaCheckAccounts --log-type Tail --cli-read-timeout 0 check-accounts.log
+	cat check-accounts.log
+	rm check-accounts.log
+
 clean:
+	rm -rf lambda.out
 	rm -rf ${PRESENTATION_NAME}.html
 	rm -rf ${PRESENTATION_NAME}.pdf
 	rm -rf ${PRESENTATION_NAME}.pptx
