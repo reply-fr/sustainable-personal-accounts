@@ -44,6 +44,10 @@ class Worker:
         session = session or Session()
         events = session.client('events')
 
+        if event_bus_arn == events.describe_event_bus().get('Arn'):
+            logging.info(f"We are already on event bus '{event_bus_arn}'; there is no need for an additional forwarding rule")
+            return
+
         logging.info(f"Deploying rule '{name}' for events detection")
 
         events.put_rule(
