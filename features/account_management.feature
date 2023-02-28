@@ -12,16 +12,18 @@ so as to configure features of SPA itself
 Scenario: where tags are set for an account
     Given a settings file 'settings.yaml' adapted to SPA semantics
       And a configuration item with identifier '123456789012' is added to the section 'accounts'
-     When the configuration item features a set of tags
+     When the configuration item features a set of tags in attribute 'account_tags'
+      And the configuration item has a list of tags to remove in attribute 'unset_tags'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then the account '123456789012' is tagged accordingly during account preparation
+     Then the account '123456789012' is tagged and untagged during account preparation
 
 Scenario: where tags are set for all accounts in an organizational unit
     Given a settings file 'settings.yaml' adapted to SPA semantics
       And a configuration item with identifier 'ou-abc' is added to the section 'organizational_units'
-     When the configuration item features a set of tags
+     When the configuration item features a set of tags in attribute 'account_tags'
+      And the configuration item has a list of tags to remove in attribute 'unset_tags'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then all accounts in the organizational unit 'ou-abc' are tagged accordingly during account preparation
+     Then all accounts in the organizational unit 'ou-abc' are tagged and untagged during account preparation
 
 Scenario: where preparation is configured for an account
     Given a settings file 'settings.yaml' adapted to SPA semantics
@@ -59,17 +61,12 @@ Scenario: where purge is configured for all accounts of an organizational unit
      Then a Codebuild project 'SpaProjectForAccountPurge' is launched in each account of the organizational unit 'ou-abc' during account purge
       And the list of 'variables' in passed as environment variables to each project
 
-Scenario: where default settings are provided for managed accounts
+Scenario: where default settings are provided for managed organizational units and accounts
     Given a settings file 'settings.yaml' adapted to SPA semantics
-     When a section 'default' is added to 'settings.yaml'
+     When a section 'defaults' is added to 'settings.yaml'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then attributes of the 'default' section are used as default values for items listed in the section 'accounts'
-
-Scenario: where default settings are provided for managed organizational units
-    Given a settings file 'settings.yaml' adapted to SPA semantics
-     When a section 'default' is added to 'settings.yaml'
-      And SPA is deployed with the settings file 'settings.yaml'
-     Then attributes of the 'default' section are used as default values for items listed in the section 'organizational_units'
+     Then attributes of the 'defaults' section are used as default values for items listed in the section 'organizational_units'
+      And attributes of the 'defaults' section are used as default values for items listed in the section 'accounts'
 
 Scenario: where maintenance window is configured
     Given a settings file 'settings.yaml' adapted to SPA semantics
