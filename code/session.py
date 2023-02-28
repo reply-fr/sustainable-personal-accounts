@@ -15,7 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import uuid
+from uuid import uuid4
 
 from boto3.session import Session
 import botocore
@@ -25,7 +25,7 @@ def make_session(role_arn, region=None, name=None, session=None):
     session = session or Session()
     sts = session.client('sts')
 
-    name = name or 'SPA-{}'.format(uuid.uuid1())
+    name = name or 'SPA-{}'.format(uuid4())
     try:
         response = sts.assume_role(RoleArn=role_arn, RoleSessionName=name)
     except botocore.exceptions.ParamValidationError:
