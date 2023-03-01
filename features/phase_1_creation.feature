@@ -21,17 +21,17 @@ Then an error is generated because an account with the same e-mail address alrea
 # security by design
 
 Scenario: where a cloud account is created in a managed organizational unit
-Given a cloud environment managed with Control Tower
+Given a cloud environment managed with AWS Organization
 And a decision has been made to assign an individual cloud account to an employee
-When a new individual cloud account is created from the Account Factory
-And the account has been put in a managed organizational unit
+When an AWS account is created
+And the account has been put in an organizational unit managed by SPA
 And the account is assigned the corporate e-mail address of the requesting employee
 Then lambda function 'OnVanillaAccount' is executed
 # implementation: EventBridge detects the move of the account to one managed organizational unit
 # configuration file lists all managed organizational unit identifiers
 
 Scenario: where a cloud account is set to vanilla state
-Given a cloud environment managed with Control Tower
+Given a cloud environment managed with AWS Organization
 And a decision has been made to validate an individual cloud account
 When the account is tagged with key 'account-state' and value 'vanilla'
 Then lambda function 'OnVanillaAccount' is executed
