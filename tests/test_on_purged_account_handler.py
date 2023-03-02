@@ -85,7 +85,14 @@ def test_handle_codebuild_event(session):
                                                          project=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                                                          status="SUCCEEDED"))
     result = handle_codebuild_event(event=event, context=None, session=session)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "Spa"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result['Source'] == 'SustainablePersonalAccounts'
+    assert result['DetailType'] == 'PurgedAccount'
+    details = json.loads(result['Detail'])
+    assert details['Environment'] == 'Spa'
+    assert details['Account'] == '123456789012'
+    assert details.get('Message') is None
+    assert len(details['TransactionIdentifier']) == 36
+    assert len(details['TransactionBegin']) >= 10
 
 
 @pytest.mark.integration_tests
@@ -117,4 +124,11 @@ def test_handle_codebuild_event_on_unexpected_status(session):
 @mock_events
 def test_handle_account(session):
     result = handle_account('123456789012', session=session)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'PurgedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result['Source'] == 'SustainablePersonalAccounts'
+    assert result['DetailType'] == 'PurgedAccount'
+    details = json.loads(result['Detail'])
+    assert details['Environment'] == 'envt1'
+    assert details['Account'] == '123456789012'
+    assert details.get('Message') is None
+    assert len(details['TransactionIdentifier']) == 36
+    assert len(details['TransactionBegin']) >= 10

@@ -33,6 +33,31 @@ def test_build_account_event():
     details = json.loads(event['Detail'])
     assert details['Account'] == '123456789012'
     assert details['Message'] == 'some log'
+    assert len(details['TransactionIdentifier']) == 36
+    assert len(details['TransactionBegin']) >= 10
+
+
+@pytest.mark.unit_tests
+def test_build_account_event_with_chaining():
+    chained = dict(TransactionIdentifier="b5e7a2a0-abc6-401c-9a64-7d88849b2482",
+                   TransactionBegin="1677703983.499512")
+    event = Events.build_account_event(label='AssignedAccount', account='123456789012', message='some log', chained=chained)
+    assert event['Source'] == 'SustainablePersonalAccounts'
+    assert event['DetailType'] == 'AssignedAccount'
+    details = json.loads(event['Detail'])
+    assert details['Account'] == '123456789012'
+    assert details['Message'] == 'some log'
+    assert details['TransactionIdentifier'] == "b5e7a2a0-abc6-401c-9a64-7d88849b2482"
+    assert details['TransactionBegin'] == "1677703983.499512"
+
+    event = Events.build_account_event(label='AssignedAccount', account='123456789012', message='some log', chained=dict())
+    assert event['Source'] == 'SustainablePersonalAccounts'
+    assert event['DetailType'] == 'AssignedAccount'
+    details = json.loads(event['Detail'])
+    assert details['Account'] == '123456789012'
+    assert details['Message'] == 'some log'
+    assert len(details['TransactionIdentifier']) == 36
+    assert len(details['TransactionBegin']) >= 10
 
 
 @pytest.mark.unit_tests
@@ -272,11 +297,13 @@ def test_decode_tag_account_event_on_missing_state():
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='FromHere'))
 def test_emit_account_event():
+    chained = dict(TransactionIdentifier="b5e7a2a0-abc6-401c-9a64-7d88849b2482",
+                   TransactionBegin="1677703983.499512")
     mock = Mock()
-    Events.emit_account_event(label='CreatedAccount', account='123456789012', message='message', session=mock)
+    Events.emit_account_event(label='CreatedAccount', account='123456789012', message='message', chained=chained, session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Account": "123456789012", "Environment": "FromHere", "Message": "message"}',
+        {'Detail': '{"Account": "123456789012", "Environment": "FromHere", "Message": "message", "TransactionIdentifier": "b5e7a2a0-abc6-401c-9a64-7d88849b2482", "TransactionBegin": "1677703983.499512"}',
          'DetailType': 'CreatedAccount',
          'Source': 'SustainablePersonalAccounts'}])
 

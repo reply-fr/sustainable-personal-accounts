@@ -95,7 +95,14 @@ def test_handle_organization_event(valid_tags):
                                                          destination_organizational_unit="ou-1234",
                                                          origin_organizational_unit="ou-origin"))
     result = handle_organization_event(event=event, context=None, session=valid_tags)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result['Source'] == 'SustainablePersonalAccounts'
+    assert result['DetailType'] == 'CreatedAccount'
+    details = json.loads(result['Detail'])
+    assert details['Environment'] == 'envt1'
+    assert details['Account'] == '123456789012'
+    assert details.get('Message') is None
+    assert len(details['TransactionIdentifier']) == 36
+    assert len(details['TransactionBegin']) >= 10
 
 
 @pytest.mark.integration_tests
@@ -110,7 +117,14 @@ def test_handle_tag_event(valid_tags):
                                             context=dict(account="123456789012",
                                                          new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None, session=valid_tags)
-    assert result == {'Detail': '{"Account": "123456789012", "Environment": "envt1"}', 'DetailType': 'CreatedAccount', 'Source': 'SustainablePersonalAccounts'}
+    assert result['Source'] == 'SustainablePersonalAccounts'
+    assert result['DetailType'] == 'CreatedAccount'
+    details = json.loads(result['Detail'])
+    assert details['Environment'] == 'envt1'
+    assert details['Account'] == '123456789012'
+    assert details.get('Message') is None
+    assert len(details['TransactionIdentifier']) == 36
+    assert len(details['TransactionBegin']) >= 10
 
 
 @pytest.mark.integration_tests
