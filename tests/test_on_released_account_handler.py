@@ -96,8 +96,6 @@ def test_handle_tag_event(session):
     assert details['Environment'] == 'envt1'
     assert details['Account'] == '123456789012'
     assert details.get('Message') is None
-    assert len(details['TransactionIdentifier']) == 36
-    assert len(details['TransactionBegin']) >= 10
 
 
 @pytest.mark.integration_tests

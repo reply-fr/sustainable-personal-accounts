@@ -53,7 +53,7 @@ class Events:
     DEFAULT_CONTENT_TYPE = 'application/json'
 
     @classmethod
-    def build_account_event(cls, label, account, message=None, chained=None):
+    def build_account_event(cls, label, account, message=None):
         if label not in cls.ACCOUNT_EVENT_LABELS:
             raise ValueError(f"Invalid event label '{label}'")
         if len(account) != 12:
@@ -62,12 +62,6 @@ class Events:
                        Environment=cls.get_environment())
         if message:
             details['Message'] = message
-        if chained:
-            details['TransactionIdentifier'] = chained.get('TransactionIdentifier', str(uuid4()))
-            details['TransactionBegin'] = chained.get('TransactionBegin', str(time()))
-        else:
-            details['TransactionIdentifier'] = str(uuid4())
-            details['TransactionBegin'] = str(time())
         return dict(Detail=json.dumps(details),
                     DetailType=label,
                     Source='SustainablePersonalAccounts')
@@ -171,8 +165,8 @@ class Events:
         raise ValueError(f"Missing tag '{expected}' in this event")
 
     @classmethod
-    def emit_account_event(cls, label, account, message=None, chained=None, session=None):
-        event = cls.build_account_event(label=label, account=account, message=message, chained=chained)
+    def emit_account_event(cls, label, account, message=None, session=None):
+        event = cls.build_account_event(label=label, account=account, message=message)
         cls.put_event(event=event, session=session)
         return event
 
