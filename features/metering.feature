@@ -9,52 +9,45 @@ I observe end-to-end transactions
 so as to identify possible issues on some accounts
 
 
-Scenario: where an account is on-boarded as a transaction
+Scenario: where an on-boarding transaction begins
     Given an account '123456789012' that is managed by SPA
      When the event 'CreatedEvent' is emitted for account '123456789012'
-      And the event 'AssignedEvent' is emitted for account '123456789012'
-      And the event 'PreparedEvent' is emitted for account '123456789012'
-      And the event 'ReleasedEvent' is emitted for account '123456789012'
-     Then an event 'SuccessfulOnboardingEvent' is emitted with duration between 'CreatedEvent' and 'ReleasedEvent'
+     Then lambda function 'OnAccountEventMetering' is executed
+      And a transaction 'OnBoardingTransaction' is set for account '123456789012' and time of 'CreatedEvent'
 
-Scenario: where an account is only tagged on on-boarding
+Scenario: where an on-boarding transaction ends
     Given an account '123456789012' that is managed by SPA
-     When the event 'CreatedEvent' is emitted for account '123456789012'
-      And the event 'AssignedEvent' is emitted for account '123456789012'
-      And the event 'ReleasedEvent' is emitted for account '123456789012'
-     Then an event 'SuccessfulOnboardingEvent' is emitted with duration between 'CreatedEvent' and 'ReleasedEvent'
+      And a transaction 'OnBoardingTransaction' is set for account '123456789012' and time of 'CreatedEvent'
+     When the event 'ReleasedEvent' is emitted for account '123456789012'
+     Then lambda function 'OnAccountEventMetering' is executed
+      And a transaction 'OnBoardingTransaction' is retrieved for account '123456789012'
+      And an event 'SuccessfulOnboardingEvent' is emitted with duration between 'CreatedEvent' and 'ReleasedEvent'
 
-Scenario: where an account is purged and prepared on maintenance window
+Scenario: where an on-boarding transaction fails on timeout
     Given an account '123456789012' that is managed by SPA
-     When the event 'ExpiredEvent' is emitted for account '123456789012'
-      And the event 'PurgedEvent' is emitted for account '123456789012'
-      And the event 'AssignedEvent' is emitted for account '123456789012'
-      And the event 'PreparedEvent' is emitted for account '123456789012'
-      And the event 'ReleasedEvent' is emitted for account '123456789012'
-     Then an event 'SuccessfulMaintenanceEvent' is emitted with duration between 'ExpiredEvent' and 'ReleasedEvent'
+      And a transaction 'OnBoardingTransaction' is set for account '123456789012' and time of 'CreatedEvent'
+     When no event 'ReleasedEvent' is emitted for account '123456789012' during 'transactions_timeout_in_seconds'
+     Then lambda function 'OnTransactionEvent' is executed
+      And an event 'FailedOnboardingEvent' is emitted with last event received for account '123456789012'
 
-Scenario: where an account is only prepared on maintenance window
+Scenario: where a maintenance transaction begins
     Given an account '123456789012' that is managed by SPA
      When the event 'ExpiredEvent' is emitted for account '123456789012'
-      And the event 'AssignedEvent' is emitted for account '123456789012'
-      And the event 'PreparedEvent' is emitted for account '123456789012'
-      And the event 'ReleasedEvent' is emitted for account '123456789012'
-     Then an event 'SuccessfulMaintenanceEvent' is emitted with duration between 'ExpiredEvent' and 'ReleasedEvent'
+     Then lambda function 'OnAccountEventMetering' is executed
+      And a transaction 'MaintenanceTransaction' is set for account '123456789012' and time of 'ExpiredEvent'
 
-Scenario: where an account is only purged on maintenance window
+Scenario: where a maintenance transaction ends
     Given an account '123456789012' that is managed by SPA
-     When the event 'ExpiredEvent' is emitted for account '123456789012'
-      And the event 'PurgedEvent' is emitted for account '123456789012'
-      And the event 'AssignedEvent' is emitted for account '123456789012'
-      And the event 'ReleasedEvent' is emitted for account '123456789012'
-     Then an event 'SuccessfulMaintenanceEvent' is emitted with duration between 'ExpiredEvent' and 'ReleasedEvent'
+      And a transaction 'MaintenanceTransaction' is set for account '123456789012' and time of 'CreatedEvent'
+     When the event 'ReleasedEvent' is emitted for account '123456789012'
+     Then lambda function 'OnAccountEventMetering' is executed
+      And a transaction 'MaintenanceTransaction' is retrieved for account '123456789012'
+      And an event 'SuccessfulMaintenanceEvent' is emitted with duration between 'ExpiredEvent' and 'ReleasedEvent'
 
-Scenario: where an account transparently passes through maintenance window
+Scenario: where a maintenance transaction fails on timeout
     Given an account '123456789012' that is managed by SPA
-     When the event 'ExpiredEvent' is emitted for account '123456789012'
-      And the event 'AssignedEvent' is emitted for account '123456789012'
-      And the event 'ReleasedEvent' is emitted for account '123456789012'
-     Then an event 'SuccessfulMaintenanceEvent' is emitted with duration between 'ExpiredEvent' and 'ReleasedEvent'
-
-
+      And a transaction 'MaintenanceTransaction' is set for account '123456789012' and time of 'CreatedEvent'
+     When no event 'ReleasedEvent' is emitted for account '123456789012' during 'transactions_timeout_in_seconds'
+     Then lambda function 'OnTransactionEvent' is executed
+      And an event 'FailedMaintenanceEvent' is emitted with last event received for account '123456789012'
 

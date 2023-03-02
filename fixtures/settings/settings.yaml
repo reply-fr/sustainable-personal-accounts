@@ -15,7 +15,7 @@ automation:
     # Sustainable Personal Accounts Dashboard
     Currently under active development (beta)
 
-  # this expression defines when accounts are expired
+  # this expression defines when accounts are purged and prepared
   # Reference:
   # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
   #
@@ -37,6 +37,19 @@ automation:
   # - default value: INFO
   #
   verbosity: ERROR
+
+
+# parameters for metering
+metering:
+
+  # this is the engine to be used for storage of metered transactions
+  # - DynamoDB: 'dynamodb://<table-name>'
+  #
+  datastore: 'dynamodb://SpaMetering'
+
+  # this is the maximum duration of on-going transactions, used as TTL for the datastore
+  #
+  transactions_timeout_in_seconds: 900
 
 
 # parameters for resources deployed in managed accounts

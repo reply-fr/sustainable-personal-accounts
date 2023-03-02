@@ -78,14 +78,14 @@ Scenario: where buildspec is set for the preparation of accounts
     Given a settings file 'settings.yaml' adapted to SPA semantics
      When the attribute 'preparation_buildspec_template_file' is set in the section 'worker'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then the content of file 'preparation_buildspec_template_file' is saved as 'preparation_buildspec' at the time of SPA deployment
+     Then the content of file 'preparation_buildspec_template_file' is saved as parameter 'preparation_buildspec' at the time of SPA deployment
       And 'preparation_buildspec' is used for subsequent Codebuild projects during the preparation of accounts
 
 Scenario: where buildspec is set for the purge of accounts
     Given a settings file 'settings.yaml' adapted to SPA semantics
      When the attribute 'purge_buildspec_template_file' is set in the section 'worker'
       And SPA is deployed with the settings file 'settings.yaml'
-     Then the content of file 'purge_buildspec_template_file' is saved as 'purge_buildspec' at the time of SPA deployment
+     Then the content of file 'purge_buildspec_template_file' is saved as parameter 'purge_buildspec' at the time of SPA deployment
       And 'purge_buildspec' is used for subsequent Codebuild projects during the purge of accounts
 
 Scenario: where SPA is deployed on AWS
@@ -110,3 +110,19 @@ Scenario: where SPA is deployed on ARM architecture
       And SPA is deployed with the settings file 'settings.yaml'
      Then Lambda functions of SPA are deployed on ARM architecture
       And CodeBuild projects of SPA are deployed on ARM architecture
+
+Scenario: where the storage back-end for metering is configured
+    Given a settings file 'settings.yaml' adapted to SPA semantics
+      And the attribute 'datastore' is set in the section 'metering'
+      And the attribute 'transactions_timeout_in_seconds' is set in the section 'metering'
+      And SPA is deployed with the settings file 'settings.yaml'
+     Then storage back-end for metering is provisioned on AWS infrastructure
+      And the storage backend is configured with a TTL of 'transactions_timeout_in_seconds'
+      And the storage endpoint is passed as environment variable to Lambda functions
+      And deleted items are sent to Lambda function 'OnTransactionEvent'
+
+Scenario: where timeout for on-going transactions is configured
+    Given a settings file 'settings.yaml' adapted to SPA semantics
+      And SPA is deployed with the settings file 'settings.yaml'
+     Then the attribute 'transactions_timeout_in_seconds' is passed as environment variable to Lambda functions
+
