@@ -43,6 +43,8 @@ class Configuration:
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
         features_with_tag_prefix='str',
+        metering_datastore='str',
+        metering_transactions_timeout_in_seconds='int',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
         worker_purge_buildspec_template_file='str',
@@ -119,6 +121,8 @@ class Configuration:
         toggles.features_with_email_subscriptions_on_alerts = []
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_tag_prefix = 'account-'
+        toggles.metering_datastore = 'ssm://SpaMetering'
+        toggles.metering_transactions_timeout_in_seconds = 900
 
         for key in sorted(toggles.__dict__.keys()):
             value = toggles.__dict__.get(key)
@@ -237,15 +241,15 @@ class Configuration:
         kind = context.get(key)
         if kind:
             if (kind == 'bool') and not isinstance(value, bool):
-                raise AttributeError(f"Invalid value for configuration attribute '{key}'")
+                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
             elif (kind == 'dict') and not isinstance(value, dict):
-                raise AttributeError(f"Invalid value for configuration attribute '{key}'")
+                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
             elif (kind == 'int') and not isinstance(value, int):
-                raise AttributeError(f"Invalid value for configuration attribute '{key}'")
+                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
             elif (kind == 'list') and not isinstance(value, list):
-                raise AttributeError(f"Invalid value for configuration attribute '{key}'")
+                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
             elif (kind == 'str') and not isinstance(value, str):
-                raise AttributeError(f"Invalid value for configuration attribute '{key}'")
+                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
         else:
             raise AttributeError(f"Unknown configuration attribute '{key}'")
 

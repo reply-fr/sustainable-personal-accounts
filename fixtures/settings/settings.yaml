@@ -43,9 +43,10 @@ automation:
 metering:
 
   # this is the engine to be used for storage of metered transactions
+  # - SSM Parameter Store: 'ssm://<path>'
   # - DynamoDB: 'dynamodb://<table-name>'
   #
-  datastore: 'dynamodb://SpaMetering'
+  datastore: 'ssm://SpaMetering'
 
   # this is the maximum duration of on-going transactions, used as TTL for the datastore
   #
