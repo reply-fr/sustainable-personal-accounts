@@ -23,7 +23,9 @@ from aws_cdk.aws_logs import RetentionDays
 
 from .check_accounts_construct import CheckAccounts
 from .cockpit_construct import Cockpit
+from .metering_construct import Metering
 from .on_account_event_construct import OnAccountEvent
+from .on_account_event_then_meter_construct import OnAccountEventThenMeter
 from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
 from .on_expired_account_construct import OnExpiredAccount
@@ -53,6 +55,7 @@ class ServerlessStack(Stack):
         labels = [
             'CheckAccounts',
             'OnAccountEvent',
+            'OnAccountEventThenMeter',
             'OnAlert',
             'OnAssignedAccount',
             'OnExpiredAccount',
@@ -73,6 +76,8 @@ class ServerlessStack(Stack):
         Cockpit(self,
                 "{}Cockpit-{}".format(toggles.environment_identifier, toggles.automation_region),
                 functions=monitored_functions)
+
+        Metering(self, "Metering")
 
         for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
             Tags.of(self).add(key, toggles.automation_tags[key])
