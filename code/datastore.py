@@ -51,3 +51,6 @@ class MemoryDatastore:
 
     def retrieve(self, key):
         return self.data.get(key)
+
+
+datastore = Datastore.get_instance()

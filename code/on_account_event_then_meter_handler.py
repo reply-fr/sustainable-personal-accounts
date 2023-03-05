@@ -22,10 +22,8 @@ from uuid import uuid4
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from datastore import Datastore
+from datastore import datastore
 from events import Events
-
-datastore = Datastore.get_instance()
 
 
 @trap_exception
@@ -42,7 +40,7 @@ def handle_account_event(event, context=None, emit=None):
         handle_released_event(input, emit)
 
     else:
-        logging.debug(f"Do not handle event '{input.label}'")
+        raise ValueError(f"Do not know how to handle event '{input.label}'")
 
     return f"[OK] {input.label} {input.account}"
 

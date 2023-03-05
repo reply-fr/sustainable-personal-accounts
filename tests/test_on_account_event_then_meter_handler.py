@@ -78,6 +78,17 @@ def test_handle_account_event_for_on_boarding_transaction():
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
+def test_handle_account_event_on_unexpected_event():
+    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                            context=dict(account="123456789012",
+                                                         label="PreparedAccount",
+                                                         environment="envt1"))
+    assert handle_account_event(event=event) == "[DEBUG] Do not know how to handle event 'PreparedAccount'"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
 def test_handle_account_event_on_unexpected_environment():
     event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                             context=dict(account="123456789012",
