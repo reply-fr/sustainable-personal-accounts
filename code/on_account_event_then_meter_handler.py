@@ -15,7 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import logging
 from time import time
 from uuid import uuid4
@@ -30,20 +29,17 @@ datastore = Datastore.get_instance()
 
 
 @trap_exception
-def handle_account_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-
+def handle_account_event(event, context=None, emit=None):
     input = Events.decode_account_event(event)
-    logging.debug(input)
 
     if input.label == 'CreatedAccount':
-        handle_created_event(input, session)
+        handle_created_event(input)
 
     elif input.label == 'ExpiredAccount':
-        handle_expired_event(input, session)
+        handle_expired_event(input)
 
     elif input.label == 'ReleasedAccount':
-        handle_released_event(input, session)
+        handle_released_event(input, emit)
 
     else:
         logging.debug(f"Do not handle event '{input.label}'")
@@ -51,52 +47,52 @@ def handle_account_event(event, context, session=None):
     return f"[OK] {input.label} {input.account}"
 
 
-def handle_created_event(input, session=None):
+def handle_created_event(input):
     key = f"OnBoarding {input.account}"
     logging.info(f"Starting transaction '{key}'")
-    transaction = {'begin': time(),
+    transaction = {'account': input.account,
+                   'begin': time(),
                    'identifier': str(uuid4())}
-    datastore.assign(key, value=transaction)
+    datastore.remember(key, value=transaction)
 
 
-def handle_expired_event(input, session=None):
+def handle_expired_event(input):
     key = f"Maintenance {input.account}"
     logging.info(f"Starting transaction '{key}'")
-    transaction = {'begin': time(),
+    transaction = {'account': input.account,
+                   'begin': time(),
                    'identifier': str(uuid4())}
-    datastore.assign(key, value=transaction)
+    datastore.remember(key, value=transaction)
 
 
-def handle_released_event(input, session=None):
-    update_maintenance_transaction(input, session)
-    update_onboarding_transaction(input, session)
+def handle_released_event(input, emit=None):
+    update_maintenance_transaction(input, emit)
+    update_onboarding_transaction(input, emit)
 
 
-def update_maintenance_transaction(input, session=None):
+def update_maintenance_transaction(input, emit=None):
     key = f"Maintenance {input.account}"
     transaction = datastore.retrieve(key)
     if transaction:
         logging.info(f"Updating transaction '{key}'")
-        datastore.assign(key, None)
-        logging.debug(transaction)
+        datastore.forget(key)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
-        Events.emit_spa_event(label='SuccessfulMaintenanceEvent',
-                              payload=transaction,
-                              session=session)
+        emit = emit or Events.emit_spa_event
+        emit(label='SuccessfulMaintenanceEvent',
+             payload=transaction)
 
 
-def update_onboarding_transaction(input, session=None):
+def update_onboarding_transaction(input, emit=None):
     key = f"OnBoarding {input.account}"
     transaction = datastore.retrieve(key)
     if transaction:
         logging.info(f"Updating transaction '{key}'")
-        datastore.assign(key, None)
-        logging.debug(transaction)
+        datastore.forget(key)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
-        Events.emit_spa_event(label='SuccessfulOnBoardingEvent',
-                              payload=transaction,
-                              session=session)
+        emit = emit or Events.emit_spa_event
+        emit(label='SuccessfulOnBoardingEvent',
+             payload=transaction)

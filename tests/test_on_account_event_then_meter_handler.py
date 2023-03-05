@@ -19,8 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-import json
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 import os
 import pytest
 
@@ -34,6 +33,13 @@ pytestmark = pytest.mark.wip
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_account_event_for_maintenance_transaction():
+
+    def my_emit_spa_event(label, payload):
+        assert label == 'SuccessfulMaintenanceEvent'
+        assert set(payload.keys()) == {'account', 'identifier', 'begin', 'end', 'duration'}
+        assert payload['account'] == "123456789012"
+        assert payload['duration'] > 0.0
+
     expired = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                               context=dict(account="123456789012",
                                                            label="ExpiredAccount",
@@ -42,23 +48,21 @@ def test_handle_account_event_for_maintenance_transaction():
                                                context=dict(account="123456789012",
                                                             label="ReleasedAccount",
                                                             environment="envt1"))
-    mock = Mock()
-    assert handle_account_event(event=expired, context=None, session=mock) == '[OK] ExpiredAccount 123456789012'
-    assert handle_account_event(event=released, context=None, session=mock) == '[OK] ReleasedAccount 123456789012'
-    mock.client.assert_called_with('events')
-    observed = mock.client.return_value.put_events.call_args_list[0][1]['Entries'][0]
-    assert observed['Source'] == 'SustainablePersonalAccounts'
-    assert observed['DetailType'] == 'SuccessfulMaintenanceEvent'
-    detail = json.loads(observed['Detail'])
-    assert detail['Environment'] == 'envt1'
-    assert detail['Content-Type'] == 'application/json'
-    assert set(detail['Payload'].keys()) == {'identifier', 'begin', 'end', 'duration'}
+    assert handle_account_event(event=expired, emit=my_emit_spa_event) == '[OK] ExpiredAccount 123456789012'
+    assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
 
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 def test_handle_account_event_for_on_boarding_transaction():
+
+    def my_emit_spa_event(label, payload):
+        assert label == 'SuccessfulOnBoardingEvent'
+        assert set(payload.keys()) == {'account', 'identifier', 'begin', 'end', 'duration'}
+        assert payload['account'] == "123456789012"
+        assert payload['duration'] > 0.0
+
     created = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                               context=dict(account="123456789012",
                                                            label="CreatedAccount",
@@ -67,17 +71,8 @@ def test_handle_account_event_for_on_boarding_transaction():
                                                context=dict(account="123456789012",
                                                             label="ReleasedAccount",
                                                             environment="envt1"))
-    mock = Mock()
-    assert handle_account_event(event=created, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
-    assert handle_account_event(event=released, context=None, session=mock) == '[OK] ReleasedAccount 123456789012'
-    mock.client.assert_called_with('events')
-    observed = mock.client.return_value.put_events.call_args_list[0][1]['Entries'][0]
-    assert observed['Source'] == 'SustainablePersonalAccounts'
-    assert observed['DetailType'] == 'SuccessfulOnBoardingEvent'
-    detail = json.loads(observed['Detail'])
-    assert detail['Environment'] == 'envt1'
-    assert detail['Content-Type'] == 'application/json'
-    assert set(detail['Payload'].keys()) == {'identifier', 'begin', 'end', 'duration'}
+    assert handle_account_event(event=created, emit=my_emit_spa_event) == '[OK] CreatedAccount 123456789012'
+    assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
 
 
 @pytest.mark.unit_tests
@@ -88,5 +83,4 @@ def test_handle_account_event_on_unexpected_environment():
                                             context=dict(account="123456789012",
                                                          label="CreatedAccount",
                                                          environment="alien*environment"))
-    mock = Mock()
-    assert handle_account_event(event=event, context=None, session=mock) == "[DEBUG] Unexpected environment 'alien*environment'"
+    assert handle_account_event(event=event) == "[DEBUG] Unexpected environment 'alien*environment'"

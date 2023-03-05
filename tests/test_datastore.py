@@ -22,6 +22,37 @@ from code import Datastore
 pytestmark = pytest.mark.wip
 
 
+@pytest.fixture
+def test_this_store():
+
+    def store_tester(store):
+        store.remember(key='a', value=dict(hello='world'))
+        store.remember(key='b', value=dict(life='is good'))
+        assert store.retrieve(key='a') == dict(hello='world')
+        assert store.retrieve(key='b') == dict(life='is good')
+
+        store.remember(key='a', value=dict(hello='universe'))
+        assert store.retrieve(key='a') == dict(hello='universe')
+        assert store.retrieve(key='b') == dict(life='is good')
+
+        store.forget(key='a')
+        store.forget(key='a')  # accept unknown key
+        assert not store.retrieve(key='a')
+        assert store.retrieve(key='b') == dict(life='is good')
+
+        store.remember(key='b', value=dict(life='is short'))
+        assert not store.retrieve(key='a')
+        assert store.retrieve(key='b') == dict(life='is short')
+
+    return store_tester
+
+
+@pytest.mark.unit_tests
+def test_memorydatastore(test_this_store):
+    store = Datastore.get_instance(path='memory:')
+    test_this_store(store)
+
+
 @pytest.mark.unit_tests
 def test_datastore_singleton():
     store1 = Datastore.get_instance(path='memory:')
@@ -33,12 +64,3 @@ def test_datastore_singleton():
 def test_datastore_on_unknown_path():
     with pytest.raises(AttributeError):
         Datastore.get_instance(path='*unknown*:')
-
-
-@pytest.mark.unit_tests
-def test_memorydatastore():
-    store = Datastore.get_instance(path='memory:')
-    store.assign(key='a', value=dict(hello='world'))
-    assert store.retrieve(key='a') == dict(hello='world')
-    store.assign(key='a', value=dict(hello='universe'))
-    assert store.retrieve(key='a') == dict(hello='universe')

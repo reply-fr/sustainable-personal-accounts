@@ -40,7 +40,13 @@ class MemoryDatastore:
     def __init__(self):
         self.data = {}
 
-    def assign(self, key, value):
+    def forget(self, key):
+        try:
+            del self.data[key]
+        except KeyError:
+            pass
+
+    def remember(self, key, value):
         self.data[key] = value
 
     def retrieve(self, key):
