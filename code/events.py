@@ -18,9 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import logging
 import os
-from time import time
 from types import SimpleNamespace
-from uuid import uuid4
 
 from boto3.session import Session
 
@@ -40,11 +38,15 @@ class Events:
         'PurgeReport']
 
     SPA_EVENT_LABELS = [
+        'FailedMaintenanceEvent',
+        'FailedOnBoardingEvent',
         'MessageFromSlack',
         'MessageToMicrosoftTeams',
         'MessageToSlack',
         'PinFromSlack',
         'ReactionFromSlack',
+        'SuccessfulMaintenanceEvent',
+        'SuccessfulOnBoardingEvent',
         'UpdateToSlack',
         'UploadToSlack']
 

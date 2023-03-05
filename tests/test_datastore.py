@@ -15,19 +15,30 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from .account import Account, State
-from .datastore import Datastore
-from .events import Events
-from .logger import setup_logging, trap_exception, LOGGING_FORMAT
-from .session import make_session
-from .worker import Worker
+import pytest
 
-__all__ = ['Account',
-           'Datastore',
-           'Events',
-           'LOGGING_FORMAT',
-           'State',
-           'make_session',
-           'setup_logging',
-           'trap_exception',
-           'Worker']
+from code import Datastore
+
+pytestmark = pytest.mark.wip
+
+
+@pytest.mark.unit_tests
+def test_datastore_singleton():
+    store1 = Datastore.get_instance(path='memory:')
+    store2 = Datastore.get_instance(path='memory:')
+    assert store1 == store2
+
+
+@pytest.mark.unit_tests
+def test_datastore_on_unknown_path():
+    with pytest.raises(AttributeError):
+        Datastore.get_instance(path='*unknown*:')
+
+
+@pytest.mark.unit_tests
+def test_memorydatastore():
+    store = Datastore.get_instance(path='memory:')
+    store.assign(key='a', value=dict(hello='world'))
+    assert store.retrieve(key='a') == dict(hello='world')
+    store.assign(key='a', value=dict(hello='universe'))
+    assert store.retrieve(key='a') == dict(hello='universe')

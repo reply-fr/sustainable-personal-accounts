@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 from unittest.mock import Mock, patch
 import os
 import pytest
@@ -32,13 +33,51 @@ pytestmark = pytest.mark.wip
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
-def test_handle_account_event():
-    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
-                                            context=dict(account="123456789012",
-                                                         label="CreatedAccount",
-                                                         environment="envt1"))
+def test_handle_account_event_for_maintenance_transaction():
+    expired = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                              context=dict(account="123456789012",
+                                                           label="ExpiredAccount",
+                                                           environment="envt1"))
+    released = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                               context=dict(account="123456789012",
+                                                            label="ReleasedAccount",
+                                                            environment="envt1"))
     mock = Mock()
-    assert handle_account_event(event=event, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
+    assert handle_account_event(event=expired, context=None, session=mock) == '[OK] ExpiredAccount 123456789012'
+    assert handle_account_event(event=released, context=None, session=mock) == '[OK] ReleasedAccount 123456789012'
+    mock.client.assert_called_with('events')
+    observed = mock.client.return_value.put_events.call_args_list[0][1]['Entries'][0]
+    assert observed['Source'] == 'SustainablePersonalAccounts'
+    assert observed['DetailType'] == 'SuccessfulMaintenanceEvent'
+    detail = json.loads(observed['Detail'])
+    assert detail['Environment'] == 'envt1'
+    assert detail['Content-Type'] == 'application/json'
+    assert set(detail['Payload'].keys()) == {'identifier', 'begin', 'end', 'duration'}
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='DEBUG'))
+def test_handle_account_event_for_on_boarding_transaction():
+    created = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                              context=dict(account="123456789012",
+                                                           label="CreatedAccount",
+                                                           environment="envt1"))
+    released = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                               context=dict(account="123456789012",
+                                                            label="ReleasedAccount",
+                                                            environment="envt1"))
+    mock = Mock()
+    assert handle_account_event(event=created, context=None, session=mock) == '[OK] CreatedAccount 123456789012'
+    assert handle_account_event(event=released, context=None, session=mock) == '[OK] ReleasedAccount 123456789012'
+    mock.client.assert_called_with('events')
+    observed = mock.client.return_value.put_events.call_args_list[0][1]['Entries'][0]
+    assert observed['Source'] == 'SustainablePersonalAccounts'
+    assert observed['DetailType'] == 'SuccessfulOnBoardingEvent'
+    detail = json.loads(observed['Detail'])
+    assert detail['Environment'] == 'envt1'
+    assert detail['Content-Type'] == 'application/json'
+    assert set(detail['Payload'].keys()) == {'identifier', 'begin', 'end', 'duration'}
 
 
 @pytest.mark.unit_tests

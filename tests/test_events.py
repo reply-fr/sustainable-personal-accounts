@@ -19,11 +19,10 @@ import json
 from unittest.mock import Mock, patch
 import os
 import pytest
-from types import SimpleNamespace
 
 from code import Events, State
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

@@ -15,19 +15,33 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from .account import Account, State
-from .datastore import Datastore
-from .events import Events
-from .logger import setup_logging, trap_exception, LOGGING_FORMAT
-from .session import make_session
-from .worker import Worker
+import logging
+import os
 
-__all__ = ['Account',
-           'Datastore',
-           'Events',
-           'LOGGING_FORMAT',
-           'State',
-           'make_session',
-           'setup_logging',
-           'trap_exception',
-           'Worker']
+
+class Datastore:
+    instance = None
+
+    @classmethod
+    def get_instance(cls, path=None):
+        path = path or os.environ.get('DATASTORE_PATH', 'memory:')
+        logging.debug(f"Looking for datastore '{path}")
+
+        if path == 'memory:':
+            if not cls.instance:
+                cls.instance = MemoryDatastore()
+            return cls.instance
+
+        raise AttributeError(f"Unknown datastore path '{path}")
+
+
+class MemoryDatastore:
+
+    def __init__(self):
+        self.data = {}
+
+    def assign(self, key, value):
+        self.data[key] = value
+
+    def retrieve(self, key):
+        return self.data.get(key)
