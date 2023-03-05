@@ -21,6 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
 import os
+os.environ["METERING_TRANSACTIONS_DATASTORE"] = "memory:"
 import pytest
 
 from code import Events

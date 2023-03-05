@@ -43,7 +43,7 @@ class Configuration:
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
         features_with_tag_prefix='str',
-        metering_datastore='str',
+        metering_transactions_datastore='str',
         metering_transactions_timeout_in_seconds='int',
         organizational_units='list',
         worker_preparation_buildspec_template_file='str',
@@ -99,7 +99,7 @@ class Configuration:
         # identifier for this specific environment
         toggles.environment_identifier = "{}{}".format(
             os.environ.get('STACK_PREFIX', 'Spa'),
-            os.environ.get('ENVIRONMENT', 'Alpha'))
+            os.environ.get('ENVIRONMENT', 'Beta'))
 
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
@@ -121,7 +121,7 @@ class Configuration:
         toggles.features_with_email_subscriptions_on_alerts = []
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_tag_prefix = 'account-'
-        toggles.metering_datastore = 'ssm://SpaMetering'
+        toggles.metering_transactions_datastore = 'dynamodb://SpaMetering'
         toggles.metering_transactions_timeout_in_seconds = 900
 
         for key in sorted(toggles.__dict__.keys()):

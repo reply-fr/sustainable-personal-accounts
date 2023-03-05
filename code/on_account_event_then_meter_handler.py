@@ -16,14 +16,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import logging
+import os
 from time import time
 from uuid import uuid4
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
-from datastore import datastore
 from events import Events
+from key_value_store import KeyValueStore
+transactions = KeyValueStore.get_instance(path=os.environ.get('METERING_TRANSACTIONS_DATASTORE', 'dynamodb://SpaTransactionsTable'))
 
 
 @trap_exception
@@ -47,20 +49,20 @@ def handle_account_event(event, context=None, emit=None):
 
 def handle_created_event(input):
     key = f"OnBoarding {input.account}"
-    logging.info(f"Starting transaction '{key}'")
+    logging.info(f"Beginning transaction '{key}'")
     transaction = {'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
-    datastore.remember(key, value=transaction)
+    transactions.remember(key, value=transaction)
 
 
 def handle_expired_event(input):
     key = f"Maintenance {input.account}"
-    logging.info(f"Starting transaction '{key}'")
+    logging.info(f"Beginning transaction '{key}'")
     transaction = {'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
-    datastore.remember(key, value=transaction)
+    transactions.remember(key, value=transaction)
 
 
 def handle_released_event(input, emit=None):
@@ -70,10 +72,10 @@ def handle_released_event(input, emit=None):
 
 def update_maintenance_transaction(input, emit=None):
     key = f"Maintenance {input.account}"
-    transaction = datastore.retrieve(key)
+    transaction = transactions.retrieve(key)
     if transaction:
-        logging.info(f"Updating transaction '{key}'")
-        datastore.forget(key)
+        logging.info(f"Ending transaction '{key}'")
+        transactions.forget(key)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
@@ -84,10 +86,10 @@ def update_maintenance_transaction(input, emit=None):
 
 def update_onboarding_transaction(input, emit=None):
     key = f"OnBoarding {input.account}"
-    transaction = datastore.retrieve(key)
+    transaction = transactions.retrieve(key)
     if transaction:
-        logging.info(f"Updating transaction '{key}'")
-        datastore.forget(key)
+        logging.info(f"Ending transaction '{key}'")
+        transactions.forget(key)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)

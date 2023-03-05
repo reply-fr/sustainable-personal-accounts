@@ -15,9 +15,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import boto3
+from moto import mock_dynamodb
 import pytest
 
-from code import Datastore
+from code import KeyValueStore
 
 pytestmark = pytest.mark.wip
 
@@ -48,19 +50,38 @@ def test_this_store():
 
 
 @pytest.mark.unit_tests
-def test_memorydatastore(test_this_store):
-    store = Datastore.get_instance(path='memory:')
+@mock_dynamodb
+def test_dynamodb_key_value_store(test_this_store):
+    boto3.client('dynamodb').create_table(TableName='my_table',
+                                          KeySchema=[dict(AttributeName='Identifier', KeyType='HASH')],
+                                          AttributeDefinitions=[dict(AttributeName='Identifier', AttributeType='S')],
+                                          BillingMode='PAY_PER_REQUEST')
+    boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')
+
+    store = KeyValueStore.get_instance(path='dynamodb://my_table', cache=False)
+    test_this_store(store)
+
+    store.remember(key='a', value=dict(hello='world'))
+    store.remember(key='b', value=dict(life='is good'))
+    result = boto3.client('dynamodb').scan(TableName='my_table',
+                                           Select='ALL_ATTRIBUTES')
+    assert len(result['Items']) == 2
+
+
+@pytest.mark.unit_tests
+def test_memory_key_value_store(test_this_store):
+    store = KeyValueStore.get_instance(path='memory:', cache=False)
     test_this_store(store)
 
 
 @pytest.mark.unit_tests
-def test_datastore_singleton():
-    store1 = Datastore.get_instance(path='memory:')
-    store2 = Datastore.get_instance(path='memory:')
+def test_key_value_store_singleton():
+    store1 = KeyValueStore.get_instance(path='memory:', cache=False)
+    store2 = KeyValueStore.get_instance(path='memory:')
     assert store1 == store2
 
 
 @pytest.mark.unit_tests
-def test_datastore_on_unknown_path():
+def test_key_value_store_on_unknown_path():
     with pytest.raises(AttributeError):
-        Datastore.get_instance(path='*unknown*:')
+        KeyValueStore.get_instance(path='*unknown*:')

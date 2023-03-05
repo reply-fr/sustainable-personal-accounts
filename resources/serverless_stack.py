@@ -47,11 +47,7 @@ class ServerlessStack(Stack):
 
         Parameters(self, "Parameters")
 
-        # passed to all lambda functions
-        environment = self.get_environment()
-        parameters = self.get_parameters(environment=environment)
-        permissions = self.get_permissions()
-
+        # lambda functions
         labels = [
             'CheckAccounts',
             'OnAccountEvent',
@@ -68,16 +64,23 @@ class ServerlessStack(Stack):
             'ResetAccounts',
             'ToMicrosoftTeams']
 
+        constructs = {}
         monitored_functions = []
         for label in labels:
-            construct = globals()[label](self, label, parameters=parameters.copy(), permissions=permissions.copy())
+
+            environment = self.get_environment().copy()
+            parameters = self.get_parameters(environment=environment).copy()
+            permissions = self.get_permissions().copy()
+
+            construct = globals()[label](self, label, parameters=parameters, permissions=permissions)
+            constructs[label] = construct
             monitored_functions.extend(construct.functions)
 
         Cockpit(self,
                 "{}Cockpit-{}".format(toggles.environment_identifier, toggles.automation_region),
                 functions=monitored_functions)
 
-        Metering(self, "Metering")
+        Metering(self, "Metering", writers=constructs['OnAccountEventThenMeter'].functions)
 
         for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
             Tags.of(self).add(key, toggles.automation_tags[key])

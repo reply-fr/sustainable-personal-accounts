@@ -16,15 +16,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from .account import Account, State
-from .datastore import Datastore
 from .events import Events
+from .key_value_store import KeyValueStore
 from .logger import setup_logging, trap_exception, LOGGING_FORMAT
 from .session import make_session
 from .worker import Worker
 
 __all__ = ['Account',
-           'Datastore',
            'Events',
+           'KeyValueStore',
            'LOGGING_FORMAT',
            'State',
            'make_session',

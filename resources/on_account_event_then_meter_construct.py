@@ -30,6 +30,9 @@ class OnAccountEventThenMeter(Construct):
         self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
     def on_event(self, parameters, permissions) -> Function:
+
+        parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
+
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenMeter".format(toggles.environment_identifier),
                             description="Turn events to transactions",
@@ -40,7 +43,7 @@ class OnAccountEventThenMeter(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
-             description="Route custom events from SPA to listening lambda function",
+             description="Route events from SPA to listening lambda function",
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
