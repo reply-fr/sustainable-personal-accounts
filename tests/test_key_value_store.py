@@ -21,67 +21,36 @@ import pytest
 
 from code import KeyValueStore
 
+from tests.fixture_key_value_store import create_my_table
 pytestmark = pytest.mark.wip
-
-
-@pytest.fixture
-def test_this_store():
-
-    def store_tester(store):
-        store.remember(key='a', value=dict(hello='world'))
-        store.remember(key='b', value=dict(life='is good'))
-        assert store.retrieve(key='a') == dict(hello='world')
-        assert store.retrieve(key='b') == dict(life='is good')
-
-        store.remember(key='a', value=dict(hello='universe'))
-        assert store.retrieve(key='a') == dict(hello='universe')
-        assert store.retrieve(key='b') == dict(life='is good')
-
-        store.forget(key='a')
-        store.forget(key='a')  # accept unknown key
-        assert not store.retrieve(key='a')
-        assert store.retrieve(key='b') == dict(life='is good')
-
-        store.remember(key='b', value=dict(life='is short'))
-        assert not store.retrieve(key='a')
-        assert store.retrieve(key='b') == dict(life='is short')
-
-    return store_tester
 
 
 @pytest.mark.unit_tests
 @mock_dynamodb
-def test_dynamodb_key_value_store(test_this_store):
-    boto3.client('dynamodb').create_table(TableName='my_table',
-                                          KeySchema=[dict(AttributeName='Identifier', KeyType='HASH')],
-                                          AttributeDefinitions=[dict(AttributeName='Identifier', AttributeType='S')],
-                                          BillingMode='PAY_PER_REQUEST')
-    boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')
+def test_key_value_store():
+    create_my_table()
 
-    store = KeyValueStore.get_instance(path='dynamodb://my_table', cache=False)
-    test_this_store(store)
+    store = KeyValueStore(table_name='my_table')
+    store.remember(key='a', value=dict(hello='world'))
+    store.remember(key='b', value=dict(life='is good'))
+    assert store.retrieve(key='a') == dict(hello='world')
+    assert store.retrieve(key='b') == dict(life='is good')
+
+    store.remember(key='a', value=dict(hello='universe'))
+    assert store.retrieve(key='a') == dict(hello='universe')
+    assert store.retrieve(key='b') == dict(life='is good')
+
+    store.forget(key='a')
+    store.forget(key='a')  # accept unknown key
+    assert not store.retrieve(key='a')
+    assert store.retrieve(key='b') == dict(life='is good')
+
+    store.remember(key='b', value=dict(life='is short'))
+    assert not store.retrieve(key='a')
+    assert store.retrieve(key='b') == dict(life='is short')
 
     store.remember(key='a', value=dict(hello='world'))
     store.remember(key='b', value=dict(life='is good'))
     result = boto3.client('dynamodb').scan(TableName='my_table',
                                            Select='ALL_ATTRIBUTES')
     assert len(result['Items']) == 2
-
-
-@pytest.mark.unit_tests
-def test_memory_key_value_store(test_this_store):
-    store = KeyValueStore.get_instance(path='memory:', cache=False)
-    test_this_store(store)
-
-
-@pytest.mark.unit_tests
-def test_key_value_store_singleton():
-    store1 = KeyValueStore.get_instance(path='memory:', cache=False)
-    store2 = KeyValueStore.get_instance(path='memory:')
-    assert store1 == store2
-
-
-@pytest.mark.unit_tests
-def test_key_value_store_on_unknown_path():
-    with pytest.raises(AttributeError):
-        KeyValueStore.get_instance(path='*unknown*:')

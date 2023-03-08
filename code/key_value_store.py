@@ -18,31 +18,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import boto3
 import json
 import logging
-import os
 
 
 class KeyValueStore:
-    instances = {}
-
-    @classmethod
-    def get_instance(cls, path=None, cache=True):
-        path = path or os.environ.get('KEY_VALUE_STORE_PATH', 'memory:')
-
-        if path.startswith('dynamodb://'):
-            if not cls.instances.get(path) or not cache:
-                table_name = path[len('dynamodb://'):]
-                cls.instances[path] = DynamoDbKeyValueStore(table_name=table_name)
-            return cls.instances[path]
-
-        elif path == 'memory:':
-            if not cls.instances.get(path) or not cache:
-                cls.instances[path] = MemoryKeyValueStore()
-            return cls.instances[path]
-
-        raise AttributeError(f"Unknown keystore path '{path}")
-
-
-class DynamoDbKeyValueStore:
 
     def __init__(self, table_name):
         logging.debug(f"Using key-value store on DynamoDB table '{table_name}'")
@@ -69,25 +47,3 @@ class DynamoDbKeyValueStore:
                                        ReturnConsumedCapacity='NONE')
         if 'Item' in result:
             return json.loads(result['Item']['Value']['S'])
-
-
-class MemoryKeyValueStore:
-
-    def __init__(self):
-        logging.debug("Using key store in memory (useful only for local tests)")
-        self.data = {}
-
-    def forget(self, key):
-        try:
-            del self.data[key]
-        except KeyError:
-            pass
-
-    def remember(self, key, value):
-        self.data[key] = value
-
-    def retrieve(self, key):
-        return self.data.get(key)
-
-
-datastore = KeyValueStore.get_instance()

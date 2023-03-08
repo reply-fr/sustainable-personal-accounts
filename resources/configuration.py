@@ -43,6 +43,7 @@ class Configuration:
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
         features_with_tag_prefix='str',
+        metering_shadows_datastore='str',
         metering_transactions_datastore='str',
         metering_transactions_timeout_in_seconds='int',
         organizational_units='list',
@@ -121,7 +122,8 @@ class Configuration:
         toggles.features_with_email_subscriptions_on_alerts = []
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_tag_prefix = 'account-'
-        toggles.metering_transactions_datastore = 'dynamodb://SpaMetering'
+        toggles.metering_shadows_datastore = 'SpaShadowsTable'
+        toggles.metering_transactions_datastore = 'SpaTransactionsTable'
         toggles.metering_transactions_timeout_in_seconds = 900
 
         for key in sorted(toggles.__dict__.keys()):

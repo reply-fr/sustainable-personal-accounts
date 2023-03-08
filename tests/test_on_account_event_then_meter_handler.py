@@ -20,20 +20,24 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
+from moto import mock_dynamodb
 import os
-os.environ["METERING_TRANSACTIONS_DATASTORE"] = "memory:"
 import pytest
 
 from code import Events
 from code.on_account_event_then_meter_handler import handle_account_event
 
+from tests.fixture_key_value_store import create_my_table
 pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
+@mock_dynamodb
 def test_handle_account_event_for_maintenance_transaction():
+    create_my_table()
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulMaintenanceEvent'
@@ -55,8 +59,11 @@ def test_handle_account_event_for_maintenance_transaction():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
+@mock_dynamodb
 def test_handle_account_event_for_on_boarding_transaction():
+    create_my_table()
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulOnBoardingEvent'

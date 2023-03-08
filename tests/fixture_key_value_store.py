@@ -15,22 +15,12 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from constructs import Construct
-from aws_cdk import RemovalPolicy
-from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table
+import boto3
 
 
-class Metering(Construct):
-
-    def __init__(self, scope: Construct, id: str, writers=[]) -> None:
-        super().__init__(scope, id)
-
-        table = Table(
-            self, "MeteringTable",
-            table_name=toggles.metering_transactions_datastore,
-            partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
-            billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=RemovalPolicy.DESTROY)
-
-        for writer in writers:
-            table.grant_read_write_data(grantee=writer)
+def create_my_table():
+    boto3.client('dynamodb').create_table(TableName='my_table',
+                                          KeySchema=[dict(AttributeName='Identifier', KeyType='HASH')],
+                                          AttributeDefinitions=[dict(AttributeName='Identifier', AttributeType='S')],
+                                          BillingMode='PAY_PER_REQUEST')
+    boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')

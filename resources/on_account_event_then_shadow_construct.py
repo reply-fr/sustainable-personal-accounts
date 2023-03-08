@@ -25,30 +25,30 @@ from aws_cdk.aws_lambda import Function
 from code import Events
 
 
-class OnAccountEventThenMeter(Construct):
+class OnAccountEventThenShadow(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
         self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
-        transactions = Table(
-            self, "TransactionsTable",
-            table_name=toggles.metering_transactions_datastore,
+        shadows = Table(
+            self, "ShadowsTable",
+            table_name=toggles.metering_shadows_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY)
 
         for function in self.functions:
-            transactions.grant_read_write_data(grantee=function)
+            shadows.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters, permissions) -> Function:
 
-        parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
+        parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
 
         function = Function(self, "FromEvent",
-                            function_name="{}OnAccountEventsThenMeter".format(toggles.environment_identifier),
-                            description="Turn events to transactions",
-                            handler="on_account_event_then_meter_handler.handle_account_event",
+                            function_name="{}OnAccountEventsThenShadow".format(toggles.environment_identifier),
+                            description="Persist last event for each account",
+                            handler="on_account_event_then_shadow_handler.handle_account_event",
                             **parameters)
 
         for permission in permissions:

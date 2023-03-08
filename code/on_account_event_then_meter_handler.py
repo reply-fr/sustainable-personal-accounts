@@ -25,21 +25,21 @@ setup_logging()
 
 from events import Events
 from key_value_store import KeyValueStore
-transactions = KeyValueStore.get_instance(path=os.environ.get('METERING_TRANSACTIONS_DATASTORE', 'dynamodb://SpaTransactionsTable'))
 
 
 @trap_exception
 def handle_account_event(event, context=None, emit=None):
     input = Events.decode_account_event(event)
+    transactions = KeyValueStore(table_name=os.environ.get('METERING_TRANSACTIONS_DATASTORE', 'SpaTransactionsTable'))
 
     if input.label == 'CreatedAccount':
-        handle_created_event(input)
+        handle_created_event(input, transactions=transactions)
 
     elif input.label == 'ExpiredAccount':
-        handle_expired_event(input)
+        handle_expired_event(input, transactions=transactions)
 
     elif input.label == 'ReleasedAccount':
-        handle_released_event(input, emit)
+        handle_released_event(input, transactions=transactions, emit=emit)
 
     else:
         raise ValueError(f"Do not know how to handle event '{input.label}'")
@@ -47,7 +47,7 @@ def handle_account_event(event, context=None, emit=None):
     return f"[OK] {input.label} {input.account}"
 
 
-def handle_created_event(input):
+def handle_created_event(input, transactions):
     key = f"OnBoarding {input.account}"
     logging.info(f"Beginning transaction '{key}'")
     transaction = {'account': input.account,
@@ -56,7 +56,7 @@ def handle_created_event(input):
     transactions.remember(key, value=transaction)
 
 
-def handle_expired_event(input):
+def handle_expired_event(input, transactions):
     key = f"Maintenance {input.account}"
     logging.info(f"Beginning transaction '{key}'")
     transaction = {'account': input.account,
@@ -65,12 +65,12 @@ def handle_expired_event(input):
     transactions.remember(key, value=transaction)
 
 
-def handle_released_event(input, emit=None):
-    update_maintenance_transaction(input, emit)
-    update_onboarding_transaction(input, emit)
+def handle_released_event(input, transactions, emit=None):
+    update_maintenance_transaction(input, transactions=transactions, emit=emit)
+    update_onboarding_transaction(input, transactions=transactions, emit=emit)
 
 
-def update_maintenance_transaction(input, emit=None):
+def update_maintenance_transaction(input, transactions, emit=None):
     key = f"Maintenance {input.account}"
     transaction = transactions.retrieve(key)
     if transaction:
@@ -84,7 +84,7 @@ def update_maintenance_transaction(input, emit=None):
              payload=transaction)
 
 
-def update_onboarding_transaction(input, emit=None):
+def update_onboarding_transaction(input, transactions, emit=None):
     key = f"OnBoarding {input.account}"
     transaction = transactions.retrieve(key)
     if transaction:

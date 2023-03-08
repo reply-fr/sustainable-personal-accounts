@@ -45,11 +45,16 @@ metering:
   # this is the engine to be used for storage of on-going transactions
   # - DynamoDB: 'dynamodb://<table-name>'
   #
-  transactions_datastore: 'dynamodb://SpaTransactionsTable'
+  transactions_datastore: 'SpaTransactionsTable'
 
   # this is the maximum duration of on-going transactions, used as TTL for the datastore
   #
   transactions_timeout_in_seconds: 900
+
+  # this is the engine to be used for storage of shadows
+  # - DynamoDB: 'dynamodb://<table-name>'
+  #
+  shadows_datastore: 'SpaShadowsTable'
 
 
 # parameters for resources deployed in managed accounts
