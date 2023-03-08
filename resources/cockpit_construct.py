@@ -40,6 +40,11 @@ class Cockpit(Construct):
             self.get_text_label_widget())
 
         self.cockpit.add_widgets(
+            self.get_maintenance_transactions_by_account_widget(),
+            self.get_onboarding_transactions_by_account_widget(),
+            self.get_transactions_by_label_widget())
+
+        self.cockpit.add_widgets(
             self.get_events_by_state_widget(),
             self.get_events_by_account_widget())
 
@@ -60,6 +65,42 @@ class Cockpit(Construct):
         environment = environment or toggles.environment_identifier
         metric = metric or f"AccountEventBy{by}"
         return self.SEARCH_TEMPLATE.replace('___by___', by).replace('___environment___', environment).replace('___metric___', metric)
+
+    def get_maintenance_transactions_by_account_widget(self):
+        return GraphWidget(
+            title="Maintenance transactions",
+            left=[MathExpression(
+                label='account',
+                expression=self.get_search_expression(by='Account', metric='AccountMaintenanceTransactionByAccount'),
+                period=Duration.minutes(1),
+                using_metrics={})],
+            stacked=True,
+            height=6,
+            width=9)
+
+    def get_onboarding_transactions_by_account_widget(self):
+        return GraphWidget(
+            title="On-boarding transactions",
+            left=[MathExpression(
+                label='account',
+                expression=self.get_search_expression(by='Account', metric='AccountOnBoardingTransactionByAccount'),
+                period=Duration.minutes(1),
+                using_metrics={})],
+            stacked=True,
+            height=6,
+            width=9)
+
+    def get_transactions_by_label_widget(self):
+        return GraphWidget(
+            title="Transactions by label",
+            left=[MathExpression(
+                label='transaction',
+                expression=self.get_search_expression(by='Label', metric='AccountTransactionByLabel'),
+                period=Duration.minutes(1),
+                using_metrics={})],
+            stacked=True,
+            height=6,
+            width=6)
 
     def get_events_by_account_widget(self):
         return GraphWidget(
@@ -85,6 +126,12 @@ class Cockpit(Construct):
             height=6,
             width=12)
 
+    def get_lambda_invocations_widget(self, functions):
+        return GraphWidget(title="Lambda Invocations",
+                           width=8,
+                           stacked=True,
+                           left=[x.metric_invocations() for x in functions])
+
     def get_lambda_durations_widget(self, functions):
         return GraphWidget(title="Lambda Durations",
                            width=8,
@@ -97,8 +144,3 @@ class Cockpit(Construct):
                            stacked=True,
                            left=[x.metric_errors() for x in functions])
 
-    def get_lambda_invocations_widget(self, functions):
-        return GraphWidget(title="Lambda Invocations",
-                           width=8,
-                           stacked=True,
-                           left=[x.metric_invocations() for x in functions])

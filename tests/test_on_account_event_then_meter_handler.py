@@ -20,7 +20,7 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
-from moto import mock_dynamodb
+from moto import mock_cloudwatch, mock_dynamodb
 import os
 import pytest
 
@@ -35,6 +35,7 @@ pytestmark = pytest.mark.wip
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
+@mock_cloudwatch
 @mock_dynamodb
 def test_handle_account_event_for_maintenance_transaction():
     create_my_table()
@@ -61,6 +62,7 @@ def test_handle_account_event_for_maintenance_transaction():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
+@mock_cloudwatch
 @mock_dynamodb
 def test_handle_account_event_for_on_boarding_transaction():
     create_my_table()

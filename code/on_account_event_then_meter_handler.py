@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from boto3.session import Session
 import logging
 import os
 from time import time
@@ -82,6 +83,12 @@ def update_maintenance_transaction(input, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulMaintenanceEvent',
              payload=transaction)
+        put_metric_data(name='AccountMaintenanceTransactionByAccount',
+                        dimensions=[dict(Name='Account', Value=input.account),
+                                    dict(Name='Environment', Value=Events.get_environment())])
+        put_metric_data(name='AccountTransactionByLabel',
+                        dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
+                                    dict(Name='Environment', Value=Events.get_environment())])
 
 
 def update_onboarding_transaction(input, transactions, emit=None):
@@ -96,3 +103,20 @@ def update_onboarding_transaction(input, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulOnBoardingEvent',
              payload=transaction)
+        put_metric_data(name='AccountOnBoardingTransactionByAccount',
+                        dimensions=[dict(Name='Account', Value=input.account),
+                                    dict(Name='Environment', Value=Events.get_environment())])
+        put_metric_data(name='AccountTransactionByLabel',
+                        dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
+                                    dict(Name='Environment', Value=Events.get_environment())])
+
+
+def put_metric_data(name, dimensions, session=None):
+    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
+    session = session or Session()
+    session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
+                                                                  Dimensions=dimensions,
+                                                                  Unit='Count',
+                                                                  Value=1)],
+                                                 Namespace="SustainablePersonalAccount")
+    logging.debug("Done")
