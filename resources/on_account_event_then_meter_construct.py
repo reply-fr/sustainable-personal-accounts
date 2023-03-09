@@ -45,6 +45,7 @@ class OnAccountEventThenMeter(Construct):
     def on_event(self, parameters, permissions) -> Function:
 
         parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
+        parameters['environment']['METERING_TRANSACTIONS_TTL'] = str(toggles.metering_transactions_ttl_in_seconds)
 
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenMeter".format(toggles.environment_identifier),

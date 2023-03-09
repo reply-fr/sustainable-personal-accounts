@@ -45,6 +45,7 @@ class OnRecord(Construct):
     def on_event(self, parameters, permissions) -> Function:
 
         parameters['environment']['METERING_RECORDS_DATASTORE'] = toggles.metering_records_datastore
+        parameters['environment']['METERING_RECORDS_TTL'] = str(toggles.metering_records_ttl_in_seconds)
 
         function = Function(self, "FromEvent",
                             function_name="{}OnRecord".format(toggles.environment_identifier),

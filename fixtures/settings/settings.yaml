@@ -45,14 +45,20 @@ metering:
   # this is the table for storage of records
   records_datastore: 'SpaRecordsTable'
 
+  # this is the maximum life for records, used as TTL for the datastore
+  records_ttl_in_seconds: 31622400
+
   # this is the table for storage of shadows
   shadows_datastore: 'SpaShadowsTable'
+
+  # this is the maximum life for shadows, used as TTL for the datastore
+  shadows_ttl_in_seconds: 15811200
 
   # this is the table for storage of on-going transactions
   transactions_datastore: 'SpaTransactionsTable'
 
   # this is the maximum duration of on-going transactions, used as TTL for the datastore
-  transactions_timeout_in_seconds: 900
+  transactions_ttl_in_seconds: 900
 
 
 # parameters for resources deployed in managed accounts

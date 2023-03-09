@@ -45,6 +45,7 @@ class OnAccountEventThenShadow(Construct):
     def on_event(self, parameters, permissions) -> Function:
 
         parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
+        parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
 
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenShadow".format(toggles.environment_identifier),

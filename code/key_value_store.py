@@ -27,7 +27,7 @@ class KeyValueStore:
         logging.debug(f"Using key-value store on DynamoDB table '{table_name}'")
         self.handler = boto3.client('dynamodb')
         self.table_name = table_name
-        self.ttl = ttl or (365 * 24 * 60 * 60)  # default is one year TTL
+        self.ttl = ttl or (366 * 24 * 60 * 60)  # default is one year TTL
 
     def forget(self, key):
         logging.debug(f'Deleting record {key} from key-value store')

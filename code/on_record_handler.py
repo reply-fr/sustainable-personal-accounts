@@ -32,6 +32,6 @@ def handle_record(event, context=None, emit=None):
     logging.info(f"Remembering {input.label}")
     logging.debug(input.__dict__)
     records = KeyValueStore(table_name=os.environ.get('METERING_RECORDS_DATASTORE', 'SpaMeteringTable'),
-                            ttl=os.environ.get('METERING_SHADOWS_TTL', str(365 * 24 * 60 * 60)))
+                            ttl=os.environ.get('METERING_RECORDS_TTL', str(366 * 24 * 60 * 60)))
     records.remember(key=datetime.utcnow().isoformat(), value=input.__dict__)
     return f"[OK] {input.label}"

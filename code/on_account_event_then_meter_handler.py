@@ -44,7 +44,7 @@ def handle_account_event(event, context=None, emit=None):
         handle_released_event(input, transactions=transactions, emit=emit)
 
     else:
-        raise ValueError(f"Do not know how to handle event '{input.label}'")
+        logging.info(f"Do not meter event '{input.label}'")
 
     return f"[OK] {input.label} {input.account}"
 
