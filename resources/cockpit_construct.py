@@ -40,9 +40,9 @@ class Cockpit(Construct):
             self.get_text_label_widget())
 
         self.cockpit.add_widgets(
+            self.get_transactions_by_label_widget(),
             self.get_maintenance_transactions_by_account_widget(),
-            self.get_onboarding_transactions_by_account_widget(),
-            self.get_transactions_by_label_widget())
+            self.get_onboarding_transactions_by_account_widget())
 
         self.cockpit.add_widgets(
             self.get_events_by_state_widget(),

@@ -36,7 +36,8 @@ class OnAccountEventThenMeter(Construct):
             table_name=toggles.metering_transactions_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
-            removal_policy=RemovalPolicy.DESTROY)
+            removal_policy=RemovalPolicy.DESTROY,
+            time_to_live_attribute="Expiration")
 
         for function in self.functions:
             transactions.grant_read_write_data(grantee=function)

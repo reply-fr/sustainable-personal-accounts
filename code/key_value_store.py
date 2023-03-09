@@ -18,14 +18,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import boto3
 import json
 import logging
+from time import time
 
 
 class KeyValueStore:
 
-    def __init__(self, table_name):
+    def __init__(self, table_name, ttl=0):
         logging.debug(f"Using key-value store on DynamoDB table '{table_name}'")
         self.handler = boto3.client('dynamodb')
         self.table_name = table_name
+        self.ttl = ttl or (365 * 24 * 60 * 60)  # default is one year TTL
 
     def forget(self, key):
         logging.debug(f'Deleting record {key} from key-value store')
@@ -37,7 +39,9 @@ class KeyValueStore:
     def remember(self, key, value):
         logging.debug(f'Remembering record {key} in key-value store')
         self.handler.put_item(TableName=self.table_name,
-                              Item={'Identifier': dict(S=key), 'Value': dict(S=json.dumps(value))},
+                              Item={'Identifier': dict(S=key),
+                                    'Value': dict(S=json.dumps(value)),
+                                    'Expiration': dict(N=str(int(time()) + int(self.ttl)))},
                               ReturnValues='NONE')
 
     def retrieve(self, key):

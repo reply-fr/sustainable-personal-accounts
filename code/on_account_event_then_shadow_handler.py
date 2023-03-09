@@ -32,7 +32,8 @@ from key_value_store import KeyValueStore
 def handle_account_event(event, context=None, emit=None):
     input = Events.decode_account_event(event)
     logging.info(f"Remembering {input.label} for {input.account}")
-    shadows = KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'))
+    shadows = KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'),
+                            ttl=os.environ.get('METERING_SHADOWS_TTL', str(181 * 24 * 60 * 60)))
     shadow = shadows.retrieve(key=str(input.account)) or {}
     try:
         shadow.update(Account.describe(input.account).__dict__)

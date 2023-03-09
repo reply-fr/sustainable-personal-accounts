@@ -31,7 +31,8 @@ from key_value_store import KeyValueStore
 @trap_exception
 def handle_account_event(event, context=None, emit=None):
     input = Events.decode_account_event(event)
-    transactions = KeyValueStore(table_name=os.environ.get('METERING_TRANSACTIONS_DATASTORE', 'SpaTransactionsTable'))
+    transactions = KeyValueStore(table_name=os.environ.get('METERING_TRANSACTIONS_DATASTORE', 'SpaTransactionsTable'),
+                                 ttl=os.environ.get('METERING_TRANSACTIONS_TTL', str(30 * 60)))
 
     if input.label == 'CreatedAccount':
         handle_created_event(input, transactions=transactions)
