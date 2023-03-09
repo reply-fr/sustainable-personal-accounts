@@ -47,7 +47,7 @@ class ToMicrosoftTeams(Construct):
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
-                 detail_type=["MessageToMicrosoftteams"]),
+                 detail_type=["MessageToMicrosoftTeams"]),
              targets=[LambdaFunction(function)])
 
         return function
