@@ -71,7 +71,7 @@ class Cockpit(Construct):
             title="Maintenance transactions",
             left=[MathExpression(
                 label='account',
-                expression=self.get_search_expression(by='Account', metric='AccountMaintenanceTransactionByAccount'),
+                expression=self.get_search_expression(by='Account', metric='MaintenanceTransactionByAccount'),
                 period=Duration.minutes(1),
                 using_metrics={})],
             stacked=True,
@@ -83,7 +83,7 @@ class Cockpit(Construct):
             title="On-boarding transactions",
             left=[MathExpression(
                 label='account',
-                expression=self.get_search_expression(by='Account', metric='AccountOnBoardingTransactionByAccount'),
+                expression=self.get_search_expression(by='Account', metric='OnBoardingTransactionByAccount'),
                 period=Duration.minutes(1),
                 using_metrics={})],
             stacked=True,
@@ -95,7 +95,7 @@ class Cockpit(Construct):
             title="Transactions by label",
             left=[MathExpression(
                 label='transaction',
-                expression=self.get_search_expression(by='Label', metric='AccountTransactionByLabel'),
+                expression=self.get_search_expression(by='Label', metric='TransactionByLabel'),
                 period=Duration.minutes(1),
                 using_metrics={})],
             stacked=True,
@@ -143,4 +143,3 @@ class Cockpit(Construct):
                            width=8,
                            stacked=True,
                            left=[x.metric_errors() for x in functions])
-

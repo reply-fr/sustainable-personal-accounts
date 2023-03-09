@@ -83,10 +83,10 @@ def update_maintenance_transaction(input, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulMaintenanceEvent',
              payload=transaction)
-        put_metric_data(name='AccountMaintenanceTransactionByAccount',
+        put_metric_data(name='MaintenanceTransactionByAccount',
                         dimensions=[dict(Name='Account', Value=input.account),
                                     dict(Name='Environment', Value=Events.get_environment())])
-        put_metric_data(name='AccountTransactionByLabel',
+        put_metric_data(name='TransactionByLabel',
                         dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
 
@@ -103,10 +103,10 @@ def update_onboarding_transaction(input, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulOnBoardingEvent',
              payload=transaction)
-        put_metric_data(name='AccountOnBoardingTransactionByAccount',
+        put_metric_data(name='OnBoardingTransactionByAccount',
                         dimensions=[dict(Name='Account', Value=input.account),
                                     dict(Name='Environment', Value=Events.get_environment())])
-        put_metric_data(name='AccountTransactionByLabel',
+        put_metric_data(name='TransactionByLabel',
                         dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
 
