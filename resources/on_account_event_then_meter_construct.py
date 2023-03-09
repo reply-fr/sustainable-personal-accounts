@@ -17,10 +17,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from constructs import Construct
 from aws_cdk import RemovalPolicy
-from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table
+from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table, StreamViewType
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_lambda import Function, StartingPosition
+from aws_cdk.aws_lambda_event_sources import DynamoEventSource
 
 from code import Events
 
@@ -29,7 +30,6 @@ class OnAccountEventThenMeter(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
 
         transactions = Table(
             self, "TransactionsTable",
@@ -37,15 +37,18 @@ class OnAccountEventThenMeter(Construct):
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,
+            stream=StreamViewType.NEW_AND_OLD_IMAGES,
             time_to_live_attribute="Expiration")
+
+        parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
+        parameters['environment']['METERING_TRANSACTIONS_TTL'] = str(toggles.metering_transactions_ttl_in_seconds)
+        self.functions = [self.on_event(parameters=parameters, permissions=permissions),
+                          self.on_stream(parameters=parameters, permissions=permissions, table=transactions)]
 
         for function in self.functions:
             transactions.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters, permissions) -> Function:
-
-        parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
-        parameters['environment']['METERING_TRANSACTIONS_TTL'] = str(toggles.metering_transactions_ttl_in_seconds)
 
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenMeter".format(toggles.environment_identifier),
@@ -63,5 +66,23 @@ class OnAccountEventThenMeter(Construct):
                  detail={"Environment": [toggles.environment_identifier]},
                  detail_type=Events.ACCOUNT_EVENT_LABELS),
              targets=[LambdaFunction(function)])
+
+        return function
+
+    def on_stream(self, parameters, permissions, table) -> Function:
+
+        function = Function(self, "FromStream",
+                            function_name="{}OnMeteringStream".format(toggles.environment_identifier),
+                            description="Process metering stream",
+                            handler="on_account_event_then_meter_handler.handle_stream_event",
+                            **parameters)
+
+        for permission in permissions:
+            function.add_to_role_policy(permission)
+
+        function.add_event_source(DynamoEventSource(  # stream items that have expired
+            table,
+            # filters=[{ "userIdentity": { "type": [ "Service" ] ,"principalId": ["dynamodb.amazonaws.com"] }}],
+            starting_position=StartingPosition.TRIM_HORIZON))
 
         return function

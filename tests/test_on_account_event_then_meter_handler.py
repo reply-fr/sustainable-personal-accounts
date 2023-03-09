@@ -20,12 +20,12 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
-from moto import mock_cloudwatch, mock_dynamodb
+from moto import mock_cloudwatch, mock_dynamodb, mock_events
 import os
 import pytest
 
 from code import Events
-from code.on_account_event_then_meter_handler import handle_account_event
+from code.on_account_event_then_meter_handler import handle_account_event, handle_stream_event
 
 from tests.fixture_key_value_store import create_my_table
 pytestmark = pytest.mark.wip
@@ -42,7 +42,7 @@ def test_handle_account_event_for_maintenance_transaction():
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulMaintenanceEvent'
-        assert set(payload.keys()) == {'account', 'identifier', 'begin', 'end', 'duration'}
+        assert set(payload.keys()) == {'transaction', 'account', 'identifier', 'begin', 'end', 'duration'}
         assert payload['account'] == "123456789012"
         assert payload['duration'] > 0.0
 
@@ -69,7 +69,7 @@ def test_handle_account_event_for_on_boarding_transaction():
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulOnBoardingEvent'
-        assert set(payload.keys()) == {'account', 'identifier', 'begin', 'end', 'duration'}
+        assert set(payload.keys()) == {'transaction', 'account', 'identifier', 'begin', 'end', 'duration'}
         assert payload['account'] == "123456789012"
         assert payload['duration'] > 0.0
 
@@ -87,13 +87,20 @@ def test_handle_account_event_for_on_boarding_transaction():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='INFO'))
-def test_handle_account_event_on_unexpected_event():
-    event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
-                                            context=dict(account="123456789012",
-                                                         label="PreparedAccount",
-                                                         environment="envt1"))
-    assert handle_account_event(event=event) == "[DEBUG] Do not know how to handle event 'PreparedAccount'"
+@mock_cloudwatch
+@mock_dynamodb
+@mock_events
+def test_handle_account_event():
+    create_my_table()
+
+    for label in Events.ACCOUNT_EVENT_LABELS:
+        event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
+                                                context=dict(account="123456789012",
+                                                             label=label,
+                                                             environment="envt1"))
+        assert handle_account_event(event=event) == f"[OK] {label} 123456789012"
 
 
 @pytest.mark.unit_tests
@@ -105,3 +112,13 @@ def test_handle_account_event_on_unexpected_environment():
                                                          label="CreatedAccount",
                                                          environment="alien*environment"))
     assert handle_account_event(event=event) == "[DEBUG] Unexpected environment 'alien*environment'"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+@mock_events
+def test_handle_stream_event_on_expired_transaction():
+    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json",
+                                            context={})
+    assert handle_stream_event(event=event) == "[OK]"

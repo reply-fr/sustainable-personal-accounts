@@ -53,6 +53,7 @@ class Events:
     EVENT_LABELS = ACCOUNT_EVENT_LABELS + SPA_EVENT_LABELS
 
     RECORD_EVENT_LABELS = [
+        'FailedEvent',
         'FailedMaintenanceEvent',
         'FailedOnBoardingEvent',
         'SuccessfulMaintenanceEvent',

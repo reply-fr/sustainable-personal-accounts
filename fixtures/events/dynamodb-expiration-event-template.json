@@ -1,0 +1,17 @@
+{"Records": [
+    {"eventID": "723ce3d6f17c65c0b3863f47de3b6422",
+     "eventName": "REMOVE",
+     "eventVersion": "1.1",
+     "eventSource": "aws:dynamodb",
+     "awsRegion": "eu-west-1",
+     "dynamodb": {"ApproximateCreationDateTime": 1678370040.0,
+                  "Keys": {"Identifier": {"S": "alpha_omega"}},
+                  "OldImage": {"Identifier": {"S": "alpha_omega"},
+                               "Expiration": {"N": "1678369322"},
+                               "Value": {"S": "{\"transaction\": \"on-boarding\", \"account\": \"123456789012\", \"begin\": 1678383279.8409889, \"identifier\": \"f43f491e-ea7d-4585-aa23-798ef1fdef5c\"}"}},
+                  "SequenceNumber": "2694600200100032900715823",
+                  "SizeBytes": 74,
+                  "StreamViewType": "NEW_AND_OLD_IMAGES"},
+     "userIdentity": {"principalId": "dynamodb.amazonaws.com", "type": "Service"},
+     "eventSourceARN": "arn:aws:dynamodb:eu-west-1:123456789012:table/SpaTransactionsTable/stream/2023-03-09T13:37:50.242"}
+]}

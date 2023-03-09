@@ -16,6 +16,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from boto3.session import Session
+import json
 import logging
 import os
 from time import time
@@ -52,7 +53,8 @@ def handle_account_event(event, context=None, emit=None):
 def handle_created_event(input, transactions):
     key = f"OnBoarding {input.account}"
     logging.info(f"Beginning transaction '{key}'")
-    transaction = {'account': input.account,
+    transaction = {'transaction': 'on-boarding',
+                   'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
@@ -62,7 +64,8 @@ def handle_created_event(input, transactions):
 def handle_expired_event(input, transactions):
     key = f"Maintenance {input.account}"
     logging.info(f"Beginning transaction '{key}'")
-    transaction = {'account': input.account,
+    transaction = {'transaction': 'maintenance',
+                   'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
@@ -123,3 +126,37 @@ def put_metric_data(name, dimensions, session=None):
                                                                   Value=1)],
                                                  Namespace="SustainablePersonalAccount")
     logging.debug("Done")
+
+
+@trap_exception
+def handle_stream_event(event, context=None, emit=None):
+
+    for item in event["Records"]:
+        logging.debug(item)
+        if item.get("eventName") != "REMOVE":
+            continue
+        if item.get("eventSource") != "aws:dynamodb":
+            continue
+        if item.get("userIdentity") != {"principalId": "dynamodb.amazonaws.com", "type": "Service"}:
+            continue
+
+        try:
+            payload = json.loads(item["dynamodb"]["OldImage"]["Value"]["S"])
+        except KeyError:
+            logging.error(f"Unable to recognize expired transaction {item}")
+
+        handle_stream_record(record=payload, emit=emit)
+
+    return "[OK]"
+
+
+def handle_stream_record(record, emit=None):
+
+    event_labels = {
+        'on-boarding': 'FailedOnBoardingEvent',
+        'maintenance': 'FailedMaintenanceEvent',
+    }
+    label = event_labels.get(record['transaction'], 'FailedEvent')
+
+    emit = emit or Events.emit_spa_event
+    emit(label=label, payload=record)
