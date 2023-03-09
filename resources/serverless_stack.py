@@ -32,6 +32,7 @@ from .on_expired_account_construct import OnExpiredAccount
 from .on_maintenance_window_construct import OnMaintenanceWindow
 from .on_prepared_account_construct import OnPreparedAccount
 from .on_purged_account_construct import OnPurgedAccount
+from .on_record_construct import OnRecord
 from .on_released_account_construct import OnReleasedAccount
 from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
@@ -59,6 +60,7 @@ class ServerlessStack(Stack):
             'OnMaintenanceWindow',
             'OnPreparedAccount',
             'OnPurgedAccount',
+            'OnRecord',
             'OnReleasedAccount',
             'OnVanillaAccount',
             'ReleaseAccounts',
