@@ -35,6 +35,7 @@ class OnAccountEventThenMeter(Construct):
             self, "TransactionsTable",
             table_name=toggles.metering_transactions_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
+            sort_key={'name': 'Order', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,
             stream=StreamViewType.NEW_AND_OLD_IMAGES,

@@ -35,6 +35,7 @@ class OnAccountEventThenShadow(Construct):
             self, "ShadowsTable",
             table_name=toggles.metering_shadows_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
+            sort_key={'name': 'Order', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
             removal_policy=RemovalPolicy.DESTROY,
             time_to_live_attribute="Expiration")

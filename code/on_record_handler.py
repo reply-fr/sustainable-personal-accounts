@@ -27,11 +27,13 @@ from key_value_store import KeyValueStore
 
 
 @trap_exception
-def handle_record(event, context=None, emit=None):
+def handle_record(event, context=None):
+    logging.debug(event)
     input = Events.decode_spa_event(event)
     logging.info(f"Remembering {input.label}")
     logging.debug(input.__dict__)
     records = KeyValueStore(table_name=os.environ.get('METERING_RECORDS_DATASTORE', 'SpaMeteringTable'),
                             ttl=os.environ.get('METERING_RECORDS_TTL', str(366 * 24 * 60 * 60)))
-    records.remember(key=datetime.utcnow().isoformat(), value=input.__dict__)
+    stamp = datetime.utcnow().isoformat()
+    records.remember(key=stamp[:10], order=stamp[11:], value=input.__dict__)
     return f"[OK] {input.label}"

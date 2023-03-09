@@ -29,25 +29,26 @@ class KeyValueStore:
         self.table_name = table_name
         self.ttl = ttl or (366 * 24 * 60 * 60)  # default is one year TTL
 
-    def forget(self, key):
+    def forget(self, key, order='-'):
         logging.debug(f'Deleting record {key} from key-value store')
         self.handler.delete_item(TableName=self.table_name,
-                                 Key={'Identifier': dict(S=key)},
+                                 Key={'Identifier': dict(S=key), 'Order': dict(S=order)},
                                  ReturnConsumedCapacity='NONE',
                                  ReturnValues='NONE')
 
-    def remember(self, key, value):
+    def remember(self, key, value, order='-'):
         logging.debug(f'Remembering record {key} in key-value store')
         self.handler.put_item(TableName=self.table_name,
                               Item={'Identifier': dict(S=key),
+                                    'Order': dict(S=order),
                                     'Value': dict(S=json.dumps(value)),
                                     'Expiration': dict(N=str(int(time()) + int(self.ttl)))},
                               ReturnValues='NONE')
 
-    def retrieve(self, key):
+    def retrieve(self, key, order='-'):
         logging.debug(f'Retrieving record {key} from key-value store')
         result = self.handler.get_item(TableName=self.table_name,
-                                       Key={'Identifier': dict(S=key)},
+                                       Key={'Identifier': dict(S=key), 'Order': dict(S=order)},
                                        ReturnConsumedCapacity='NONE')
         if 'Item' in result:
             return json.loads(result['Item']['Value']['S'])
