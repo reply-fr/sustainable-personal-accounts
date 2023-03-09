@@ -44,7 +44,7 @@ def handle_account_event(event, context=None, emit=None):
         handle_released_event(input, transactions=transactions, emit=emit)
 
     else:
-        logging.info(f"Do not meter event '{input.label}'")
+        logging.debug(f"Do not meter event '{input.label}'")
 
     return f"[OK] {input.label} {input.account}"
 
@@ -55,6 +55,7 @@ def handle_created_event(input, transactions):
     transaction = {'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
+    logging.debug(transaction)
     transactions.remember(key, value=transaction)
 
 
@@ -64,6 +65,7 @@ def handle_expired_event(input, transactions):
     transaction = {'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
+    logging.debug(transaction)
     transactions.remember(key, value=transaction)
 
 
