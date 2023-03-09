@@ -15,13 +15,15 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import botocore
 import logging
 import os
-from time import time
+from datetime import datetime
 
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from account import Account
 from events import Events
 from key_value_store import KeyValueStore
 
@@ -32,6 +34,10 @@ def handle_account_event(event, context=None, emit=None):
     logging.info(f"Remembering {input.label} for {input.account}")
     shadows = KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'))
     shadow = shadows.retrieve(key=str(input.account)) or {}
+    try:
+        shadow.update(Account.describe(input.account).__dict__)
+    except botocore.exceptions.ClientError:
+        logging.warning(f"No information could be found for account {input.account}")
     if input.label == 'PreparationReport':
         shadow['last_preparation_log'] = input.message or "no log"
     elif input.label == 'PurgeReport':
@@ -39,7 +45,7 @@ def handle_account_event(event, context=None, emit=None):
     else:
         shadow['last_state'] = input.label
     stamps = shadow.get('stamps', {})
-    stamps[input.label] = time()
+    stamps[input.label] = datetime.utcnow().replace(microsecond=0).isoformat()
     shadow['stamps'] = stamps
     logging.debug(shadow)
     shadows.remember(key=str(input.account), value=shadow)

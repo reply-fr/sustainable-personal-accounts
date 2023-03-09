@@ -20,7 +20,7 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
-from moto import mock_dynamodb
+from moto import mock_dynamodb, mock_organizations
 import os
 import pytest
 
@@ -37,6 +37,7 @@ pytestmark = pytest.mark.wip
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
+@mock_organizations
 def test_handle_account_event():
     create_my_table()
 
