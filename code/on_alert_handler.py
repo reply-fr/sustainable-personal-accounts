@@ -54,39 +54,34 @@ def handle_codebuild_event(event, context, session=None):
     logging.info("Receiving failures from CodeBuild")
     logging.debug(event)
     input = Events.decode_codebuild_event(event)
-    label = get_account_label(account_id=input.account, session=session)
-    notification = dict(Message=get_codebuild_message(account=label, project=input.project, status=input.status),
-                        Subject=get_subject(account=label))
-    publish_notification(notification=notification, session=session)
+    Events.emit_spa_event(label='FailedCodebuildException',
+                          payload=input.__dict__,
+                          session=session)
     return '[OK]'
 
 
 @trap_exception
-def handle_queue_event(event, context, session=None):
-    logging.info("Receiving records from queue")
-    logging.debug(event)
+def handle_sqs_event(event, context, session=None):
+    logging.info("Receiving budget alerts from queue")
     for record in event['Records']:
-        handle_record(record, session=session)
+        handle_sqs_record(record, session=session)
     return '[OK]'
 
 
-def handle_record(record, session=None):
-    if record['eventSource'] == "aws:sqs":
-        handle_sqs_record(record, session=session)
-    else:
-        logging.info(record)
-        raise AttributeError("Unable to handle source '{}'".format(record['eventSource']))
-
-
 def handle_sqs_record(record, session=None):
-    logging.debug("Processing one record")
     logging.debug(record)
     try:
         body = json.loads(record['body'])
         account_id = body['TopicArn'].split(':')[4]
         relay_notification(message=body['Message'], account_id=account_id, session=session)
+        Events.emit_spa_event(label='BudgetAlertException',
+                              payload=dict(account=account_id, message=body['Message']),
+                              session=session)
     except json.decoder.JSONDecodeError:
         relay_message(message=record['body'], session=session)
+        Events.emit_spa_event(label='GenericException',
+                              payload=dict(message=record['body']),
+                              session=session)
 
 
 def relay_notification(account_id, message, session=None):

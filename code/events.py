@@ -27,6 +27,28 @@ from account import Account
 
 class Events:
 
+    CHAT_EVENT_LABELS = [
+        'MessageFromSlack',
+        'MessageToMicrosoftTeams',
+        'MessageToSlack',
+        'PinFromSlack',
+        'ReactionFromSlack',
+        'UpdateToSlack',
+        'UploadToSlack']
+
+    EXCEPTION_EVENT_LABELS = [
+        'GenericException',
+        'BudgetAlertException',
+        'FailedCodebuildException',
+        'FailedMaintenanceException',
+        'FailedOnBoardingException']
+
+    RECORD_EVENT_LABELS = [
+        'SuccessfulMaintenanceEvent',
+        'SuccessfulOnBoardingEvent']
+
+    SPA_EVENT_LABELS = CHAT_EVENT_LABELS + EXCEPTION_EVENT_LABELS + RECORD_EVENT_LABELS
+
     ACCOUNT_EVENT_LABELS = [
         'AssignedAccount',
         'CreatedAccount',
@@ -37,27 +59,7 @@ class Events:
         'PreparationReport',
         'PurgeReport']
 
-    SPA_EVENT_LABELS = [
-        'FailedMaintenanceEvent',
-        'FailedOnBoardingEvent',
-        'MessageFromSlack',
-        'MessageToMicrosoftTeams',
-        'MessageToSlack',
-        'PinFromSlack',
-        'ReactionFromSlack',
-        'SuccessfulMaintenanceEvent',
-        'SuccessfulOnBoardingEvent',
-        'UpdateToSlack',
-        'UploadToSlack']
-
     EVENT_LABELS = ACCOUNT_EVENT_LABELS + SPA_EVENT_LABELS
-
-    RECORD_EVENT_LABELS = [
-        'FailedEvent',
-        'FailedMaintenanceEvent',
-        'FailedOnBoardingEvent',
-        'SuccessfulMaintenanceEvent',
-        'SuccessfulOnBoardingEvent']
 
     DEFAULT_CONTENT_TYPE = 'application/json'
 

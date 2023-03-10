@@ -73,14 +73,14 @@ class OnAlert(Construct):
         self.queue.add_to_resource_policy(statement)
 
         parameters['environment']['TOPIC_ARN'] = self.topic.topic_arn
-        self.functions = [self.on_alert(parameters=parameters, permissions=permissions, queue=self.queue),
+        self.functions = [self.on_sqs(parameters=parameters, permissions=permissions, queue=self.queue),
                           self.on_codebuild(parameters=parameters, permissions=permissions)]
 
-    def on_alert(self, parameters, permissions, queue) -> Function:
+    def on_sqs(self, parameters, permissions, queue) -> Function:
         parameters['timeout'] = Duration.seconds(20)
         function = Function(
             self, "FromAlert",
-            function_name="{}OnAlert".format(toggles.environment_identifier),
+            function_name="{}OnAlertFromSqs".format(toggles.environment_identifier),
             description="Be notified on an alert",
             handler="on_alert_handler.handle_queue_event",
             **parameters)

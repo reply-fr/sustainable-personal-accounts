@@ -153,10 +153,10 @@ def handle_stream_event(event, context=None, emit=None):
 def handle_stream_record(record, emit=None):
 
     event_labels = {
-        'on-boarding': 'FailedOnBoardingEvent',
-        'maintenance': 'FailedMaintenanceEvent',
+        'on-boarding': 'FailedOnBoardingException',
+        'maintenance': 'FailedMaintenanceException',
     }
-    label = event_labels.get(record['transaction'], 'FailedEvent')
+    label = event_labels.get(record['transaction'], 'GenericException')
 
     emit = emit or Events.emit_spa_event
     emit(label=label, payload=record)
