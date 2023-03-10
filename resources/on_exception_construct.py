@@ -18,7 +18,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from constructs import Construct
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
+from aws_cdk.aws_iam import ManagedPolicy
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
 from code import Events
 
@@ -27,9 +29,16 @@ class OnException(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
+
+        self.plan = CfnResponsePlan(self, "ResponsePlan",
+                                    name="{}ResponsePlan".format(toggles.environment_identifier),
+                                    incident_template=dict(impact=5, title='default title'))
+
         self.functions = [self.on_exception(parameters=parameters, permissions=permissions)]
 
     def on_exception(self, parameters, permissions) -> Function:
+
+        parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
 
         function = Function(self, "FromEvent",
                             function_name="{}OnException".format(toggles.environment_identifier),
@@ -39,6 +48,8 @@ class OnException(Construct):
 
         for permission in permissions:
             function.add_to_role_policy(permission)
+
+        function.role.add_managed_policy(ManagedPolicy.from_aws_managed_policy_name('AWSIncidentManagerResolverAccess'))
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",

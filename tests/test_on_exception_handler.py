@@ -31,6 +31,7 @@ pytestmark = pytest.mark.wip
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             RESPONSE_PLAN_ARN="arn:plan",
                              VERBOSITY='DEBUG'))
 def test_handle_exception():
 

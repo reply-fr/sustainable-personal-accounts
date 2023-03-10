@@ -15,12 +15,12 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from boto3.session import Session
 import logging
+import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
-
-from boto3.session import Session
 
 from events import Events
 
@@ -29,13 +29,23 @@ from events import Events
 def handle_exception(event, context, session=None):
     logging.debug(event)
     input = Events.decode_spa_event(event)
-
+    start_incident(attributes=input.__dict__, session=session)
     put_metric_data(name='ExceptionsByLabel',
                     dimensions=[dict(Name='Label', Value=input.label),
                                 dict(Name='Environment', Value=Events.get_environment())],
                     session=session)
-
     return f"[OK] {input.label}"
+
+
+def start_incident(attributes, session=None):
+    logging.debug(f"Starting incident '{attributes}'")
+    session = session or Session()
+    incidents = session.client('ssm-incidents')
+    incidents.start_incident(
+        title=attributes.get('title') or attributes.get('label'),
+        impact=int(attributes.get('impact', 4)),
+        responsePlanArn=os.environ['RESPONSE_PLAN_ARN']
+    )
 
 
 def put_metric_data(name, dimensions, session=None):
