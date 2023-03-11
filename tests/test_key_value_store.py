@@ -21,7 +21,7 @@ import pytest
 
 from code import KeyValueStore
 
-from tests.fixture_key_value_store import create_my_table
+from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 pytestmark = pytest.mark.wip
 
 
@@ -92,3 +92,12 @@ def test_scan():
                                   {'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
                                   {'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
                                   {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]
+
+
+@pytest.mark.unit_tests
+@mock_dynamodb
+def test_scan_from_fixture():
+    create_my_table()
+    count = populate_shadows_table()
+    store = KeyValueStore(table_name='my_table')
+    assert len(list(store.scan())) == count

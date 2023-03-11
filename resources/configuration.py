@@ -50,6 +50,7 @@ class Configuration:
         metering_transactions_datastore='str',
         metering_transactions_ttl_in_seconds='int',
         organizational_units='list',
+        reporting_shadows_prefix='str',
         worker_preparation_buildspec_template_file='str',
         worker_purge_buildspec_template_file='str',
     )
@@ -131,6 +132,7 @@ class Configuration:
         toggles.metering_shadows_ttl_in_seconds = 183 * 24 * 60 * 60
         toggles.metering_transactions_datastore = 'SpaTransactionsTable'
         toggles.metering_transactions_ttl_in_seconds = 60 * 60
+        toggles.reporting_shadows_prefix = 'SpaReports/Shadows'
 
         for key in sorted(toggles.__dict__.keys()):
             value = toggles.__dict__.get(key)

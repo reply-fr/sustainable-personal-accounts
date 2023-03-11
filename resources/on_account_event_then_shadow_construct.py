@@ -18,7 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from constructs import Construct
 from aws_cdk import RemovalPolicy
 from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table
-from aws_cdk.aws_events import EventPattern, Rule
+from aws_cdk.aws_events import EventPattern, Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
@@ -29,7 +29,12 @@ class OnAccountEventThenShadow(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
+
+        parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
+        parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
+        parameters['environment']['REPORTING_SHADOWS_PREFIX'] = toggles.reporting_shadows_prefix
+        self.functions = [self.on_event(parameters=parameters, permissions=permissions),
+                          self.on_schedule(parameters=parameters, permissions=permissions)]
 
         shadows = Table(
             self, "ShadowsTable",
@@ -44,9 +49,6 @@ class OnAccountEventThenShadow(Construct):
             shadows.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters, permissions) -> Function:
-
-        parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
-        parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
 
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenShadow".format(toggles.environment_identifier),
@@ -63,6 +65,25 @@ class OnAccountEventThenShadow(Construct):
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
                  detail_type=Events.ACCOUNT_EVENT_LABELS),
+             targets=[LambdaFunction(function)])
+
+        return function
+
+    def on_schedule(self, parameters, permissions) -> Function:
+
+        function = Function(self, "FromSchedule",
+                            function_name="{}OnShadowReporting".format(toggles.environment_identifier),
+                            description="Report from current shadows",
+                            handler="on_account_event_then_shadow_handler.handle_reporting",
+                            **parameters)
+
+        for permission in permissions:
+            function.add_to_role_policy(permission)
+
+        Rule(self, "TriggerRule",
+             rule_name="{}-OnShadowReportingTriggerRule".format(toggles.environment_identifier),
+             description="Trigger periodic reporting on shadows",
+             schedule=Schedule.cron(week_day="SAT", hour="3", minute="23"),
              targets=[LambdaFunction(function)])
 
         return function

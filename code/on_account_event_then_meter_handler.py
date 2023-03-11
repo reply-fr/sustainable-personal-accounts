@@ -51,25 +51,25 @@ def handle_account_event(event, context=None, emit=None):
 
 
 def handle_created_event(input, transactions):
-    key = f"OnBoarding {input.account}"
-    logging.info(f"Beginning transaction '{key}'")
+    hash = f"OnBoarding {input.account}"
+    logging.info(f"Beginning transaction '{hash}'")
     transaction = {'transaction': 'on-boarding',
                    'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
-    transactions.remember(key, value=transaction)
+    transactions.remember(hash, value=transaction)
 
 
 def handle_expired_event(input, transactions):
-    key = f"Maintenance {input.account}"
-    logging.info(f"Beginning transaction '{key}'")
+    hash = f"Maintenance {input.account}"
+    logging.info(f"Beginning transaction '{hash}'")
     transaction = {'transaction': 'maintenance',
                    'account': input.account,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
-    transactions.remember(key, value=transaction)
+    transactions.remember(hash, value=transaction)
 
 
 def handle_released_event(input, transactions, emit=None):
@@ -78,11 +78,11 @@ def handle_released_event(input, transactions, emit=None):
 
 
 def update_maintenance_transaction(input, transactions, emit=None):
-    key = f"Maintenance {input.account}"
-    transaction = transactions.retrieve(key)
+    hash = f"Maintenance {input.account}"
+    transaction = transactions.retrieve(hash)
     if transaction:
-        logging.info(f"Ending transaction '{key}'")
-        transactions.forget(key)
+        logging.info(f"Ending transaction '{hash}'")
+        transactions.forget(hash)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
@@ -98,11 +98,11 @@ def update_maintenance_transaction(input, transactions, emit=None):
 
 
 def update_onboarding_transaction(input, transactions, emit=None):
-    key = f"OnBoarding {input.account}"
-    transaction = transactions.retrieve(key)
+    hash = f"OnBoarding {input.account}"
+    transaction = transactions.retrieve(hash)
     if transaction:
-        logging.info(f"Ending transaction '{key}'")
-        transactions.forget(key)
+        logging.info(f"Ending transaction '{hash}'")
+        transactions.forget(hash)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)

@@ -38,6 +38,7 @@ from .on_released_account_construct import OnReleasedAccount
 from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
 from .release_accounts_construct import ReleaseAccounts
+from .reports_construct import Reports
 from .reset_accounts_construct import ResetAccounts
 from .to_microsoft_teams_construct import ToMicrosoftTeams
 
@@ -46,6 +47,8 @@ class ServerlessStack(Stack):
 
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, env=toggles.aws_environment, **kwargs)
+
+        self.reports = Reports(self, "{}Reports-{}".format(toggles.environment_identifier, toggles.automation_region))
 
         Parameters(self, "Parameters")
 
@@ -69,7 +72,7 @@ class ServerlessStack(Stack):
             'ResetAccounts',
             'ToMicrosoftTeams']
 
-        monitored_functions = []
+        functions = []
         for label in labels:
 
             environment = self.get_environment().copy()
@@ -77,11 +80,14 @@ class ServerlessStack(Stack):
             permissions = self.get_permissions().copy()
 
             construct = globals()[label](self, label, parameters=parameters, permissions=permissions)
-            monitored_functions.extend(construct.functions)
+            functions.extend(construct.functions)
+
+        for function in functions:
+            self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
 
         Cockpit(self,
                 "{}Cockpit-{}".format(toggles.environment_identifier, toggles.automation_region),
-                functions=monitored_functions)
+                functions=functions)
 
         for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
             Tags.of(self).add(key, toggles.automation_tags[key])
@@ -96,6 +102,7 @@ class ServerlessStack(Stack):
             ORGANIZATIONAL_UNITS_PARAMETER=Parameters.get_organizational_unit_parameter(environment=toggles.environment_identifier),
             PREPARATION_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PREPARATION_BUILDSPEC_PARAMETER,
             PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
+            REPORTS_BUCKET_NAME=self.reports.bucket.bucket_name,
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             TAG_PREFIX=toggles.features_with_tag_prefix,

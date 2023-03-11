@@ -15,25 +15,18 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from datetime import datetime
-import logging
-import os
-
-from logger import setup_logging, trap_exception
-setup_logging()
-
-from events import Events
-from key_value_store import KeyValueStore
+from constructs import Construct
+from aws_cdk import RemovalPolicy
+from aws_cdk.aws_s3 import Bucket, BucketEncryption
 
 
-@trap_exception
-def handle_record(event, context=None):
-    logging.debug(event)
-    input = Events.decode_spa_event(event)
-    logging.info(f"Remembering {input.label}")
-    logging.debug(input.__dict__)
-    records = KeyValueStore(table_name=os.environ.get('METERING_RECORDS_DATASTORE', 'SpaMeteringTable'),
-                            ttl=os.environ.get('METERING_RECORDS_TTL', str(366 * 24 * 60 * 60)))
-    stamp = datetime.utcnow().isoformat()
-    records.remember(hash=stamp[:10], range=stamp[11:], value=input.__dict__)
-    return f"[OK] {input.label}"
+class Reports(Construct):
+
+    def __init__(self, scope: Construct, id: str) -> None:
+        super().__init__(scope, id)
+
+        self.bucket = Bucket(
+            self, id=id,
+            encryption=BucketEncryption.S3_MANAGED,
+            removal_policy=RemovalPolicy.DESTROY,
+            event_bridge_enabled=True)
