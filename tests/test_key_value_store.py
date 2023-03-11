@@ -31,26 +31,64 @@ def test_key_value_store():
     create_my_table()
 
     store = KeyValueStore(table_name='my_table')
-    store.remember(key='a', value=dict(hello='world'))
-    store.remember(key='b', value=dict(life='is good'))
-    assert store.retrieve(key='a') == dict(hello='world')
-    assert store.retrieve(key='b') == dict(life='is good')
+    store.remember(hash='a', value=dict(hello='world'))
+    store.remember(hash='b', value=dict(life='is good'))
+    assert store.retrieve(hash='a') == dict(hello='world')
+    assert store.retrieve(hash='b') == dict(life='is good')
 
-    store.remember(key='a', value=dict(hello='universe'))
-    assert store.retrieve(key='a') == dict(hello='universe')
-    assert store.retrieve(key='b') == dict(life='is good')
+    store.remember(hash='a', value=dict(hello='universe'))
+    assert store.retrieve(hash='a') == dict(hello='universe')
+    assert store.retrieve(hash='b') == dict(life='is good')
 
-    store.forget(key='a')
-    store.forget(key='a')  # accept unknown key
-    assert not store.retrieve(key='a')
-    assert store.retrieve(key='b') == dict(life='is good')
+    store.forget(hash='a')
+    store.forget(hash='a')  # accept unknown key
+    assert not store.retrieve(hash='a')
+    assert store.retrieve(hash='b') == dict(life='is good')
 
-    store.remember(key='b', value=dict(life='is short'))
-    assert not store.retrieve(key='a')
-    assert store.retrieve(key='b') == dict(life='is short')
+    store.remember(hash='b', value=dict(life='is short'))
+    assert not store.retrieve(hash='a')
+    assert store.retrieve(hash='b') == dict(life='is short')
 
-    store.remember(key='a', value=dict(hello='world'))
-    store.remember(key='b', value=dict(life='is good'))
+    store.remember(hash='a', value=dict(hello='world'))
+    store.remember(hash='b', value=dict(life='is good'))
     result = boto3.client('dynamodb').scan(TableName='my_table',
                                            Select='ALL_ATTRIBUTES')
     assert len(result['Items']) == 2
+
+
+@pytest.mark.unit_tests
+@mock_dynamodb
+def test_enumerate():
+    create_my_table()
+
+    store = KeyValueStore(table_name='my_table')
+    store.remember(hash='a', range='world', value=dict(hello='world'))
+    store.remember(hash='a', range='universe', value=dict(hello='universe'))
+    store.remember(hash='b', range='good', value=dict(life='is good'))
+    store.remember(hash='b', range='short', value=dict(life='is short'))
+
+    result = boto3.client('dynamodb').scan(TableName='my_table',
+                                           Select='ALL_ATTRIBUTES')
+    assert len(result['Items']) == 4
+
+    assert list(store.enumerate(hash='a')) == [{'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
+                                               {'hash': 'a', 'range': 'world', 'value': {'hello': 'world'}}]
+    assert list(store.enumerate(hash='b')) == [{'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
+                                               {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]
+
+
+@pytest.mark.unit_tests
+@mock_dynamodb
+def test_scan():
+    create_my_table()
+
+    store = KeyValueStore(table_name='my_table')
+    store.remember(hash='a', range='world', value=dict(hello='world'))
+    store.remember(hash='a', range='universe', value=dict(hello='universe'))
+    store.remember(hash='b', range='good', value=dict(life='is good'))
+    store.remember(hash='b', range='short', value=dict(life='is short'))
+
+    assert list(store.scan()) == [{'hash': 'a', 'range': 'world', 'value': {'hello': 'world'}},
+                                  {'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
+                                  {'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
+                                  {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]

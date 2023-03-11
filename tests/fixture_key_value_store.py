@@ -20,7 +20,9 @@ import boto3
 
 def create_my_table():
     boto3.client('dynamodb').create_table(TableName='my_table',
-                                          KeySchema=[dict(AttributeName='Identifier', KeyType='HASH')],
-                                          AttributeDefinitions=[dict(AttributeName='Identifier', AttributeType='S')],
+                                          KeySchema=[dict(AttributeName='Identifier', KeyType='HASH'),
+                                                     dict(AttributeName='Order', KeyType='RANGE')],
+                                          AttributeDefinitions=[dict(AttributeName='Identifier', AttributeType='S'),
+                                                                dict(AttributeName='Order', AttributeType='S')],
                                           BillingMode='PAY_PER_REQUEST')
     boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')

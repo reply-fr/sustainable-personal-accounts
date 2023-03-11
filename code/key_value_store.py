@@ -25,30 +25,64 @@ class KeyValueStore:
 
     def __init__(self, table_name, ttl=0):
         logging.debug(f"Using key-value store on DynamoDB table '{table_name}'")
-        self.handler = boto3.client('dynamodb')
+        self.dynamodb = boto3.client('dynamodb')
         self.table_name = table_name
         self.ttl = ttl or (366 * 24 * 60 * 60)  # default is one year TTL
 
-    def forget(self, key, order='-'):
-        logging.debug(f'Deleting record {key} from key-value store')
-        self.handler.delete_item(TableName=self.table_name,
-                                 Key={'Identifier': dict(S=key), 'Order': dict(S=order)},
-                                 ReturnConsumedCapacity='NONE',
-                                 ReturnValues='NONE')
+    def forget(self, hash, range='-'):
+        logging.debug(f"Deleting record {hash}/{range} from key-value store '{self.table_name}'")
+        self.dynamodb.delete_item(TableName=self.table_name,
+                                  Key={'Identifier': dict(S=hash), 'Order': dict(S=range)},
+                                  ReturnConsumedCapacity='NONE',
+                                  ReturnValues='NONE')
 
-    def remember(self, key, value, order='-'):
-        logging.debug(f'Remembering record {key} in key-value store')
-        self.handler.put_item(TableName=self.table_name,
-                              Item={'Identifier': dict(S=key),
-                                    'Order': dict(S=order),
-                                    'Value': dict(S=json.dumps(value)),
-                                    'Expiration': dict(N=str(int(time()) + int(self.ttl)))},
-                              ReturnValues='NONE')
+    def remember(self, hash, value, range='-'):
+        logging.debug(f"Remembering record {hash}/{range} in key-value store '{self.table_name}'")
+        self.dynamodb.put_item(TableName=self.table_name,
+                               Item={'Identifier': dict(S=hash),
+                                     'Order': dict(S=range),
+                                     'Value': dict(S=json.dumps(value)),
+                                     'Expiration': dict(N=str(int(time()) + int(self.ttl)))},
+                               ReturnValues='NONE')
 
-    def retrieve(self, key, order='-'):
-        logging.debug(f'Retrieving record {key} from key-value store')
-        result = self.handler.get_item(TableName=self.table_name,
-                                       Key={'Identifier': dict(S=key), 'Order': dict(S=order)},
-                                       ReturnConsumedCapacity='NONE')
+    def retrieve(self, hash, range='-'):
+        logging.debug(f"Retrieving record {hash}/{range} from key-value store '{self.table_name}'")
+        result = self.dynamodb.get_item(TableName=self.table_name,
+                                        Key={'Identifier': dict(S=hash), 'Order': dict(S=range)},
+                                        ReturnConsumedCapacity='NONE')
         if 'Item' in result:
             return json.loads(result['Item']['Value']['S'])
+
+    def enumerate(self, hash):
+        logging.debug(f"Enumerating records {hash} from key-value store '{self.table_name}'")
+        parameters = dict(TableName=self.table_name,
+                          KeyConditionExpression="Identifier = :hash",
+                          ExpressionAttributeValues={':hash': dict(S=hash)},
+                          ReturnConsumedCapacity='NONE')
+        chunk = self.dynamodb.query(**parameters)
+        while chunk.get('Items'):
+            for item in chunk.get('Items'):
+                yield dict(hash=item['Identifier']['S'],
+                           range=item['Order']['S'],
+                           value=json.loads(item['Value']['S']))
+            more = chunk.get('LastEvaluatedKey')
+            if more:
+                chunk = self.dynamodb.query(ExclusiveStartKey=more, **parameters)
+            else:
+                break
+
+    def scan(self):
+        logging.debug(f"Scanning records from key-value store '{self.table_name}'")
+        parameters = dict(TableName=self.table_name,
+                          ReturnConsumedCapacity='NONE')
+        chunk = self.dynamodb.scan(**parameters)
+        while chunk.get('Items'):
+            for item in chunk.get('Items'):
+                yield dict(hash=item['Identifier']['S'],
+                           range=item['Order']['S'],
+                           value=json.loads(item['Value']['S']))
+            more = chunk.get('LastEvaluatedKey')
+            if more:
+                chunk = self.dynamodb.scan(ExclusiveStartKey=more, **parameters)
+            else:
+                break
