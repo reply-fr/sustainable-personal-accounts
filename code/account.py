@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import botocore
 from enum import Enum, unique
 import json
 import logging
@@ -62,10 +63,13 @@ class Account:
 
     @classmethod
     def list_tags(cls, account, session=None):
-        tags = {}
-        for item in cls.iterate_tags(account, session):
-            tags[item.get('Key')] = item.get('Value')
-        return tags
+        try:
+            tags = {}
+            for item in cls.iterate_tags(account, session):
+                tags[item.get('Key')] = item.get('Value')
+            return tags
+        except botocore.exceptions.ClientError:
+            return {}
 
     @classmethod
     def iterate_tags(cls, account, session=None):
