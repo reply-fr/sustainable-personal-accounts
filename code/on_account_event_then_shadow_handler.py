@@ -59,7 +59,7 @@ def handle_account_event(event, context=None, emit=None):
 
 @trap_exception
 def handle_reporting(event=None, context=None):
-    logging.info("Producing reports from shadows")
+    logging.info("Producing inventory reports from shadows")
     store = KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'))
     report = build_report(records=store.scan())  # /!\ memory-bound
     store_report(report)
@@ -67,7 +67,7 @@ def handle_reporting(event=None, context=None):
 
 
 def build_report(records):
-    logging.info("Building report from shadows")
+    logging.info("Building inventory report from shadows")
     buffer = io.StringIO()
     writer = DictWriter(buffer, fieldnames=['cost_center', 'cost_owner', 'account', 'email', 'name', 'state'])
     writer.writeheader()
@@ -84,7 +84,7 @@ def build_report(records):
 
 
 def store_report(report):
-    logging.info("Storing report")
+    logging.info("Storing inventory report")
     logging.debug(report)
     boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
                                   Key=get_report_key(),
@@ -93,7 +93,7 @@ def store_report(report):
 
 def get_report_key(today=None):
     today = today or date.today()
-    return '/'.join([os.environ["REPORTING_SHADOWS_PREFIX"],
+    return '/'.join([os.environ["REPORTING_INVENTORIES_PREFIX"],
                      f"{today.year:04d}",
                      f"{today.month:02d}",
-                     f"{today.year:04d}-{today.month:02d}-{today.day:02d}-shadows.csv"])
+                     f"{today.year:04d}-{today.month:02d}-{today.day:02d}-inventory.csv"])

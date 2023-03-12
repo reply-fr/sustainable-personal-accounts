@@ -32,7 +32,7 @@ class OnAccountEventThenShadow(Construct):
 
         parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
         parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
-        parameters['environment']['REPORTING_SHADOWS_PREFIX'] = toggles.reporting_shadows_prefix
+        parameters['environment']['REPORTING_INVENTORIES_PREFIX'] = toggles.reporting_inventories_prefix
         self.functions = [self.on_event(parameters=parameters, permissions=permissions),
                           self.on_schedule(parameters=parameters, permissions=permissions)]
 
@@ -72,8 +72,8 @@ class OnAccountEventThenShadow(Construct):
     def on_schedule(self, parameters, permissions) -> Function:
 
         function = Function(self, "FromSchedule",
-                            function_name="{}OnShadowReporting".format(toggles.environment_identifier),
-                            description="Report from current shadows",
+                            function_name="{}OnInventoryReporting".format(toggles.environment_identifier),
+                            description="Report inventories, from shadows",
                             handler="on_account_event_then_shadow_handler.handle_reporting",
                             **parameters)
 

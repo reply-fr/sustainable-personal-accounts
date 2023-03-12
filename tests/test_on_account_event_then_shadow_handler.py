@@ -73,7 +73,7 @@ def test_handle_account_event_on_unexpected_environment():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              REPORTS_BUCKET_NAME="my_bucket",
-                             REPORTING_SHADOWS_PREFIX="my_shadows",
+                             REPORTING_INVENTORIES_PREFIX="my_shadows",
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
@@ -105,9 +105,9 @@ def test_build_report():
 
 
 @pytest.mark.unit_tests
-@patch.dict(os.environ, dict(REPORTING_SHADOWS_PREFIX="all/the/shadows"))
+@patch.dict(os.environ, dict(REPORTING_INVENTORIES_PREFIX="all/the/inventories"))
 def test_get_report_key():
     key = get_report_key(date(2022, 12, 25))
-    assert key == "all/the/shadows/2022/12/2022-12-25-shadows.csv"
+    assert key == "all/the/inventories/2022/12/2022-12-25-inventory.csv"
     key = get_report_key(date(2023, 1, 2))
-    assert key == "all/the/shadows/2023/01/2023-01-02-shadows.csv"
+    assert key == "all/the/inventories/2023/01/2023-01-02-inventory.csv"
