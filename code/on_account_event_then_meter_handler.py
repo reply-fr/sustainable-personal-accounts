@@ -25,6 +25,7 @@ from uuid import uuid4
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from account import Account
 from events import Events
 from key_value_store import KeyValueStore
 
@@ -36,13 +37,13 @@ def handle_account_event(event, context=None, emit=None):
                                  ttl=os.environ.get('METERING_TRANSACTIONS_TTL', str(30 * 60)))
 
     if input.label == 'CreatedAccount':
-        handle_created_event(input, transactions=transactions)
+        handle_created_event(input.account, transactions=transactions)
 
     elif input.label == 'ExpiredAccount':
-        handle_expired_event(input, transactions=transactions)
+        handle_expired_event(input.account, transactions=transactions)
 
     elif input.label == 'ReleasedAccount':
-        handle_released_event(input, transactions=transactions, emit=emit)
+        handle_released_event(input.account, transactions=transactions, emit=emit)
 
     else:
         logging.debug(f"Do not meter event '{input.label}'")
@@ -50,71 +51,85 @@ def handle_account_event(event, context=None, emit=None):
     return f"[OK] {input.label} {input.account}"
 
 
-def handle_created_event(input, transactions):
-    hash = f"OnBoarding {input.account}"
+def handle_created_event(account_id, transactions):
+    hash = f"OnBoarding {account_id}"
     logging.info(f"Beginning transaction '{hash}'")
     transaction = {'transaction': 'on-boarding',
-                   'account': input.account,
+                   'account': account_id,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
     transactions.remember(hash, value=transaction)
 
 
-def handle_expired_event(input, transactions):
-    hash = f"Maintenance {input.account}"
+def handle_expired_event(account_id, transactions):
+    hash = f"Maintenance {account_id}"
     logging.info(f"Beginning transaction '{hash}'")
     transaction = {'transaction': 'maintenance',
-                   'account': input.account,
+                   'account': account_id,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
     transactions.remember(hash, value=transaction)
 
 
-def handle_released_event(input, transactions, emit=None):
-    update_maintenance_transaction(input, transactions=transactions, emit=emit)
-    update_onboarding_transaction(input, transactions=transactions, emit=emit)
+def handle_released_event(account_id, transactions, emit=None):
+    update_maintenance_transaction(account_id, transactions=transactions, emit=emit)
+    update_onboarding_transaction(account_id, transactions=transactions, emit=emit)
 
 
-def update_maintenance_transaction(input, transactions, emit=None):
-    hash = f"Maintenance {input.account}"
-    transaction = transactions.retrieve(hash)
-    if transaction:
+def update_maintenance_transaction(account_id, transactions, emit=None):
+    hash = f"Maintenance {account_id}"
+    ongoing = transactions.retrieve(hash)
+    if ongoing:
         logging.info(f"Ending transaction '{hash}'")
         transactions.forget(hash)
+        transaction = Account.list_tags(account_id)
+        transaction['cost-center'] = get_cost_center(transaction)
+        transaction.update(ongoing)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulMaintenanceEvent',
              payload=transaction)
-        put_metric_data(name='MaintenanceTransactionByAccount',
-                        dimensions=[dict(Name='Account', Value=input.account),
+        put_metric_data(name='TransactionByCostCenter',
+                        dimensions=[dict(Name='CostCenter', Value=transaction['cost-center']),
                                     dict(Name='Environment', Value=Events.get_environment())])
         put_metric_data(name='TransactionByLabel',
                         dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
+    else:
+        logging.error(f"Missing transaction '{hash}'")
 
 
-def update_onboarding_transaction(input, transactions, emit=None):
-    hash = f"OnBoarding {input.account}"
-    transaction = transactions.retrieve(hash)
-    if transaction:
+def update_onboarding_transaction(account_id, transactions, emit=None):
+    hash = f"OnBoarding {account_id}"
+    ongoing = transactions.retrieve(hash)
+    if ongoing:
         logging.info(f"Ending transaction '{hash}'")
         transactions.forget(hash)
+        transaction = Account.list_tags(account_id)
+        transaction['cost-center'] = get_cost_center(transaction)
+        transaction.update(ongoing)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulOnBoardingEvent',
              payload=transaction)
-        put_metric_data(name='OnBoardingTransactionByAccount',
-                        dimensions=[dict(Name='Account', Value=input.account),
+        put_metric_data(name='TransactionByCostCenter',
+                        dimensions=[dict(Name='CostCenter', Value=transaction['cost-center']),
                                     dict(Name='Environment', Value=Events.get_environment())])
         put_metric_data(name='TransactionByLabel',
                         dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
+    else:
+        logging.error(f"Missing transaction '{hash}'")
+
+
+def get_cost_center(transaction):
+    return transaction.get("cost-center", "SharedServices")
 
 
 def put_metric_data(name, dimensions, session=None):
