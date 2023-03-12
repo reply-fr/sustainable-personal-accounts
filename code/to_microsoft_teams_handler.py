@@ -33,8 +33,8 @@ def handle_spa_event(event, context, session=None):
     try:
         item = Events.decode_spa_event(event)
         post_message(message=item.payload, session=session)
-    except:
-        message=dict(Subject="Message title", Message="Message body")
+    except Exception:
+        message = dict(Subject="Message title", Message="Message body")
         post_message(message=message, session=session)
 
     return '[OK]'
