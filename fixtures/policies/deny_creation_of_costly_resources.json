@@ -2,33 +2,35 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "SpaDenyCreationOfPrivateCertificateAuthority",
+      "Sid": "SpaDenyCreationOfCostlyResources",
       "Effect": "Deny",
-      "Action": "acm-pca:CreateCertificateAuthority",
-      "Resource": "*"
-    },
-    {
-      "Sid": "SpaDenyUsageOfGlobalAccelerator",
-      "Effect": "Allow",
       "Action": [
+        "acm-pca:CreateCertificateAuthority"
         "globalaccelerator:CreateAccelerator"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "SpaDenySubscriptionOfShieldAdvanced",
-      "Effect": "Allow",
-      "Action": [
+        "redshift:CreateCluster"
         "shield:CreateSubscription"
       ],
       "Resource": "*"
     },
     {
-      "Sid": "SpaDenyCreationOfRedshiftWithoutSpectrum",
-      "Effect": "Deny",
+      "Sid": "SpaDenyContractCommitments",
+      "Effect": "Allow",
       "Action": [
-        "redshift:CreateCluster"
-      ],
+        "organizations:*",
+        "route53domains:TransferDomain",
+        "redshift:PurchaseReservedNodeOffering",
+        "ec2:PurchaseReservedInstancesOffering",
+        "savingsplans:*",
+        "ec2:PurchaseHostReservation",
+        "rds:PurchaseReservedDBInstancesOffering",
+        "ec2:CreateCapacityReservation",
+        "ec2:PurchaseScheduledInstances",
+        "ec2:CreateReservedInstancesListing",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "route53domains:RegisterDomain",
+        "ec2:AcceptReservedInstancesExchangeQuote",
+        "s3:PutBucketObjectLockConfiguration"      ],
       "Resource": "*"
     }
   ]
