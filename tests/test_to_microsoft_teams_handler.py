@@ -48,7 +48,7 @@ def test_handle_spa_event(monkeypatch):
 
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label="MessageToMicrosoftTeams",
-                                                         payload="hello world",
+                                                         payload='{"hello": "world"}',
                                                          environment="envt1"))
 
     result = handle_spa_event(event=event, context=None, session=session)

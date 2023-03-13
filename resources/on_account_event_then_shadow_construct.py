@@ -81,7 +81,7 @@ class OnAccountEventThenShadow(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
-             rule_name="{}-OnShadowReportingTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnInventoryReportingTriggerRule".format(toggles.environment_identifier),
              description="Trigger periodic reporting on shadows",
              schedule=Schedule.cron(week_day="SAT", hour="3", minute="23"),
              targets=[LambdaFunction(function)])

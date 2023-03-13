@@ -30,7 +30,7 @@ from account import Account
 from code.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_sqs_event, publish_notification_on_microsoft_teams
 from events import Events
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests
@@ -97,7 +97,7 @@ def test_publish_notification_on_microsoft_teams():
     publish_notification_on_microsoft_teams(notification=notification, session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[{
-        'Detail': '{"Content-Type": "application/json", "Environment": "Spa", "Payload": "{\\"Message\\": \\"hello world\\", \\"Subject\\": \\"some subject\\"}"}',
+        'Detail': '{"ContentType": "application/json", "Environment": "Spa", "Payload": "{\\"Message\\": \\"hello world\\", \\"Subject\\": \\"some subject\\"}"}',
         'DetailType': 'MessageToMicrosoftTeams',
         'Source': 'SustainablePersonalAccounts'}])
 

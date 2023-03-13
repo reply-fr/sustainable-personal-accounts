@@ -36,8 +36,7 @@ from key_value_store import KeyValueStore
 def handle_account_event(event, context=None, emit=None):
     input = Events.decode_account_event(event)
     logging.info(f"Remembering {input.label} for {input.account}")
-    shadows = KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'),
-                            ttl=os.environ.get('METERING_SHADOWS_TTL', str(181 * 24 * 60 * 60)))
+    shadows = get_table()
     shadow = shadows.retrieve(hash=str(input.account)) or {}
     try:
         shadow.update(Account.describe(input.account).__dict__)
@@ -53,17 +52,22 @@ def handle_account_event(event, context=None, emit=None):
     stamps[input.label] = datetime.utcnow().replace(microsecond=0).isoformat()
     shadow['stamps'] = stamps
     logging.debug(shadow)
-    shadows.remember(hash=str(input.account), value=shadow)
+    shadows.remember(hash=str(input.account), value=shadow)  # /!\ no lock
     return f"[OK] {input.label} {input.account}"
 
 
 @trap_exception
 def handle_reporting(event=None, context=None):
     logging.info("Producing inventory reports from shadows")
-    store = KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'))
+    store = get_table()
     report = build_report(records=store.scan())  # /!\ memory-bound
     store_report(report)
     return "[OK]"
+
+
+def get_table():
+    return KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'),
+                         ttl=os.environ.get('METERING_SHADOWS_TTL', str(181 * 24 * 60 * 60)))
 
 
 def build_report(records):

@@ -28,7 +28,7 @@ from code import Events
 from code.on_account_event_then_meter_handler import handle_account_event, handle_stream_event
 
 from tests.fixture_key_value_store import create_my_table
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

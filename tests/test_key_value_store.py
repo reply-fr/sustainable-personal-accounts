@@ -22,7 +22,7 @@ import pytest
 from code import KeyValueStore
 
 from tests.fixture_key_value_store import create_my_table, populate_shadows_table
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

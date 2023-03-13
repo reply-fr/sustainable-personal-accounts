@@ -30,6 +30,66 @@ def create_my_table():
     boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')
 
 
+def populate_records_table():
+    samples = [
+        [('__transaction__', 'on-boarding'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:08:29.749864')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:13:12.049022')],
+        [('__transaction__', 'on-boarding'), ('__cost__', 'DevOps Tools'), ('__account__', '222222222222'), ('__stamp__', '22:13:14.426446')],
+        [('__transaction__', 'on-boarding'), ('__cost__', 'Computing Tools'), ('__account__', '333333333333'), ('__stamp__', '22:13:19.825640')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '222222222222'), ('__stamp__', '22:13:21.847512')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Computing Tools'), ('__account__', '333333333333'), ('__stamp__', '22:13:26.828969')],
+        [('__transaction__', 'on-boarding'), ('__cost__', 'DevOps Tools'), ('__account__', '666666666666'), ('__stamp__', '22:13:33.012642')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Tools'), ('__account__', '444444444444'), ('__stamp__', '22:15:10.623627')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Computing Tools'), ('__account__', '555555555555'), ('__stamp__', '22:15:13.266455')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '666666666666'), ('__stamp__', '22:15:16.646250')],
+        [('__transaction__', 'on-boarding'), ('__cost__', 'DevOps Tools'), ('__account__', '888888888888'), ('__stamp__', '22:15:19.003777')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '777777777777'), ('__stamp__', '22:15:24.547341')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '888888888888'), ('__stamp__', '22:15:35.926257')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Reporting Tools'), ('__account__', '999999999999'), ('__stamp__', '22:15:40.879809')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:15:42.724794')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Computing Tools'), ('__account__', '333333333333'), ('__stamp__', '22:15:49.867994')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Computing Tools'), ('__account__', '555555555555'), ('__stamp__', '22:15:51.019361')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '777777777777'), ('__stamp__', '22:15:51.725803')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Reporting Tools'), ('__account__', '999999999999'), ('__stamp__', '22:15:57.206767')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '222222222222'), ('__stamp__', '22:15:57.525895')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Tools'), ('__account__', '444444444444'), ('__stamp__', '22:15:57.866044')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '666666666666'), ('__stamp__', '22:15:59.606731')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '888888888888'), ('__stamp__', '22:16:01.266087')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:16:01.710460')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '222222222222'), ('__stamp__', '22:16:02.684601')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Tools'), ('__account__', '444444444444'), ('__stamp__', '22:16:03.984360')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'Computing Tools'), ('__account__', '555555555555'), ('__stamp__', '22:16:07.390644')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '777777777777'), ('__stamp__', '22:16:07.895073')],
+        [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '888888888888'), ('__stamp__', '22:16:13.005273')]
+    ]
+
+    template = json.dumps({'hash': '2023-03-09',
+                           'range': '__stamp__',
+                           'value': {"transaction": "__transaction__",
+                                     "stamp": "2023-03-09T__stamp__",
+                                     "cost-center": "__cost__",
+                                     "account": "__account__",
+                                     "begin": 1678627767.7734988,
+                                     "identifier": "e740cfd8-918c-4aad-a7cf-9c633f5d3892",
+                                     "end": 1678627885.2714968,
+                                     "duration": 117.49799799919128}})
+
+    for sample in samples:
+        text = template
+        for keyword, replacement in sample:
+            text = text.replace(keyword, replacement)
+        item = json.loads(text)
+
+        boto3.client('dynamodb').put_item(TableName='my_table',
+                                          Item={'Identifier': dict(S=item['hash']),
+                                                'Order': dict(S=item['range']),
+                                                'Value': dict(S=json.dumps(item['value'])),
+                                                'Expiration': dict(N=str(int(time()) + 500))},
+                                          ReturnValues='NONE')
+
+    return len(samples)
+
+
 def populate_shadows_table():
     samples = [
         [('__account__', '222222222222'), ('__email__', 'alice@acme.com'), ('__name__', 'Alice'), ('__manager__', 'bob@acme.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],

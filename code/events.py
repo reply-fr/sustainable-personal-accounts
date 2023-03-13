@@ -82,7 +82,7 @@ class Events:
         if label not in cls.SPA_EVENT_LABELS:
             raise ValueError(f"Invalid event label '{label}'")
         details = {
-            'Content-Type': content_type or cls.DEFAULT_CONTENT_TYPE,
+            'ContentType': content_type or cls.DEFAULT_CONTENT_TYPE,
             'Environment': cls.get_environment(),
             'Payload': payload}
         return dict(Detail=json.dumps(details),
@@ -153,8 +153,8 @@ class Events:
         if match and match != decoded.label:
             raise ValueError(f"Unexpected event label '{decoded.label}'")
 
-        decoded.payload = event['detail'].get('Payload', None)
         decoded.content_type = event['detail'].get('Content-Type', cls.DEFAULT_CONTENT_TYPE)
+        decoded.payload = event['detail'].get('Payload', None)
 
         return decoded
 

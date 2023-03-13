@@ -100,7 +100,7 @@ def update_maintenance_transaction(account_id, transactions, emit=None):
                         dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
     else:
-        logging.error(f"Missing transaction '{hash}'")
+        logging.debug(f"No transaction '{hash}'")
 
 
 def update_onboarding_transaction(account_id, transactions, emit=None):
@@ -125,7 +125,7 @@ def update_onboarding_transaction(account_id, transactions, emit=None):
                         dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
     else:
-        logging.error(f"Missing transaction '{hash}'")
+        logging.debug(f"No transaction '{hash}'")
 
 
 def get_cost_center(transaction):

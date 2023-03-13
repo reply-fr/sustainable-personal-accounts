@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import json
 from unittest.mock import Mock, patch
 import os
 import pytest
@@ -26,7 +27,10 @@ import pytest
 from code import Events
 from code.on_exception_handler import handle_exception
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
+
+
+sample_payload = json.dumps({"hello": "world"})
 
 
 @pytest.mark.unit_tests
@@ -37,7 +41,7 @@ def test_handle_exception():
 
     for label in Events.EXCEPTION_EVENT_LABELS:
         event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
-                                                context=dict(payload="hello world",
+                                                context=dict(payload=sample_payload,
                                                              label=label,
                                                              environment="envt1"))
         mock = Mock()
@@ -49,7 +53,7 @@ def test_handle_exception():
                              VERBOSITY='INFO'))
 def test_handle_exception_on_unexpected_environment():
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
-                                            context=dict(account="hello world",
+                                            context=dict(payload=sample_payload,
                                                          label="CreatedAccount",
                                                          environment="alien*environment"))
     mock = Mock()

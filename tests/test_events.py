@@ -58,7 +58,7 @@ def test_build_spa_event():
     assert event['DetailType'] == 'MessageToMicrosoftTeams'
     details = json.loads(event['Detail'])
     assert details['Payload'] == 'hello world'
-    assert details['Content-Type'] == 'application/json'
+    assert details['ContentType'] == 'application/json'
 
 
 @pytest.mark.unit_tests
@@ -198,11 +198,12 @@ def test_decode_organization_event_on_unexpected_organizational_unit():
 def test_decode_spa_event():
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label="MessageToMicrosoftTeams",
-                                                         payload="hello world",
+                                                         payload='{"hello": "world"}',
+                                                         content_type='application/json',
                                                          environment="envt1"))
     decoded = Events.decode_spa_event(event)
     assert decoded.label == "MessageToMicrosoftTeams"
-    assert decoded.payload == "hello world"
+    assert decoded.payload == {"hello": "world"}
 
 
 @pytest.mark.unit_tests
@@ -210,7 +211,7 @@ def test_decode_spa_event():
 def test_decode_spa_event_on_unexpected_environment():
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label="MessageToMicrosoftTeams",
-                                                         payload="hello world",
+                                                         payload='{"hello": "world"}',
                                                          environment="alien*environment"))
     with pytest.raises(ValueError):
         Events.decode_spa_event(event)
@@ -221,7 +222,7 @@ def test_decode_spa_event_on_unexpected_environment():
 def test_decode_spa_event_on_unexpected_label():
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label="CreatedAccount",
-                                                         payload="hello world",
+                                                         payload='{"hello": "world"}',
                                                          environment="envt1"))
     with pytest.raises(ValueError):
         Events.decode_spa_event(event, match='MessageToMicrosoftTeams')
@@ -288,7 +289,7 @@ def test_emit_spa_event():
     Events.emit_spa_event(label='MessageToMicrosoftTeams', payload='payload', session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[
-        {'Detail': '{"Content-Type": "application/json", "Environment": "FromHere", "Payload": "payload"}',
+        {'Detail': '{"ContentType": "application/json", "Environment": "FromHere", "Payload": "payload"}',
          'DetailType': 'MessageToMicrosoftTeams',
          'Source': 'SustainablePersonalAccounts'}])
 

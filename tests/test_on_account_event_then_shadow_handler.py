@@ -31,7 +31,7 @@ from code.on_account_event_then_shadow_handler import handle_account_event, hand
 from code.key_value_store import KeyValueStore
 
 from tests.fixture_key_value_store import create_my_table, populate_shadows_table
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
@@ -73,7 +73,7 @@ def test_handle_account_event_on_unexpected_environment():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              REPORTS_BUCKET_NAME="my_bucket",
-                             REPORTING_INVENTORIES_PREFIX="my_shadows",
+                             REPORTING_INVENTORIES_PREFIX="my_inventories",
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
