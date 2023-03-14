@@ -5,8 +5,8 @@ I can check account tags
 in order to control account states at system scale
 
 As a system administrator,
-I can edit account tags
-in order to set account states manually
+I can edit account tags manually
+in order to set the state of an account
 
 As a system administrator,
 I can align all account tags
@@ -38,3 +38,10 @@ Scenario: where accounts are reset globally
      Then code inspects all accounts managed in the system
       And all accounts that are not in release state are tagged with key 'account-state' and value 'vanilla'
       And accounts moved to vanilla state are prepared then released
+
+Scenario: where accounts are expired globally
+    Given an existing SPA system
+     When the Lambda function 'OnMaintenanceWindows' is invoked
+     Then code inspects all accounts managed in the system
+      And all accounts are tagged with key 'account-state' and value 'expired'
+      And accounts moved to expired state are purged, then prepared then released
