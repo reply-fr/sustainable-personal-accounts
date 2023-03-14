@@ -1,0 +1,124 @@
+# prefix for cloud resources and cloud stack
+environment_identifier: SpaWithCSV
+
+# parameters for resources deployed in the automation account
+automation:
+
+  # the target account for the deployment of the solution
+  account_id: "123456789012"
+
+  # the target region for the deployment of the solution
+  region: "eu-west-1"
+
+  # this role is assumed by Lambda functions either to list AWS accounts in the OU, or to tag AWS accounts
+  role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+
+  # this role is assumed by Lambda functions to create CodeBuild projects and to start them
+  role_name_to_manage_codebuild: 'AWSControlTowerExecution'
+
+# parameters for resources deployed in managed accounts
+worker:
+
+  # this is the buildspec template for the preparation of an account managed by SPA
+  #
+  preparation_buildspec_template_file: "fixtures/buildspec/preparation_account_template.yaml"
+
+  # this is the buildspec tempalte for the purge of an account managed by SPA
+  #
+  purge_buildspec_template_file: "fixtures/buildspec/purge_account_with_awsweeper_template.yaml"
+
+# default settings for managed accounts
+defaults:
+
+  # added to every account, accross all organizational units, except if overriden
+  account_tags:
+    managed-by: SPA
+
+  preparation: # of managed accounts
+
+    # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+    feature: disabled
+
+    # passed to Codebuild project for the preparation of an account
+    variables:
+      ALERT_THRESHOLD: 80 # percentage of budget
+      BUDGET_AMOUNT: 500.0 # USD
+      BUDGET_NAME: SpaBudget
+
+  purge: # of expired accounts
+
+    # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+    feature: disabled
+
+    # passed to Codebuild project for the purge of an account
+    variables:
+      MAXIMUM_AGE: 9M  # '5d', '2w', '3M', '1y', etc.
+      PURGE_MODE: '--dry-run'  # '--dry-run' or '--force'
+      TAG_KEY: purge
+      TAG_VALUE: me
+
+
+# these are specific settings for individual accounts managed by the solution
+accounts:
+
+  # settings specific to this acount
+  - identifier: '123456789012'
+    note: 'one specific account'
+
+    # added to this account
+    account_tags:
+      cost-imputation: 'SB-123'
+      cost-center: 'Alice'
+      account-manager: alice@acme.com
+
+    preparation: # of this account
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      feature: enabled
+
+      # passed to Codebuild project for the preparation of this account
+      variables:
+        ALERT_THRESHOLD: 90 # percentage of budget
+        BUDGET_AMOUNT: 3000 # USD
+        BUDGET_NAME: SpecificAliceBudget
+
+    purge: # of this account
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      feature: disabled
+
+  # settings specific to accounts placed in this organizational unit
+  - identifier: '210987654321'
+    note: 'another specific account'
+
+    # added to this account
+    account_tags:
+      cost-imputation: 'SB-456'
+      cost-center: 'Bob'
+      account-manager: bob@acme.com
+
+    preparation: # of this account
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      feature: enabled
+
+      # passed to Codebuild project for the preparation of an account
+      variables:
+        ALERT_THRESHOLD: 90 # percentage of budget
+        BUDGET_AMOUNT: 4000 # USD
+        BUDGET_NAME: SpecificBobBudget
+
+
+    purge: # of this account
+
+      # processing is skipped if not enabled explicitly - 'enabled' or 'disabled'
+      feature: disabled
+
+
+# additional features that can be activated optionnally
+features:
+
+  # list of external configuration files to load -- relative to the settings file
+  with_csv_files:
+  - finops-setup.csv
+  - security-setup.csv

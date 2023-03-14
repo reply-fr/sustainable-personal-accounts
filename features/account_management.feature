@@ -111,6 +111,16 @@ Scenario: where SPA is deployed on ARM architecture
      Then Lambda functions of SPA are deployed on ARM architecture
       And CodeBuild projects of SPA are deployed on ARM architecture
 
+Scenario: where configuration is loaded from multiple CSV files
+    Given a settings file 'settings.yaml' adapted to SPA semantics
+     When the attribute 'with_csv_files' is set in the section 'features'
+      And SPA is deployed with the settings file 'settings.yaml'
+     Then SPA loads all CSV files mentioned in the attribute 'with_tag_files'
+      And configuration items are created for each identifier mentioned in column 'Account'
+      And configuration items have attribute 'account_tags' set to a list of key-values as per columns prefixed with 'Tag: '
+      And configuration items have attribute 'variables' set to a list of key-values in attribute 'preparation' as per columns prefixed with 'Preparation: '
+      And configuration items have attribute 'variables' set to a list of key-values in attribute 'purge' as per columns prefixed with 'Purge: '
+
 Scenario: where the storage back-end for metering is configured
     Given a settings file 'settings.yaml' adapted to SPA semantics
       And the attribute 'datastore' is set in the section 'metering'
@@ -125,4 +135,3 @@ Scenario: where timeout for on-going transactions is configured
     Given a settings file 'settings.yaml' adapted to SPA semantics
       And SPA is deployed with the settings file 'settings.yaml'
      Then the attribute 'transactions_timeout_in_seconds' is passed as environment variable to Lambda functions
-

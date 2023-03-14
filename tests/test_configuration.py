@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from resources import Configuration
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -104,6 +104,7 @@ def test_set_default_values(toggles):
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.automation_verbosity == 'INFO'
     assert toggles.features_with_arm_architecture is False
+    assert toggles.features_with_csv_files == []
     assert toggles.features_with_email_subscriptions_on_alerts == []
     assert toggles.features_with_microsoft_webhook_on_alerts is None
     assert toggles.features_with_tag_prefix == 'account-'
@@ -190,9 +191,81 @@ def test_set_from_yaml(toggles):
 
 
 @pytest.mark.unit_tests
-def test_set_from_yaml_invalid(toggles):
+def test_set_from_invalid_yaml(toggles):
     with pytest.raises(AttributeError):
         Configuration.set_from_yaml(BytesIO(b'a: b\nc: d\n'))
+
+
+@pytest.mark.integration_tests
+@pytest.mark.slow
+def test_set_from_csv_files(toggles):
+    Configuration.set_from_yaml('fixtures/settings/settings-with-csv-files.yaml', toggles=toggles)
+    assert toggles.automation_account_id == '123456789012'
+    assert toggles.features_with_csv_files == ['finops-setup.csv', 'security-setup.csv']
+    assert list(toggles.accounts.keys()) == ['123456789012', '210987654321', '456789012345', '789012345678']
+
+    assert toggles.accounts['123456789012'] == {'identifier': '123456789012',
+                                                'note': 'one specific account',                                        # accounts
+                                                'account_tags': {'ServiceNow Domain': 'CloudOps',                      # security
+                                                                 'account-manager': 'alice@acme.com',                  # accounts
+                                                                 'cost-center': 'ApplicationOne Department',           # accounts overwritten by finops
+                                                                 'cost-imputation': 'SB-123',                          # accounts
+                                                                 'managed-by': 'SPA'},                                 # default
+                                                'preparation': {'feature': 'enabled',                                  # accounts
+                                                                'variables': {'ALERT_THRESHOLD': 90,                   # accounts
+                                                                              'BUDGET_AMOUNT': '2000',                 # accounts overwritten by finops
+                                                                              'BUDGET_NAME': 'SpecificAliceBudget'}},  # accounts
+                                                'purge': {'feature': 'disabled',                                       # default
+                                                          'variables': {'MAXIMUM_AGE': '3M',                           # finops
+                                                                        'PURGE_MODE': '--dry-run',                     # default
+                                                                        'TAG_KEY': 'purge',                            # default
+                                                                        'TAG_VALUE': 'me'}}}                           # default
+
+    assert toggles.accounts['210987654321'] == {'identifier': '210987654321',
+                                                'note': 'another specific account',                                   # accounts
+                                                'account_tags': {'account-manager': 'bob@acme.com',                   # accounts
+                                                                 'cost-center': 'Bob',                                # accounts
+                                                                 'cost-imputation': 'SB-456',                         # accounts
+                                                                 'managed-by': 'SPA'},                                # default
+                                                'preparation': {'feature': 'enabled',                                 # accounts
+                                                                'variables': {'ALERT_THRESHOLD': 90,                  # accounts
+                                                                              'BUDGET_AMOUNT': 4000,                  # accounts
+                                                                              'BUDGET_NAME': 'SpecificBobBudget'}},   # accounts
+                                                'purge': {'feature': 'disabled',                                      # default
+                                                          'variables': {'MAXIMUM_AGE': '9M',                          # default
+                                                                        'PURGE_MODE': '--dry-run',                    # default
+                                                                        'TAG_KEY': 'purge',                           # default
+                                                                        'TAG_VALUE': 'me'}}}                          # default
+
+    assert toggles.accounts['456789012345'] == {'identifier': '456789012345',
+                                                'note': 'An alien account',                                           # finops
+                                                'account_tags': {'managed-by': 'SPA',                                 # default
+                                                                 'cost-center': 'Customer Service',                   # finops
+                                                                 'ServiceNow Domain': 'CustomerServiceDomain'},       # security
+                                                'preparation': {'feature': 'disabled',                                # default
+                                                                'variables': {'ALERT_THRESHOLD': 80,                  # default
+                                                                              'BUDGET_AMOUNT': '3000',                # finops
+                                                                              'BUDGET_NAME': 'SpaBudget'}},           # default
+                                                'purge': {'feature': 'disabled',                                      # default
+                                                          'variables': {'MAXIMUM_AGE': '6M',                          # finops
+                                                                        'PURGE_MODE': '--dry-run',                    # default
+                                                                        'TAG_KEY': 'purge',                           # default
+                                                                        'TAG_VALUE': 'me'}}}                          # default
+
+    assert toggles.accounts['789012345678'] == {'identifier': '789012345678',
+                                                'note': 'A third-party added recently',                               # finops
+                                                'account_tags': {'managed-by': 'SPA',                                 # default
+                                                                 'cost-center': 'Financial Department',               # finops
+                                                                 'ServiceNow Domain': 'FinanceResponders'},           # security
+                                                'preparation': {'feature': 'disabled',                                # default
+                                                                'variables': {'ALERT_THRESHOLD': 80,                  # default
+                                                                              'BUDGET_AMOUNT': '600',                 # finops
+                                                                              'BUDGET_NAME': 'SpaBudget'}},           # default
+                                                'purge': {'feature': 'disabled',                                      # default
+                                                          'variables': {'MAXIMUM_AGE': '10Y',                         # finops
+                                                                        'PURGE_MODE': '--dry-run',                    # default
+                                                                        'TAG_KEY': 'purge',                           # default
+                                                                        'TAG_VALUE': 'me'}}}                          # default
 
 
 @pytest.mark.unit_tests

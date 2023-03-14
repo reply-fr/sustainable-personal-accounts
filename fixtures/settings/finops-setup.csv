@@ -1,0 +1,4 @@
+Account, Note, Tag: cost-center, Preparation: BUDGET_AMOUNT, Purge: MAXIMUM_AGE
+123456789012,, ApplicationOne Department, 2000, 3M
+456789012345, An alien account, Customer Service, 3000, 6M
+789012345678, A third-party added recently, Financial Department, 600, 10Y

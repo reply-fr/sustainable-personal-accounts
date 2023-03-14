@@ -16,6 +16,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import builtins
+from csv import DictReader
+import json
 import os
 import logging
 from types import SimpleNamespace
@@ -40,6 +42,7 @@ class Configuration:
         defaults='dict',
         environment_identifier='str',
         features_with_arm_architecture='bool',
+        features_with_csv_files='list',
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
         features_with_tag_prefix='str',
@@ -124,6 +127,7 @@ class Configuration:
         toggles.automation_tags = {}
         toggles.automation_verbosity = 'INFO'
         toggles.features_with_arm_architecture = False
+        toggles.features_with_csv_files = []
         toggles.features_with_email_subscriptions_on_alerts = []
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_tag_prefix = 'account-'
@@ -146,15 +150,17 @@ class Configuration:
             with open(stream) as handle:
                 logging.info(f"Loading configuration from '{stream}'")
                 settings = yaml.safe_load(handle)
-                cls.set_from_settings(settings=settings, toggles=toggles)
+                cls.set_from_settings(settings=settings, toggles=toggles, path=os.path.split(stream)[0])
         else:
             settings = yaml.safe_load(stream)
             cls.set_from_settings(settings=settings, toggles=toggles)
 
     @classmethod
-    def set_from_settings(cls, settings={}, toggles=None):
+    def set_from_settings(cls, settings={}, toggles=None, path=None):
         if 'defaults' in settings.keys():
             cls.set_attribute('defaults', settings['defaults'], toggles=toggles)
+
+        toggles.features_with_csv_files = []
         for key in settings.keys():
             if key == 'defaults':
                 continue
@@ -165,6 +171,51 @@ class Configuration:
                     cls.set_attribute(flatten, value, toggles=toggles)
             else:
                 cls.set_attribute(key, settings[key], toggles=toggles)
+
+        for file in toggles.features_with_csv_files:
+            cls.set_from_csv_file(os.path.join(path or '.', file), toggles=toggles)
+
+    @classmethod
+    def set_from_csv_file(cls, file, toggles=None):
+        logging.info(f"Loading CSV configuration from '{file}'")
+        with open(file) as stream:
+            for item in DictReader(stream):
+                cls.set_from_account_settings(settings=item, toggles=toggles)
+
+    @classmethod
+    def set_from_account_settings(cls, settings, toggles=None):
+        logging.debug(settings)
+
+        other = {}
+        tags = {}
+        preparation = {}
+        purge = {}
+
+        expressions = dict(Account="other['account'] = value",
+                           Note="other['note'] = value",
+                           Tag="tags[key] = value",
+                           Preparation="preparation[key] = value",
+                           Purge="purge[key] = value")
+
+        for key, value in settings.items():
+            parts = key.split(':', 1)
+            label = parts[0].strip()
+            key = parts[1].strip() if len(parts) > 1 else None
+            value = value.strip()
+            exec(expressions[label])
+
+        if not other.get('account'):
+            raise ValueError("Missing value in column 'Account'")
+        account = other['account']
+
+        configuration = toggles.accounts.get(account, json.loads(json.dumps(toggles.defaults)))  # complete copy of default dict
+        configuration['identifier'] = account
+        if other.get('note'):
+            configuration['note'] = other['note']
+        configuration['account_tags'].update(tags)
+        configuration['preparation']['variables'].update(preparation)
+        configuration['purge']['variables'].update(purge)
+        toggles.accounts[account] = configuration
 
     @classmethod
     def set_attribute(cls, key, value, toggles=None):

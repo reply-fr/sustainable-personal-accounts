@@ -32,7 +32,7 @@ from code.on_record_handler import build_reports, handle_record, handle_monthly_
 from code.key_value_store import KeyValueStore
 
 from tests.fixture_key_value_store import create_my_table, populate_records_table
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 sample_payload = json.dumps(
