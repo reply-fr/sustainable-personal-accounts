@@ -27,10 +27,12 @@ import pytest
 from code import Events
 from code.on_exception_handler import handle_exception
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
-sample_payload = json.dumps({"hello": "world"})
+sample_payload = json.dumps(
+    {"message": "this is a message to describe the exception",
+     "title": "exception has happened"})
 
 
 @pytest.mark.unit_tests
@@ -45,6 +47,7 @@ def test_handle_exception():
                                                              label=label,
                                                              environment="envt1"))
         mock = Mock()
+        mock.client.return_value.start_incident.return_value = dict(incidentRecordArn="arn:incidents:123")
         assert handle_exception(event=event, context=None, session=mock) == f"[OK] {label}"
 
 

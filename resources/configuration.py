@@ -45,6 +45,7 @@ class Configuration:
         features_with_csv_files='list',
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
+        features_with_response_plan_arn='str',
         features_with_tag_prefix='str',
         metering_records_datastore='str',
         metering_records_ttl_in_seconds='int',
@@ -130,6 +131,7 @@ class Configuration:
         toggles.features_with_csv_files = []
         toggles.features_with_email_subscriptions_on_alerts = []
         toggles.features_with_microsoft_webhook_on_alerts = None
+        toggles.features_with_response_plan_arn = ''
         toggles.features_with_tag_prefix = 'account-'
         toggles.metering_records_datastore = 'SpaRecordsTable'
         toggles.metering_records_ttl_in_seconds = 366 * 24 * 60 * 60

@@ -73,30 +73,21 @@ def handle_sqs_record(record, session=None):
     try:
         body = json.loads(record['body'])
         account_id = body['TopicArn'].split(':')[4]
-        relay_notification(message=body['Message'], account_id=account_id, session=session)
+        label = get_account_label(account_id=account_id, session=session)
+        title = get_subject(account=label)
+        message = get_notification_message(account=label, message=body['Message'])
+        publish_notification(notification=dict(Message=message, Subject=title), session=session)
         Events.emit_spa_event(label='BudgetAlertException',
-                              payload=dict(account=account_id, message=body['Message']),
+                              payload=dict(account=account_id,
+                                           message=get_notification_message(account=label, message=body['Message']),
+                                           title=get_subject(account=label)),
                               session=session)
     except json.decoder.JSONDecodeError:
-        relay_message(message=record['body'], session=session)
+        publish_notification(notification=dict(Message=message, Subject="Alert message"), session=session)
         Events.emit_spa_event(label='GenericException',
-                              payload=dict(message=record['body']),
+                              payload=dict(message=record['body'],
+                                           title="Exception received over SQS"),
                               session=session)
-
-
-def relay_notification(account_id, message, session=None):
-    logging.debug("Relaying alert notification")
-    label = get_account_label(account_id=account_id, session=session)
-    notification = dict(Message=get_notification_message(account=label, message=message),
-                        Subject=get_subject(account=label))
-    publish_notification(notification=notification, session=session)
-
-
-def relay_message(message, session=None):
-    logging.debug("Relaying message")
-    notification = dict(Message=message,
-                        Subject="Alert message")
-    publish_notification(notification=notification, session=session)
 
 
 def publish_notification(notification, session=None):

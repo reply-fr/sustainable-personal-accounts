@@ -39,13 +39,15 @@ def handle_exception(event, context, session=None):
 
 def start_incident(attributes, session=None):
     logging.debug(f"Starting incident '{attributes}'")
+    payload = attributes.get('payload', dict(message='An exception has been processed', title='An exception has been received'))
     session = session or Session()
     incidents = session.client('ssm-incidents')
-    incidents.start_incident(
-        title=attributes.get('title') or attributes.get('label'),
-        impact=int(attributes.get('impact', 4)),
-        responsePlanArn=os.environ['RESPONSE_PLAN_ARN']
-    )
+    response = incidents.start_incident(title=payload.get('title') or attributes.get('label'),
+                                        impact=int(payload.get('impact', 4)),
+                                        responsePlanArn=os.environ['RESPONSE_PLAN_ARN'])
+    incidents.update_incident_record(arn=response['incidentRecordArn'],
+                                     summary=payload.get('message'))
+    logging.debug("Done")
 
 
 def put_metric_data(name, dimensions, session=None):
