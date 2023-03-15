@@ -64,6 +64,8 @@ Here is the full sequence of activities for this step:
 - Search for roles starting with "Spa" and visit the page for the role that you have created
 - Take note of the ARN role, a string similar to that: `arn:aws:iam::123456789012:role/SpaAssumedRole`
 
+SPA is also assuming a role to act on the accounts that it manages. If you rely on AWS Control Tower then you may want to leverage the role `AWSControlTowerExecutionRole` and there is additional no IAM setup. If your architecture dictates the usage of another role, then please ensure that the Lambda functions of SPA will be given the permission to assume this role. When the setup is not correct, then access denied is reported into the logs of the Lambda functions `OnAssignedAccount` and `OnExpiredAccount`.
+
 ## Step 5 - Receive all events on Automation account
 
 Since organizational events are collected by the top-level account of the AWS Organization, we will forward these events to the default bus of the `Automation` account. Actually, we want to make this bus a global resource, accessible from any account. We modify the resource policy of the default bus so that events can be put from any account of the AWS Organization. This is based on Attribute-Based Access Control (ABAC), with a specific IAM condition.
@@ -175,7 +177,7 @@ $ make setup
 
 ## Step 9 - Configure SPA
 
-You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
+You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. In the context of Control Tower, this can be `AWSControlTowerExecution`. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
 
 ## Step 10 - Deploy SPA
 
