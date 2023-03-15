@@ -1,0 +1,9 @@
+{
+    "Entries": [
+        {
+            "Source": "SustainablePersonalAccounts",
+            "DetailType": "GenericException",
+            "Detail": "{\"Payload\": {\"title\": \"Alert on account '123456789012 (j.foo@example.com)'\", \"message\": \"You will find below a copy of the alert that has been sent automatically to the holder of account '123456789012 (j.foo@example.com)':\\n\\n\\n----\\n\\n\\nAWS Budget Notification March 09, 2023\\nAWS Account 626679720752\\n\\n\\nDear AWS Customer,\\n\\nYou requested that we alert you when the ACTUAL Cost associated with your SpaBudget budget is greater than $80.00 for the current month. The ACTUAL Cost associated with this budget is $83.16. You can find additional details below and by accessing the AWS Budgets dashboard [1].\\n\\nBudget Name: SpaBudget\\nBudget Type: Cost\\nBudgeted Amount: $100.00\\nAlert Type: ACTUAL\\nAlert Threshold: > $80.00\\nACTUAL Amount: $83.16\"}, \"ContentType\": \"application/json\", \"Environment\": \"Spa\"}"
+        }
+    ]
+}

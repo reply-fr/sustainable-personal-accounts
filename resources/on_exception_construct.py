@@ -20,6 +20,7 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import ManagedPolicy
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
 from code import Events
 
@@ -28,11 +29,17 @@ class OnException(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
+
+        self.plan = CfnResponsePlan(self, "ResponsePlan",
+                                    name="{}ResponsePlan".format(toggles.environment_identifier),
+                                    incident_template=dict(impact=5, title='An exception detected by SPA'))
+
         self.functions = [self.on_exception(parameters=parameters, permissions=permissions)]
 
     def on_exception(self, parameters, permissions) -> Function:
 
-        parameters['environment']['RESPONSE_PLAN_ARN'] = toggles.features_with_response_plan_arn
+        # parameters['environment']['RESPONSE_PLAN_ARN'] = toggles.features_with_response_plan_arn
+        parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
 
         function = Function(self, "FromEvent",
                             function_name="{}OnException".format(toggles.environment_identifier),

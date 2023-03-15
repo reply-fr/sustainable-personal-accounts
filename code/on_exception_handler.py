@@ -25,6 +25,9 @@ setup_logging()
 from events import Events
 
 
+SUMMARY_TEMPLATE = "# {}\n\n{}"  # markdown is supported
+
+
 @trap_exception
 def handle_exception(event, context, session=None):
     logging.debug(event)
@@ -40,13 +43,15 @@ def handle_exception(event, context, session=None):
 def start_incident(attributes, session=None):
     logging.debug(f"Starting incident '{attributes}'")
     payload = attributes.get('payload', dict(message='An exception has been processed', title='An exception has been received'))
+    title = payload.get('title') or attributes.get('label')
     session = session or Session()
     incidents = session.client('ssm-incidents')
-    response = incidents.start_incident(title=payload.get('title') or attributes.get('label'),
+    response = incidents.start_incident(title=title,
                                         impact=int(payload.get('impact', 4)),
                                         responsePlanArn=os.environ['RESPONSE_PLAN_ARN'])
+    summary = SUMMARY_TEMPLATE.format(title, payload.get('message')).replace('\n', '  \n')  # force newlines in markdown
     incidents.update_incident_record(arn=response['incidentRecordArn'],
-                                     summary=payload.get('message'))
+                                     summary=summary)
     logging.debug("Done")
 
 
