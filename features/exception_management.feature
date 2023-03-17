@@ -10,6 +10,7 @@ Scenario: where an exception creates a ticket
      When an exception event is put on this bus
      Then lambda function 'OnException' is executed
       And an incident record is created in the response plan
+      And a cost report is attached to the incident record when an account id is provided
 
 
 
