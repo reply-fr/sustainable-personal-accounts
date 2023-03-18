@@ -15,13 +15,14 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from uuid import uuid4
-
 from boto3.session import Session
 import botocore
+import os
+import logging
+from uuid import uuid4
 
 
-def make_session(role_arn, region=None, name=None, session=None):
+def get_assumed_session(role_arn, region=None, name=None, session=None):
     session = session or Session()
     sts = session.client('sts')
 
@@ -38,3 +39,14 @@ def make_session(role_arn, region=None, name=None, session=None):
         parameters['region_name'] = region
 
     return Session(**parameters)
+
+
+def get_account_session(account, session=None):
+    arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
+    main = get_assumed_session(role_arn=arn, session=session) if arn else Session()
+
+    name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
+    target = get_assumed_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=main)
+    identity = target.client('sts').get_caller_identity()
+    logging.debug(f"Using identity {identity}")
+    return target

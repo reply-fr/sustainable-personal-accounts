@@ -19,7 +19,7 @@ from .account import Account, State
 from .events import Events
 from .key_value_store import KeyValueStore
 from .logger import setup_logging, trap_exception, LOGGING_FORMAT
-from .session import make_session
+from .session import get_account_session, get_assumed_session
 from .worker import Worker
 
 __all__ = ['Account',
@@ -27,7 +27,8 @@ __all__ = ['Account',
            'KeyValueStore',
            'LOGGING_FORMAT',
            'State',
-           'make_session',
+           'get_account_session',
+           'get_assumed_session',
            'setup_logging',
            'trap_exception',
            'Worker']

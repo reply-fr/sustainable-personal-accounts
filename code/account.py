@@ -25,7 +25,7 @@ import re
 
 from boto3.session import Session
 
-from session import make_session
+from session import get_assumed_session
 
 
 @unique
@@ -45,7 +45,7 @@ class Account:
     def get_session(cls):
         if cls.session is None:
             role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-            cls.session = make_session(role_arn=role) if role else Session()
+            cls.session = get_assumed_session(role_arn=role) if role else Session()
         return cls.session
 
     @classmethod

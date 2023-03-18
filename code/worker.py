@@ -23,7 +23,7 @@ import time
 from botocore.exceptions import ClientError
 from boto3.session import Session
 
-from session import make_session
+from session import get_account_session
 
 
 class Worker:
@@ -189,7 +189,7 @@ class Worker:
 
     @classmethod
     def deploy_topic_for_alerts(cls, name="SpaAlertTopic", account=None):
-        session = cls.get_session(account) if account else Session()
+        session = cls.get_account_session(account) if account else Session()
         sns = session.client('sns')
 
         logging.info(f"Deploying topic '{name}' for budget alerts")
@@ -224,7 +224,7 @@ class Worker:
 
     @classmethod
     def grant_publishing_from_budgets(cls, topic_arn, account=None):
-        session = cls.get_session(account) if account else Session()
+        session = get_account_session(account) if account else Session()
         sns = session.client('sns')
 
         try:
@@ -294,17 +294,6 @@ class Worker:
         return json.dumps(policy)
 
     @classmethod
-    def get_session(cls, account, session=None):
-        arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-        master = make_session(role_arn=arn, session=session) if arn else Session()
-
-        name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
-        target = make_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=master)
-        identity = target.client('sts').get_caller_identity()
-        logging.debug(f"Using identity {identity}")
-        return target
-
-    @classmethod
     def get_trusting_policy_document(cls, service):
         policy = {
             "Version": "2012-10-17",
@@ -323,7 +312,7 @@ class Worker:
 
     @classmethod
     def prepare(cls, details, settings, buildspec, event_bus_arn, topic_arn, session=None):
-        session = session or cls.get_session(details.id)
+        session = session or get_account_session(details.id)
 
         logging.info(f"Preparing account '{details.id}'...")
         logging.debug(f"account: {details.__dict__}")
@@ -341,7 +330,7 @@ class Worker:
 
     @classmethod
     def purge(cls, account_id, settings, buildspec, event_bus_arn, session=None):
-        session = session or cls.get_session(account_id)
+        session = session or get_account_session(account_id)
 
         logging.info(f"Purging account '{account_id}'...")
         cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)

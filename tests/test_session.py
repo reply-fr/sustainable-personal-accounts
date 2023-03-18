@@ -23,7 +23,7 @@ from boto3.session import Session
 import pytest
 from unittest.mock import Mock
 
-from code import make_session
+from code import get_assumed_session
 
 # pytestmark = pytest.mark.wip
 
@@ -38,18 +38,18 @@ def mock():
 
 
 @pytest.mark.unit_tests
-def test_make_session_minimum(mock):
-    session = make_session(role_arn='arn:aws:iam::222222222222:role/role-on-source-account',
-                           session=mock)
+def test_get_assumed_session_minimum(mock):
+    session = get_assumed_session(role_arn='arn:aws:iam::222222222222:role/role-on-source-account',
+                                  session=mock)
     assert isinstance(session, Session)
 
 
 @pytest.mark.unit_tests
-def test_make_session_maximum(mock):
-    session = make_session(role_arn='arn:aws:iam::222222222222:role/role-on-source-account',
-                           region='eu-west-12',
-                           name='a-name',
-                           session=mock)
+def test_get_assumed_session_maximum(mock):
+    session = get_assumed_session(role_arn='arn:aws:iam::222222222222:role/role-on-source-account',
+                                  region='eu-west-12',
+                                  name='a-name',
+                                  session=mock)
     assert isinstance(session, Session)
     mock.client.assert_called_with('sts')
     mock.client.return_value.assume_role.assert_called_with(
@@ -58,6 +58,6 @@ def test_make_session_maximum(mock):
 
 
 @pytest.mark.unit_tests
-def test_make_session_invalid_arn():
+def test_get_assumed_session_invalid_arn():
     with pytest.raises(ValueError):
-        make_session(role_arn='arn')
+        get_assumed_session(role_arn='arn')
