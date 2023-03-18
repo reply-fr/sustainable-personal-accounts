@@ -104,14 +104,11 @@ class ServerlessStack(Stack):
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ORGANIZATIONAL_UNITS_PARAMETER=Parameters.get_organizational_unit_parameter(environment=toggles.environment_identifier),
-            PREPARATION_BUILDSPEC_PARAMETER=Parameters.get_parameter(toggles.environment_identifier, Parameters.PREPARATION_BUILDSPEC_PARAMETER),
-            PURGE_BUILDSPEC_PARAMETER=Parameters.get_parameter(toggles.environment_identifier, Parameters.PURGE_BUILDSPEC_PARAMETER),
             REPORTS_BUCKET_NAME=self.reports.bucket.bucket_name,
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             TAG_PREFIX=toggles.features_with_tag_prefix,
-            VERBOSITY=toggles.automation_verbosity,
-            WEB_ENDPOINTS_PARAMETER=Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER))
+            VERBOSITY=toggles.automation_verbosity)
         return environment
 
     def get_parameters(self, environment) -> dict:  # passed to every lambda functions

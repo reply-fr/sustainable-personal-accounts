@@ -20,11 +20,15 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
 
+from .parameters_construct import Parameters
+
 
 class OnExpiredAccount(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
+
+        parameters['environment']['PURGE_BUILDSPEC_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.PURGE_BUILDSPEC_PARAMETER)
         self.functions = [self.build_on_tag(parameters=parameters, permissions=permissions)]
 
     def build_on_tag(self, parameters, permissions) -> Function:

@@ -40,7 +40,7 @@ class OnException(Construct):
         # parameters['environment']['RESPONSE_PLAN_ARN'] = toggles.features_with_response_plan_arn
         parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
         parameters['environment']['REPORTING_EXCEPTIONS_PREFIX'] = toggles.reporting_exceptions_prefix
-        parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = toggles.environment_identifier + Parameters.WEB_ENDPOINTS_PARAMETER
+        parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER)
         self.functions = [self.on_exception(parameters=parameters, permissions=permissions),
                           self.on_download(parameters=parameters, permissions=permissions)]
 
