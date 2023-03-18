@@ -81,7 +81,7 @@ def get_table():
 
 
 def build_reports(records):
-    logging.info("Building activity reports from records")
+    logging.info("Building activity reports for each cost center")
     reports = {}
     for record in records:
         item = record['value']

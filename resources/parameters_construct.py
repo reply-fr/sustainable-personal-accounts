@@ -29,8 +29,9 @@ class Parameters(Construct):
     ORGANIZATIONAL_UNITS_PARAMETER = "OrganizationalUnits"
     PREPARATION_BUILDSPEC_PARAMETER = "PreparationBuildspecTemplate"
     PURGE_BUILDSPEC_PARAMETER = "PurgeBuildspecTemplate"
+    WEB_ENDPOINTS_PARAMETER = "WebEndpoints"
 
-    def __init__(self, scope: Construct, id: str) -> None:
+    def __init__(self, scope: Construct, id: str, web_endpoints={}) -> None:
         super().__init__(scope, id)
 
         for identifier in toggles.accounts.keys():  # one parameter per managed account
@@ -59,7 +60,7 @@ class Parameters(Construct):
             string_value=string_value,
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for account preparation",
-            parameter_name=toggles.environment_identifier + self.PREPARATION_BUILDSPEC_PARAMETER,
+            parameter_name=self.get_parameter(toggles.environment_identifier, self.PREPARATION_BUILDSPEC_PARAMETER),
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
         string_value = self.get_buildspec_for_purge()  # the buildspec for account purge
@@ -68,7 +69,15 @@ class Parameters(Construct):
             string_value=string_value,
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for the purge of accounts",
-            parameter_name=toggles.environment_identifier + self.PURGE_BUILDSPEC_PARAMETER,
+            parameter_name=self.get_parameter(toggles.environment_identifier, self.PURGE_BUILDSPEC_PARAMETER),
+            tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+
+        StringParameter(
+            self, "WebEndpoints",
+            string_value=json.dumps(web_endpoints, indent=4),
+            data_type=ParameterDataType.TEXT,
+            description="The set of web endpoints exposed to the Internet",
+            parameter_name=self.get_parameter(toggles.environment_identifier, self.WEB_ENDPOINTS_PARAMETER),
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
     @classmethod
@@ -83,6 +92,11 @@ class Parameters(Construct):
         attributes = ['', environment, cls.ORGANIZATIONAL_UNITS_PARAMETER]
         if identifier:
             attributes.append(identifier)
+        return cls.PARAMETER_SEPARATOR.join(attributes)
+
+    @classmethod
+    def get_parameter(cls, environment, parameter):
+        attributes = ['', environment, parameter]
         return cls.PARAMETER_SEPARATOR.join(attributes)
 
     def get_buildspec_for_preparation(self):

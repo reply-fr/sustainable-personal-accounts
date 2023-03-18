@@ -50,8 +50,6 @@ class ServerlessStack(Stack):
 
         self.reports = Reports(self, "{}Reports-{}".format(toggles.environment_identifier, toggles.automation_region))
 
-        Parameters(self, "Parameters")
-
         # lambda functions
         labels = [
             'CheckAccounts',
@@ -72,6 +70,7 @@ class ServerlessStack(Stack):
             'ResetAccounts',
             'ToMicrosoftTeams']
 
+        constructs = {}
         functions = []
         for label in labels:
 
@@ -79,8 +78,8 @@ class ServerlessStack(Stack):
             parameters = self.get_parameters(environment=environment).copy()
             permissions = self.get_permissions().copy()
 
-            construct = globals()[label](self, label, parameters=parameters, permissions=permissions)
-            functions.extend(construct.functions)
+            constructs[label] = globals()[label](self, label, parameters=parameters, permissions=permissions)
+            functions.extend(constructs[label].functions)
 
         for function in functions:
             self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
@@ -89,7 +88,12 @@ class ServerlessStack(Stack):
                 "{}Cockpit-{}".format(toggles.environment_identifier, toggles.automation_region),
                 functions=functions)
 
-        for key in toggles.automation_tags.keys():  # cascaded to constructs and other resources
+        web_endpoints = {}
+        for label in ['OnException']:  # constructs that expose web endpoints
+            web_endpoints.update(constructs[label].web_endpoints.items())
+        Parameters(self, "Parameters", web_endpoints=web_endpoints)
+
+        for key in toggles.automation_tags.keys():  # cascaded to constructs and to other resources
             Tags.of(self).add(key, toggles.automation_tags[key])
 
     def get_environment(self) -> dict:  # shared across all lambda functions
@@ -100,13 +104,14 @@ class ServerlessStack(Stack):
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ORGANIZATIONAL_UNITS_PARAMETER=Parameters.get_organizational_unit_parameter(environment=toggles.environment_identifier),
-            PREPARATION_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PREPARATION_BUILDSPEC_PARAMETER,
-            PURGE_BUILDSPEC_PARAMETER=toggles.environment_identifier + Parameters.PURGE_BUILDSPEC_PARAMETER,
+            PREPARATION_BUILDSPEC_PARAMETER=Parameters.get_parameter(toggles.environment_identifier, Parameters.PREPARATION_BUILDSPEC_PARAMETER),
+            PURGE_BUILDSPEC_PARAMETER=Parameters.get_parameter(toggles.environment_identifier, Parameters.PURGE_BUILDSPEC_PARAMETER),
             REPORTS_BUCKET_NAME=self.reports.bucket.bucket_name,
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             TAG_PREFIX=toggles.features_with_tag_prefix,
-            VERBOSITY=toggles.automation_verbosity)
+            VERBOSITY=toggles.automation_verbosity,
+            WEB_ENDPOINTS_PARAMETER=Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER))
         return environment
 
     def get_parameters(self, environment) -> dict:  # passed to every lambda functions

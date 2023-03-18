@@ -19,10 +19,11 @@ from constructs import Construct
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import ManagedPolicy
-from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_lambda import Function, FunctionUrlAuthType
 from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
 from code import Events
+from .parameters_construct import Parameters
 
 
 class OnException(Construct):
@@ -34,12 +35,16 @@ class OnException(Construct):
                                     name="{}ResponsePlan".format(toggles.environment_identifier),
                                     incident_template=dict(impact=5, title='An exception detected by SPA'))
 
-        self.functions = [self.on_exception(parameters=parameters, permissions=permissions)]
-
-    def on_exception(self, parameters, permissions) -> Function:
+        self.web_endpoints = {}
 
         # parameters['environment']['RESPONSE_PLAN_ARN'] = toggles.features_with_response_plan_arn
         parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
+        parameters['environment']['REPORTING_EXCEPTIONS_PREFIX'] = toggles.reporting_exceptions_prefix
+        parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = toggles.environment_identifier + Parameters.WEB_ENDPOINTS_PARAMETER
+        self.functions = [self.on_exception(parameters=parameters, permissions=permissions),
+                          self.on_download(parameters=parameters, permissions=permissions)]
+
+    def on_exception(self, parameters, permissions) -> Function:
 
         function = Function(self, "FromEvent",
                             function_name="{}OnException".format(toggles.environment_identifier),
@@ -59,5 +64,20 @@ class OnException(Construct):
                  detail={"Environment": [toggles.environment_identifier]},
                  detail_type=Events.EXCEPTION_EVENT_LABELS),
              targets=[LambdaFunction(function)])
+
+        return function
+
+    def on_download(self, parameters, permissions) -> Function:
+        function = Function(self, "FromUrl",
+                            function_name="{}OnExceptionAttachmentDownload".format(toggles.environment_identifier),
+                            description="Serve requests for attachment download",
+                            handler="on_exception_handler.handle_attachment_request",
+                            **parameters)
+
+        for permission in permissions:
+            function.add_to_role_policy(permission)
+
+        self.web_endpoints["OnException.DownloadAttachment.WebEndpoint"] = function.add_function_url(auth_type=FunctionUrlAuthType.NONE,
+                                                                                                     cors=dict(allowed_origins=["*"])).url
 
         return function
