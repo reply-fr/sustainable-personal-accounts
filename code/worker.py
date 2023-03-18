@@ -189,7 +189,7 @@ class Worker:
 
     @classmethod
     def deploy_topic_for_alerts(cls, name="SpaAlertTopic", account=None):
-        session = cls.get_account_session(account) if account else Session()
+        session = get_account_session(account) if account else Session()
         sns = session.client('sns')
 
         logging.info(f"Deploying topic '{name}' for budget alerts")
