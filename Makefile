@@ -185,3 +185,24 @@ clean:
 	rm -rf ${PRESENTATION_NAME}.pptx
 	rm -rf htmlcov/
 	rm -rf cdk.out/asset.*
+
+define PURGE_INCIDENT_RECORDS_PYSCRIPT
+import boto3, sys
+prefix = sys.argv[1].replace(':response-plan/', ':incident-record/')
+im = boto3.client('ssm-incidents')
+items = im.list_incident_records()
+for item in items['incidentRecordSummaries']:
+	arn = item['arn']
+	if arn.startswith(prefix):
+		print(f"deleting incident record ‘{arn}'")
+		im.delete_incident_record(arn=arn)
+	else:
+		print(f"skipping incident record ‘{arn}'")
+endef
+export PURGE_INCIDENT_RECORDS_PYSCRIPT
+PURGE_INCIDENT_RECORDS := venv/bin/python -c "$$PURGE_INCIDENT_RECORDS_PYSCRIPT"
+
+clean-incident-records:
+	@[ "$(RESPONSE_PLAN_ARN)" ] || (echo "[ERROR] RESPONSE_PLAN_ARN environment variable is not set" ; exit 1)
+	@echo "Purging response plan '${RESPONSE_PLAN_ARN}'"
+	@$(PURGE_INCIDENT_RECORDS) ${RESPONSE_PLAN_ARN}
