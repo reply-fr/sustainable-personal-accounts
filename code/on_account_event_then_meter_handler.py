@@ -93,10 +93,10 @@ def update_maintenance_transaction(account_id, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulMaintenanceEvent',
              payload=transaction)
-        put_metric_data(name='TransactionByCostCenter',
+        put_metric_data(name='TransactionsByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=transaction['cost-center']),
                                     dict(Name='Environment', Value=Events.get_environment())])
-        put_metric_data(name='TransactionByLabel',
+        put_metric_data(name='TransactionsByLabel',
                         dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
     else:
@@ -118,10 +118,10 @@ def update_onboarding_transaction(account_id, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label='SuccessfulOnBoardingEvent',
              payload=transaction)
-        put_metric_data(name='TransactionByCostCenter',
+        put_metric_data(name='TransactionsByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=transaction['cost-center']),
                                     dict(Name='Environment', Value=Events.get_environment())])
-        put_metric_data(name='TransactionByLabel',
+        put_metric_data(name='TransactionsByLabel',
                         dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
     else:
@@ -133,7 +133,7 @@ def get_cost_center(transaction):
 
 
 def put_metric_data(name, dimensions, session=None):
-    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
+    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'")
     session = session or Session()
     session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
                                                                   Dimensions=dimensions,
@@ -144,7 +144,7 @@ def put_metric_data(name, dimensions, session=None):
 
 
 @trap_exception
-def handle_stream_event(event, context=None, emit=None):
+def handle_stream_event(event, context=None, emit=None):  # processing record expirations
 
     for item in event["Records"]:
         logging.debug(item)

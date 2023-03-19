@@ -31,7 +31,7 @@ class OnAccountEventThenMeter(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
 
-        transactions = Table(
+        self.table = Table(
             self, "TransactionsTable",
             table_name=toggles.metering_transactions_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
@@ -44,10 +44,10 @@ class OnAccountEventThenMeter(Construct):
         parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
         parameters['environment']['METERING_TRANSACTIONS_TTL'] = str(toggles.metering_transactions_ttl_in_seconds)
         self.functions = [self.on_event(parameters=parameters, permissions=permissions),
-                          self.on_stream(parameters=parameters, permissions=permissions, table=transactions)]
+                          self.on_stream(parameters=parameters, permissions=permissions, table=self.table)]
 
         for function in self.functions:
-            transactions.grant_read_write_data(grantee=function)
+            self.table.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters, permissions) -> Function:
 

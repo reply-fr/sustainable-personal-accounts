@@ -28,6 +28,7 @@ from build_resources import build_resources
 # pytestmark = pytest.mark.wip
 
 
+@pytest.mark.integration_tests
 @pytest.mark.slow
 @patch.dict(os.environ, dict(CDK_DEFAULT_ACCOUNT="123456789012", CDK_DEFAULT_REGION="eu-west-1"))
 def test_build_resources():

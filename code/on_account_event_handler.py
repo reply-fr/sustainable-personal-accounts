@@ -37,11 +37,11 @@ def handle_account_event(event, context, session=None):
     else:
         logging.info(f"Listening '{input.label}' '{input.account}'")
 
-    put_metric_data(name='AccountEventByAccount',
+    put_metric_data(name='AccountEventsByAccount',
                     dimensions=[dict(Name='Account', Value=input.account),
                                 dict(Name='Environment', Value=Events.get_environment())],
                     session=session)
-    put_metric_data(name='AccountEventByLabel',
+    put_metric_data(name='AccountEventsByLabel',
                     dimensions=[dict(Name='Label', Value=input.label),
                                 dict(Name='Environment', Value=Events.get_environment())],
                     session=session)
@@ -50,7 +50,7 @@ def handle_account_event(event, context, session=None):
 
 
 def put_metric_data(name, dimensions, session=None):
-    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
+    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'")
     session = session or Session()
     session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
                                                                   Dimensions=dimensions,

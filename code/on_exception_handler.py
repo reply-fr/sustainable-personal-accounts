@@ -180,7 +180,7 @@ def get_download_attachment_web_endpoint():
 
 
 def put_metric_data(name, dimensions, session=None):
-    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'...")
+    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'")
     session = session or Session()
     session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
                                                                   Dimensions=dimensions,

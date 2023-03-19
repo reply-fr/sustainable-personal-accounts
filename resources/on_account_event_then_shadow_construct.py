@@ -36,7 +36,7 @@ class OnAccountEventThenShadow(Construct):
         self.functions = [self.on_event(parameters=parameters, permissions=permissions),
                           self.on_schedule(parameters=parameters, permissions=permissions)]
 
-        shadows = Table(
+        self.table = Table(
             self, "ShadowsTable",
             table_name=toggles.metering_shadows_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
@@ -46,7 +46,7 @@ class OnAccountEventThenShadow(Construct):
             time_to_live_attribute="Expiration")
 
         for function in self.functions:
-            shadows.grant_read_write_data(grantee=function)
+            self.table.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters, permissions) -> Function:
 

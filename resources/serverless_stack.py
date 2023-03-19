@@ -84,9 +84,15 @@ class ServerlessStack(Stack):
         for function in functions:
             self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
 
+        tables = []  # monitored in cloudwatch dashboard
+        # for label in ['OnAccountEventThenMeter', 'OnAccountEventThenShadow', 'OnRecord']:
+        for label in ['OnRecord']:
+            tables.append(constructs[label].table)
+
         Cockpit(self,
                 "{}Cockpit-{}".format(toggles.environment_identifier, toggles.automation_region),
-                functions=functions)
+                functions=functions,
+                tables=tables)
 
         web_endpoints = {}
         for label in ['OnException']:  # constructs that expose web endpoints

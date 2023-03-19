@@ -37,7 +37,7 @@ class OnRecord(Construct):
                           self.monthly(parameters=parameters, permissions=permissions),
                           self.daily(parameters=parameters, permissions=permissions)]
 
-        shadows = Table(
+        self.table = Table(
             self, "RecordsTable",
             table_name=toggles.metering_records_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
@@ -47,7 +47,7 @@ class OnRecord(Construct):
             time_to_live_attribute="Expiration")
 
         for function in self.functions:
-            shadows.grant_read_write_data(grantee=function)
+            self.table.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters, permissions) -> Function:
 
