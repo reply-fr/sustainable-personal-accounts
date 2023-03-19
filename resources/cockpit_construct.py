@@ -40,9 +40,10 @@ class Cockpit(Construct):
             self.get_text_label_widget())
 
         self.cockpit.add_widgets(
-            self.get_transactions_by_label_widget(),
+            self.get_transactions_by_cost_center_widget(),
             self.get_maintenance_transactions_by_account_widget(),
-            self.get_onboarding_transactions_by_account_widget())
+            self.get_onboarding_transactions_by_account_widget(),
+            self.get_exceptions_by_label_widget())
 
         self.cockpit.add_widgets(
             self.get_events_by_state_widget(),
@@ -58,6 +59,13 @@ class Cockpit(Construct):
         return TextWidget(markdown=toggles.automation_cockpit_markdown_text,
                           height=2,
                           width=24)
+
+    BASIC_TEMPLATE = "SEARCH('{SustainablePersonalAccount, Environment} Environment=""___environment___"" MetricName=""___metric___""', 'Sum', 60)"
+
+    def get_basic_expression(self, environment=None, metric=None):
+        environment = environment or toggles.environment_identifier
+        metric = metric or "ExceptionsByLabel"
+        return self.BASIC_TEMPLATE.replace('___environment___', environment).replace('___metric___', metric)
 
     SEARCH_TEMPLATE = "SEARCH('{SustainablePersonalAccount, ___by___, Environment} Environment=""___environment___"" MetricName=""___metric___""', 'Sum', 60)"
 
@@ -76,7 +84,7 @@ class Cockpit(Construct):
                 using_metrics={})],
             stacked=True,
             height=6,
-            width=9)
+            width=6)
 
     def get_onboarding_transactions_by_account_widget(self):
         return GraphWidget(
@@ -88,14 +96,26 @@ class Cockpit(Construct):
                 using_metrics={})],
             stacked=True,
             height=6,
-            width=9)
+            width=6)
 
-    def get_transactions_by_label_widget(self):
+    def get_transactions_by_cost_center_widget(self):
         return GraphWidget(
-            title="Transactions by label",
+            title="Transactions by cost center",
             left=[MathExpression(
                 label='transaction',
-                expression=self.get_search_expression(by='Label', metric='TransactionByLabel'),
+                expression=self.get_search_expression(by='CostCenter', metric='TransactionByCostCenter'),
+                period=Duration.minutes(1),
+                using_metrics={})],
+            stacked=True,
+            height=6,
+            width=6)
+
+    def get_exceptions_by_label_widget(self):
+        return GraphWidget(
+            title="Exceptions by label",
+            left=[MathExpression(
+                label='incident',
+                expression=self.get_search_expression(by='Label', metric='ExceptionsByLabel'),
                 period=Duration.minutes(1),
                 using_metrics={})],
             stacked=True,

@@ -40,7 +40,7 @@ SUMMARY_TEMPLATE = "# {}\n\n{}"  # markdown is supported
 def handle_exception(event, context=None, session=None):
     logging.debug(event)
     input = Events.decode_spa_event(event)
-    incident_arn = start_incident(payload=input.payload, session=session)
+    incident_arn = start_incident(label=input.label, payload=input.payload, session=session)
     tag_incident(incident_arn=incident_arn, payload=input.payload, session=session)
     attach_cost_report(incident_arn=incident_arn, payload=input.payload, session=session)
     put_metric_data(name='ExceptionsByLabel',
@@ -56,7 +56,7 @@ def handle_attachment_request(event, context=None):  # web proxy to attachments 
     return download_attachment(path=event.get('rawPath', '/'))
 
 
-def start_incident(payload, session=None):
+def start_incident(label, payload, session=None):
     logging.info(f"Starting incident '{payload}'")
     title = payload.get('title', '*no title*')
     session = session or Session()
@@ -66,6 +66,7 @@ def start_incident(payload, session=None):
                                         responsePlanArn=os.environ['RESPONSE_PLAN_ARN'])
     summary = SUMMARY_TEMPLATE.format(title, payload.get('message', '*no message*')).replace('\n', '  \n')  # force newlines in markdown
     incidents.update_incident_record(arn=response['incidentRecordArn'], summary=summary)
+    incidents.tag_resource(resourceArn=response['incidentRecordArn'], tags={'exception': label})
     logging.debug("Done")
     return response['incidentRecordArn']
 

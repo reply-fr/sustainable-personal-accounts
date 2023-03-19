@@ -4,13 +4,38 @@ As a system administrator,
 I manage exceptions with a ticketing system
 so as to support incident management and problem analysis
 
-Scenario: where an exception creates a ticket
+Scenario: where an incident record is created on exception
     Given the default event bus of AWS account 'Automation' in an AWS Organisation
-      And a response plan has been configured in SPA settings
-     When an exception event is put on this bus
+     When an exception event is put on the automation bus
      Then lambda function 'OnException' is executed
       And an incident record is created in the response plan
-      And a cost report is attached to the incident record when an account id is provided
+      And the incident record is tagged with event information
 
+Scenario: where an incident record is enriched with account information
+    Given an exception that conveys an account id is put on the automation bus
+      And an incident record is created on exception
+     Then the incident record is tagged with account information
+      And a cost report for current month for this account is attached to the incident record
 
+Scenario: where an incident record is reviewed during resolution
+    Given an incident record is created on exception
+     When a system administrator reviews the incident record
+     Then the incident record features a title and a summary as captured from the exception event
+      And the incident record is tagged with exception label
+
+Scenario: where an incident record enriched with account information is reviewed during resolution
+    Given an exception that conveys an account id is put on the automation bus
+      And an incident record is created on exception
+     When a system administrator reviews the incident record
+      And the incident record is tagged with account id, account email, account name and organizational unit
+      And the incident record provides a web link to a cost and usage report for this account
+
+Scenario: where a cost and usage report is reviewed during incident resolution
+    Given an exception that conveys an account id is put on the automation bus
+      And an incident record is created on exception
+     When a system administrator reviews the incident record
+      And a system administrator clicks on the link to the cost and usage report
+     Then lambda function 'OnExceptionAttachmentDownload' is executed
+      And the cost and usage report is downloaded to the workstation of system administrator
+      And the cost and usage report can be inspected by system administrator
 
