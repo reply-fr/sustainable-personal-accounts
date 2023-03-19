@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import boto3
 from boto3.session import Session
+import botocore
 from csv import DictWriter
 from datetime import date
 import io
@@ -69,9 +70,14 @@ def start_incident(payload, session=None):
 
 
 def attach_cost_report(incident_arn, payload, session=None, day=None):
+    logging.info("Attaching cost and usage report to incident report")
     account = payload.get('account', '123456789012')
-    if account:
-        day = day or date.today()
+    if not account:
+        logging.debug(f"No account identifier in {payload}")
+        return
+
+    day = day or date.today()
+    try:
         cost_and_usage = get_cost_and_usage_report(account, day, session)
         path = get_report_key(str(account))
         store_report(path=path, report=build_csv_report(cost_and_usage))
@@ -80,12 +86,12 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
                          url=get_report_url(path=path),
                          session=session)
         logging.debug("Done")
-    else:
-        logging.debug(f"No account identifier in {payload}")
+    except botocore.exceptions.ClientError as exception:
+        logging.error(exception)
 
 
 def get_cost_and_usage_report(account, day, session=None):
-    logging.info(f"Retrieving cost and usage information for account '{account}'")
+    logging.info(f"Retrieving cost and usage information for account '{account}'...")
     session = session or get_account_session(account=account)
     costs = session.client('ce')
     return costs.get_cost_and_usage(
@@ -118,23 +124,21 @@ def build_csv_report(cost_and_usage):
 
 
 def store_report(path, report):
-    logging.info("Storing report on S3 bucket")
+    logging.info("Storing report on S3 bucket...")
     logging.debug(report)
     boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
                                   Key=path,
                                   Body=report)
-    logging.debug("Done")
 
 
 def add_related_item(incident_arn, title, url, session):
-    logging.info(f"Attaching URL '{url}' to incident record")
+    logging.info(f"Attaching URL '{url}' to incident record...")
     session = session or Session()
     im = session.client('ssm-incidents')
     im.update_related_items(
         incidentRecordArn=incident_arn,
         relatedItemsUpdate=dict(itemToAdd={'identifier': dict(type='ATTACHMENT', value=dict(url=url)),
                                            'title': title}))
-    logging.debug("Done")
 
 
 def get_report_url(path):
@@ -148,9 +152,7 @@ def get_report_url(path):
 def get_download_attachment_web_endpoint():
     ssm = boto3.client('ssm')
     item = ssm.get_parameter(Name=os.environ['WEB_ENDPOINTS_PARAMETER'])
-    logging.debug(item)
     web_endpoints = json.loads(item['Parameter']['Value'])
-    logging.debug(web_endpoints)
     return web_endpoints["OnException.DownloadAttachment.WebEndpoint"]
 
 
@@ -179,7 +181,7 @@ def download_attachment(path):
         http_status_code = 200
         file_name = os.path.basename(path)
         http_headers = {'Content-Type': 'text/csv',
-                        'Content-Disposition': f'attachment; filename="{file_name}"'}
+                        'Content-Disposition': f'attachment; filename="{file_name}"'}  # force download
         response = s3.get_object(Bucket=bucket, Key=path)
         body = response['Body'].read().decode('utf-8')
         logging.debug(f"Transmitting {len(body)} bytes")

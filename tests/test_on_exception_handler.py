@@ -37,7 +37,7 @@ sample_payload = json.dumps(
      "title": "exception has happened"})
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              REPORTING_EXCEPTIONS_PREFIX="exceptions",
                              REPORTS_BUCKET_NAME="my_bucket",
@@ -81,7 +81,7 @@ def test_handle_exception_on_unexpected_environment():
     assert handle_exception(event=event, context=None, session=mock) == "[DEBUG] Unexpected environment 'alien*environment'"
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              REPORTING_EXCEPTIONS_PREFIX="exceptions",
                              REPORTS_BUCKET_NAME="my_bucket"))
@@ -155,7 +155,7 @@ def test_build_csv_report():
                                                               '2023-03-01,2023-03-18,Tax,2.5\r\n')
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              REPORTING_EXCEPTIONS_PREFIX="exceptions",
                              REPORTS_BUCKET_NAME="my_bucket"))
