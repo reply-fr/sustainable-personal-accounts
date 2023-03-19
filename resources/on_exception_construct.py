@@ -18,7 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from constructs import Construct
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_iam import ManagedPolicy
+from aws_cdk.aws_iam import Effect, ManagedPolicy, PolicyStatement
 from aws_cdk.aws_lambda import Function, FunctionUrlAuthType
 from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
@@ -37,7 +37,6 @@ class OnException(Construct):
 
         self.web_endpoints = {}
 
-        # parameters['environment']['RESPONSE_PLAN_ARN'] = toggles.features_with_response_plan_arn
         parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
         parameters['environment']['REPORTING_EXCEPTIONS_PREFIX'] = toggles.reporting_exceptions_prefix
         parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER)
@@ -56,6 +55,9 @@ class OnException(Construct):
             function.add_to_role_policy(permission)
 
         function.role.add_managed_policy(ManagedPolicy.from_aws_managed_policy_name('AWSIncidentManagerResolverAccess'))
+        function.add_to_role_policy(PolicyStatement(effect=Effect.ALLOW,
+                                                    actions=['ssm-incidents:TagResource'],
+                                                    resources=['*']))
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",

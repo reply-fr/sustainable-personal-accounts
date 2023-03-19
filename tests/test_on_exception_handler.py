@@ -22,7 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import boto3
 import json
 from unittest.mock import Mock, patch
-from moto import mock_s3, mock_ssm, mock_sts
+from moto import mock_organizations, mock_s3, mock_ssm, mock_sts
 import os
 import pytest
 
@@ -44,6 +44,7 @@ sample_payload = json.dumps(
                              RESPONSE_PLAN_ARN="arn:plan",
                              VERBOSITY='DEBUG',
                              WEB_ENDPOINTS_PARAMETER="my_endpoints"))
+@mock_organizations
 @mock_s3
 @mock_ssm
 @mock_sts

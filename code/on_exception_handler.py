@@ -28,6 +28,7 @@ import os
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from account import Account
 from events import Events
 from session import get_account_session
 
@@ -40,6 +41,7 @@ def handle_exception(event, context=None, session=None):
     logging.debug(event)
     input = Events.decode_spa_event(event)
     incident_arn = start_incident(payload=input.payload, session=session)
+    tag_incident(incident_arn=incident_arn, payload=input.payload, session=session)
     attach_cost_report(incident_arn=incident_arn, payload=input.payload, session=session)
     put_metric_data(name='ExceptionsByLabel',
                     dimensions=[dict(Name='Label', Value=input.label),
@@ -49,7 +51,7 @@ def handle_exception(event, context=None, session=None):
 
 
 @trap_exception
-def handle_attachment_request(event, context=None):
+def handle_attachment_request(event, context=None):  # web proxy to attachments on s3 bucket
     logging.debug(event)
     return download_attachment(path=event.get('rawPath', '/'))
 
@@ -63,19 +65,39 @@ def start_incident(payload, session=None):
                                         impact=int(payload.get('impact', 4)),
                                         responsePlanArn=os.environ['RESPONSE_PLAN_ARN'])
     summary = SUMMARY_TEMPLATE.format(title, payload.get('message', '*no message*')).replace('\n', '  \n')  # force newlines in markdown
-    incidents.update_incident_record(arn=response['incidentRecordArn'],
-                                     summary=summary)
+    incidents.update_incident_record(arn=response['incidentRecordArn'], summary=summary)
     logging.debug("Done")
     return response['incidentRecordArn']
 
 
-def attach_cost_report(incident_arn, payload, session=None, day=None):
-    logging.info("Attaching cost and usage report to incident report")
+def tag_incident(incident_arn, payload, session=None):
     account = payload.get('account', '123456789012')
     if not account:
         logging.debug(f"No account identifier in {payload}")
         return
 
+    logging.info("Tagging incident report with account information")
+    try:
+        session = session or Session()
+        incidents = session.client('ssm-incidents')
+        attributes = Account.describe(id=account)
+        incidents.tag_resource(resourceArn=incident_arn,
+                               tags={'account': account,
+                                     'account-email': attributes.email,
+                                     'account-name': attributes.name,
+                                     'organizational-unit': attributes.unit})
+        logging.debug("Done")
+    except botocore.exceptions.ClientError as exception:
+        logging.error(exception)
+
+
+def attach_cost_report(incident_arn, payload, session=None, day=None):
+    account = payload.get('account', '123456789012')
+    if not account:
+        logging.debug(f"No account identifier in {payload}")
+        return
+
+    logging.info("Attaching cost and usage report to incident report")
     day = day or date.today()
     try:
         cost_and_usage = get_cost_and_usage_report(account, day, session)
