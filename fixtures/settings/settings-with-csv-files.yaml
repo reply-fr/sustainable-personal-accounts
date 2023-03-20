@@ -115,7 +115,7 @@ accounts:
       feature: disabled
 
 
-# additional features that can be activated optionnally
+# additional features that can be activated optionally
 features:
 
   # list of external configuration files to load -- relative to the settings file
