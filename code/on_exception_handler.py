@@ -53,7 +53,7 @@ def handle_exception(event, context=None, session=None):
 @trap_exception
 def handle_attachment_request(event, context=None):  # web proxy to attachments on s3 bucket
     logging.debug(event)
-    return download_attachment(path=event.get('rawPath', '/'))
+    return download_attachment(path=event.get('rawPath', '/'), headers=event.get('headers', {}))
 
 
 def start_incident(label, payload, session=None):
@@ -190,9 +190,19 @@ def put_metric_data(name, dimensions, session=None):
     logging.debug("Done")
 
 
-def download_attachment(path):
+def download_attachment(path, headers={}):
+
+    # enforce navigation from aws console -- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Mode
+    required = {('sec-fetch-mode', 'navigate'), ('sec-fetch-site', 'cross-site'), ('sec-fetch-user', '?1'), ('sec-fetch-dest', 'document')}
+    for key, expected in required:
+        if headers.get(key) != expected:
+            logging.warning(f"403 - Missing header: '{key}': '{expected}'")
+            return dict(statusCode=403,
+                        headers={'Content-Type': 'application/json'},
+                        body=json.dumps({'error': "You are not allowed to fetch this document"}))
+
     if ('..' in path) or ('?' in path):
-        logging.warning("Dangerous link detected. We do not handle this request.")
+        logging.warning("400 - Dangerous link detected. We do not handle this request.")
         return dict(statusCode=400,
                     headers={'Content-Type': 'application/json'},
                     body=json.dumps({'error': "Invalid path has been requested"}))
@@ -201,24 +211,21 @@ def download_attachment(path):
     logging.info(f"Looking for object key '{path}' in bucket '{bucket}'")
     s3 = boto3.client('s3')
     try:
-        http_status_code = 200
-        file_name = os.path.basename(path)
-        http_headers = {'Content-Type': 'text/csv',
-                        'Content-Disposition': f'attachment; filename="{file_name}"'}  # force download
         response = s3.get_object(Bucket=bucket, Key=path)
         body = response['Body'].read().decode('utf-8')
+        file_name = os.path.basename(path)
         logging.debug(f"Transmitting {len(body)} bytes")
+        return dict(statusCode=200,
+                    headers={'Content-Type': 'text/csv',
+                             'Content-Disposition': f'attachment; filename="{file_name}"'},  # force download
+                    body=body)
     except s3.exceptions.NoSuchKey:
-        http_status_code = 404
-        http_headers = {'Content-Type': 'application/json'}
-        body = json.dumps({'error': 'Unable to find the requested object'})
-        logging.warning("404: Not Found")
+        logging.warning("404 - Not Found")
+        return dict(statusCode=404,
+                    headers={'Content-Type': 'application/json'},
+                    body=json.dumps({'error': 'Unable to find the requested object'}))
     except Exception as exception:
-        http_status_code = 500
-        http_headers = {'Content-Type': 'application/json'}
-        body = json.dumps({'error': str(exception)})
-        logging.error("500: Internal Error")
-
-    return dict(statusCode=http_status_code,
-                headers=http_headers,
-                body=body)
+        logging.error(f"500 - Internal Error - {str(exception)}")
+        return dict(statusCode=500,
+                    headers={'Content-Type': 'application/json'},
+                    body=json.dumps({'error': str(exception)}))

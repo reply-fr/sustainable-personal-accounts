@@ -94,10 +94,17 @@ def test_handle_attachment_request():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
     s3.put_object(Bucket="my_bucket", Key="exceptions/my/test.csv", Body="hello,world\nhello,universe")
 
-    assert handle_attachment_request(event=dict(rawPath="/my/test.csv")) == {
-        'body': 'hello,world\nhello,universe',
-        'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
-        'statusCode': 200}
+    with open('fixtures/events/sample_sec_fetch_download_request.json') as stream:
+        assert handle_attachment_request(event=json.loads(stream.read())) == {
+            'body': 'hello,world\nhello,universe',
+            'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
+            'statusCode': 200}
+
+    with open('fixtures/events/sample_direct_download_request.json') as stream:
+        assert handle_attachment_request(event=json.loads(stream.read())) == {
+            'body': '{"error": "You are not allowed to fetch this document"}',
+            'headers': {'Content-Type': 'application/json'},
+            'statusCode': 403}
 
 
 @pytest.mark.unit_tests
@@ -168,22 +175,29 @@ def test_download_attachment():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
     s3.put_object(Bucket="my_bucket", Key="exceptions/my/test.csv", Body="hello,world\nhello,universe")
 
-    assert download_attachment(path="my/test.csv") == {
+    sec_fetch_headers = {
+        'sec-fetch-mode': 'navigate',
+        'sec-fetch-dest': 'document',
+        'sec-fetch-user': '?1',
+        'sec-fetch-site': 'cross-site'
+    }
+
+    assert download_attachment(path="my/test.csv", headers=sec_fetch_headers) == {
         'body': 'hello,world\nhello,universe',
         'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
         'statusCode': 200}
 
-    assert download_attachment(path="/my/test.csv") == {  # path has leading '/'
+    assert download_attachment(path="/my/test.csv", headers=sec_fetch_headers) == {  # path has leading '/'
         'body': 'hello,world\nhello,universe',
         'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
         'statusCode': 200}
 
-    assert download_attachment(path="some/unknown/object.csv") == {
+    assert download_attachment(path="some/unknown/object.csv", headers=sec_fetch_headers) == {
         'body': '{"error": "Unable to find the requested object"}',
         'headers': {'Content-Type': 'application/json'},
         'statusCode': 404}
 
-    assert download_attachment(path="some/../dangerous?request/../object.csv") == {
+    assert download_attachment(path="some/../dangerous?request/../object.csv", headers=sec_fetch_headers) == {
         'body': '{"error": "Invalid path has been requested"}',
         'headers': {'Content-Type': 'application/json'},
         'statusCode': 400}
