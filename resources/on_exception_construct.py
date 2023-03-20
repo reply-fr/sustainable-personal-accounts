@@ -74,6 +74,7 @@ class OnException(Construct):
                             function_name="{}OnExceptionAttachmentDownload".format(toggles.environment_identifier),
                             description="Serve requests for attachment download",
                             handler="on_exception_handler.handle_attachment_request",
+                            reserved_concurrent_executions=1,  # throttling above 10 RPS
                             **parameters)
 
         for permission in permissions:
