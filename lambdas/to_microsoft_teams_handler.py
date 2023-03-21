@@ -15,27 +15,37 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import builtins
-import os
+import json
 import logging
+import os
+import pymsteams
 
-from aws_cdk import App
+from .logger import setup_logging, trap_exception
+setup_logging()
 
-from cdk import Configuration, ServerlessStack
-
-
-def build_resources(settings=None):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(stream=settings)
-
-    app = App()
-    ServerlessStack(app, builtins.toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
-    app.synth()
+from .events import Events
 
 
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_resources()
+@trap_exception
+def handle_spa_event(event, context, session=None):
+    logging.debug(json.dumps(event))
+
+    try:
+        item = Events.decode_spa_event(event)
+        post_message(message=item.payload, session=session)
+    except Exception:
+        message = dict(Subject="Message title", Message="Message body")
+        post_message(message=message, session=session)
+
+    return '[OK]'
+
+
+def post_message(message, session=None):
+    logging.debug("Relaying message")
+    microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK_ON_ALERTS', None)
+    if microsoft_webhook:
+        logging.info(f"Publishing on Microsoft Webhook: {microsoft_webhook}")
+        handler = pymsteams.connectorcard(microsoft_webhook)
+        handler.title(message['Subject'])
+        handler.text(message['Message'])
+        handler.send()

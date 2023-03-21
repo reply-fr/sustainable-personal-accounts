@@ -15,27 +15,23 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import builtins
-import os
+import json
 import logging
+import os
 
-from aws_cdk import App
+from .logger import setup_logging, trap_exception
+setup_logging()
 
-from cdk import Configuration, ServerlessStack
-
-
-def build_resources(settings=None):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(stream=settings)
-
-    app = App()
-    ServerlessStack(app, builtins.toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
-    app.synth()
+from . import Events, Settings, State
 
 
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_resources()
+@trap_exception
+def handle_tag_event(event, context, session=None):
+    logging.debug(json.dumps(event))
+    input = Events.decode_tag_account_event(event=event, match=State.RELEASED)
+    return handle_account(input.account, session=session)
+
+
+def handle_account(account, session=None):
+    Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)  # error if account is not managed
+    return Events.emit_account_event('ReleasedAccount', account)

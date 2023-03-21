@@ -15,27 +15,24 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import builtins
-import os
+import json
 import logging
 
-from aws_cdk import App
+from .logger import setup_logging, trap_exception
+setup_logging()
 
-from cdk import Configuration, ServerlessStack
-
-
-def build_resources(settings=None):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(stream=settings)
-
-    app = App()
-    ServerlessStack(app, builtins.toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
-    app.synth()
+from . import Account, Events, State, Worker
 
 
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_resources()
+@trap_exception
+def handle_codebuild_event(event, context, session=None):
+    logging.debug(json.dumps(event))
+    input = Events.decode_codebuild_event(event, match=Worker.PROJECT_NAME_FOR_ACCOUNT_PURGE)
+    if input.status != "SUCCEEDED":
+        raise ValueError(f"Ignoring status '{input.status}'")
+    return handle_account(input.account, session=session)
+
+
+def handle_account(account, session=None):
+    Account.move(account=account, state=State.ASSIGNED, session=session)
+    return Events.emit_account_event('PurgedAccount', account)

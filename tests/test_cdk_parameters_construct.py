@@ -15,27 +15,30 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import builtins
-import os
 import logging
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from aws_cdk import App
+import pytest
 
-from cdk import Configuration, ServerlessStack
+from cdk import Parameters
 
-
-def build_resources(settings=None):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(stream=settings)
-
-    app = App()
-    ServerlessStack(app, builtins.toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
-    app.synth()
+# pytestmark = pytest.mark.wip
 
 
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_resources()
+@pytest.mark.unit_tests
+def test_get_account_parameter():
+    test = Parameters.get_account_parameter(environment='Fake')
+    assert test == '/Fake/Accounts'
+
+    test = Parameters.get_account_parameter(environment='Fake', identifier='123456789012')
+    assert test == '/Fake/Accounts/123456789012'
+
+
+@pytest.mark.unit_tests
+def test_get_organizational_unit_parameter():
+    test = Parameters.get_organizational_unit_parameter(environment='Fake')
+    assert test == '/Fake/OrganizationalUnits'
+
+    test = Parameters.get_organizational_unit_parameter(environment='Fake', identifier='ou-abc')
+    assert test == '/Fake/OrganizationalUnits/ou-abc'

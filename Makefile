@@ -53,7 +53,7 @@ SETTINGS ?= settings.yaml
 VERBOSITY ?= INFO
 
 # locate python code for static analysis
-CODE_PATH := code resources ./build_resources.py
+CODE_PATH := cdk lambdas ./build_resources.py
 
 setup:
 	@echo "Installing python virtual environment..."
@@ -104,15 +104,15 @@ shell:
 pre-commit: lint test bandit
 
 lint: venv/bin/activate
-	venv/bin/python -m flake8 --max-complexity 8 --ignore E402,E501,F841,W503 --builtins="toggles" --per-file-ignores="resources/serverless_stack.py:F401 tests/conftest.py:F401" ${CODE_PATH} tests
+	venv/bin/python -m flake8 --max-complexity 8 --ignore E402,E501,F841,W503 --builtins="toggles" --per-file-ignores="cdk/serverless_stack.py:F401 tests/conftest.py:F401" ${CODE_PATH} tests
 
-all-tests: venv/bin/activate
+all-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -ra --durations=0 tests/
 
 unit-tests: venv/bin/activate
 	venv/bin/python -m pytest -m unit_tests -v tests/
 
-integration-tests: venv/bin/activate
+integration-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -m integration_tests -v tests/
 
 wip-tests: venv/bin/activate
@@ -152,16 +152,16 @@ rebase:
 	git pull --rebase origin main
 	git stash pop || true
 
-lambda.out: setup.py code/*.py
-	mkdir -p lambda.out
-	pip install --upgrade -e . -t lambda.out
-	cp code/*.py lambda.out
-	touch lambda.out
+lambdas.out: setup.py lambdas/*.py
+	mkdir -p lambdas.out
+	pip install --upgrade -e . -t lambdas.out
+	cp lambdas/*.py lambdas.out
+	touch lambdas.out
 
-diff: venv/bin/activate lambda.out
+diff: venv/bin/activate lambdas.out
 	cdk diff
 
-deploy: venv/bin/activate lambda.out
+deploy: venv/bin/activate lambdas.out
 	cdk deploy --all
 
 destroy: venv/bin/activate
@@ -179,7 +179,7 @@ check-accounts:
 	rm check-accounts.log
 
 clean:
-	rm -rf lambda.out
+	rm -rf lambdas.out
 	rm -rf ${PRESENTATION_NAME}.html
 	rm -rf ${PRESENTATION_NAME}.pdf
 	rm -rf ${PRESENTATION_NAME}.pptx

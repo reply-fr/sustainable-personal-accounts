@@ -5,10 +5,10 @@
 /PITCHME.pdf
 /PITCHME.pptx
 /cdk.out
-/code/sustainable_personal_accounts.egg-info
+/lambdas/sustainable_personal_accounts.egg-info
 /media/.$*
 /node_modules
-/lambda.out
+/lambdas.out
 /package-lock.json
 /settings
 /venv

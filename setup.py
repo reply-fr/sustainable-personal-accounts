@@ -32,8 +32,8 @@ setuptools.setup(
 
     author="Bernard Paques",
 
-    package_dir={"": "code"},
-    packages=setuptools.find_packages(where="code"),
+    package_dir={"": "lambdas"},
+    packages=setuptools.find_packages(where="lambdas"),
 
     install_requires=[  # list here only dependencies for lambda functions; other go to requirements.txt
         "boto3",

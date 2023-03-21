@@ -15,27 +15,22 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import builtins
-import os
-import logging
+from .account import Account, State
+from .events import Events
+from .key_value_store import KeyValueStore
+from .logger import setup_logging, trap_exception, LOGGING_FORMAT
+from .session import get_account_session, get_assumed_session
+from .settings import Settings
+from .worker import Worker
 
-from aws_cdk import App
-
-from cdk import Configuration, ServerlessStack
-
-
-def build_resources(settings=None):
-    ''' generate CloudFormation templates '''
-
-    Configuration.initialize(stream=settings)
-
-    app = App()
-    ServerlessStack(app, builtins.toggles.environment_identifier, description="Automation of Sustainable Personal Accounts")
-    app.synth()
-
-
-if __name__ == '__main__':
-    verbosity = logging.__dict__.get(os.environ.get('VERBOSITY'), 'INFO')
-    logging.basicConfig(format='%(message)s', level=verbosity)
-    logging.getLogger('botocore').setLevel(logging.CRITICAL)
-    build_resources()
+__all__ = ['Account',
+           'Events',
+           'KeyValueStore',
+           'LOGGING_FORMAT',
+           'Settings',
+           'State',
+           'get_account_session',
+           'get_assumed_session',
+           'setup_logging',
+           'trap_exception',
+           'Worker']
