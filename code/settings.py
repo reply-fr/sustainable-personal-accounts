@@ -31,21 +31,13 @@ class Settings:
 
     @classmethod
     def enumerate_accounts(cls, environment, session=None):
-        session = session or Session()
         path = cls.get_account_parameter_name(environment=environment)
-        result = session.client('ssm').get_parameters_by_path(Path=path)
-        for item in result['Parameters']:
-            attributes = json.loads(item['Value'])
-            yield attributes['identifier']
+        return cls.enumerate_identifiers_by_path(path=path, session=session)
 
     @classmethod
     def enumerate_organizational_units(cls, environment, session=None):
-        session = session or Session()
         path = cls.get_organizational_unit_parameter_name(environment=environment)
-        result = session.client('ssm').get_parameters_by_path(Path=path)
-        for item in result['Parameters']:
-            attributes = json.loads(item['Value'])
-            yield attributes['identifier']
+        return cls.enumerate_identifiers_by_path(path=path, session=session)
 
     @classmethod
     def get_account_parameter_name(cls, environment, identifier=None):
@@ -60,6 +52,20 @@ class Settings:
         if identifier:
             attributes.append(identifier)
         return cls.PARAMETER_SEPARATOR.join(attributes)
+
+    @classmethod
+    def enumerate_identifiers_by_path(cls, path, session=None):
+        session = session or Session()
+        chunk = session.client('ssm').get_parameters_by_path(Path=path)
+        while chunk.get('Parameters'):
+            for item in chunk.get('Parameters'):
+                attributes = json.loads(item['Value'])
+                yield attributes['identifier']
+            more = chunk.get('NextToken')
+            if more:
+                chunk = session.client('ssm').get_parameters_by_path(Path=path, NextToken=more)
+            else:
+                break
 
     @classmethod
     def get_account_settings(cls, environment, identifier, session=None) -> dict:
