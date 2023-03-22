@@ -19,10 +19,12 @@ import json
 import logging
 import os
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Events, Settings, State
+from account import Account, State
+from events import Events
+from settings import Settings
 
 
 @trap_exception

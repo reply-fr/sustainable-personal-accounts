@@ -18,10 +18,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import logging
 import os
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Settings, State
+from account import Account, State
+from settings import Settings
 
 
 @trap_exception

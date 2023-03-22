@@ -21,10 +21,11 @@ import logging
 import os
 
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Events
+from account import Account
+from events import Events
 
 
 CODEBUILD_TEMPLATE = """

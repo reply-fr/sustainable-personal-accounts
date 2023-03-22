@@ -20,10 +20,10 @@ import logging
 import os
 import pymsteams
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from .events import Events
+from events import Events
 
 
 @trap_exception

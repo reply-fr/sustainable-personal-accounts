@@ -27,8 +27,10 @@ import os
 import pytest
 from types import SimpleNamespace
 
-from lambdas import Account, Events, State, Worker
+from account import Account
+from lambdas import Events, State
 from lambdas.on_assigned_account_handler import handle_tag_event
+from worker import Worker
 
 # pytestmark = pytest.mark.wip
 
@@ -118,6 +120,7 @@ def test_handle_tag_event(monkeypatch):
                                                          new_state=State.ASSIGNED.value))
     with patch('lambdas.on_assigned_account_handler.prepare_topic', return_value='aws:arn'):
         result = handle_tag_event(event=event, context=None, session=context.session)
+        print(result)
     assert result["DetailType"] == 'AssignedAccount'
     assert processed == ["123456789012"]
 

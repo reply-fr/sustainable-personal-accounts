@@ -27,7 +27,7 @@ import pytest
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from lambdas import Account
+from account import Account
 from lambdas.release_accounts_handler import handle_event
 
 # pytestmark = pytest.mark.wip

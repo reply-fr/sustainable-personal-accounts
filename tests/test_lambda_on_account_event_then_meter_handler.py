@@ -31,7 +31,7 @@ from tests.fixture_key_value_store import create_my_table
 # pytestmark = pytest.mark.wip
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
@@ -58,7 +58,7 @@ def test_handle_account_event_for_maintenance_transaction():
     assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
@@ -85,7 +85,7 @@ def test_handle_account_event_for_on_boarding_transaction():
     assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='INFO'))

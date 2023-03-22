@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from boto3.session import Session
 import botocore
 from enum import Enum, unique
 import json
@@ -23,9 +24,7 @@ import os
 from types import SimpleNamespace
 import re
 
-from boto3.session import Session
-
-from .session import get_assumed_session
+from session import get_assumed_session
 
 
 @unique

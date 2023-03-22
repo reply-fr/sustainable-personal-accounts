@@ -22,6 +22,7 @@ from aws_cdk.aws_lambda import Architecture, AssetCode, Runtime, Tracing
 from aws_cdk.aws_logs import RetentionDays
 
 from .check_accounts_construct import CheckAccounts
+from .check_health_construct import CheckHealth
 from .cockpit_construct import Cockpit
 from .on_account_event_construct import OnAccountEvent
 from .on_account_event_then_meter_construct import OnAccountEventThenMeter
@@ -53,6 +54,7 @@ class ServerlessStack(Stack):
         # lambda functions
         labels = [
             'CheckAccounts',
+            'CheckHealth',
             'OnAccountEvent',
             'OnAccountEventThenMeter',
             'OnAccountEventThenShadow',

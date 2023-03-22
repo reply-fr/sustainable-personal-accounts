@@ -25,11 +25,12 @@ import json
 import logging
 import os
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Events
-from .session import get_account_session
+from account import Account
+from events import Events
+from session import get_account_session
 
 
 SUMMARY_TEMPLATE = "# {}\n\n{}"  # markdown is supported

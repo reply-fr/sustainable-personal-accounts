@@ -154,7 +154,8 @@ rebase:
 
 lambdas.out: setup.py lambdas/*.py
 	mkdir -p lambdas.out
-	pip install --upgrade -e . -t lambdas.out
+	rm -rf lambdas.out
+	pip install --upgrade -e . -t lambdas.out --use-pep517
 	cp lambdas/*.py lambdas.out
 	touch lambdas.out
 

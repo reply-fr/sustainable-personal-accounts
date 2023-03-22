@@ -22,10 +22,12 @@ import os
 from time import time
 from uuid import uuid4
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Events, KeyValueStore
+from account import Account
+from events import Events
+from key_value_store import KeyValueStore
 
 
 @trap_exception

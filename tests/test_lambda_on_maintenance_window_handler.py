@@ -27,7 +27,7 @@ import pytest
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from lambdas import Account
+from account import Account
 from lambdas.on_maintenance_window_handler import handle_schedule_event
 
 # pytestmark = pytest.mark.wip

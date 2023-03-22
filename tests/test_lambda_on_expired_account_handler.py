@@ -27,8 +27,10 @@ import os
 import pytest
 from types import SimpleNamespace
 
-from lambdas import Account, Events, State, Worker
+from account import Account
+from lambdas import Events, State
 from lambdas.on_expired_account_handler import handle_tag_event
+from worker import Worker
 
 # pytestmark = pytest.mark.wip
 

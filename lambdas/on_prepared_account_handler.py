@@ -18,10 +18,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import json
 import logging
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Events, State, Worker
+from account import Account, State
+from events import Events
+from worker import Worker
 
 
 @trap_exception

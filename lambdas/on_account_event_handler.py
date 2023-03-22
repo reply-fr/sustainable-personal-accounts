@@ -19,10 +19,10 @@ from boto3.session import Session
 import json
 import logging
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Events
+from events import Events
 
 
 @trap_exception

@@ -21,10 +21,13 @@ import json
 import os
 import logging
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Account, Events, Settings, State, Worker
+from account import Account, State
+from events import Events
+from settings import Settings
+from worker import Worker
 
 
 @trap_exception

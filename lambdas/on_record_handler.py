@@ -24,10 +24,11 @@ import logging
 import os
 from types import SimpleNamespace
 
-from .logger import setup_logging, trap_exception
+from logger import setup_logging, trap_exception
 setup_logging()
 
-from . import Events, KeyValueStore
+from events import Events
+from key_value_store import KeyValueStore
 
 
 @trap_exception

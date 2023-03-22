@@ -25,7 +25,8 @@ from moto import mock_ssm
 import pytest
 from types import SimpleNamespace
 
-from lambdas import Account, Settings
+from account import Account
+from lambdas import Settings
 
 # pytestmark = pytest.mark.wip
 
