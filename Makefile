@@ -28,7 +28,7 @@ help:
 	@echo "make coverage - track untested code in web browser"
 	@echo "make bandit - look for secret strings in the code"
 	@echo "make stats - count lines of code and more"
-	@echo "make rebase - rebase current code from origin main branch"
+	@echo "make pull - pull changes from origin main branch and rebase your code"
 	@echo "make diff - check foreseen changes in cloud resources before deployment"
 	@echo "make deploy - build or update cloud resources for this workload"
 	@echo "make destroy - delete cloud resources for this workload"
@@ -147,7 +147,7 @@ lint-json:
 stats: venv/bin/activate
 	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks *.ini cdk.json package.json *.md *.py *.txt Makefile
 
-rebase:
+pull:
 	git pull --rebase origin main
 
 lambdas.out: setup.py lambdas/*.py
