@@ -78,9 +78,9 @@ def test_get_tag_key():
 
 
 @pytest.mark.integration_tests
-def test_iterate_tags(valid_tags):
-    iterator = Account.iterate_tags(account='123456789012',
-                                    session=valid_tags)
+def test_enumerate_tags(valid_tags):
+    iterator = Account.enumerate_tags(account='123456789012',
+                                      session=valid_tags)
     assert next(iterator) == {'Key': 'account-holder', 'Value': 'a@b.com'}
     assert next(iterator) == {'Key': 'account-state', 'Value': 'vanilla'}
     assert next(iterator) == {"Key": "another_tag", "Value": "another_value"}

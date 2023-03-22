@@ -64,14 +64,14 @@ class Account:
     def list_tags(cls, account, session=None):
         try:
             tags = {}
-            for item in cls.iterate_tags(account, session):
+            for item in cls.enumerate_tags(account, session):
                 tags[item.get('Key')] = item.get('Value')
             return tags
         except botocore.exceptions.ClientError:
             return {}
 
     @classmethod
-    def iterate_tags(cls, account, session=None):
+    def enumerate_tags(cls, account, session=None):
         session = session or cls.get_session()
 
         token = None
