@@ -148,9 +148,7 @@ stats: venv/bin/activate
 	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks *.ini cdk.json package.json *.md *.py *.txt Makefile
 
 rebase:
-	git stash
 	git pull --rebase origin main
-	git stash pop || true
 
 lambdas.out: setup.py lambdas/*.py
 	mkdir -p lambdas.out
