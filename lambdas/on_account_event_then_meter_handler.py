@@ -15,7 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from boto3.session import Session
 import json
 import logging
 import os
@@ -28,6 +27,7 @@ setup_logging()
 from account import Account
 from events import Events
 from key_value_store import KeyValueStore
+from metric import put_metric_data
 
 
 @trap_exception
@@ -85,7 +85,7 @@ def update_maintenance_transaction(account_id, transactions, emit=None):
         logging.info(f"Ending transaction '{hash}'")
         transactions.forget(hash)
         transaction = Account.list_tags(account_id)
-        transaction['cost-center'] = get_cost_center(transaction)
+        transaction['cost-center'] = Account.get_cost_center(transaction)
         transaction.update(ongoing)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
@@ -94,7 +94,7 @@ def update_maintenance_transaction(account_id, transactions, emit=None):
         emit(label='SuccessfulMaintenanceEvent',
              payload=transaction)
         put_metric_data(name='TransactionsByCostCenter',
-                        dimensions=[dict(Name='CostCenter', Value=transaction['cost-center']),
+                        dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(transaction)),
                                     dict(Name='Environment', Value=Events.get_environment())])
         put_metric_data(name='TransactionsByLabel',
                         dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
@@ -110,7 +110,7 @@ def update_onboarding_transaction(account_id, transactions, emit=None):
         logging.info(f"Ending transaction '{hash}'")
         transactions.forget(hash)
         transaction = Account.list_tags(account_id)
-        transaction['cost-center'] = get_cost_center(transaction)
+        transaction['cost-center'] = Account.get_cost_center(transaction)
         transaction.update(ongoing)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
@@ -119,28 +119,13 @@ def update_onboarding_transaction(account_id, transactions, emit=None):
         emit(label='SuccessfulOnBoardingEvent',
              payload=transaction)
         put_metric_data(name='TransactionsByCostCenter',
-                        dimensions=[dict(Name='CostCenter', Value=transaction['cost-center']),
+                        dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(transaction)),
                                     dict(Name='Environment', Value=Events.get_environment())])
         put_metric_data(name='TransactionsByLabel',
                         dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
                                     dict(Name='Environment', Value=Events.get_environment())])
     else:
         logging.debug(f"No transaction '{hash}'")
-
-
-def get_cost_center(transaction):
-    return transaction.get("cost-center", "SharedServices")
-
-
-def put_metric_data(name, dimensions, session=None):
-    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'")
-    session = session or Session()
-    session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
-                                                                  Dimensions=dimensions,
-                                                                  Unit='Count',
-                                                                  Value=1)],
-                                                 Namespace="SustainablePersonalAccount")
-    logging.debug("Done")
 
 
 @trap_exception

@@ -47,6 +47,7 @@ class Configuration:
         features_with_microsoft_webhook_on_alerts='str',
         features_with_response_plan_arn='str',
         features_with_tag_prefix='str',
+        features_with_cost_center_tag='str',
         metering_records_datastore='str',
         metering_records_ttl_in_seconds='int',
         metering_shadows_datastore='str',
@@ -55,6 +56,7 @@ class Configuration:
         metering_transactions_ttl_in_seconds='int',
         organizational_units='list',
         reporting_activities_prefix='str',
+        reporting_costs_prefix='str',
         reporting_exceptions_prefix='str',
         reporting_inventories_prefix='str',
         worker_preparation_buildspec_template_file='str',
@@ -134,6 +136,7 @@ class Configuration:
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_response_plan_arn = ''
         toggles.features_with_tag_prefix = 'account-'
+        toggles.features_with_cost_center_tag = 'cost-center'
         toggles.metering_records_datastore = 'SpaRecordsTable'
         toggles.metering_records_ttl_in_seconds = 366 * 24 * 60 * 60
         toggles.metering_shadows_datastore = 'SpaShadowsTable'
@@ -141,6 +144,7 @@ class Configuration:
         toggles.metering_transactions_datastore = 'SpaTransactionsTable'
         toggles.metering_transactions_ttl_in_seconds = 60 * 60
         toggles.reporting_activities_prefix = 'SpaReports/Activities'
+        toggles.reporting_costs_prefix = 'SpaReports/Costs'
         toggles.reporting_exceptions_prefix = 'SpaReports/Exceptions'
         toggles.reporting_inventories_prefix = 'SpaReports/Inventories'
 

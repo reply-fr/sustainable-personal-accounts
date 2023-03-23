@@ -152,7 +152,7 @@ pull:
 
 lambdas.out: setup.py lambdas/*.py
 	mkdir -p lambdas.out
-	rm -rf lambdas.out
+	rm -rf lambdas.out || true
 	pip install --upgrade -e . -t lambdas.out --use-pep517
 	cp lambdas/*.py lambdas.out
 	touch lambdas.out
@@ -205,3 +205,23 @@ clean-incident-records:
 	@[ "$(RESPONSE_PLAN_ARN)" ] || (echo "[ERROR] RESPONSE_PLAN_ARN environment variable is not set" ; exit 1)
 	@echo "Purging response plan '${RESPONSE_PLAN_ARN}'"
 	@$(PURGE_INCIDENT_RECORDS) ${RESPONSE_PLAN_ARN}
+
+compute-daily-cost-metrics:
+	@[ "$(METRIC_DAY)" ] || (echo "[ERROR] Missing METRIC_DAY, e.g., METRIC_DAY=2023-02-20 make compute-daily-cost-metrics" ; exit 1)
+	@echo "Computing cost report for '${REPORT_MONTH}'"
+	aws lambda invoke --function-name SpaOnDailyCostsMetric \
+                      --payload '{"date": "$(METRIC_DAY)" }' \
+                      --invocation-type Event \
+                      --cli-binary-format raw-in-base64-out \
+                      output.log
+	rm output.log
+
+compute-monthly-cost-reports:
+	@[ "$(REPORT_MONTH)" ] || (echo "[ERROR] Missing REPORT_MONTH, e.g., REPORT_MONTH=2023-02 make compute-monthly-cost-reports" ; exit 1)
+	@echo "Computing cost report for '${REPORT_MONTH}'"
+	aws lambda invoke --function-name SpaOnMonthlyCostsReporting \
+                      --payload '{"date": "$(REPORT_MONTH)" }' \
+                      --invocation-type Event \
+                      --cli-binary-format raw-in-base64-out \
+                      output.log
+	rm output.log

@@ -78,7 +78,7 @@ def build_report(records):
     for record in records:
         item = record['value']
         row = dict(account=item['id'],
-                   cost_center=item['tags']['cost-center'],
+                   cost_center=Account.get_cost_center(item['tags']),
                    cost_owner=item['tags']['cost-owner'],
                    email=item['email'],
                    name=item['name'],

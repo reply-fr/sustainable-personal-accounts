@@ -27,6 +27,7 @@ from types import SimpleNamespace
 from logger import setup_logging, trap_exception
 setup_logging()
 
+from account import Account
 from events import Events
 from key_value_store import KeyValueStore
 
@@ -85,10 +86,10 @@ def build_reports(records):
     reports = {}
     for record in records:
         item = record['value']
-        label = item['cost-center']
+        label = Account.get_cost_center(item)
         reporter = reports.get(label, get_reporter())
         row = {'Account': item['account'],
-               'Cost Center': item['cost-center'],
+               'Cost Center': Account.get_cost_center(item),
                'Stamp': item['stamp'],
                'Transaction': item['transaction'],
                'Identifier': item['identifier'],

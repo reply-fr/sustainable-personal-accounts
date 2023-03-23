@@ -30,6 +30,7 @@ setup_logging()
 
 from account import Account
 from events import Events
+from metric import put_metric_data
 from session import get_account_session
 
 
@@ -86,6 +87,7 @@ def tag_incident(incident_arn, payload, session=None):
                                tags={'account': account,
                                      'account-email': attributes.email,
                                      'account-name': attributes.name,
+                                     'cost-center': Account.get_cost_center(attributes.tags),
                                      'organizational-unit': attributes.unit})
         logging.debug("Done")
     except botocore.exceptions.ClientError as exception:
@@ -93,7 +95,7 @@ def tag_incident(incident_arn, payload, session=None):
 
 
 def attach_cost_report(incident_arn, payload, session=None, day=None):
-    account = payload.get('account', '123456789012')
+    account = payload.get('account')
     if not account:
         logging.debug(f"No account identifier in {payload}")
         return
@@ -177,17 +179,6 @@ def get_download_attachment_web_endpoint():
     item = ssm.get_parameter(Name=os.environ['WEB_ENDPOINTS_PARAMETER'])
     web_endpoints = json.loads(item['Parameter']['Value'])
     return web_endpoints["OnException.DownloadAttachment.WebEndpoint"]
-
-
-def put_metric_data(name, dimensions, session=None):
-    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'")
-    session = session or Session()
-    session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
-                                                                  Dimensions=dimensions,
-                                                                  Unit='Count',
-                                                                  Value=1)],
-                                                 Namespace="SustainablePersonalAccount")
-    logging.debug("Done")
 
 
 def download_attachment(path, headers={}):

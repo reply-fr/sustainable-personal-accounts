@@ -82,7 +82,7 @@ class OnAlert(Construct):
             self, "FromAlert",
             function_name="{}OnAlertFromSqs".format(toggles.environment_identifier),
             description="Be notified on an alert",
-            handler="on_alert_handler.handle_queue_event",
+            handler="on_alert_handler.handle_sqs_event",
             **parameters)
 
         for permission in permissions:

@@ -22,7 +22,26 @@ import logging
 from uuid import uuid4
 
 
+def get_organizations_session():
+    ''' get session to top account in the organization '''
+    role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
+    return get_assumed_session(role_arn=role) if role else Session()
+
+
+def get_account_session(account, session=None):
+    ''' get session to target account '''
+    arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
+    main = get_assumed_session(role_arn=arn, session=session) if arn else Session()
+
+    name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
+    target = get_assumed_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=main)
+    identity = target.client('sts').get_caller_identity()
+    logging.debug(f"Using identity {identity}")
+    return target
+
+
 def get_assumed_session(role_arn, region=None, name=None, session=None):
+    ''' assume a role and derive new session '''
     session = session or Session()
     sts = session.client('sts')
 
@@ -39,14 +58,3 @@ def get_assumed_session(role_arn, region=None, name=None, session=None):
         parameters['region_name'] = region
 
     return Session(**parameters)
-
-
-def get_account_session(account, session=None):
-    arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-    main = get_assumed_session(role_arn=arn, session=session) if arn else Session()
-
-    name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
-    target = get_assumed_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=main)
-    identity = target.client('sts').get_caller_identity()
-    logging.debug(f"Using identity {identity}")
-    return target

@@ -15,7 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from boto3.session import Session
 import botocore
 from enum import Enum, unique
 import json
@@ -24,7 +23,7 @@ import os
 from types import SimpleNamespace
 import re
 
-from session import get_assumed_session
+from session import get_organizations_session
 
 
 @unique
@@ -43,8 +42,7 @@ class Account:
     @classmethod
     def get_session(cls):
         if cls.session is None:
-            role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-            cls.session = get_assumed_session(role_arn=role) if role else Session()
+            cls.session = get_organizations_session()
         return cls.session
 
     @classmethod
@@ -152,3 +150,11 @@ class Account:
         item.tags = cls.list_tags(account=id, session=session)
         item.unit = session.client('organizations').list_parents(ChildId=id)['Parents'][0]['Id']
         return item
+
+    @classmethod
+    def get_cost_center_tag(cls):
+        return os.environ.get('COST_CENTER_TAG', "cost-center")
+
+    @classmethod
+    def get_cost_center(cls, tags):
+        return tags.get(cls.get_cost_center_tag(), "NoCostCenter")

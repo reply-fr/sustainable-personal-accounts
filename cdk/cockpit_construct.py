@@ -37,7 +37,10 @@ class Cockpit(Construct):
         self.cockpit = Dashboard(self, id=id, dashboard_name=id)
 
         self.cockpit.add_widgets(
-            self.get_text_label_widget(),
+            self.get_text_label_widget())
+
+        self.cockpit.add_widgets(
+            self.get_costs_by_cost_center_widget(),
             self.get_transactions_by_cost_center_widget(),
             self.get_transactions_by_label_widget())
 
@@ -67,8 +70,19 @@ class Cockpit(Construct):
     def get_text_label_widget(self):
         ''' show static banner that has been configured for this dashboard '''
         return TextWidget(markdown=toggles.automation_cockpit_markdown_text,
-                          height=6,
-                          width=8)
+                          height=3,
+                          width=24)
+
+    def get_costs_by_cost_center_widget(self):
+        return GraphWidget(
+            title="Daily costs by cost center",
+            left=[MathExpression(expression=self.get_search_expression(by='CostCenter', metric='DailyCostByCostCenter'),
+                                 label='',
+                                 period=Duration.days(1))],
+            left_y_axis=dict(label='USD'),
+            stacked=True,
+            height=6,
+            width=8)
 
     def get_transactions_by_cost_center_widget(self):
         return GraphWidget(

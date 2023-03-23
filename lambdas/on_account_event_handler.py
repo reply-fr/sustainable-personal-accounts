@@ -15,7 +15,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from boto3.session import Session
 import json
 import logging
 
@@ -23,6 +22,7 @@ from logger import setup_logging, trap_exception
 setup_logging()
 
 from events import Events
+from metric import put_metric_data
 
 
 @trap_exception
@@ -46,14 +46,3 @@ def handle_account_event(event, context, session=None):
                     session=session)
 
     return f"[OK] {input.label} {input.account}"
-
-
-def put_metric_data(name, dimensions, session=None):
-    logging.debug(f"Putting data for metric '{name}' and dimensions '{dimensions}'")
-    session = session or Session()
-    session.client('cloudwatch').put_metric_data(MetricData=[dict(MetricName=name,
-                                                                  Dimensions=dimensions,
-                                                                  Unit='Count',
-                                                                  Value=1)],
-                                                 Namespace="SustainablePersonalAccount")
-    logging.debug("Done")

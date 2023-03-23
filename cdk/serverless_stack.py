@@ -29,6 +29,7 @@ from .on_account_event_then_meter_construct import OnAccountEventThenMeter
 from .on_account_event_then_shadow_construct import OnAccountEventThenShadow
 from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
+from .on_cost_computation_construct import OnCostComputation
 from .on_exception_construct import OnException
 from .on_expired_account_construct import OnExpiredAccount
 from .on_maintenance_window_construct import OnMaintenanceWindow
@@ -60,6 +61,7 @@ class ServerlessStack(Stack):
             'OnAccountEventThenShadow',
             'OnAlert',
             'OnAssignedAccount',
+            'OnCostComputation',
             'OnException',
             'OnExpiredAccount',
             'OnMaintenanceWindow',
