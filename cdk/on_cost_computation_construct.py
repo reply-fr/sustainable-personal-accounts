@@ -34,7 +34,7 @@ class OnCostComputation(Construct):
     def monthly(self, parameters, permissions) -> Function:
 
         function = Function(self, "Monthly",
-                            function_name="{}OnMonthlyCostsReporting".format(toggles.environment_identifier),
+                            function_name="{}OnMonthlyCostsReport".format(toggles.environment_identifier),
                             description="Report costs from previous month",
                             handler="on_cost_computation_handler.handle_monthly_report",
                             memory_size=1024,  # accomodate for hundreds of accounts and related data
@@ -44,7 +44,7 @@ class OnCostComputation(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerMonthly",
-             rule_name="{}OnMonthlyCostsReportingTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnMonthlyCostsReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger monthly reporting on costs",
              schedule=Schedule.cron(day="1", hour="4", minute="42"),
              targets=[LambdaFunction(function)])
@@ -63,7 +63,7 @@ class OnCostComputation(Construct):
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerDaily",
-             rule_name="{}OnDailyCostMetricTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnDailyCostsMetricTriggerRule".format(toggles.environment_identifier),
              description="Trigger daily cost computations",
              schedule=Schedule.cron(hour="1", minute="42"),
              targets=[LambdaFunction(function)])

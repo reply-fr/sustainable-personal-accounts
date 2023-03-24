@@ -76,7 +76,7 @@ class Cockpit(Construct):
     def get_costs_by_cost_center_widget(self):
         return GraphWidget(
             title="Daily costs by cost center",
-            left=[MathExpression(expression=self.get_search_expression(by='CostCenter', metric='DailyCostByCostCenter'),
+            left=[MathExpression(expression=self.get_search_expression(by='CostCenter', metric='DailyCostsByCostCenter'),
                                  label='',
                                  period=Duration.days(1))],
             left_y_axis=dict(label='USD'),

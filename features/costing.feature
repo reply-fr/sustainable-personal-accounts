@@ -11,7 +11,7 @@ so as to charge back cost centers individually
 
 Scenario: where cloud costs are computed and released every day
     Given an existing SPA system
-     When the Lambda function 'OnDailyCostMetric' is invoked
+     When the Lambda function 'OnDailyCostsMetric' is invoked
      Then code inspects all accounts managed in the system
       And code computes cost report for each account on previous day
       And code sums up cost reports per cost center
@@ -20,7 +20,7 @@ Scenario: where cloud costs are computed and released every day
 
 Scenario: where cloud costs are computed and released every month
     Given an existing SPA system
-     When the Lambda function 'OnMonthlyCostReport' is invoked
+     When the Lambda function 'OnMonthlyCostsReport' is invoked
      Then code inspects all accounts managed in the system
       And code computes cost report for each account on previous month
       And code sums up cost reports per cost center
