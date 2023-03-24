@@ -40,15 +40,15 @@ def handle_daily_metric(event=None, context=None, session=None):
         yesterday = date.fromisoformat(event['date'])
     else:
         yesterday = date.today() - timedelta(days=1)
-    logging.info(f"Computing daily cost metrics per cost center for '{yesterday}")
+    logging.info(f"Computing daily cost metrics per cost center for '{yesterday}'")
     accounts = get_accounts_information()
     costs = {}
     for account, amount in enumerate_daily_cost_per_account(day=yesterday, session=session):
-        logging.info(f"Computing daily costs for account '{account}")
+        logging.info(f"Computing daily costs for account '{account}'")
         cost_center = Account.get_cost_center(tags=accounts.get(str(account), {}).get('tags', {}))
         costs[cost_center] = costs.get(cost_center, 0.0) + float(amount)
     for cost_center in costs.keys():
-        logging.info(f"Putting cost as daily metric for cost center '{cost_center}")
+        logging.info(f"Putting cost as daily metric for cost center '{cost_center}'")
         put_metric_data(name='DailyCostByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=cost_center),
                                     dict(Name='Environment', Value=Events.get_environment())],
@@ -134,7 +134,7 @@ def enumerate_daily_cost_per_account(day, session=None):
 def get_amounts_per_cost_center(accounts, day, session):
     costs = {}
     for account, breakdown in enumerate_monthly_breakdown_per_account(day=day, session=session):
-        logging.info(f"Processing amounts for account {account}")
+        logging.info(f"Processing data for account '{account}'")
         attributes = accounts.get(str(account), {})
         more = dict(name=attributes.get('name', get_account_name(account)),
                     unit=attributes.get('unit', get_account_organizational_unit(account)))
@@ -206,8 +206,7 @@ def build_detailed_csv_report(cost_center, day, breakdown):
     logging.info(f"Building detailed CSV report for cost center '{cost_center}'")
     buffer = io.StringIO()
     writer = DictWriter(buffer,
-                        fieldnames=['Cost Center', 'Month', 'Account', 'Name', 'Organizational Unit', 'Service', 'Amount (USD)'],
-                        delimiter='\t')
+                        fieldnames=['Cost Center', 'Month', 'Account', 'Name', 'Organizational Unit', 'Service', 'Amount (USD)'])
     writer.writeheader()
     total = 0.0
     for item in breakdown:
@@ -219,7 +218,7 @@ def build_detailed_csv_report(cost_center, day, breakdown):
                'Name': item.get('name', ''),
                'Organizational Unit': item.get('unit', ''),
                'Service': item['service'],
-               'Amount (USD)': make_float(amount)}
+               'Amount (USD)': amount}
         writer.writerow(row)
     row = {'Cost Center': cost_center,
            'Month': day.isoformat()[:7],
@@ -227,7 +226,7 @@ def build_detailed_csv_report(cost_center, day, breakdown):
            'Name': '',
            'Organizational Unit': '',
            'Service': '',
-           'Amount (USD)': make_float(total)}
+           'Amount (USD)': total}
     writer.writerow(row)
     return buffer.getvalue()
 
@@ -236,8 +235,7 @@ def build_summary_csv_report(costs, day):
     logging.info("Building summary CSV cost report")
     buffer = io.StringIO()
     writer = DictWriter(buffer,
-                        fieldnames=['Cost Center', 'Month', 'Amount (USD)'],
-                        delimiter='\t')
+                        fieldnames=['Cost Center', 'Month', 'Amount (USD)'])
     writer.writeheader()
     summary = 0.0
     for cost_center in costs.keys():
@@ -247,17 +245,13 @@ def build_summary_csv_report(costs, day):
         summary += total
         row = {'Cost Center': cost_center,
                'Month': day.isoformat()[:7],
-               'Amount (USD)': make_float(total)}
+               'Amount (USD)': total}
         writer.writerow(row)
     row = {'Cost Center': 'TOTAL',
            'Month': day.isoformat()[:7],
-           'Amount (USD)': make_float(summary)}
+           'Amount (USD)': summary}
     writer.writerow(row)
     return buffer.getvalue()
-
-
-def make_float(number):
-    return str(number)
 
 
 def get_report_key(label, day=None):
