@@ -47,7 +47,7 @@ class Configuration:
         features_with_microsoft_webhook_on_alerts='str',
         features_with_response_plan_arn='str',
         features_with_tag_prefix='str',
-        features_with_cost_center_tag='str',
+        features_with_cost_management_tag='str',
         metering_records_datastore='str',
         metering_records_ttl_in_seconds='int',
         metering_shadows_datastore='str',
@@ -136,7 +136,7 @@ class Configuration:
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_response_plan_arn = ''
         toggles.features_with_tag_prefix = 'account-'
-        toggles.features_with_cost_center_tag = 'cost-center'
+        toggles.features_with_cost_management_tag = False
         toggles.metering_records_datastore = 'SpaRecordsTable'
         toggles.metering_records_ttl_in_seconds = 366 * 24 * 60 * 60
         toggles.metering_shadows_datastore = 'SpaShadowsTable'

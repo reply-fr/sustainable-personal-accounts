@@ -11,14 +11,14 @@ so as to charge back cost centers individually
 
 Scenario: where no cost management tag has been configured
     Given a settings file 'settings.yaml' adapted to SPA semantics
-     When the attribute 'with_cost_center_tag' is not set in the section 'features'
+     When the attribute 'with_cost_management_tag' is not set in the section 'features'
       And SPA is deployed with the settings file 'settings.yaml'
      Then the daily cost metric is not deployed
       And the monthly cost report is not deployed
 
 Scenario: where the tag used for cost management is configured
     Given a settings file 'settings.yaml' adapted to SPA semantics
-     When the attribute 'with_cost_center_tag' is set to 'cost-center' in the section 'features'
+     When the attribute 'with_cost_management_tag' is set to 'cost-center' in the section 'features'
       And SPA is deployed with the settings file 'settings.yaml'
      Then the daily cost metric is deployed
       And the monthly cost report is deployed

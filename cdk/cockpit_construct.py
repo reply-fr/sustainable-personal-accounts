@@ -36,13 +36,22 @@ class Cockpit(Construct):
 
         self.cockpit = Dashboard(self, id=id, dashboard_name=id)
 
-        self.cockpit.add_widgets(
-            self.get_text_label_widget())
+        if toggles.features_with_cost_management_tag:
 
-        self.cockpit.add_widgets(
-            self.get_costs_by_cost_center_widget(),
-            self.get_transactions_by_cost_center_widget(),
-            self.get_transactions_by_label_widget())
+            self.cockpit.add_widgets(
+                self.get_text_label_widget('top'))
+
+            self.cockpit.add_widgets(
+                self.get_costs_by_cost_center_widget(),
+                self.get_transactions_by_cost_center_widget(),
+                self.get_transactions_by_label_widget())
+
+        else:  # alternate layout in absence of cost metric
+
+            self.cockpit.add_widgets(
+                self.get_text_label_widget('aside'),
+                self.get_transactions_by_cost_center_widget(),
+                self.get_transactions_by_label_widget())
 
         self.cockpit.add_widgets(
             self.get_events_by_label_widget(),
@@ -67,11 +76,11 @@ class Cockpit(Construct):
         metric = metric or f"AccountEventsBy{by}"
         return self.SEARCH_TEMPLATE.replace('___by___', by).replace('___environment___', environment).replace('___metric___', metric)
 
-    def get_text_label_widget(self):
+    def get_text_label_widget(self, layout='top'):
         ''' show static banner that has been configured for this dashboard '''
         return TextWidget(markdown=toggles.automation_cockpit_markdown_text,
-                          height=2,
-                          width=24)
+                          height=6 if layout == 'aside' else 2,
+                          width=8 if layout == 'aside' else 24)
 
     def get_costs_by_cost_center_widget(self):
         return GraphWidget(

@@ -251,7 +251,14 @@ features:
   #
   with_microsoft_webhook_on_alerts: https://acme.webhook.office.com/webhookb2/892ca8xf-9423
 
-  # this prefix is used for tags added programmatically
+  # this prefix is used for tags added programmatically, e.g., 'account-holder'
   # - default value: "account-""
   #
   with_tag_prefix: "account-"
+
+  # this is the tag key that is used across settings for cost management
+  # automated processing of costs is deployed only if this is set to a valid string
+  # - allowed value: key of the tag that is used for cost mangement, e.g., 'cost-center'
+  # - default value: False
+  #
+  with_cost_management_tag: cost-center

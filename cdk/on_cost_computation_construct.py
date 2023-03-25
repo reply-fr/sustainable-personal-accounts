@@ -26,8 +26,12 @@ class OnCostComputation(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
 
+        if not toggles.features_with_cost_management_tag:  # do not deploy if cost management has not been activated
+            self.functions = []
+            return
+
         parameters['environment']['REPORTING_COSTS_PREFIX'] = toggles.reporting_costs_prefix
-        parameters['environment']['COST_CENTER_TAG'] = toggles.features_with_cost_center_tag
+        parameters['environment']['COST_MANAGEMENT_TAG'] = toggles.features_with_cost_management_tag
         self.functions = [self.monthly(parameters=parameters, permissions=permissions),
                           self.daily(parameters=parameters, permissions=permissions)]
 
