@@ -9,6 +9,22 @@ I need a monthly breakdown of AWS costs per cost center
 so as to charge back cost centers individually
 
 
+Scenario: where no cost management tag has been configured
+    Given a settings file 'settings.yaml' adapted to SPA semantics
+     When the attribute 'with_cost_center_tag' is not set in the section 'features'
+      And SPA is deployed with the settings file 'settings.yaml'
+     Then the daily cost metric is not deployed
+      And the monthly cost report is not deployed
+
+Scenario: where the tag used for cost management is configured
+    Given a settings file 'settings.yaml' adapted to SPA semantics
+     When the attribute 'with_cost_center_tag' is set to 'cost-center' in the section 'features'
+      And SPA is deployed with the settings file 'settings.yaml'
+     Then the daily cost metric is deployed
+      And the monthly cost report is deployed
+      And the dashboard reflects daily costs per cost center
+      And the reporting bucket is populated with monthly reports per cost center
+
 Scenario: where cloud costs are computed and released every day
     Given an existing SPA system
      When the Lambda function 'OnDailyCostsMetric' is invoked
@@ -24,4 +40,7 @@ Scenario: where cloud costs are computed and released every month
      Then code inspects all accounts managed in the system
       And code computes cost report for each account on previous month
       And code sums up cost reports per cost center
-      And code pushes monthly costs as a CSV file on S3 reporting bucket
+      And code pushes detailed monthly reports as one CSV file per cost center on S3 reporting bucket
+      And code pushes detailed monthly reports as one Excel file per cost center on S3 reporting bucket
+      And code pushes summary monthly report as one CSV file listing every cost center on S3 reporting bucket
+      And code pushes summary monthly report as one Excel file listing every cost center on S3 reporting bucket
