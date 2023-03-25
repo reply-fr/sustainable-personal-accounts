@@ -33,7 +33,7 @@ from lambdas.on_cost_computation_handler import (
     get_report_key,
 )
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 sample_breakdown = [

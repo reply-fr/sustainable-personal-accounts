@@ -254,32 +254,30 @@ def build_summary_excel_report(costs, day):
     logging.info("Building summary Excel cost report")
     buffer = io.BytesIO()
     workbook = xlsxwriter.Workbook(buffer)
-    cell_to_right = workbook.add_format()
-    cell_to_right.set_align('right')
+    amount_format = workbook.add_format({'num_format': '# ##0.00'})
+    amount_format.set_align('right')
     worksheet = workbook.add_worksheet()
-    worksheet.write(0, 0, 'Cost Center')
-    col_0 = len('Cost Center')
-    worksheet.write(0, 1, 'Month')
-    col_1 = 7
-    worksheet.write(0, 2, 'Amount (USD)', cell_to_right)
-    col_2 = len('Amount (USD)')
+    headers = ['Cost Center', 'Month', 'Amount (USD)']
+    worksheet.write_row(0, 0, headers)
+    widths = {index: len(headers[index]) for index in range(len(headers))}
     row = 1
     for cost_center in costs.keys():
         total = 0.0
         for item in costs[cost_center]:
             total += float(item['amount'])
-        worksheet.write(row, 0, cost_center)
-        col_0 = max(col_0, len(cost_center))
-        worksheet.write(row, 1, day.isoformat()[:7])
-        worksheet.write(row, 2, total)
-        col_2 = max(col_2, len(str(total)))
+        data = [str(cost_center),
+                day.isoformat()[:7],
+                float(total)]
+        worksheet.write_row(row, 0, data)
+        for index in range(len(data)):
+            widths[index] = max(widths[index], len(str(data[index])))
         row += 1
     worksheet.write(row, 0, 'TOTAL')
     worksheet.write(row, 1, day.isoformat()[:7])
     worksheet.write(row, 2, "=SUM(C2:{})".format(xl_rowcol_to_cell(row - 1, 2)))
-    worksheet.set_column(0, 0, col_0)
-    worksheet.set_column(1, 1, col_1)
-    worksheet.set_column(2, 2, col_2)
+    for index in range(2):
+        worksheet.set_column(index, index, widths[index])
+    worksheet.set_column(2, 2, widths[2], amount_format)
     workbook.close()
     return buffer.getvalue()
 
