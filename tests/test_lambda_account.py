@@ -20,6 +20,7 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import Mock, patch
+from moto import mock_organizations, mock_ssm
 import os
 import pytest
 from types import SimpleNamespace
@@ -27,6 +28,7 @@ from types import SimpleNamespace
 from lambdas import Account, State
 
 # pytestmark = pytest.mark.wip
+from tests.fixture_small_setup import given_a_small_setup
 
 
 @pytest.fixture
@@ -143,75 +145,64 @@ def test_move_with_exception():
                      state=SimpleNamespace(value='*something*'))
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_untag():
+    context = given_a_small_setup()
+    Account.untag(account=context.alice_account, keys=['account-holder'])
+
+
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
 def test_list():
-
-    chunk_1 = {
-        'Accounts': [
-            {
-                'Id': '123456789012',
-                'Arn': 'arn:aws:some-arn',
-                'Email': 'string',
-                'Name': 'account-one',
-                'Status': 'ACTIVE',
-                'JoinedMethod': 'CREATED',
-                'JoinedTimestamp': '20150101'
-            },
-
-            {
-                'Id': '234567890123',
-                'Arn': 'arn:aws:some-arn',
-                'Email': 'string',
-                'Name': 'account-two',
-                'Status': 'ACTIVE',
-                'JoinedMethod': 'CREATED',
-                'JoinedTimestamp': '20150101'
-            }
-        ],
-        'NextToken': 'token'
-    }
-
-    chunk_2 = {
-        'Accounts': [
-            {
-                'Id': '345678901234',
-                'Arn': 'arn:aws:some-arn',
-                'Email': 'string',
-                'Name': 'account-three',
-                'Status': 'ACTIVE',
-                'JoinedMethod': 'CREATED',
-                'JoinedTimestamp': '20150101'
-            }
-        ]
-    }
-
-    mock = Mock()
-    mock.client.return_value.list_accounts_for_parent.side_effect = [chunk_1, chunk_2]
-    iterator = Account.list(parent='ou-parent',
-                            session=mock)
-    assert next(iterator) == '123456789012'
-    assert next(iterator) == '234567890123'
-    assert next(iterator) == '345678901234'
-    with pytest.raises(StopIteration):
-        next(iterator)
+    context = given_a_small_setup()
+    result = {x for x in Account.list(parent=context.committed_ou)}
+    assert result == {context.crm_account, context.erp_account}
 
 
-def test_describe(account_describe_mock):
-
-    item = Account.describe(id='123456789012',
-                            session=account_describe_mock)
-    assert item.id == '123456789012'
-    assert item.arn == 'arn:aws:some-arn'
-    assert item.email == 'a@b.com'
-    assert item.name == 'account-three'
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_describe():
+    context = given_a_small_setup()
+    item = Account.describe(id=context.alice_account)
+    assert len(item.id) == 12
+    assert item.arn.startswith('arn:aws:organizations::')
+    assert item.email == 'alice@example.com'
+    assert item.name == 'alice'
     assert item.is_active
-    assert item.tags.get('account-holder') == 'a@b.com'
-    assert item.tags.get('account-state') == 'vanilla'
-    assert item.unit == 'ou-1234'
+    assert item.tags.get('account-holder') == 'alice@example.com'
+    assert item.tags.get('account-state') == 'released'
+    assert item.unit == context.sandbox_ou
+    item = Account.describe(id=context.bob_account)
+    assert len(item.id) == 12
+    assert item.arn.startswith('arn:aws:organizations::')
+    assert item.email == 'bob@example.com'
+    assert item.name == 'bob'
+    assert item.is_active
+    assert item.tags.get('account-holder') == 'bob@example.com'
+    assert item.tags.get('account-state') == 'expired'
+    assert item.unit == context.sandbox_ou
 
 
-def test_get_session():
-    assert Account.get_session() is not None
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_get_name():
+    context = given_a_small_setup()
+    assert Account.get_name(account=context.root_account) == "Example Corporation"
+    assert Account.get_name(account=context.alice_account) == "alice"
+
+
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_get_organizational_unit():
+    context = given_a_small_setup()
+    assert Account.get_organizational_unit(account=context.root_account).startswith('r-')
+    assert Account.get_organizational_unit(account=context.alice_account) == context.sandbox_ou
 
 
 @pytest.mark.unit_tests

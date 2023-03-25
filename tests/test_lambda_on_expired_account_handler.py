@@ -27,12 +27,12 @@ import os
 import pytest
 from types import SimpleNamespace
 
-from account import Account
 from lambdas import Events, State
 from lambdas.on_expired_account_handler import handle_tag_event
-from worker import Worker
 
 # pytestmark = pytest.mark.wip
+from account import Account  # accessible from  monkeypatch
+from worker import Worker    # accessible from monkeypatch
 
 
 def given_some_context(prefix='/Fake/'):

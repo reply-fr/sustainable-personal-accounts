@@ -20,17 +20,20 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import os
+from moto import mock_organizations, mock_ssm
 import pytest
 from unittest.mock import patch
 
 from lambdas.check_health_handler import handle_event
 
-pytestmark = pytest.mark.wip
+from tests.fixture_small_setup import given_a_small_setup
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
-def test_handle_event(monkeypatch):
-
-    result = handle_event(event=None, context=None)
-    assert result == '[OK]'
+@mock_organizations
+@mock_ssm
+def test_handle_event():
+    given_a_small_setup()
+    assert handle_event(event=None, context=None) == '[OK]'

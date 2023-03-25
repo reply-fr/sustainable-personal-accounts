@@ -38,7 +38,7 @@ def handle_tag_event(event, context, session=None):
 
 
 def handle_account(account, session=None):
-    settings = Settings.get_settings_for_account(environment=os.environ['ENVIRONMENT_IDENTIFIER'], identifier=account, session=session)
+    settings = Settings.get_settings_for_account(identifier=account, session=session)
     result = Events.emit_account_event('AssignedAccount', account)
     if 'preparation' not in settings.keys() or settings['preparation'].get('feature') != 'enabled':
         logging.info("Skipping the preparation of the account")

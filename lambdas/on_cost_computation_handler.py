@@ -19,9 +19,10 @@ import boto3
 from csv import DictWriter
 from datetime import date, timedelta
 import io
-from itertools import chain
 import logging
 import os
+import xlsxwriter
+from xlsxwriter.utility import xl_rowcol_to_cell
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -41,7 +42,7 @@ def handle_daily_metric(event=None, context=None, session=None):
     else:
         yesterday = date.today() - timedelta(days=1)
     logging.info(f"Computing daily cost metrics per cost center for '{yesterday}'")
-    accounts = get_accounts_information()
+    accounts = Settings.scan_settings_for_all_managed_accounts()
     costs = {}
     for account, amount in enumerate_daily_cost_per_account(day=yesterday, session=session):
         logging.info(f"Computing daily costs for account '{account}'")
@@ -70,41 +71,18 @@ def handle_monthly_report(event=None, context=None, session=None):
     else:
         last_day_of_previous_month = date.today().replace(day=1) - timedelta(days=1)
     logging.info(f"Computing cost reports per cost center for month {last_day_of_previous_month.isoformat()[:7]}")
-    accounts = get_accounts_information()
+    accounts = Settings.scan_settings_for_all_managed_accounts()
     costs = get_amounts_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     for cost_center in costs.keys():
         store_report(report=build_detailed_csv_report(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
                      path=get_report_key(label=cost_center, day=last_day_of_previous_month))
+        store_report(report=build_detailed_excel_report(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
+                     path=get_report_key(label=cost_center, day=last_day_of_previous_month, suffix='xlsx'))
     store_report(report=build_summary_csv_report(costs=costs, day=last_day_of_previous_month),
                  path=get_report_key(label='Summary', day=last_day_of_previous_month))
+    store_report(report=build_summary_excel_report(costs=costs, day=last_day_of_previous_month),
+                 path=get_report_key(label='Summary', day=last_day_of_previous_month, suffix='xlsx'))
     return '[OK]'
-
-
-def get_accounts_information():
-    logging.debug("Retrieving information for each managed account")
-    accounts = {}
-    for account in list_all_managed_accounts():
-        accounts[account] = Account.describe(account).__dict__
-    return accounts
-
-
-def list_all_managed_accounts(session=None):
-    listed_accounts = list_managed_accounts(session=session)
-    contained_accounts = enumerate_accounts_in_managed_organizational_units(skip=listed_accounts, session=session)
-    return chain(iter(listed_accounts), contained_accounts)
-
-
-def list_managed_accounts(session=None):
-    logging.info("Listing configured accounts")
-    return [id for id in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session)]
-
-
-def enumerate_accounts_in_managed_organizational_units(skip=[], session=None):
-    logging.info("Enumerating accounts in configured organizational units")
-    for identifier in Settings.enumerate_organizational_units(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
-        logging.info(f"Scanning organizational unit '{identifier}'")
-        for account in Account.list(parent=identifier, skip=skip, session=session):
-            yield account
 
 
 def enumerate_daily_cost_per_account(day, session=None):
@@ -136,8 +114,8 @@ def get_amounts_per_cost_center(accounts, day, session):
     for account, breakdown in enumerate_monthly_breakdown_per_account(day=day, session=session):
         logging.info(f"Processing data for account '{account}'")
         attributes = accounts.get(str(account), {})
-        more = dict(name=attributes.get('name', get_account_name(account)),
-                    unit=attributes.get('unit', get_account_organizational_unit(account)))
+        more = dict(name=attributes.get('name', Account.get_name(account)),
+                    unit=attributes.get('unit', Account.get_organizational_unit(account)))
         for item in breakdown:
             item.update(more)
         logging.debug(breakdown)
@@ -179,24 +157,8 @@ def enumerate_monthly_breakdown_per_account(day=None, session=None):
         yield account, breakdown
 
 
-def get_account_name(account, session=None):
-    session = session or get_organizations_session()
-    return session.client('organizations').describe_account(AccountId=account)['Account']['Name']
-
-
-def get_account_organizational_unit(account, session=None):
-    session = session or get_organizations_session()
-    response = session.client('organizations').list_parents(ChildId=account)
-    if 'Parents' in response.keys():
-        return response['Parents'][0]['Id']
-    else:
-        return ''
-
-
 def store_report(path, report):
     logging.info(f"Storing report on S3 bucket on '{path}'")
-    headings = (report + "\n\n\n").split('\n')[:3]
-    logging.debug(f"{headings[0]}\n{headings[1]}\n{headings[2]}\n...")
     boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
                                   Key=path,
                                   Body=report)
@@ -231,6 +193,40 @@ def build_detailed_csv_report(cost_center, day, breakdown):
     return buffer.getvalue()
 
 
+def build_detailed_excel_report(cost_center, day, breakdown):
+    logging.info(f"Building detailed Excel report for cost center '{cost_center}'")
+    buffer = io.BytesIO()
+    workbook = xlsxwriter.Workbook(buffer)
+    amount_format = workbook.add_format({'num_format': '# ##0.00'})
+    amount_format.set_align('right')
+    worksheet = workbook.add_worksheet()
+    headers = ['Cost Center', 'Month', 'Account', 'Name', 'Organizational Unit', 'Service', 'Amount (USD)']
+    worksheet.write_row(0, 0, headers)
+    widths = {index: len(headers[index]) for index in range(len(headers))}
+    row = 1
+    for item in breakdown:
+        data = [str(cost_center),
+                day.isoformat()[:7],
+                str(item['account']),
+                str(item['name']),
+                str(item['unit']),
+                str(item['service']),
+                float(item['amount'])]
+        worksheet.write_row(row, 0, data)
+        for index in range(len(data)):
+            widths[index] = max(widths[index], len(str(data[index])))
+        row += 1
+    worksheet.write(row, 0, cost_center)
+    worksheet.write(row, 1, day.isoformat()[:7])
+    worksheet.write(row, 2, 'TOTAL')
+    worksheet.write(row, 6, "=SUM(G2:{})".format(xl_rowcol_to_cell(row - 1, 6)))
+    for index in range(6):
+        worksheet.set_column(index, index, widths[index])
+    worksheet.set_column(6, 6, widths[6], amount_format)
+    workbook.close()
+    return buffer.getvalue()
+
+
 def build_summary_csv_report(costs, day):
     logging.info("Building summary CSV cost report")
     buffer = io.StringIO()
@@ -254,8 +250,42 @@ def build_summary_csv_report(costs, day):
     return buffer.getvalue()
 
 
-def get_report_key(label, day=None):
+def build_summary_excel_report(costs, day):
+    logging.info("Building summary Excel cost report")
+    buffer = io.BytesIO()
+    workbook = xlsxwriter.Workbook(buffer)
+    cell_to_right = workbook.add_format()
+    cell_to_right.set_align('right')
+    worksheet = workbook.add_worksheet()
+    worksheet.write(0, 0, 'Cost Center')
+    col_0 = len('Cost Center')
+    worksheet.write(0, 1, 'Month')
+    col_1 = 7
+    worksheet.write(0, 2, 'Amount (USD)', cell_to_right)
+    col_2 = len('Amount (USD)')
+    row = 1
+    for cost_center in costs.keys():
+        total = 0.0
+        for item in costs[cost_center]:
+            total += float(item['amount'])
+        worksheet.write(row, 0, cost_center)
+        col_0 = max(col_0, len(cost_center))
+        worksheet.write(row, 1, day.isoformat()[:7])
+        worksheet.write(row, 2, total)
+        col_2 = max(col_2, len(str(total)))
+        row += 1
+    worksheet.write(row, 0, 'TOTAL')
+    worksheet.write(row, 1, day.isoformat()[:7])
+    worksheet.write(row, 2, "=SUM(C2:{})".format(xl_rowcol_to_cell(row - 1, 2)))
+    worksheet.set_column(0, 0, col_0)
+    worksheet.set_column(1, 1, col_1)
+    worksheet.set_column(2, 2, col_2)
+    workbook.close()
+    return buffer.getvalue()
+
+
+def get_report_key(label, day=None, suffix='csv'):
     day = day or date.today()
     return '/'.join([os.environ["REPORTING_COSTS_PREFIX"],
                      label,
-                     f"{day.year:04d}-{day.month:02d}-{label}-costs.csv"])
+                     f"{day.year:04d}-{day.month:02d}-{label}-costs.{suffix}"])

@@ -30,8 +30,8 @@ from lambdas import Events
 from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_reporting, build_report, get_report_key
 from lambdas.key_value_store import KeyValueStore
 
-from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 # pytestmark = pytest.mark.wip
+from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 
 
 @pytest.mark.unit_tests

@@ -19,191 +19,96 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from boto3.session import Session
-import json
-from moto import mock_ssm
+from unittest.mock import patch
+from moto import mock_organizations, mock_ssm
+import os
 import pytest
-from types import SimpleNamespace
 
-from account import Account
 from lambdas import Settings
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
+from tests.fixture_small_setup import given_a_small_setup
 
 
-def given_some_context(prefix='/Fake/'):
-
-    session = Session(aws_access_key_id='testing',
-                      aws_secret_access_key='testing',
-                      aws_session_token='testing',
-                      region_name='eu-west-1')
-
-    context = SimpleNamespace(session=session)
-
-    context.settings_123456789012 = {
-        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-        'identifier': '123456789012',
-        'note': 'a specific account',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'WORLD'}
-        },
-        'purge': {
-            'feature': 'disabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=prefix + 'Accounts/123456789012',
-                                        Value=json.dumps(context.settings_123456789012),
-                                        Type='String')
-
-    context.settings_567890123456 = {
-        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-        'identifier': '567890123456',
-        'note': 'another specific account',
-        'preparation': {
-            'feature': 'disabled',
-            'variables': {'HELLO': 'MOON'}
-        },
-        'purge': {
-            'feature': 'enabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=prefix + 'Accounts/567890123456',
-                                        Value=json.dumps(context.settings_567890123456),
-                                        Type='String')
-
-    context.settings_901234567890 = {
-        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-        'identifier': '901234567890',
-        'note': 'a third specific account',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'JUPITER'}
-        },
-        'purge': {
-            'feature': 'enabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=prefix + 'Accounts/901234567890',
-                                        Value=json.dumps(context.settings_901234567890),
-                                        Type='String')
-
-    context.settings_ou_1234 = {
-        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-        'identifier': 'ou-1234',
-        'note': 'a container for some accounts',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'WORLD'}
-        },
-        'purge': {
-            'feature': 'disabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=prefix + 'OrganizationalUnits/ou-1234',
-                                        Value=json.dumps(context.settings_ou_1234),
-                                        Type='String')
-
-    context.settings_ou_5678 = {
-        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-        'identifier': 'ou-5678',
-        'note': 'another container for some accounts',
-        'preparation': {
-            'feature': 'disabled',
-            'variables': {'HELLO': 'MOON'}
-        },
-        'purge': {
-            'feature': 'enabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=prefix + 'OrganizationalUnits/ou-5678',
-                                        Value=json.dumps(context.settings_ou_5678),
-                                        Type='String')
-
-    context.settings_ou_9012 = {
-        'account_tags': {'CostCenter': 'abc', 'Sponsor': 'Foo Bar'},
-        'identifier': 'ou-9012',
-        'note': 'a third container for some accounts',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'JUPITER'}
-        },
-        'purge': {
-            'feature': 'enabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=prefix + 'OrganizationalUnits/ou-9012',
-                                        Value=json.dumps(context.settings_ou_9012),
-                                        Type='String')
-
-    return context
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_enumerate_all_managed_accounts():
+    context = given_a_small_setup()
+    accounts = {i for i in Settings.enumerate_all_managed_accounts()}
+    assert accounts == {context.crm_account, context.erp_account, context.alice_account, context.bob_account, '210987654321'}
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
+@mock_organizations
 @mock_ssm
 def test_enumerate_accounts():
-    context = given_some_context(prefix='/Fake/')
-    accounts = [i for i in Settings.enumerate_accounts(environment='Fake', session=context.session)]
-    assert accounts == ['123456789012', '567890123456', '901234567890']
+    context = given_a_small_setup()
+    accounts = {i for i in Settings.enumerate_accounts()}
+    assert accounts == {context.crm_account, context.erp_account, '210987654321'}
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
+@mock_organizations
 @mock_ssm
 def test_enumerate_organizational_units():
-    context = given_some_context(prefix='/Fake/')
-    accounts = [i for i in Settings.enumerate_organizational_units(environment='Fake', session=context.session)]
-    assert accounts == ['ou-1234', 'ou-5678', 'ou-9012']
+    context = given_a_small_setup()
+    accounts = {i for i in Settings.enumerate_organizational_units()}
+    assert accounts == {context.sandbox_ou, 'ou-alien'}
 
 
 @pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="yo"))
 def test_get_account_parameter_name():
-    name = Settings.get_account_parameter_name(environment='yo')
+    name = Settings.get_account_parameter_name()
     assert name == '/yo/Accounts'
 
-    name = Settings.get_account_parameter_name(environment='yo', identifier='1234')
+    name = Settings.get_account_parameter_name(identifier='1234')
     assert name == '/yo/Accounts/1234'
 
 
 @pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="yo"))
 def test_get_organizational_unit_parameter_name():
-    name = Settings.get_organizational_unit_parameter_name(environment='yo')
+    name = Settings.get_organizational_unit_parameter_name()
     assert name == '/yo/OrganizationalUnits'
 
-    name = Settings.get_organizational_unit_parameter_name(environment='yo', identifier='ou-abc')
+    name = Settings.get_organizational_unit_parameter_name(identifier='ou-abc')
     assert name == '/yo/OrganizationalUnits/ou-abc'
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
+@mock_organizations
 @mock_ssm
 def test_get_account_settings():
-    context = given_some_context(prefix='/Fake/')
-    settings = Settings.get_account_settings(environment='Fake', identifier='567890123456', session=context.session)
-    assert settings == context.settings_567890123456
+    context = given_a_small_setup()
+    settings = Settings.get_account_settings(identifier=context.crm_account)
+    assert settings == context.settings_crm_account
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
+@mock_organizations
 @mock_ssm
 def test_get_organizational_unit_settings():
-    context = given_some_context(prefix='/Fake/')
-    settings = Settings.get_organizational_unit_settings(environment='Fake', identifier='ou-5678', session=context.session)
-    assert settings == context.settings_ou_5678
+    context = given_a_small_setup()
+    settings = Settings.get_organizational_unit_settings(identifier=context.sandbox_ou)
+    assert settings == context.settings_sandbox_ou
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
+@mock_organizations
 @mock_ssm
-def test_get_settings_for_account(monkeypatch):
-    context = given_some_context(prefix='/Fake/')
+def test_get_settings_for_account():
+    context = given_a_small_setup()
+    settings = Settings.get_settings_for_account(identifier=context.alice_account)
+    assert settings == context.settings_sandbox_ou
 
-    def mock_describe(id, session):
-        return SimpleNamespace(unit='ou-5678')
 
-    monkeypatch.setattr(Account, 'describe', mock_describe)
-
-    settings = Settings.get_settings_for_account(environment='Fake', identifier='98765432109', session=context.session)
-    assert settings == context.settings_ou_5678
+@pytest.mark.integration_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="yo"))
+@mock_organizations
+@mock_ssm
+def test_scan_settings_for_all_managed_accounts():
+    given_a_small_setup(environment="yo")
+    settings = Settings.scan_settings_for_all_managed_accounts()
+    assert len(settings.keys()) == 4

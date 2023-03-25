@@ -40,12 +40,6 @@ class Account:
     session = None
 
     @classmethod
-    def get_session(cls):
-        if cls.session is None:
-            cls.session = get_organizations_session()
-        return cls.session
-
-    @classmethod
     def get_tag_key(cls, suffix):
         prefix = os.environ.get('TAG_PREFIX', 'account-')
         return prefix + suffix
@@ -70,7 +64,7 @@ class Account:
 
     @classmethod
     def enumerate_tags(cls, account, session=None):
-        session = session or cls.get_session()
+        session = session or get_organizations_session()
 
         token = None
         while True:
@@ -94,7 +88,7 @@ class Account:
             raise ValueError(f"Unexpected state type {state}")
 
         logging.info(f"Tagging account '{account}' with state '{state.value}'")
-        session = session or cls.get_session()
+        session = session or get_organizations_session()
         session.client('organizations').tag_resource(
             ResourceId=account,
             Tags=[dict(Key=cls.get_tag_key('state'), Value=state.value)])
@@ -103,7 +97,7 @@ class Account:
     @classmethod
     def tag(cls, account, tags, session=None):
         logging.info(f"Tagging account '{account}' with tags '{tags}'")
-        session = session or cls.get_session()
+        session = session or get_organizations_session()
         session.client('organizations').tag_resource(
             ResourceId=account,
             Tags=[dict(Key=k, Value=tags[k]) for k in tags.keys()])
@@ -112,7 +106,7 @@ class Account:
     @classmethod
     def untag(cls, account, keys, session=None):
         logging.info(f"Untagging account '{account}' with tags '{keys}'")
-        session = session or cls.get_session()
+        session = session or get_organizations_session()
         session.client('organizations').untag_resource(
             ResourceId=account,
             TagKeys=list(keys))
@@ -120,27 +114,31 @@ class Account:
 
     @classmethod
     def list(cls, parent, skip=[], session=None):
-        session = session or cls.get_session()
-        token = None
-        while True:
-            logging.debug(f"Listing accounts in parent '{parent}'")
-            parameters = dict(ParentId=parent)
-            if token:
-                parameters['NextToken'] = token
-            chunk = session.client('organizations').list_accounts_for_parent(**parameters)
+        logging.debug(f"Listing accounts in parent '{parent}'")
+        session = session or get_organizations_session()
+        handle = session.client('organizations')
+        try:
+            token = None
+            while True:
+                parameters = dict(ParentId=parent)
+                if token:
+                    parameters['NextToken'] = token
+                chunk = handle.list_accounts_for_parent(**parameters)
 
-            for item in chunk['Accounts']:
-                if item['Id'] in skip:
-                    continue
-                yield item['Id']
+                for item in chunk['Accounts']:
+                    if item['Id'] in skip:
+                        continue
+                    yield item['Id']
 
-            token = chunk.get('NextToken')
-            if not token:
-                break
+                token = chunk.get('NextToken')
+                if not token:
+                    break
+        except botocore.exceptions.ClientError:
+            logging.warning(f"Could not find parent '{parent}'")
 
     @classmethod
     def describe(cls, id, session=None):
-        session = session or cls.get_session()
+        session = session or get_organizations_session()
         item = SimpleNamespace(id=id)
         attributes = session.client('organizations').describe_account(AccountId=id)['Account']
         item.arn = attributes['Arn']
@@ -148,8 +146,22 @@ class Account:
         item.name = attributes['Name']
         item.is_active = True if attributes['Status'] == 'ACTIVE' else False
         item.tags = cls.list_tags(account=id, session=session)
-        item.unit = session.client('organizations').list_parents(ChildId=id)['Parents'][0]['Id']
+        item.unit = cls.get_organizational_unit(account=id)
         return item
+
+    @classmethod
+    def get_name(cls, account, session=None):
+        session = session or get_organizations_session()
+        return session.client('organizations').describe_account(AccountId=account)['Account']['Name']
+
+    @classmethod
+    def get_organizational_unit(cls, account, session=None):
+        session = session or get_organizations_session()
+        try:
+            return session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+        except botocore.exceptions.ClientError:
+            logging.warning(f"Unable to find parent of account '{account}'")
+            return ''
 
     @classmethod
     def get_cost_center_tag(cls):

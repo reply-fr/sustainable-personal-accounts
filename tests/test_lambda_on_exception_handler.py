@@ -29,7 +29,7 @@ import pytest
 from lambdas import Events
 from lambdas.on_exception_handler import handle_exception, handle_attachment_request, build_csv_report, download_attachment
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 sample_payload = json.dumps(

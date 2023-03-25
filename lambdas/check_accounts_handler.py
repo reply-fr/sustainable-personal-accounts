@@ -15,8 +15,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import botocore
 import logging
-import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -26,46 +26,24 @@ from settings import Settings
 
 
 @trap_exception
-def handle_event(event, context, session=None):
+def handle_event(event=None, context=None):
     logging.info("Checking managed accounts")
-    processed = handle_managed_accounts(session=session)
-    handle_managed_organizational_units(skip=processed, session=session)
+    for account in Settings.enumerate_all_managed_accounts():
+        settings = Settings.get_settings_for_account(identifier=account)
+        handle_account(account=account, settings=settings)
     return '[OK]'
 
 
-def handle_managed_accounts(session=None):
-    logging.info("Scanning configured accounts")
-    ids = [id for id in Settings.enumerate_accounts(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session)]
-    for identifier in ids:
-        logging.info(f"Scanning account '{identifier}'")
-        settings = Settings.get_account_settings(environment=os.environ['ENVIRONMENT_IDENTIFIER'],
-                                                 identifier=identifier,
-                                                 session=session)
-        handle_account(account=identifier, settings=settings, session=session)
-    logging.info("All configured accounts have been scanned")
-    return ids
-
-
-def handle_managed_organizational_units(skip=[], session=None):
-    logging.info("Scanning configured organizational units")
-    for identifier in Settings.enumerate_organizational_units(environment=os.environ['ENVIRONMENT_IDENTIFIER'], session=session):
-        logging.info(f"Scanning organizational unit '{identifier}'")
-        settings = Settings.get_organizational_unit_settings(environment=os.environ['ENVIRONMENT_IDENTIFIER'],
-                                                             identifier=identifier,
-                                                             session=session)
-        for account in Account.list(parent=identifier, skip=skip, session=session):
-            handle_account(account=account, settings=settings, session=session)
-    logging.info("All configured organizational units have been scanned")
-
-
-def handle_account(account, settings=None, session=None):
-    item = Account.describe(account, session=session)
+def handle_account(account, settings=None):
+    logging.debug(f"Handling account '{account}'")
     try:
+        item = Account.describe(account)
         validate_tags(item)
-        if settings:
-            validate_additional_tags(item, expected_tags=settings.get("account_tags", {}))
+        validate_additional_tags(item, expected_tags=settings.get("account_tags", {}))
     except ValueError as error:
         logging.error(error)
+    except botocore.exceptions.ClientError:
+        logging.error(f"Unable to handle account '{account}'. Does it exist?")
 
 
 def validate_tags(item):
@@ -84,7 +62,7 @@ def validate_tags(item):
         raise ValueError(f"Account '{item.id}' assigned to '{holder}' has invalid value '{state}' for tag '{key}'")
     if state not in [State.RELEASED.value]:
         logging.warning(f"Account '{item.id}' assigned to '{holder}' is in transient state '{state}'")
-    logging.info(f"Account '{item.id}' assigned to '{holder}' is valid")
+    logging.info(f"Account '{item.id}' assigned to '{holder}' has been checked and is OK")
 
 
 def validate_additional_tags(item, expected_tags):

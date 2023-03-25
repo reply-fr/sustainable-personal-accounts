@@ -19,6 +19,7 @@ from .account import Account, State
 from .events import Events
 from .key_value_store import KeyValueStore
 from .logger import setup_logging, trap_exception, LOGGING_FORMAT
+from .metric import put_metric_data
 from .session import get_account_session, get_assumed_session
 from .settings import Settings
 from .worker import Worker
@@ -31,6 +32,7 @@ __all__ = ['Account',
            'State',
            'get_account_session',
            'get_assumed_session',
+           'put_metric_data',
            'setup_logging',
            'trap_exception',
            'Worker']

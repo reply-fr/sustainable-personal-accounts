@@ -21,20 +21,24 @@ import os
 import logging
 from uuid import uuid4
 
+cache = None  # session with permissions on top-level account of the organization
 
-def get_organizations_session():
+
+def get_organizations_session(session=None):
     ''' get session to top account in the organization '''
+    global cache
+    if cache:
+        return cache
     role = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-    return get_assumed_session(role_arn=role) if role else Session()
+    cache = get_assumed_session(role_arn=role, session=session) if role else Session()
+    return cache
 
 
 def get_account_session(account, session=None):
     ''' get session to target account '''
-    arn = os.environ.get('ROLE_ARN_TO_MANAGE_ACCOUNTS')
-    main = get_assumed_session(role_arn=arn, session=session) if arn else Session()
-
     name = os.environ.get('ROLE_NAME_TO_MANAGE_CODEBUILD', 'AWSControlTowerExecution')
-    target = get_assumed_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=main)
+    via = get_organizations_session(session=session)
+    target = get_assumed_session(role_arn=f'arn:aws:iam::{account}:role/{name}', session=via)
     identity = target.client('sts').get_caller_identity()
     logging.debug(f"Using identity {identity}")
     return target

@@ -20,7 +20,6 @@ import json
 import logging
 import os
 
-
 from logger import setup_logging, trap_exception
 setup_logging()
 

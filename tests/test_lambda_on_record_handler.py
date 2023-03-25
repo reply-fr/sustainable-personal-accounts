@@ -30,8 +30,8 @@ import pytest
 from lambdas import Events, KeyValueStore
 from lambdas.on_record_handler import build_reports, handle_record, handle_monthly_reporting, handle_daily_reporting, get_hashes, get_report_key
 
-from tests.fixture_key_value_store import create_my_table, populate_records_table
 # pytestmark = pytest.mark.wip
+from tests.fixture_key_value_store import create_my_table, populate_records_table
 
 
 sample_payload = json.dumps(

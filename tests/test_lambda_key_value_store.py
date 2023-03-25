@@ -21,8 +21,8 @@ import pytest
 
 from lambdas import KeyValueStore
 
-from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 # pytestmark = pytest.mark.wip
+from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 
 
 @pytest.mark.unit_tests

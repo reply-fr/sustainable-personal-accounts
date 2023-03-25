@@ -15,24 +15,19 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import json
 import logging
+logging.getLogger('botocore').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from logger import setup_logging, trap_exception
-setup_logging()
+import pytest
+from unittest.mock import Mock
 
-from account import State
-from events import Events
-from settings import Settings
+from lambdas import put_metric_data
 
-
-@trap_exception
-def handle_tag_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-    input = Events.decode_tag_account_event(event=event, match=State.RELEASED)
-    return handle_account(input.account, session=session)
+# pytestmark = pytest.mark.wip
 
 
-def handle_account(account, session=None):
-    Settings.get_settings_for_account(identifier=account, session=session)  # error if account is not managed
-    return Events.emit_account_event('ReleasedAccount', account)
+@pytest.mark.unit_tests
+def test_put_metric_data():
+    mock = Mock()
+    put_metric_data(name='name', dimensions=[], value=1.23, unit='None', timestamp=123, session=mock)

@@ -19,148 +19,34 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from boto3.session import Session
-import json
 from moto import mock_organizations, mock_ssm
-import os
 import pytest
 from types import SimpleNamespace
-from unittest.mock import patch
 
 from lambdas.check_accounts_handler import handle_event, validate_tags
-import lambdas.check_accounts_handler as to_be_mocked
 
 # pytestmark = pytest.mark.wip
-
-
-def create_account(name, ou, session, tags={}):
-    result = session.client('organizations').create_account(Email=f"{name}@acme.com",
-                                                            AccountName=f"{name}")
-    my_id = result["CreateAccountStatus"]["AccountId"]
-    session.client('organizations').tag_resource(ResourceId=my_id,
-                                                 Tags=[dict(Key='account-holder', Value=f"{name}@acme.com")])
-    session.client('organizations').tag_resource(ResourceId=my_id,
-                                                 Tags=[dict(Key=k, Value=v) for k, v in tags.items()])
-    my_ou = session.client('organizations').list_parents(ChildId=my_id)["Parents"][0]["Id"]
-    session.client('organizations').move_account(AccountId=my_id, SourceParentId=my_ou, DestinationParentId=ou)
-    return my_id
-
-
-def create_organizational_unit(parent, name, session):
-    result = session.client('organizations').create_organizational_unit(ParentId=parent, Name=name)
-    return result["OrganizationalUnit"]["Id"]
-
-
-def given_some_context():
-    environment = os.environ['ENVIRONMENT_IDENTIFIER']
-
-    session = Session(aws_access_key_id='testing',
-                      aws_secret_access_key='testing',
-                      aws_session_token='testing',
-                      region_name='eu-west-1')
-
-    context = SimpleNamespace(session=session)
-    context.root_id = session.client('organizations').create_organization(FeatureSet="ALL")["Organization"]["MasterAccountId"]
-
-    context.committed_ou = create_organizational_unit(parent=context.root_id, name='committed', session=session)
-    context.crm_account = create_account(name='crm', ou=context.committed_ou, session=session, tags=dict(CostCenter='CRM', Sponsor='CSO'))
-    context.erp_account = create_account(name='erp', ou=context.committed_ou, session=session, tags=dict(CostCenter='ERP', Sponsor='COO'))
-
-    context.sandbox_ou = create_organizational_unit(parent=context.root_id, name='sandbox', session=session)
-    context.alice_account = create_account(name='alice', ou=context.sandbox_ou, session=session)
-    context.bob_account = create_account(name='bob', ou=context.sandbox_ou, session=session)
-
-    context.settings_crm_account = {
-        'account_tags': {'cost-center': 'crm', 'workload-sponsor': 'Claudio Roger Marciano'},
-        'identifier': context.crm_account,
-        'note': 'the production account for our CRM system',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'WORLD'}
-        },
-        'purge': {
-            'feature': 'disabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=f"/{environment}/Accounts/{context.crm_account}",
-                                        Value=json.dumps(context.settings_crm_account),
-                                        Type='String')
-
-    context.settings_erp_account = {
-        'account_tags': {'cost-center': 'erp', 'workload-sponsor': 'Eric Roger Plea'},
-        'identifier': context.erp_account,
-        'note': 'the production account for our ERP system',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'WORLD'}
-        },
-        'purge': {
-            'feature': 'disabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=f"/{environment}/Accounts/{context.erp_account}",
-                                        Value=json.dumps(context.settings_erp_account),
-                                        Type='String')
-
-    context.settings_committed_ou = {
-        'account_tags': {'cost-center': 'committed', 'workload-sponsor': 'CFO'},
-        'identifier': context.committed_ou,
-        'note': 'the collection of production accounts for actual business',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'WORLD'}
-        },
-        'purge': {
-            'feature': 'disabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=f"/{environment}/OrganizationalUnits/{context.committed_ou}",
-                                        Value=json.dumps(context.settings_committed_ou),
-                                        Type='String')
-
-    context.settings_sandbox_ou = {
-        'account_tags': {'cost-center': 'sandbox', 'workload-sponsor': 'CTO'},
-        'identifier': context.sandbox_ou,
-        'note': 'the collection of sandbox accounts for individual innovation',
-        'preparation': {
-            'feature': 'enabled',
-            'variables': {'HELLO': 'WORLD'}
-        },
-        'purge': {
-            'feature': 'enabled',
-            'variables': {'DRY_RUN': 'TRUE'}
-        }
-    }
-    session.client('ssm').put_parameter(Name=f"/{environment}/OrganizationalUnits/{context.sandbox_ou}",
-                                        Value=json.dumps(context.settings_sandbox_ou),
-                                        Type='String')
-
-    return context
+from tests.fixture_small_setup import given_a_small_setup
+from account import Account  # visible from monkeypatch
 
 
 @pytest.mark.integration_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER='Fake',
-                             ORGANIZATIONAL_UNITS_PARAMETER="SomeParameter",
-                             VERBOSITY='DEBUG'))
 @mock_organizations
 @mock_ssm
 def test_handle_event(monkeypatch):
-
-    context = given_some_context()
+    context = given_a_small_setup()
 
     processed = set()
 
-    def process(details, *arg, **kwargs):
-        processed.add(details.id)
+    def process(account, *arg, **kwargs):
+        processed.add(account)
+        return SimpleNamespace(id=account, tags={'account-holder': 'a@b.com', 'account-state': 'released'})
 
-    monkeypatch.setattr(to_be_mocked, 'validate_tags', process)
+    monkeypatch.setattr(Account, 'describe', process)
 
-    result = handle_event(event=None, context=None, session=context.session)
+    result = handle_event()
     assert result == '[OK]'
-    assert processed == {context.crm_account, context.erp_account, context.alice_account, context.bob_account}
+    assert processed == {context.crm_account, context.erp_account, context.alice_account, context.bob_account, '210987654321'}
 
 
 @pytest.mark.unit_tests
