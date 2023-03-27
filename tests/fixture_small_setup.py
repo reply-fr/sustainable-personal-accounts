@@ -87,7 +87,8 @@ def given_a_small_setup(environment='Spa'):
                                         Value=json.dumps(context.settings_erp_account),
                                         Type='String')
 
-    context.sandbox_ou = create_organizational_unit(parent=context.root_id, name='sandbox', session=session)
+    context.sandbox_ou_name = 'Sandbox'
+    context.sandbox_ou = create_organizational_unit(parent=context.root_id, name=context.sandbox_ou_name, session=session)
     context.alice_account = create_account(name='alice', ou=context.sandbox_ou, session=session, tags={'account-state': 'released'})
     context.bob_account = create_account(name='bob', ou=context.sandbox_ou, session=session, tags={'account-state': 'expired'})
 

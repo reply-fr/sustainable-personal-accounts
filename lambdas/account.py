@@ -39,6 +39,8 @@ class Account:
 
     session = None
 
+    ou_cache = {}
+
     @classmethod
     def get_tag_key(cls, suffix):
         prefix = os.environ.get('TAG_PREFIX', 'account-')
@@ -156,12 +158,30 @@ class Account:
 
     @classmethod
     def get_organizational_unit(cls, account, session=None):
+        return cls.get_organizational_unit_details(account=account, session=session).get('Id', 'Unknown')
+
+    @classmethod
+    def get_organizational_unit_name(cls, account, session=None):
+        return cls.get_organizational_unit_details(account=account, session=session).get('Name', 'Unknown')
+
+    @classmethod
+    def get_organizational_unit_details(cls, account, session=None):
         session = session or get_organizations_session()
+        cached = cls.ou_cache.get(account)
+        if cached:
+            return cached
         try:
-            return session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+            id = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+            if id.startswith('r-'):
+                details = dict(Id=id, Name='Root')
+            else:
+                details = session.client('organizations').describe_organizational_unit(OrganizationalUnitId=id)['OrganizationalUnit']
+            cls.ou_cache[account] = details
+            return details
         except botocore.exceptions.ClientError:
             logging.warning(f"Unable to find parent of account '{account}'")
-            return ''
+            cls.ou_cache[account] = {}
+            return {}
 
     @classmethod
     def get_cost_management_tag(cls):

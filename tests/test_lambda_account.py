@@ -205,6 +205,15 @@ def test_get_organizational_unit():
     assert Account.get_organizational_unit(account=context.alice_account) == context.sandbox_ou
 
 
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_get_organizational_unit_name():
+    context = given_a_small_setup()
+    assert Account.get_organizational_unit_name(account=context.root_account) == 'Root'
+    assert Account.get_organizational_unit_name(account=context.alice_account) == context.sandbox_ou_name
+
+
 @pytest.mark.unit_tests
 def test_validate_holder():
     Account.validate_holder('alpha-nc.aws.cloudops.fr@acme.com')

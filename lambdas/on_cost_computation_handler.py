@@ -115,7 +115,7 @@ def get_amounts_per_cost_center(accounts, day, session):
         logging.info(f"Processing data for account '{account}'")
         attributes = accounts.get(str(account), {})
         more = dict(name=attributes.get('name', Account.get_name(account)),
-                    unit=attributes.get('unit', Account.get_organizational_unit(account)))
+                    unit=attributes.get('unit', Account.get_organizational_unit_name(account)))
         for item in breakdown:
             item.update(more)
         logging.debug(breakdown)
