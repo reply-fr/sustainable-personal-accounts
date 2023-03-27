@@ -26,7 +26,7 @@ import pytest
 
 from lambdas import Settings
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 from tests.fixture_small_setup import given_a_small_setup
 
 

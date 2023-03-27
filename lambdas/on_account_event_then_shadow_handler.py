@@ -73,16 +73,17 @@ def get_table():
 def build_report(records):
     logging.info("Building inventory report from shadows")
     buffer = io.StringIO()
-    writer = DictWriter(buffer, fieldnames=['cost_center', 'cost_owner', 'account', 'email', 'name', 'state'])
+    writer = DictWriter(buffer, fieldnames=['Cost Center', 'Cost Owner', 'Organizational Unit', 'Account', 'Name', 'Email', 'State'])
     writer.writeheader()
     for record in records:
         item = record['value']
-        row = dict(account=item['id'],
-                   cost_center=Account.get_cost_center(item['tags']),
-                   cost_owner=item['tags']['cost-owner'],
-                   email=item['email'],
-                   name=item['name'],
-                   state=item['tags']['account-state'])
+        row = {'Account': item['id'],
+               'Cost Center': Account.get_cost_center(item['tags']),
+               'Cost Owner': item['tags']['cost-owner'],
+               'Email': item['email'],
+               'Organizational Unit': Account.get_organizational_unit_name(item['id']),
+               'Name': item['name'],
+               'State': item['tags']['account-state']}
         writer.writerow(row)
     return buffer.getvalue()
 

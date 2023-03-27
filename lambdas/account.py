@@ -149,6 +149,7 @@ class Account:
         item.is_active = True if attributes['Status'] == 'ACTIVE' else False
         item.tags = cls.list_tags(account=id, session=session)
         item.unit = cls.get_organizational_unit(account=id)
+        item.unit_name = cls.get_organizational_unit_name(account=id)
         return item
 
     @classmethod
@@ -167,20 +168,18 @@ class Account:
     @classmethod
     def get_organizational_unit_details(cls, account, session=None):
         session = session or get_organizations_session()
-        cached = cls.ou_cache.get(account)
-        if cached:
-            return cached
         try:
-            id = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
-            if id.startswith('r-'):
-                details = dict(Id=id, Name='Root')
-            else:
-                details = session.client('organizations').describe_organizational_unit(OrganizationalUnitId=id)['OrganizationalUnit']
-            cls.ou_cache[account] = details
+            unit = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+            if unit.startswith('r-'):
+                return dict(Id=unit, Name='Root')
+            cached = cls.ou_cache.get(unit)
+            if cached:
+                return cached
+            details = session.client('organizations').describe_organizational_unit(OrganizationalUnitId=unit)['OrganizationalUnit']
+            cls.ou_cache[unit] = details
             return details
         except botocore.exceptions.ClientError:
             logging.warning(f"Unable to find parent of account '{account}'")
-            cls.ou_cache[account] = {}
             return {}
 
     @classmethod

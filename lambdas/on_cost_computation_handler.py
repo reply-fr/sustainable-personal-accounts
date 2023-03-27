@@ -115,12 +115,12 @@ def get_amounts_per_cost_center(accounts, day, session):
         logging.info(f"Processing data for account '{account}'")
         attributes = accounts.get(str(account), {})
         more = dict(name=attributes.get('name', Account.get_name(account)),
-                    unit=attributes.get('unit', Account.get_organizational_unit_name(account)))
+                    unit=attributes.get('unit_name', Account.get_organizational_unit_name(account)))
         for item in breakdown:
             item.update(more)
         logging.debug(breakdown)
         cost_center = Account.get_cost_center(tags=attributes.get('tags', {}))
-        cumulated = costs.get(cost_center, list())
+        cumulated = costs.get(cost_center, [])
         cumulated.extend(breakdown)
         costs[cost_center] = cumulated
     return costs
@@ -129,8 +129,8 @@ def get_amounts_per_cost_center(accounts, day, session):
 def enumerate_monthly_breakdown_per_account(day=None, session=None):
     logging.info("Fetching monthly cost and usage information")
     day = day or date.today()
-    start = day.replace(day=1)
-    end = (start + timedelta(days=32)).replace(day=1)
+    start = day.replace(day=1)                         # first day of this month is included
+    end = (start + timedelta(days=32)).replace(day=1)  # first day of next month is excluded
     session = session or get_organizations_session()
     costs = session.client('ce')
     parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
@@ -168,7 +168,7 @@ def build_detailed_csv_report(cost_center, day, breakdown):
     logging.info(f"Building detailed CSV report for cost center '{cost_center}'")
     buffer = io.StringIO()
     writer = DictWriter(buffer,
-                        fieldnames=['Cost Center', 'Month', 'Account', 'Name', 'Organizational Unit', 'Service', 'Amount (USD)'])
+                        fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)'])
     writer.writeheader()
     total = 0.0
     for item in breakdown:
@@ -200,16 +200,16 @@ def build_detailed_excel_report(cost_center, day, breakdown):
     amount_format = workbook.add_format({'num_format': '# ##0.00'})
     amount_format.set_align('right')
     worksheet = workbook.add_worksheet()
-    headers = ['Cost Center', 'Month', 'Account', 'Name', 'Organizational Unit', 'Service', 'Amount (USD)']
+    headers = ['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)']
     worksheet.write_row(0, 0, headers)
     widths = {index: len(headers[index]) for index in range(len(headers))}
     row = 1
     for item in breakdown:
         data = [str(cost_center),
                 day.isoformat()[:7],
+                str(item['unit']),
                 str(item['account']),
                 str(item['name']),
-                str(item['unit']),
                 str(item['service']),
                 float(item['amount'])]
         worksheet.write_row(row, 0, data)
@@ -231,16 +231,28 @@ def build_summary_csv_report(costs, day):
     logging.info("Building summary CSV cost report")
     buffer = io.StringIO()
     writer = DictWriter(buffer,
-                        fieldnames=['Cost Center', 'Month', 'Amount (USD)'])
+                        fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Amount (USD)'])
     writer.writeheader()
     summary = 0.0
     for cost_center in costs.keys():
+        units = {}
         total = 0.0
         for item in costs[cost_center]:
-            total += float(item['amount'])
+            amount = float(item['amount'])
+            name = item['unit']
+            value = units.get(name, 0.0)
+            units[name] = value + amount
+            total += amount
         summary += total
+        for name in units.keys():
+            row = {'Cost Center': cost_center,
+                   'Month': day.isoformat()[:7],
+                   'Organizational Unit': name,
+                   'Amount (USD)': units[name]}
+            writer.writerow(row)
         row = {'Cost Center': cost_center,
                'Month': day.isoformat()[:7],
+               'Organizational Unit': '',
                'Amount (USD)': total}
         writer.writerow(row)
     row = {'Cost Center': 'TOTAL',
@@ -257,27 +269,44 @@ def build_summary_excel_report(costs, day):
     amount_format = workbook.add_format({'num_format': '# ##0.00'})
     amount_format.set_align('right')
     worksheet = workbook.add_worksheet()
-    headers = ['Cost Center', 'Month', 'Amount (USD)']
+    headers = ['Cost Center', 'Month', 'Organizational Unit', 'Amount (USD)']
     worksheet.write_row(0, 0, headers)
     widths = {index: len(headers[index]) for index in range(len(headers))}
+    subs = []
     row = 1
+    month = day.isoformat()[:7]
     for cost_center in costs.keys():
-        total = 0.0
+        head = row
+        units = {}
         for item in costs[cost_center]:
-            total += float(item['amount'])
+            amount = float(item['amount'])
+            name = item['unit']
+            value = units.get(name, 0.0)
+            units[name] = value + amount
+        for name in units.keys():
+            data = [str(cost_center),
+                    month,
+                    name,
+                    units[name]]
+            worksheet.write_row(row, 0, data)
+            worksheet.set_row(row, None, None, {'level': 2, 'hidden': True})
+            row += 1
         data = [str(cost_center),
-                day.isoformat()[:7],
-                float(total)]
+                month,
+                '',
+                f"=SUM({xl_rowcol_to_cell(head, 3)}:{xl_rowcol_to_cell(row - 1, 3)})"]
         worksheet.write_row(row, 0, data)
+        worksheet.set_row(row, None, None, {'level': 1, 'collapsed': True})
+        subs.append(xl_rowcol_to_cell(row, 3))
+        row += 1
         for index in range(len(data)):
             widths[index] = max(widths[index], len(str(data[index])))
-        row += 1
     worksheet.write(row, 0, 'TOTAL')
-    worksheet.write(row, 1, day.isoformat()[:7])
-    worksheet.write(row, 2, "=SUM(C2:{})".format(xl_rowcol_to_cell(row - 1, 2)))
-    for index in range(2):
+    worksheet.write(row, 1, month)
+    worksheet.write(row, 3, '=' + '+'.join(subs))
+    for index in range(3):
         worksheet.set_column(index, index, widths[index])
-    worksheet.set_column(2, 2, widths[2], amount_format)
+    worksheet.set_column(3, 3, widths[2], amount_format)
     workbook.close()
     return buffer.getvalue()
 

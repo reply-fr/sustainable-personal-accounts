@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from cdk import Configuration
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
