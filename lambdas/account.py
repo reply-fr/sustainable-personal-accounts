@@ -165,8 +165,9 @@ class Account:
 
     @classmethod
     def get_cost_management_tag(cls):
-        return os.environ.get('COST_MANAGEMENT_TAG', "cost-center")
+        tag = os.environ.get('COST_MANAGEMENT_TAG')
+        return tag if tag else 'cost-center'
 
     @classmethod
     def get_cost_center(cls, tags):
-        return tags.get(cls.get_cost_management_tag(), "NoCostCenter")
+        return tags.get(cls.get_cost_management_tag(), "NoCostTag")

@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from lambdas import Account, State
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from tests.fixture_small_setup import given_a_small_setup
 
 
@@ -70,8 +70,8 @@ def test_list_tags(valid_tags):
     assert tags == {'account-holder': 'a@b.com', 'account-state': 'vanilla', 'another_tag': 'another_value'}
 
 
-@patch.dict(os.environ, dict(TAG_PREFIX='hello:'))
 @pytest.mark.unit_tests
+@patch.dict(os.environ, dict(TAG_PREFIX='hello:'))
 def test_get_tag_key():
     result = Account.get_tag_key(suffix='world')
     assert result == 'hello:world'
@@ -208,3 +208,35 @@ def test_get_organizational_unit():
 @pytest.mark.unit_tests
 def test_validate_holder():
     Account.validate_holder('alpha-nc.aws.cloudops.fr@acme.com')
+
+
+@pytest.mark.unit_tests
+def test_get_cost_management_tag():
+
+    with patch.dict(os.environ, dict(COST_MANAGEMENT_TAG='cost-center')):
+        assert Account.get_cost_management_tag() == 'cost-center'
+
+    with patch.dict(os.environ, dict(COST_MANAGEMENT_TAG='')):
+        assert Account.get_cost_management_tag() == 'cost-center'
+
+    with patch.dict(os.environ, dict(COST_MANAGEMENT_TAG='customTag')):
+        assert Account.get_cost_management_tag() == 'customTag'
+
+
+@pytest.mark.unit_tests
+def test_get_cost_center():
+
+    defaultTag = {'cost-center': 'standard BU'}
+    customTag = {'customTag': 'customised BU'}
+
+    with patch.dict(os.environ, dict(COST_MANAGEMENT_TAG='cost-center')):
+        assert Account.get_cost_center(tags=defaultTag) == 'standard BU'
+        assert Account.get_cost_center(tags=customTag) == 'NoCostTag'
+
+    with patch.dict(os.environ, dict(COST_MANAGEMENT_TAG='')):
+        assert Account.get_cost_center(tags=defaultTag) == 'standard BU'
+        assert Account.get_cost_center(tags=customTag) == 'NoCostTag'
+
+    with patch.dict(os.environ, dict(COST_MANAGEMENT_TAG='customTag')):
+        assert Account.get_cost_center(tags=defaultTag) == 'NoCostTag'
+        assert Account.get_cost_center(tags=customTag) == 'customised BU'
