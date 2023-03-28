@@ -69,12 +69,16 @@ class Cockpit(Construct):
             self.get_dynamodb_system_errors_widget(tables=tables),
             self.get_dynamodb_user_errors_widget(tables=tables))
 
-    SEARCH_TEMPLATE = "SEARCH('{SustainablePersonalAccount, ___by___, Environment} Environment=""___environment___"" MetricName=""___metric___""', 'Sum', 60)"
-
-    def get_search_expression(self, by='Account', environment=None, metric=None):
-        environment = environment or toggles.environment_identifier
-        metric = metric or f"AccountEventsBy{by}"
-        return self.SEARCH_TEMPLATE.replace('___by___', by).replace('___environment___', environment).replace('___metric___', metric)
+    def get_search_expression(self, by=None, environment=None, metric=None, statistic=None, duration=None):
+        expression = "SEARCH('{SustainablePersonalAccount, ___by___, Environment} Environment=""___environment___"" MetricName=""___metric___""', '___statistic___', ___duration___)"
+        replacements = {'___by___': by or 'Account',
+                        '___environment___': environment or toggles.environment_identifier,
+                        '___metric___': metric or f"AccountEventsBy{by}",
+                        '___statistic___': statistic or 'Sum',
+                        '___duration___': duration or 60}
+        for key in replacements.keys():
+            expression = expression.replace(key, str(replacements[key]))
+        return expression
 
     def get_text_label_widget(self, layout='top'):
         ''' show static banner that has been configured for this dashboard '''
@@ -85,7 +89,10 @@ class Cockpit(Construct):
     def get_costs_by_cost_center_widget(self):
         return GraphWidget(
             title="Daily costs by cost center",
-            left=[MathExpression(expression=self.get_search_expression(by='CostCenter', metric='DailyCostsByCostCenter'),
+            left=[MathExpression(expression=self.get_search_expression(by='CostCenter',
+                                                                       metric='DailyCostsByCostCenter',
+                                                                       statistic='Maximum',
+                                                                       duration=86400),
                                  label='',
                                  period=Duration.days(1))],
             left_y_axis=dict(label='USD'),
@@ -96,9 +103,11 @@ class Cockpit(Construct):
     def get_transactions_by_cost_center_widget(self):
         return GraphWidget(
             title="Transactions by cost center",
-            left=[MathExpression(expression=self.get_search_expression(by='CostCenter', metric='TransactionsByCostCenter'),
+            left=[MathExpression(expression=self.get_search_expression(by='CostCenter',
+                                                                       metric='TransactionsByCostCenter',
+                                                                       duration=86400),
                                  label='',
-                                 period=Duration.minutes(5))],
+                                 period=Duration.days(1))],
             left_y_axis=dict(show_units=False),
             stacked=True,
             height=6,
@@ -107,9 +116,11 @@ class Cockpit(Construct):
     def get_transactions_by_label_widget(self):
         return GraphWidget(
             title="Transactions by label",
-            left=[MathExpression(expression=self.get_search_expression(by='Label', metric='TransactionsByLabel'),
+            left=[MathExpression(expression=self.get_search_expression(by='Label',
+                                                                       metric='TransactionsByLabel',
+                                                                       duration=86400),
                                  label='',
-                                 period=Duration.minutes(5))],
+                                 period=Duration.days(1))],
             left_y_axis=dict(show_units=False),
             stacked=True,
             height=6,
