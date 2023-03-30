@@ -19,6 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from base64 import b64encode
 import boto3
 import json
 from unittest.mock import Mock, patch
@@ -27,9 +28,9 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_exception_handler import handle_exception, handle_attachment_request, build_csv_report, download_attachment
+from lambdas.on_exception_handler import handle_exception, handle_attachment_request, download_attachment
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 sample_payload = json.dumps(
@@ -94,73 +95,13 @@ def test_handle_attachment_request():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
     s3.put_object(Bucket="my_bucket", Key="exceptions/my/test.csv", Body="hello,world\nhello,universe")
 
-    with open('fixtures/events/sample_sec_fetch_download_request.json') as stream:
-        assert handle_attachment_request(event=json.loads(stream.read())) == {
-            'body': 'hello,world\nhello,universe',
-            'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
-            'statusCode': 200}
-
     with open('fixtures/events/sample_direct_download_request.json') as stream:
         assert handle_attachment_request(event=json.loads(stream.read())) == {
-            'body': '{"error": "You are not allowed to fetch this document"}',
-            'headers': {'Content-Type': 'application/json'},
-            'statusCode': 403}
-
-
-@pytest.mark.unit_tests
-def test_build_csv_report():
-    sample_report = {'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'SERVICE'}],
-                     'ResultsByTime': [{'TimePeriod': {'Start': '2023-03-01', 'End': '2023-03-18'},
-                                        'Total': {},
-                                        'Groups': [{'Keys': ['AWS CloudTrail'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS Config'], 'Metrics': {'UnblendedCost': {'Amount': '3.3', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS Key Management Service'], 'Metrics': {'UnblendedCost': {'Amount': '0.5392304', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS Lambda'], 'Metrics': {'UnblendedCost': {'Amount': '0.0011515946', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS Secrets Manager'], 'Metrics': {'UnblendedCost': {'Amount': '0.4311827888', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS Step Functions'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS Systems Manager'], 'Metrics': {'UnblendedCost': {'Amount': '4.73157601', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AWS X-Ray'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Amazon Connect Customer Profiles'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Amazon DynamoDB'], 'Metrics': {'UnblendedCost': {'Amount': '0.006810086', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Amazon Kinesis Firehose'], 'Metrics': {'UnblendedCost': {'Amount': '0.011183841', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Amazon Simple Notification Service'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Amazon Simple Queue Service'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Amazon Simple Storage Service'], 'Metrics': {'UnblendedCost': {'Amount': '0.0153292873', 'Unit': 'USD'}}},
-                                                   {'Keys': ['AmazonCloudWatch'], 'Metrics': {'UnblendedCost': {'Amount': '3.8806672007', 'Unit': 'USD'}}},
-                                                   {'Keys': ['CloudWatch Events'], 'Metrics': {'UnblendedCost': {'Amount': '0.002184', 'Unit': 'USD'}}},
-                                                   {'Keys': ['CodeBuild'], 'Metrics': {'UnblendedCost': {'Amount': '0.04', 'Unit': 'USD'}}},
-                                                   {'Keys': ['Tax'], 'Metrics': {'UnblendedCost': {'Amount': '2.5', 'Unit': 'USD'}}}],
-                                        'Estimated': True}],
-                     'DimensionValueAttributes': [],
-                     'ResponseMetadata': {'RequestId': '502805d4-bdc5-4e71-96b4-241ea3230bb1',
-                                          'HTTPStatusCode': 200,
-                                          'HTTPHeaders': {'date': 'Sat, 18 Mar 2023 06:44:55 GMT',
-                                                          'content-type': 'application/x-amz-json-1.1',
-                                                          'content-length': '1888',
-                                                          'connection': 'keep-alive',
-                                                          'x-amzn-requestid': '502805d4-bdc5-4e71-96b4-241ea3230bb1',
-                                                          'cache-control': 'no-cache'},
-                                          'RetryAttempts': 0}}
-
-    assert build_csv_report(cost_and_usage=sample_report) == ('Start,End,Service,Amount (USD)\r\n'
-                                                              '2023-03-01,2023-03-18,AWS CloudTrail,0\r\n'
-                                                              '2023-03-01,2023-03-18,AWS Config,3.3\r\n'
-                                                              '2023-03-01,2023-03-18,AWS Key Management Service,0.5392304\r\n'
-                                                              '2023-03-01,2023-03-18,AWS Lambda,0.0011515946\r\n'
-                                                              '2023-03-01,2023-03-18,AWS Secrets Manager,0.4311827888\r\n'
-                                                              '2023-03-01,2023-03-18,AWS Step Functions,0\r\n'
-                                                              '2023-03-01,2023-03-18,AWS Systems Manager,4.73157601\r\n'
-                                                              '2023-03-01,2023-03-18,AWS X-Ray,0\r\n'
-                                                              '2023-03-01,2023-03-18,Amazon Connect Customer Profiles,0\r\n'
-                                                              '2023-03-01,2023-03-18,Amazon DynamoDB,0.006810086\r\n'
-                                                              '2023-03-01,2023-03-18,Amazon Kinesis Firehose,0.011183841\r\n'
-                                                              '2023-03-01,2023-03-18,Amazon Simple Notification Service,0\r\n'
-                                                              '2023-03-01,2023-03-18,Amazon Simple Queue Service,0\r\n'
-                                                              '2023-03-01,2023-03-18,Amazon Simple Storage Service,0.0153292873\r\n'
-                                                              '2023-03-01,2023-03-18,AmazonCloudWatch,3.8806672007\r\n'
-                                                              '2023-03-01,2023-03-18,CloudWatch Events,0.002184\r\n'
-                                                              '2023-03-01,2023-03-18,CodeBuild,0.04\r\n'
-                                                              '2023-03-01,2023-03-18,Tax,2.5\r\n')
+            'body': b64encode('hello,world\nhello,universe'.encode('utf-8')).decode(),
+            'headers': {'Content-Disposition': 'attachment; filename="test.csv"',
+                        'Content-Type': 'application/octet-stream'},
+            'isBase64Encoded': True,
+            'statusCode': 200}
 
 
 @pytest.mark.integration_tests
@@ -183,13 +124,15 @@ def test_download_attachment():
     }
 
     assert download_attachment(path="my/test.csv", headers=sec_fetch_headers) == {
-        'body': 'hello,world\nhello,universe',
-        'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
+        'body': b64encode('hello,world\nhello,universe'.encode('utf-8')).decode(),
+        'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'application/octet-stream'},
+        'isBase64Encoded': True,
         'statusCode': 200}
 
     assert download_attachment(path="/my/test.csv", headers=sec_fetch_headers) == {  # path has leading '/'
-        'body': 'hello,world\nhello,universe',
-        'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'text/csv'},
+        'body': b64encode('hello,world\nhello,universe'.encode('utf-8')).decode(),
+        'headers': {'Content-Disposition': 'attachment; filename="test.csv"', 'Content-Type': 'application/octet-stream'},
+        'isBase64Encoded': True,
         'statusCode': 200}
 
     assert download_attachment(path="some/unknown/object.csv", headers=sec_fetch_headers) == {
