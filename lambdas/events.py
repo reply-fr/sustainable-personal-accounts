@@ -152,7 +152,7 @@ class Events:
         if match and match != decoded.label:
             raise ValueError(f"Unexpected event label '{decoded.label}'")
 
-        decoded.content_type = event['detail'].get('Content-Type', cls.DEFAULT_CONTENT_TYPE)
+        decoded.content_type = event['detail'].get('ContentType', cls.DEFAULT_CONTENT_TYPE)
         decoded.payload = event['detail'].get('Payload', None)
 
         return decoded

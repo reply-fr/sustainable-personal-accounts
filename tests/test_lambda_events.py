@@ -199,11 +199,12 @@ def test_decode_spa_event():
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label="MessageToMicrosoftTeams",
                                                          payload='{"hello": "world"}',
-                                                         content_type='application/json',
+                                                         content_type='application/octet-stream',
                                                          environment="envt1"))
     decoded = Events.decode_spa_event(event)
     assert decoded.label == "MessageToMicrosoftTeams"
     assert decoded.payload == {"hello": "world"}
+    assert decoded.content_type == 'application/octet-stream'
 
 
 @pytest.mark.unit_tests
