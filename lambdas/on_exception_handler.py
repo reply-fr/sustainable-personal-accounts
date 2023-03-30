@@ -15,12 +15,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from base64 import b64encode
 import boto3
 from boto3.session import Session
 import botocore
-from csv import DictWriter
 from datetime import date
-import io
 import json
 import logging
 import os
@@ -29,9 +28,9 @@ from logger import setup_logging, trap_exception
 setup_logging()
 
 from account import Account
+from costs import Costs
 from events import Events
 from metric import put_metric_data
-from session import get_account_session
 
 
 SUMMARY_TEMPLATE = "# {}\n\n{}"  # markdown is supported
@@ -95,17 +94,17 @@ def tag_incident(incident_arn, payload, session=None):
 
 
 def attach_cost_report(incident_arn, payload, session=None, day=None):
+    day = day or date.today()
     account = payload.get('account')
     if not account:
         logging.debug(f"No account identifier in {payload}")
         return
 
     logging.info("Attaching cost and usage report to incident report")
-    day = day or date.today()
     try:
-        cost_and_usage = get_cost_and_usage_report(account, day, session)
-        path = get_report_key(str(account))
-        store_report(path=path, report=build_csv_report(cost_and_usage))
+        breakdown = Costs.enumerate_monthly_breakdown_for_account(account=account, day=day, session=session)
+        path = get_report_key(label=str(account), day=day)
+        store_report(path=path, report=Costs.build_excel_report_for_account(account=account, day=day, breakdown=breakdown))
         add_related_item(incident_arn=incident_arn,
                          title='Cost and Usage Report',
                          url=get_report_url(path=path),
@@ -115,37 +114,11 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
         logging.error(exception)
 
 
-def get_cost_and_usage_report(account, day, session=None):
-    logging.info(f"Retrieving cost and usage information for account '{account}'...")
-    session = session or get_account_session(account=account)
-    costs = session.client('ce')
-    return costs.get_cost_and_usage(
-        TimePeriod=dict(Start=day.replace(day=1).isoformat()[:10], End=day.isoformat()[:10]),
-        Granularity='MONTHLY',
-        Metrics=['UnblendedCost'],
-        Filter=dict(Dimensions=dict(Key='LINKED_ACCOUNT', Values=[account])),
-        GroupBy=[dict(Type='DIMENSION', Key='SERVICE')])
-
-
 def get_report_key(label, day=None):
     day = day or date.today()
     return '/'.join([os.environ["REPORTING_EXCEPTIONS_PREFIX"],
                      label,
-                     f"{day.year:04d}-{day.month:02d}-{label}-cost-and-usage.csv"])
-
-
-def build_csv_report(cost_and_usage):
-    buffer = io.StringIO()
-    writer = DictWriter(buffer, fieldnames=['Start', 'End', 'Service', 'Amount (USD)'])
-    writer.writeheader()
-    for result_by_time in cost_and_usage['ResultsByTime']:
-        for group in result_by_time['Groups']:
-            row = {'Start': result_by_time['TimePeriod']['Start'],
-                   'End': result_by_time['TimePeriod']['End'],
-                   'Service': group['Keys'][0],
-                   'Amount (USD)': group['Metrics']['UnblendedCost']['Amount']}
-            writer.writerow(row)
-    return buffer.getvalue()
+                     f"{day.year:04d}-{day.month:02d}-{label}-cost-and-usage.xlsx"])
 
 
 def store_report(path, report):
@@ -184,13 +157,13 @@ def get_download_attachment_web_endpoint():
 def download_attachment(path, headers={}):
 
     # enforce navigation from aws console -- https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Mode
-    required = {('sec-fetch-mode', 'navigate'), ('sec-fetch-site', 'cross-site'), ('sec-fetch-user', '?1'), ('sec-fetch-dest', 'document')}
-    for key, expected in required:
-        if headers.get(key) != expected:
-            logging.warning(f"403 - Missing header: '{key}': '{expected}'")
-            return dict(statusCode=403,
-                        headers={'Content-Type': 'application/json'},
-                        body=json.dumps({'error': "You are not allowed to fetch this document"}))
+    # required = {('sec-fetch-mode', 'navigate'), ('sec-fetch-site', 'cross-site'), ('sec-fetch-user', '?1'), ('sec-fetch-dest', 'document')}
+    # for key, expected in required:
+    #     if headers.get(key) != expected:
+    #         logging.warning(f"403 - Missing header: '{key}': '{expected}'")
+    #         return dict(statusCode=403,
+    #                     headers={'Content-Type': 'application/json'},
+    #                     body=json.dumps({'error': "You are not allowed to fetch this document"}))
 
     if ('..' in path) or ('?' in path):
         logging.warning("400 - Dangerous link detected. We do not handle this request.")
@@ -203,13 +176,14 @@ def download_attachment(path, headers={}):
     s3 = boto3.client('s3')
     try:
         response = s3.get_object(Bucket=bucket, Key=path)
-        body = response['Body'].read().decode('utf-8')
         file_name = os.path.basename(path)
+        body = b64encode(response['Body'].read()).decode()
         logging.debug(f"Transmitting {len(body)} bytes")
         return dict(statusCode=200,
-                    headers={'Content-Type': 'text/csv',
+                    headers={'Content-Type': 'application/octet-stream',
                              'Content-Disposition': f'attachment; filename="{file_name}"'},  # force download
-                    body=body)
+                    body=body,
+                    isBase64Encoded=True)
     except s3.exceptions.NoSuchKey:
         logging.warning("404 - Not Found")
         return dict(statusCode=404,
