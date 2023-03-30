@@ -1,0 +1,19 @@
+{
+    "Entries": [
+        {
+            "Source": "SustainablePersonalAccounts",
+            "DetailType": "MessageToMicrosoftTeams",
+            "Detail": "{\"ContentType\": \"application/json\", \"Environment\": \"Spa\", \"Payload\": {\"Subject\": \"Hello\", \"Message\": \"World\"}}"
+        },
+        {
+            "Source": "SustainablePersonalAccounts",
+            "DetailType": "MessageToMicrosoftTeams",
+            "Detail": "{\"ContentType\": \"application/json\", \"Environment\": \"Spa\", \"Payload\": {\"Subject\": \"How are you today?\", \"Message\": \"Hope all is well\"}}"
+        },
+        {
+            "Source": "SustainablePersonalAccounts",
+            "DetailType": "MessageToMicrosoftTeams",
+            "Detail": "{\"ContentType\": \"application/json\", \"Environment\": \"SpaTest\", \"Payload\": {\"Subject\": \"Hello\", \"Message\": \"World\"}}"
+        }
+    ]
+}

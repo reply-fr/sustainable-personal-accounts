@@ -172,6 +172,9 @@ put-events:
 put-exceptions:
 	aws events put-events --cli-input-json file://fixtures/events/cli-put-exceptions.json
 
+put-to-microsoft-teams:
+	aws events put-events --cli-input-json file://fixtures/events/cli-put-to-microsoft-teams.json
+
 check-accounts:
 	aws lambda invoke --function-name SpaCheckAccounts --log-type Tail --cli-read-timeout 0 check-accounts.log
 	cat check-accounts.log

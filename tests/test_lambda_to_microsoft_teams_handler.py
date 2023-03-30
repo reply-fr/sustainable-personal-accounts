@@ -19,39 +19,34 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from boto3.session import Session
 from unittest.mock import patch
 import os
 import pytest
-from types import SimpleNamespace
 
-from lambdas import Account, Events
+from lambdas import Events
 from lambdas.to_microsoft_teams_handler import handle_spa_event, post_message
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1"))
-def test_handle_spa_event(monkeypatch):
-
-    def mock_account_describe(id, *args, **kwargs):
-        return SimpleNamespace(id=id, email='a@b.com')
-
-    monkeypatch.setattr(Account, 'describe', mock_account_describe)
-
-    session = Session(aws_access_key_id='testing',
-                      aws_secret_access_key='testing',
-                      aws_session_token='testing',
-                      region_name='eu-west-1')
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             MICROSOFT_WEBHOOK_ON_ALERTS=''))
+def test_handle_spa_event():
 
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label="MessageToMicrosoftTeams",
                                                          payload='{"hello": "world"}',
                                                          environment="envt1"))
-
-    result = handle_spa_event(event=event, context=None, session=session)
+    result = handle_spa_event(event=event)
     assert result == '[OK]'
+
+    event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
+                                            context=dict(label="UnexpectedKindOfEvent",
+                                                         payload='{"hello": "world"}',
+                                                         environment="envt1"))
+    result = handle_spa_event(event=event)
+    assert result is None
 
 
 @pytest.mark.unit_tests

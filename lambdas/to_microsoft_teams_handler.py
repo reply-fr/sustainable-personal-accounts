@@ -27,25 +27,26 @@ from events import Events
 
 
 @trap_exception
-def handle_spa_event(event, context, session=None):
+def handle_spa_event(event, context=None):
     logging.debug(json.dumps(event))
 
     try:
-        item = Events.decode_spa_event(event)
-        post_message(message=item.payload, session=session)
-    except Exception:
-        message = dict(Subject="Message title", Message="Message body")
-        post_message(message=message, session=session)
-
-    return '[OK]'
+        item = Events.decode_spa_event(event, match='MessageToMicrosoftTeams')
+        post_message(message=item.payload)
+        return '[OK]'
+    except Exception as exception:
+        logging.exception(exception)
 
 
-def post_message(message, session=None):
-    logging.debug("Relaying message")
+def post_message(message):
     microsoft_webhook = os.environ.get('MICROSOFT_WEBHOOK_ON_ALERTS', None)
     if microsoft_webhook:
         logging.info(f"Publishing on Microsoft Webhook: {microsoft_webhook}")
+        logging.info(f"Subject: {message['Subject']}")
+        logging.info(f"Message: {message['Message']}")
         handler = pymsteams.connectorcard(microsoft_webhook)
         handler.title(message['Subject'])
         handler.text(message['Message'])
         handler.send()
+    else:
+        logging.warning("No webhook 'MICROSOFT_WEBHOOK_ON_ALERTS' has been defined")
