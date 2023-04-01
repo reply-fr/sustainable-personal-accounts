@@ -4,10 +4,35 @@ As a system administrator,
 I manage exceptions with a ticketing system
 so as to support incident management and problem analysis
 
+Scenario: where a budget alert triggers an exception
+    Given an existing SPA system
+     When the event 'BudgetAlertException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
+Scenario: where a failed codebuild project triggers an exception
+    Given an existing SPA system
+     When the event 'FailedCodebuildException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
+Scenario: where a failed on-boarding transaction triggers an exception
+    Given an existing SPA system
+     When the event 'FailedOnBoardingException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
+Scenario: where a failed maintenance transaction triggers an exception
+    Given an existing SPA system
+     When the event 'FailedMaintenanceException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
+Scenario: where a generic exception is handled
+    Given an existing SPA system
+     When the event 'GenericException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
 Scenario: where an incident record is created on exception
     Given the default event bus of AWS account 'Automation' in an AWS Organisation
      When an exception event is put on the automation bus
-     Then lambda function 'OnException' is executed
+     Then the Lambda function 'OnException' is invoked
       And an incident record is created in the response plan
       And the incident record is tagged with event information
 
