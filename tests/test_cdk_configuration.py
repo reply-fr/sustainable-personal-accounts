@@ -108,8 +108,8 @@ def test_set_default_values(toggles):
     assert toggles.features_with_microsoft_webhook_on_alerts is None
     assert toggles.features_with_tag_prefix == 'account-'
     assert toggles.features_with_cost_management_tag is False
-    assert toggles.metering_records_datastore == 'SpaRecordsTable'
-    assert toggles.metering_records_ttl_in_seconds == 31622400
+    assert toggles.metering_activities_datastore == 'SpaActivitiesTable'
+    assert toggles.metering_activities_ttl_in_seconds == 31622400
     assert toggles.metering_shadows_datastore == 'SpaShadowsTable'
     assert toggles.metering_shadows_ttl_in_seconds == 15811200
     assert toggles.metering_transactions_datastore == 'SpaTransactionsTable'
@@ -183,8 +183,8 @@ def test_set_from_yaml(toggles):
     assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
     assert toggles.features_with_tag_prefix == 'account-'
     assert toggles.features_with_cost_management_tag == 'cost-center'
-    assert toggles.metering_records_datastore == 'SpaRecordsTable'
-    assert toggles.metering_records_ttl_in_seconds == 31622400
+    assert toggles.metering_activities_datastore == 'SpaActivitiesTable'
+    assert toggles.metering_activities_ttl_in_seconds == 31622400
     assert toggles.metering_shadows_datastore == 'SpaShadowsTable'
     assert toggles.metering_shadows_ttl_in_seconds == 15811200
     assert toggles.metering_transactions_datastore == 'SpaTransactionsTable'

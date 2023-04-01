@@ -76,7 +76,7 @@ class Parameters(Construct):
             self, "WebEndpoints",
             string_value=json.dumps(web_endpoints, indent=4),
             data_type=ParameterDataType.TEXT,
-            description="The set of web endpoints exposed to the Internet",
+            description="The map of web endpoints exposed to the Internet",
             parameter_name=self.get_parameter(toggles.environment_identifier, self.WEB_ENDPOINTS_PARAMETER),
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 

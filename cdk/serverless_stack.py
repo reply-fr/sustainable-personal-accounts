@@ -27,6 +27,7 @@ from .cockpit_construct import Cockpit
 from .on_account_event_construct import OnAccountEvent
 from .on_account_event_then_meter_construct import OnAccountEventThenMeter
 from .on_account_event_then_shadow_construct import OnAccountEventThenShadow
+from .on_activity_construct import OnActivity
 from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
 from .on_cost_computation_construct import OnCostComputation
@@ -35,7 +36,6 @@ from .on_expired_account_construct import OnExpiredAccount
 from .on_maintenance_window_construct import OnMaintenanceWindow
 from .on_prepared_account_construct import OnPreparedAccount
 from .on_purged_account_construct import OnPurgedAccount
-from .on_record_construct import OnRecord
 from .on_released_account_construct import OnReleasedAccount
 from .on_vanilla_account_construct import OnVanillaAccount
 from .parameters_construct import Parameters
@@ -59,6 +59,7 @@ class ServerlessStack(Stack):
             'OnAccountEvent',
             'OnAccountEventThenMeter',
             'OnAccountEventThenShadow',
+            'OnActivity',
             'OnAlert',
             'OnAssignedAccount',
             'OnCostComputation',
@@ -67,7 +68,6 @@ class ServerlessStack(Stack):
             'OnMaintenanceWindow',
             'OnPreparedAccount',
             'OnPurgedAccount',
-            'OnRecord',
             'OnReleasedAccount',
             'OnVanillaAccount',
             'ReleaseAccounts',
@@ -89,8 +89,8 @@ class ServerlessStack(Stack):
             self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
 
         tables = []  # monitored in cloudwatch dashboard
-        # for label in ['OnAccountEventThenMeter', 'OnAccountEventThenShadow', 'OnRecord']:
-        for label in ['OnRecord']:
+        # for label in ['OnAccountEventThenMeter', 'OnAccountEventThenShadow', 'OnActivity']:
+        for label in ['OnActivity']:
             tables.append(constructs[label].table)
 
         Cockpit(self,

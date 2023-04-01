@@ -42,11 +42,11 @@ automation:
 # parameters for metering
 metering:
 
-  # this is the table for storage of records
-  records_datastore: 'SpaRecordsTable'
+  # this is the table for storage of metered activities
+  activities_datastore: 'SpaActivitiesTable'
 
-  # this is the maximum life for records, used as TTL for the datastore
-  records_ttl_in_seconds: 31622400
+  # this is the maximum life for activities, used as TTL for the datastore
+  activities_ttl_in_seconds: 31622400
 
   # this is the table for storage of shadows
   shadows_datastore: 'SpaShadowsTable'

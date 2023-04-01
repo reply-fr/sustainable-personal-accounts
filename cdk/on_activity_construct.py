@@ -25,21 +25,21 @@ from aws_cdk.aws_lambda import Function
 from lambdas import Events
 
 
-class OnRecord(Construct):
+class OnActivity(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
         super().__init__(scope, id)
 
-        parameters['environment']['METERING_RECORDS_DATASTORE'] = toggles.metering_records_datastore
-        parameters['environment']['METERING_RECORDS_TTL'] = str(toggles.metering_records_ttl_in_seconds)
+        parameters['environment']['METERING_ACTIVITIES_DATASTORE'] = toggles.metering_activities_datastore
+        parameters['environment']['METERING_ACTIVITIES_TTL'] = str(toggles.metering_activities_ttl_in_seconds)
         parameters['environment']['REPORTING_ACTIVITIES_PREFIX'] = toggles.reporting_activities_prefix
         self.functions = [self.on_event(parameters=parameters, permissions=permissions),
                           self.monthly(parameters=parameters, permissions=permissions),
                           self.daily(parameters=parameters, permissions=permissions)]
 
         self.table = Table(
-            self, "RecordsTable",
-            table_name=toggles.metering_records_datastore,
+            self, "ActivitiesTable",
+            table_name=toggles.metering_activities_datastore,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             sort_key={'name': 'Order', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
@@ -52,9 +52,9 @@ class OnRecord(Construct):
     def on_event(self, parameters, permissions) -> Function:
 
         function = Function(self, "FromEvent",
-                            function_name="{}OnRecord".format(toggles.environment_identifier),
-                            description="Persist records",
-                            handler="on_record_handler.handle_record",
+                            function_name="{}OnActivityEvent".format(toggles.environment_identifier),
+                            description="Persist activity records",
+                            handler="on_activity_handler.handle_record",
                             **parameters)
 
         for permission in permissions:
@@ -65,7 +65,7 @@ class OnRecord(Construct):
              event_pattern=EventPattern(
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
-                 detail_type=Events.RECORD_EVENT_LABELS),
+                 detail_type=Events.ACTIVITY_EVENT_LABELS),
              targets=[LambdaFunction(function)])
 
         return function
@@ -73,16 +73,16 @@ class OnRecord(Construct):
     def monthly(self, parameters, permissions) -> Function:
 
         function = Function(self, "Monthly",
-                            function_name="{}OnMonthlyActivitiesReporting".format(toggles.environment_identifier),
+                            function_name="{}OnMonthlyActivitiesReport".format(toggles.environment_identifier),
                             description="Report activities from previous month",
-                            handler="on_record_handler.handle_monthly_reporting",
+                            handler="on_activity_handler.handle_monthly_reporting",
                             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerMonthly",
-             rule_name="{}OnMonthlyActivitiesReportingTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnMonthlyActivitiesReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger monthly reporting on activities",
              schedule=Schedule.cron(day="1", hour="3", minute="42"),
              targets=[LambdaFunction(function)])
@@ -92,16 +92,16 @@ class OnRecord(Construct):
     def daily(self, parameters, permissions) -> Function:
 
         function = Function(self, "Daily",
-                            function_name="{}OnDailyActivitiesReporting".format(toggles.environment_identifier),
+                            function_name="{}OnDailyActivitiesReport".format(toggles.environment_identifier),
                             description="Report ongoing activities",
-                            handler="on_record_handler.handle_daily_reporting",
+                            handler="on_activity_handler.handle_daily_reporting",
                             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerDaily",
-             rule_name="{}OnDailyActivitiesReportingTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnDailyActivitiesReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger daily reporting on activities",
              schedule=Schedule.cron(hour="2", minute="42"),
              targets=[LambdaFunction(function)])

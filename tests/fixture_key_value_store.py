@@ -30,7 +30,7 @@ def create_my_table():
     boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')
 
 
-def populate_records_table():
+def populate_activities_table():
     samples = [
         [('__transaction__', 'on-boarding'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:08:29.749864')],
         [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:13:12.049022')],

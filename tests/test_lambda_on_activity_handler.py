@@ -28,10 +28,10 @@ import os
 import pytest
 
 from lambdas import Events, KeyValueStore
-from lambdas.on_record_handler import build_reports, handle_record, handle_monthly_reporting, handle_daily_reporting, get_hashes, get_report_key
+from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_reporting, handle_daily_reporting, get_hashes, get_report_key
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_key_value_store import create_my_table, populate_records_table
+from tests.fixture_key_value_store import create_my_table, populate_activities_table
 
 
 sample_payload = json.dumps(
@@ -49,7 +49,7 @@ sample_payload = json.dumps(
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
-                             METERING_RECORDS_DATASTORE="my_table",
+                             METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
 def test_store_end_report():
@@ -68,13 +68,13 @@ def test_store_end_report():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
-                             METERING_RECORDS_DATASTORE="my_table",
+                             METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
 def test_handle_record():
     create_my_table()
 
-    for label in Events.RECORD_EVENT_LABELS:
+    for label in Events.ACTIVITY_EVENT_LABELS:
         event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                                 context=dict(payload=sample_payload,
                                                              label=label,
@@ -95,7 +95,7 @@ def test_handle_record_on_unexpected_environment():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
-                             METERING_RECORDS_DATASTORE="my_table",
+                             METERING_ACTIVITIES_DATASTORE="my_table",
                              REPORTS_BUCKET_NAME="my_bucket",
                              REPORTING_ACTIVITIES_PREFIX="my_activities",
                              VERBOSITY='INFO'))
@@ -103,7 +103,7 @@ def test_handle_record_on_unexpected_environment():
 @mock_s3
 def test_handle_monthly_reporting():
     create_my_table()
-    populate_records_table()
+    populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
@@ -117,7 +117,7 @@ def test_handle_monthly_reporting():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
-                             METERING_RECORDS_DATASTORE="my_table",
+                             METERING_ACTIVITIES_DATASTORE="my_table",
                              REPORTS_BUCKET_NAME="my_bucket",
                              REPORTING_ACTIVITIES_PREFIX="my_activities",
                              VERBOSITY='INFO'))
@@ -125,7 +125,7 @@ def test_handle_monthly_reporting():
 @mock_s3
 def test_handle_daily_reporting():
     create_my_table()
-    populate_records_table()
+    populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
@@ -139,12 +139,12 @@ def test_handle_daily_reporting():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
-                             METERING_RECORDS_DATASTORE="my_table",
+                             METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='INFO'))
 @mock_dynamodb
 def test_build_reports():
     create_my_table()
-    populate_records_table()
+    populate_activities_table()
     records = KeyValueStore(table_name="my_table").scan()
     reports = build_reports(records=records)
     assert list(reports.keys()) == ['DevOps Tools', 'Computing Tools', 'Tools', 'Reporting Tools']

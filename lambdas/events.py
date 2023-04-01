@@ -26,6 +26,10 @@ from account import Account
 
 class Events:
 
+    ACTIVITY_EVENT_LABELS = [
+        'SuccessfulMaintenanceEvent',
+        'SuccessfulOnBoardingEvent']
+
     CHAT_EVENT_LABELS = [
         'MessageFromSlack',
         'MessageToMicrosoftTeams',
@@ -42,11 +46,7 @@ class Events:
         'FailedMaintenanceException',
         'FailedOnBoardingException']
 
-    RECORD_EVENT_LABELS = [
-        'SuccessfulMaintenanceEvent',
-        'SuccessfulOnBoardingEvent']
-
-    SPA_EVENT_LABELS = CHAT_EVENT_LABELS + EXCEPTION_EVENT_LABELS + RECORD_EVENT_LABELS
+    SPA_EVENT_LABELS = ACTIVITY_EVENT_LABELS + CHAT_EVENT_LABELS + EXCEPTION_EVENT_LABELS
 
     ACCOUNT_EVENT_LABELS = [
         'AssignedAccount',

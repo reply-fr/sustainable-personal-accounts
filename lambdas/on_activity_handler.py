@@ -77,8 +77,8 @@ def get_hashes(day=None):
 
 
 def get_table():
-    return KeyValueStore(table_name=os.environ.get('METERING_RECORDS_DATASTORE', 'SpaMeteringTable'),
-                         ttl=os.environ.get('METERING_RECORDS_TTL', str(366 * 24 * 60 * 60)))
+    return KeyValueStore(table_name=os.environ.get('METERING_ACTIVITIES_DATASTORE', 'SpaActivitiesTable'),
+                         ttl=os.environ.get('METERING_ACTIVITIES_TTL', str(366 * 24 * 60 * 60)))
 
 
 def build_reports(records):
