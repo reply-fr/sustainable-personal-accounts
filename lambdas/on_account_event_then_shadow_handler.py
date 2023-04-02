@@ -57,7 +57,7 @@ def handle_account_event(event, context=None, emit=None):
 
 
 @trap_exception
-def handle_reporting(event=None, context=None):
+def handle_report(event=None, context=None):
     logging.info("Producing inventory reports from shadows")
     store = get_table()
     report = build_report(records=store.scan())  # /!\ memory-bound

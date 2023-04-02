@@ -47,7 +47,7 @@ def handle_record(event, context=None):
 
 
 @trap_exception
-def handle_monthly_reporting(event=None, context=None, day=None):
+def handle_monthly_report(event=None, context=None, day=None):
     logging.info("Producing activity reports for previous month")
     day = day or date.today()
     last_day_of_previous_month = day.replace(day=1) - timedelta(days=1)
@@ -58,7 +58,7 @@ def handle_monthly_reporting(event=None, context=None, day=None):
 
 
 @trap_exception
-def handle_daily_reporting(event=None, context=None, day=None):
+def handle_daily_report(event=None, context=None, day=None):
     logging.info("Producing ongoing activity reports")
     reports = build_reports(records=get_records(day))  # /!\ memory-bound
     for label, reporter in reports.items():

@@ -72,16 +72,16 @@ class OnAccountEventThenShadow(Construct):
     def on_schedule(self, parameters, permissions) -> Function:
 
         function = Function(self, "FromSchedule",
-                            function_name="{}OnInventoryReporting".format(toggles.environment_identifier),
+                            function_name="{}OnInventoryReport".format(toggles.environment_identifier),
                             description="Report inventories, from shadows",
-                            handler="on_account_event_then_shadow_handler.handle_reporting",
+                            handler="on_account_event_then_shadow_handler.handle_report",
                             **parameters)
 
         for permission in permissions:
             function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
-             rule_name="{}OnInventoryReportingTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnInventoryReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger periodic reporting on shadows",
              schedule=Schedule.cron(week_day="SAT", hour="3", minute="23"),
              targets=[LambdaFunction(function)])

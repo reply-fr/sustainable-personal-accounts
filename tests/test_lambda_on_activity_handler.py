@@ -28,7 +28,7 @@ import os
 import pytest
 
 from lambdas import Events, KeyValueStore
-from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_reporting, handle_daily_reporting, get_hashes, get_report_key
+from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_daily_report, get_hashes, get_report_key
 
 # pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_activities_table
@@ -101,13 +101,13 @@ def test_handle_record_on_unexpected_environment():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
-def test_handle_monthly_reporting():
+def test_handle_monthly_report():
     create_my_table()
     populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
-    assert handle_monthly_reporting(day=date(year=2023, month=4, day=20)) == "[OK]"
+    assert handle_monthly_report(day=date(year=2023, month=4, day=20)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_key(label="DevOps Tools"))
     assert response['ContentLength'] > 100
@@ -123,13 +123,13 @@ def test_handle_monthly_reporting():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
-def test_handle_daily_reporting():
+def test_handle_daily_report():
     create_my_table()
     populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
-    assert handle_daily_reporting(day=date(year=2023, month=3, day=30)) == "[OK]"
+    assert handle_daily_report(day=date(year=2023, month=3, day=30)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_key(label="DevOps Tools"))
     assert response['ContentLength'] > 100

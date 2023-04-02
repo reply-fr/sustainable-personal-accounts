@@ -75,7 +75,7 @@ class OnActivity(Construct):
         function = Function(self, "Monthly",
                             function_name="{}OnMonthlyActivitiesReport".format(toggles.environment_identifier),
                             description="Report activities from previous month",
-                            handler="on_activity_handler.handle_monthly_reporting",
+                            handler="on_activity_handler.handle_monthly_report",
                             **parameters)
 
         for permission in permissions:
@@ -94,7 +94,7 @@ class OnActivity(Construct):
         function = Function(self, "Daily",
                             function_name="{}OnDailyActivitiesReport".format(toggles.environment_identifier),
                             description="Report ongoing activities",
-                            handler="on_activity_handler.handle_daily_reporting",
+                            handler="on_activity_handler.handle_daily_report",
                             **parameters)
 
         for permission in permissions:

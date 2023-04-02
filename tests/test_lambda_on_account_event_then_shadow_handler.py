@@ -27,7 +27,7 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_reporting, build_report, get_report_key
+from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_report, build_report, get_report_key
 from lambdas.key_value_store import KeyValueStore
 
 # pytestmark = pytest.mark.wip
@@ -77,13 +77,13 @@ def test_handle_account_event_on_unexpected_environment():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
-def test_handle_reporting():
+def test_handle_report():
     create_my_table()
     populate_shadows_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
-    assert handle_reporting() == "[OK]"
+    assert handle_report() == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_key())
     assert response['ContentLength'] > 100
