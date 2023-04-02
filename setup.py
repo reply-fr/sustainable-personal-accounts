@@ -24,7 +24,7 @@ with open("README.md") as fp:
 
 setuptools.setup(
     name="sustainable_personal_accounts",
-    version="22.12.17",
+    version="23.04.02",
 
     description="a set of cloud resources suited to manage thousands of AWS accounts assigned to individual innovators",
     long_description=long_description,
@@ -56,6 +56,8 @@ setuptools.setup(
         "License :: OSI Approved :: Apache Software License",
 
         "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.7",

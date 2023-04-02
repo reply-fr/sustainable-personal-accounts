@@ -40,11 +40,11 @@ class Events:
         'UploadToSlack']
 
     EXCEPTION_EVENT_LABELS = [
-        'GenericException',
         'BudgetAlertException',
         'FailedCodebuildException',
         'FailedMaintenanceException',
-        'FailedOnBoardingException']
+        'FailedOnBoardingException',
+        'GenericException']
 
     SPA_EVENT_LABELS = ACTIVITY_EVENT_LABELS + CHAT_EVENT_LABELS + EXCEPTION_EVENT_LABELS
 

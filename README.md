@@ -7,12 +7,17 @@ With this project we promote the idea that each AWS practitioner should have dir
 With SPA you can:
 - on AWS account creation, align them with corporate policies on security, cost control, and automation
 - configure AWS Budgets automatically within each managed account, and consolidate budget alerts
+- turn budget alerts to incident records that are managed in AWS SSM Incident Manager
 - continuously deploy the DevOps and SIEM toolboxes of your enterprise to AWS sandbox accounts
+- consolidate the costs incurred by sandbox accounts in monthly reports with FinOps breakdown
 - force the purge of cloud resources and enforce Infrastructure-as-Code and Continuous Integration (CI) culture
 - tag AWS accounts, and evolve tags to follow FinOps and CloudOps corporate policies
+- consolidate configuration information from multiple CSV sources (e.g., FinOps, SecOps, Enterprise Architects)
 - manage AWS accounts collectively (by Organization Unit) or individually
 - set maintenance window of your choice
 - adjust maintenance actions to your exact needs (with CodeBuild scripts)
+- manage the overall solution from a single automated CloudWatch dashboard
+
 
 ## How is this implemented?
 
