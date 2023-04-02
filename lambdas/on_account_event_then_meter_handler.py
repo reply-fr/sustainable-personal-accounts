@@ -145,12 +145,13 @@ def handle_stream_event(event, context=None, emit=None):  # processing record ex
         except KeyError:
             logging.error(f"Unable to recognize expired transaction {item}")
 
-        handle_stream_record(record=payload, emit=emit)
+        handle_expired_record(record=payload, emit=emit)
 
     return "[OK]"
 
 
-def handle_stream_record(record, emit=None):
+def handle_expired_record(record, emit=None):
+    logging.info(record)
 
     event_labels = {
         'on-boarding': 'FailedOnBoardingException',

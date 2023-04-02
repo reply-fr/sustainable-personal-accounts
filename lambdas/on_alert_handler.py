@@ -51,7 +51,7 @@ SUBJECT_TEMPLATE = "Alert on account '{account}'"
 @trap_exception
 def handle_codebuild_event(event, context, session=None):
     logging.info("Receiving failures from CodeBuild")
-    logging.debug(event)
+    logging.info(event)
     input = Events.decode_codebuild_event(event)
     Events.emit_spa_event(label='FailedCodebuildException',
                           payload=input.__dict__,
