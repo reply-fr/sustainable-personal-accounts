@@ -50,7 +50,7 @@ class OnCostComputation(Construct):
         Rule(self, "TriggerMonthly",
              rule_name="{}OnMonthlyCostsReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger monthly reporting on costs",
-             schedule=Schedule.cron(day="1", hour="4", minute="42"),
+             schedule=Schedule.cron(day="1", hour="12", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
@@ -69,7 +69,7 @@ class OnCostComputation(Construct):
         Rule(self, "TriggerDaily",
              rule_name="{}OnDailyCostsMetricTriggerRule".format(toggles.environment_identifier),
              description="Trigger daily cost computations",
-             schedule=Schedule.cron(hour="1", minute="42"),
+             schedule=Schedule.cron(hour="11", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
