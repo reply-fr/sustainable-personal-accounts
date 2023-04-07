@@ -73,7 +73,7 @@ def handle_monthly_report(event=None, context=None, session=None):
     for cost_center in costs.keys():
         store_report(report=Costs.build_detailed_csv_report(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
                      path=get_report_key(label=cost_center, day=last_day_of_previous_month))
-        store_report(report=Costs.build_detailed_excel_report(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
+        store_report(report=Costs.build_excel_report_for_cost_center(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
                      path=get_report_key(label=cost_center, day=last_day_of_previous_month, suffix='xlsx'))
     store_report(report=Costs.build_summary_csv_report(costs=costs, day=last_day_of_previous_month),
                  path=get_report_key(label='Summary', day=last_day_of_previous_month))

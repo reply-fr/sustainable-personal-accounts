@@ -347,8 +347,8 @@ def test_build_detailed_csv_report():
 
 
 @pytest.mark.unit_tests
-def test_build_detailed_excel_report():
-    report = Costs.build_detailed_excel_report(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
+def test_build_excel_report_for_cost_center():
+    report = Costs.build_excel_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
     assert len(report) > 200
 
 

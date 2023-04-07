@@ -70,6 +70,7 @@ class Costs:
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
                                    dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
+        logging.debug(chunk)
         breakdowns_per_account = {}
         while chunk.get('ResultsByTime'):
             for result in chunk['ResultsByTime']:
@@ -82,6 +83,7 @@ class Costs:
                     breakdowns_per_account[account] = cumulated
             if chunk.get('NextPageToken'):
                 chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
+                logging.debug(chunk)
             else:
                 break
         for account, breakdown in breakdowns_per_account.items():
@@ -100,6 +102,7 @@ class Costs:
                                            dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund'])))]),
                           GroupBy=[dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
+        logging.debug(chunk)
         while chunk.get('ResultsByTime'):
             for result in chunk['ResultsByTime']:
                 for group in result['Groups']:
@@ -109,6 +112,7 @@ class Costs:
                            'amount': group['Metrics']['UnblendedCost']['Amount']}
             if chunk.get('NextPageToken'):
                 chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
+                logging.debug(chunk)
             else:
                 break
 
@@ -224,7 +228,7 @@ class Costs:
         return buffer.getvalue()
 
     @classmethod
-    def build_detailed_excel_report(cls, cost_center, day, breakdown):
+    def build_excel_report_for_cost_center(cls, cost_center, day, breakdown):
         logging.info(f"Building detailed Excel report for cost center '{cost_center}'")
         buffer = io.BytesIO()
         workbook = xlsxwriter.Workbook(buffer)
