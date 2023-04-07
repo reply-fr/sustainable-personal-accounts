@@ -46,6 +46,7 @@ def handle_daily_metric(event=None, context=None, session=None):
         costs[cost_center] = costs.get(cost_center, 0.0) + float(amount)
     for cost_center in costs.keys():
         logging.info(f"Putting cost as daily metric for cost center '{cost_center}'")
+        logging.debug(costs[cost_center])
         put_metric_data(name='DailyCostsByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=cost_center),
                                     dict(Name='Environment', Value=Events.get_environment())],

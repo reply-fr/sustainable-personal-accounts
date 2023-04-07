@@ -39,8 +39,10 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
                           Granularity='DAILY',
                           Metrics=['UnblendedCost'],
+                          Filter=dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund']))),
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT')])
         chunk = costs.get_cost_and_usage(**parameters)
+        logging.debug(chunk)
         while chunk.get('ResultsByTime'):
             for result in chunk['ResultsByTime']:
                 for group in result['Groups']:
@@ -49,6 +51,7 @@ class Costs:
                     yield account, amount
             if chunk.get('NextPageToken'):
                 chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
+                logging.debug(chunk)
             else:
                 break
 
@@ -63,6 +66,7 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
                           Granularity='MONTHLY',
                           Metrics=['UnblendedCost'],
+                          Filter=dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund']))),
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
                                    dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
@@ -92,7 +96,8 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=day.replace(day=1).isoformat()[:10], End=day.isoformat()[:10]),
                           Granularity='MONTHLY',
                           Metrics=['UnblendedCost'],
-                          Filter=dict(Dimensions=dict(Key='LINKED_ACCOUNT', Values=[account])),
+                          Filter=dict(And=[dict(Dimensions=dict(Key='LINKED_ACCOUNT', Values=[account])),
+                                           dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund'])))]),
                           GroupBy=[dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
         while chunk.get('ResultsByTime'):
