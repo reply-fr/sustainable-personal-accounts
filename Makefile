@@ -209,9 +209,9 @@ clean-incident-records:
 	@echo "Purging response plan '${RESPONSE_PLAN_ARN}'"
 	@$(PURGE_INCIDENT_RECORDS) ${RESPONSE_PLAN_ARN}
 
-compute-daily-cost-metrics:
-	@[ "$(METRIC_DAY)" ] || (echo "[ERROR] Missing METRIC_DAY, e.g., METRIC_DAY=2023-02-20 make compute-daily-cost-metrics" ; exit 1)
-	@echo "Computing cost report for '${REPORT_MONTH}'"
+compute-daily-cost-metric:
+	@[ "$(METRIC_DAY)" ] || (echo "[ERROR] Missing METRIC_DAY, e.g., METRIC_DAY=2023-02-20 make compute-daily-cost-metric" ; exit 1)
+	@echo "Computing cost metric for '${METRIC_DAY}'"
 	aws lambda invoke --function-name SpaOnDailyCostsMetric \
                       --payload '{"date": "$(METRIC_DAY)" }' \
                       --invocation-type Event \
@@ -219,8 +219,8 @@ compute-daily-cost-metrics:
                       output.log
 	rm output.log
 
-compute-monthly-cost-reports:
-	@[ "$(REPORT_MONTH)" ] || (echo "[ERROR] Missing REPORT_MONTH, e.g., REPORT_MONTH=2023-02 make compute-monthly-cost-reports" ; exit 1)
+compute-monthly-cost-report:
+	@[ "$(REPORT_MONTH)" ] || (echo "[ERROR] Missing REPORT_MONTH, e.g., REPORT_MONTH=2023-02 make compute-monthly-cost-report" ; exit 1)
 	@echo "Computing cost report for '${REPORT_MONTH}'"
 	aws lambda invoke --function-name SpaOnMonthlyCostsReport \
                       --payload '{"date": "$(REPORT_MONTH)" }' \
