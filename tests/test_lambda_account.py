@@ -91,11 +91,11 @@ def test_enumerate_tags(valid_tags):
 
 
 @pytest.mark.unit_tests
-def test_move_to_vanilla():
+def test_set_state_to_vanilla():
     session = Mock()
-    Account.move(account='0123456789012',
-                 state=State.VANILLA,
-                 session=session)
+    Account.set_state(account='0123456789012',
+                      state=State.VANILLA,
+                      session=session)
     session.client.assert_called_with('organizations')
     session.client.return_value.tag_resource.assert_called_with(
         ResourceId='0123456789012',
@@ -103,11 +103,11 @@ def test_move_to_vanilla():
 
 
 @pytest.mark.unit_tests
-def test_move_to_assigned():
+def test_set_state_to_assigned():
     session = Mock()
-    Account.move(account='0123456789012',
-                 state=State.ASSIGNED,
-                 session=session)
+    Account.set_state(account='0123456789012',
+                      state=State.ASSIGNED,
+                      session=session)
     session.client.assert_called_with('organizations')
     session.client.return_value.tag_resource.assert_called_with(
         ResourceId='0123456789012',
@@ -115,11 +115,11 @@ def test_move_to_assigned():
 
 
 @pytest.mark.unit_tests
-def test_move_to_released():
+def test_set_state_to_released():
     session = Mock()
-    Account.move(account='0123456789012',
-                 state=State.RELEASED,
-                 session=session)
+    Account.set_state(account='0123456789012',
+                      state=State.RELEASED,
+                      session=session)
     session.client.assert_called_with('organizations')
     session.client.return_value.tag_resource.assert_called_with(
         ResourceId='0123456789012',
@@ -127,11 +127,11 @@ def test_move_to_released():
 
 
 @pytest.mark.unit_tests
-def test_move_to_expired():
+def test_set_state_to_expired():
     session = Mock()
-    Account.move(account='0123456789012',
-                 state=State.EXPIRED,
-                 session=session)
+    Account.set_state(account='0123456789012',
+                      state=State.EXPIRED,
+                      session=session)
     session.client.assert_called_with('organizations')
     session.client.return_value.tag_resource.assert_called_with(
         ResourceId='0123456789012',
@@ -139,10 +139,10 @@ def test_move_to_expired():
 
 
 @pytest.mark.unit_tests
-def test_move_with_exception():
+def test_set_state_raises_exception():
     with pytest.raises(ValueError):
-        Account.move(account='0123456789012',
-                     state=SimpleNamespace(value='*something*'))
+        Account.set_state(account='0123456789012',
+                          state=SimpleNamespace(value='*something*'))
 
 
 @pytest.mark.integration_tests

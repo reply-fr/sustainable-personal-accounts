@@ -40,7 +40,7 @@ def test_handle_schedule_event(monkeypatch):
     def process(account, *arg, **kwargs):
         processed.append(account)
 
-    monkeypatch.setattr(Account, 'move', process)
+    monkeypatch.setattr(Account, 'set_state', process)
 
     assert handle_schedule_event() == '[OK]'
     assert processed == [context.alice_account]

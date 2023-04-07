@@ -85,7 +85,7 @@ class Account:
                 break
 
     @classmethod
-    def move(cls, account, state: State, session=None):
+    def set_state(cls, account, state: State, session=None):
         if not isinstance(state, State):
             raise ValueError(f"Unexpected state type {state}")
 

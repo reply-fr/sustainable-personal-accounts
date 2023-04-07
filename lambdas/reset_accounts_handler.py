@@ -43,6 +43,6 @@ def handle_account(account):
         elif state and state == State.VANILLA.value:
             logging.info(f"Ignoring account '{account}' that is in state '{state}'")
         else:
-            Account.move(account=account, state=State.VANILLA)
+            Account.set_state(account=account, state=State.VANILLA)
     except botocore.exceptions.ClientError:
         logging.error(f"Unable to handle account '{account}'. Does it exist?")

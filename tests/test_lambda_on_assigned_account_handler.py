@@ -126,10 +126,10 @@ def test_handle_tag_event(monkeypatch):
     # preparation has not been enabled on "567890123456"
     processed = []
 
-    def mock_account_move(account, *args, **kwargs):
+    def mock_account_set_state(account, *args, **kwargs):
         processed.append(account)
 
-    monkeypatch.setattr(Account, 'move', mock_account_move)
+    monkeypatch.setattr(Account, 'set_state', mock_account_set_state)
 
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="567890123456",

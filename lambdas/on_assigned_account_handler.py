@@ -42,7 +42,7 @@ def handle_account(account, session=None):
     result = Events.emit_account_event('AssignedAccount', account)
     if 'preparation' not in settings.keys() or settings['preparation'].get('feature') != 'enabled':
         logging.info("Skipping the preparation of the account")
-        Account.move(account=account, state=State.RELEASED, session=session)
+        Account.set_state(account=account, state=State.RELEASED, session=session)
     else:
         tag_account(account=account, settings=settings, session=session)
         topic_arn = prepare_topic(account=account, session=session)

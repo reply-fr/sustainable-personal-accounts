@@ -41,7 +41,7 @@ def handle_account(account, session=None):
     result = Events.emit_account_event('ExpiredAccount', account)
     if 'purge' not in settings.keys() or settings['purge'].get('feature') != 'enabled':
         logging.info("Skipping the purge of the account")
-        Account.move(account=account, state=State.ASSIGNED, session=session)
+        Account.set_state(account=account, state=State.ASSIGNED, session=session)
     else:
         Worker.purge(account_id=account,
                      settings=settings,

@@ -40,7 +40,7 @@ def test_handle_event(monkeypatch):
     def process(account, *arg, **kwargs):
         processed.add(account)
 
-    monkeypatch.setattr(Account, 'move', process)
+    monkeypatch.setattr(Account, 'set_state', process)
 
     assert handle_event() == '[OK]'
     assert processed == {context.crm_account, context.erp_account, context.bob_account}
