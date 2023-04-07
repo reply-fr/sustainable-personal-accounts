@@ -27,14 +27,14 @@ from lambdas import Events
 
 class OnAccountEventThenShadow(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
         parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
         parameters['environment']['REPORTING_INVENTORIES_PREFIX'] = toggles.reporting_inventories_prefix
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions),
-                          self.on_schedule(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_event(parameters=parameters),
+                          self.on_schedule(parameters=parameters)]
 
         self.table = Table(
             self, "ShadowsTable",
@@ -48,16 +48,13 @@ class OnAccountEventThenShadow(Construct):
         for function in self.functions:
             self.table.grant_read_write_data(grantee=function)
 
-    def on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters) -> Function:
 
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenShadow".format(toggles.environment_identifier),
                             description="Persist last event for each account",
                             handler="on_account_event_then_shadow_handler.handle_account_event",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",
@@ -69,16 +66,13 @@ class OnAccountEventThenShadow(Construct):
 
         return function
 
-    def on_schedule(self, parameters, permissions) -> Function:
+    def on_schedule(self, parameters) -> Function:
 
         function = Function(self, "FromSchedule",
                             function_name="{}OnInventoryReport".format(toggles.environment_identifier),
                             description="Report inventories, from shadows",
                             handler="on_account_event_then_shadow_handler.handle_report",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
              rule_name="{}OnInventoryReportTriggerRule".format(toggles.environment_identifier),

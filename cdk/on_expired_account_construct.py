@@ -25,13 +25,13 @@ from .parameters_construct import Parameters
 
 class OnExpiredAccount(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         parameters['environment']['PURGE_BUILDSPEC_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.PURGE_BUILDSPEC_PARAMETER)
-        self.functions = [self.build_on_tag(parameters=parameters, permissions=permissions)]
+        self.functions = [self.build_on_tag(parameters=parameters)]
 
-    def build_on_tag(self, parameters, permissions) -> Function:
+    def build_on_tag(self, parameters) -> Function:
 
         function = Function(
             self, "FromTag",
@@ -39,9 +39,6 @@ class OnExpiredAccount(Construct):
             description="Start the purge of an expired account",
             handler="on_expired_account_handler.handle_tag_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TagRule",
              description="Route the tagging of expired accounts to lambda function",

@@ -25,20 +25,17 @@ from lambdas import Worker
 
 class OnPreparedAccount(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_codebuild(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_codebuild(parameters=parameters)]
 
-    def on_codebuild(self, parameters, permissions) -> Function:
+    def on_codebuild(self, parameters) -> Function:
         function = Function(
             self, "FromCodebuild",
             function_name="{}OnPreparedAccountFromCodebuild".format(toggles.environment_identifier),
             description="Change state of prepared accounts to released",
             handler="on_prepared_account_handler.handle_codebuild_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "CodebuildRule",
              description="Route the completion of account preparation with Codebuild project to lambda function",

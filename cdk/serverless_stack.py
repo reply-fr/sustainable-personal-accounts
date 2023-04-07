@@ -80,12 +80,14 @@ class ServerlessStack(Stack):
 
             environment = self.get_environment().copy()
             parameters = self.get_parameters(environment=environment).copy()
-            permissions = self.get_permissions().copy()
 
-            constructs[label] = globals()[label](self, label, parameters=parameters, permissions=permissions)
+            constructs[label] = globals()[label](self, label, parameters=parameters)
             functions.extend(constructs[label].functions)
 
         for function in functions:
+            for permission in self.get_permissions().copy():
+                function.add_to_role_policy(permission)
+
             self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
 
         tables = []  # monitored in cloudwatch dashboard

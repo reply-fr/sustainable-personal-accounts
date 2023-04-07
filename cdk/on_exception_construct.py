@@ -28,7 +28,7 @@ from .parameters_construct import Parameters
 
 class OnException(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         self.plan = CfnResponsePlan(self, "ResponsePlan",
@@ -40,19 +40,16 @@ class OnException(Construct):
         parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
         parameters['environment']['REPORTING_EXCEPTIONS_PREFIX'] = toggles.reporting_exceptions_prefix
         parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER)
-        self.functions = [self.on_exception(parameters=parameters, permissions=permissions),
-                          self.on_download(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_exception(parameters=parameters),
+                          self.on_download(parameters=parameters)]
 
-    def on_exception(self, parameters, permissions) -> Function:
+    def on_exception(self, parameters) -> Function:
 
         function = Function(self, "FromEvent",
                             function_name="{}OnException".format(toggles.environment_identifier),
                             description="Handle exceptions",
                             handler="on_exception_handler.handle_exception",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         function.role.add_managed_policy(ManagedPolicy.from_aws_managed_policy_name('AWSIncidentManagerResolverAccess'))
         function.add_to_role_policy(PolicyStatement(effect=Effect.ALLOW,
@@ -69,16 +66,13 @@ class OnException(Construct):
 
         return function
 
-    def on_download(self, parameters, permissions) -> Function:
+    def on_download(self, parameters) -> Function:
         function = Function(self, "FromUrl",
                             function_name="{}OnExceptionAttachmentDownload".format(toggles.environment_identifier),
                             description="Serve requests for attachment download",
                             handler="on_exception_handler.handle_attachment_request",
                             reserved_concurrent_executions=1,  # throttling above 10 RPS
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         self.web_endpoints["OnException.DownloadAttachment.WebEndpoint"] = function.add_function_url(auth_type=FunctionUrlAuthType.NONE,
                                                                                                      cors=dict(allowed_origins=["*"])).url

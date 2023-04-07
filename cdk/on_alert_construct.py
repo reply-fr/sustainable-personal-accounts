@@ -39,7 +39,7 @@ class OnAlert(Construct):
     TOPIC_DISPLAY_NAME = "Topic for alerts identified in managed accounts"
     TOPIC_NAME = "SpaAlerts"
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         self.topic = Topic(
@@ -73,10 +73,10 @@ class OnAlert(Construct):
         self.queue.add_to_resource_policy(statement)
 
         parameters['environment']['TOPIC_ARN'] = self.topic.topic_arn
-        self.functions = [self.on_sqs(parameters=parameters, permissions=permissions, queue=self.queue),
-                          self.on_codebuild(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_sqs(parameters=parameters, queue=self.queue),
+                          self.on_codebuild(parameters=parameters)]
 
-    def on_sqs(self, parameters, permissions, queue) -> Function:
+    def on_sqs(self, parameters, queue) -> Function:
         parameters['timeout'] = Duration.seconds(20)
         function = Function(
             self, "FromAlert",
@@ -85,23 +85,17 @@ class OnAlert(Construct):
             handler="on_alert_handler.handle_sqs_event",
             **parameters)
 
-        for permission in permissions:
-            function.add_to_role_policy(permission)
-
         function.add_event_source(SqsEventSource(queue))
 
         return function
 
-    def on_codebuild(self, parameters, permissions) -> Function:
+    def on_codebuild(self, parameters) -> Function:
         function = Function(
             self, "FromCodebuild",
             function_name="{}OnAlertFromCodebuild".format(toggles.environment_identifier),
             description="Be notified on a failed Codebuild project",
             handler="on_alert_handler.handle_codebuild_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "CodebuildRule",
              description="Route the failure of Codebuild project to lambda function",

@@ -27,15 +27,15 @@ from lambdas import Events
 
 class OnActivity(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         parameters['environment']['METERING_ACTIVITIES_DATASTORE'] = toggles.metering_activities_datastore
         parameters['environment']['METERING_ACTIVITIES_TTL'] = str(toggles.metering_activities_ttl_in_seconds)
         parameters['environment']['REPORTING_ACTIVITIES_PREFIX'] = toggles.reporting_activities_prefix
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions),
-                          self.monthly(parameters=parameters, permissions=permissions),
-                          self.daily(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_event(parameters=parameters),
+                          self.monthly(parameters=parameters),
+                          self.daily(parameters=parameters)]
 
         self.table = Table(
             self, "ActivitiesTable",
@@ -49,16 +49,13 @@ class OnActivity(Construct):
         for function in self.functions:
             self.table.grant_read_write_data(grantee=function)
 
-    def on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters) -> Function:
 
         function = Function(self, "FromEvent",
                             function_name="{}OnActivityEvent".format(toggles.environment_identifier),
                             description="Persist activity records",
                             handler="on_activity_handler.handle_record",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",
@@ -70,16 +67,13 @@ class OnActivity(Construct):
 
         return function
 
-    def monthly(self, parameters, permissions) -> Function:
+    def monthly(self, parameters) -> Function:
 
         function = Function(self, "Monthly",
                             function_name="{}OnMonthlyActivitiesReport".format(toggles.environment_identifier),
                             description="Report activities from previous month",
                             handler="on_activity_handler.handle_monthly_report",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerMonthly",
              rule_name="{}OnMonthlyActivitiesReportTriggerRule".format(toggles.environment_identifier),
@@ -89,16 +83,13 @@ class OnActivity(Construct):
 
         return function
 
-    def daily(self, parameters, permissions) -> Function:
+    def daily(self, parameters) -> Function:
 
         function = Function(self, "Daily",
                             function_name="{}OnDailyActivitiesReport".format(toggles.environment_identifier),
                             description="Report ongoing activities",
                             handler="on_activity_handler.handle_daily_report",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerDaily",
              rule_name="{}OnDailyActivitiesReportTriggerRule".format(toggles.environment_identifier),

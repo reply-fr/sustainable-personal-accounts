@@ -25,19 +25,16 @@ from lambdas import Events
 
 class OnAccountEvent(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_event(parameters=parameters)]
 
-    def on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters) -> Function:
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEvents".format(toggles.environment_identifier),
                             description="Listen events from the bus",
                             handler="on_account_event_handler.handle_account_event",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
              description="Route custom events from SPA to listening lambda function",

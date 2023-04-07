@@ -23,20 +23,17 @@ from aws_cdk.aws_lambda import Function
 
 class OnMaintenanceWindow(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_schedule(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_schedule(parameters=parameters)]
 
-    def on_schedule(self, parameters, permissions) -> Function:
+    def on_schedule(self, parameters) -> Function:
         function = Function(
             self, "FromSchedule",
             function_name="{}OnMaintenanceWindow".format(toggles.environment_identifier),
             description="Change state of expired accounts",
             handler="on_maintenance_window_handler.handle_schedule_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerRule",
              description="Trigger account maintenance window on scheduling expression",

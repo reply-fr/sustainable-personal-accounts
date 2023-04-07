@@ -28,7 +28,7 @@ from lambdas import Events
 
 class OnAccountEventThenMeter(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         self.table = Table(
@@ -43,22 +43,19 @@ class OnAccountEventThenMeter(Construct):
 
         parameters['environment']['METERING_TRANSACTIONS_DATASTORE'] = toggles.metering_transactions_datastore
         parameters['environment']['METERING_TRANSACTIONS_TTL'] = str(toggles.metering_transactions_ttl_in_seconds)
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions),
-                          self.on_stream(parameters=parameters, permissions=permissions, table=self.table)]
+        self.functions = [self.on_event(parameters=parameters),
+                          self.on_stream(parameters=parameters, table=self.table)]
 
         for function in self.functions:
             self.table.grant_read_write_data(grantee=function)
 
-    def on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters) -> Function:
 
         function = Function(self, "FromEvent",
                             function_name="{}OnAccountEventsThenMeter".format(toggles.environment_identifier),
                             description="Turn events to transactions",
                             handler="on_account_event_then_meter_handler.handle_account_event",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",
@@ -70,16 +67,13 @@ class OnAccountEventThenMeter(Construct):
 
         return function
 
-    def on_stream(self, parameters, permissions, table) -> Function:
+    def on_stream(self, parameters, table) -> Function:
 
         function = Function(self, "FromStream",
                             function_name="{}OnMeteringStream".format(toggles.environment_identifier),
                             description="Process metering stream",
                             handler="on_account_event_then_meter_handler.handle_stream_event",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         function.add_event_source(DynamoEventSource(  # stream items that have expired
             table,

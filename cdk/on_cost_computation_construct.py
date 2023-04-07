@@ -23,7 +23,7 @@ from aws_cdk.aws_lambda import Function
 
 class OnCostComputation(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         if not toggles.features_with_cost_management_tag:  # do not deploy if cost management has not been activated
@@ -32,10 +32,10 @@ class OnCostComputation(Construct):
 
         parameters['environment']['REPORTING_COSTS_PREFIX'] = toggles.reporting_costs_prefix
         parameters['environment']['COST_MANAGEMENT_TAG'] = toggles.features_with_cost_management_tag
-        self.functions = [self.monthly(parameters=parameters, permissions=permissions),
-                          self.daily(parameters=parameters, permissions=permissions)]
+        self.functions = [self.monthly(parameters=parameters),
+                          self.daily(parameters=parameters)]
 
-    def monthly(self, parameters, permissions) -> Function:
+    def monthly(self, parameters) -> Function:
 
         function = Function(self, "Monthly",
                             function_name="{}OnMonthlyCostsReport".format(toggles.environment_identifier),
@@ -43,9 +43,6 @@ class OnCostComputation(Construct):
                             handler="on_cost_computation_handler.handle_monthly_report",
                             memory_size=1024,  # accomodate for hundreds of accounts and related data
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerMonthly",
              rule_name="{}OnMonthlyCostsReportTriggerRule".format(toggles.environment_identifier),
@@ -55,16 +52,13 @@ class OnCostComputation(Construct):
 
         return function
 
-    def daily(self, parameters, permissions) -> Function:
+    def daily(self, parameters) -> Function:
 
         function = Function(self, "Daily",
                             function_name="{}OnDailyCostsMetric".format(toggles.environment_identifier),
                             description="Measure daily costs",
                             handler="on_cost_computation_handler.handle_daily_metric",
                             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TriggerDaily",
              rule_name="{}OnDailyCostsMetricTriggerRule".format(toggles.environment_identifier),

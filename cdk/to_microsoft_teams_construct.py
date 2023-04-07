@@ -23,11 +23,11 @@ from aws_cdk.aws_lambda import Function
 
 class ToMicrosoftTeams(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_event(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_event(parameters=parameters)]
 
-    def on_event(self, parameters, permissions) -> Function:
+    def on_event(self, parameters) -> Function:
 
         if toggles.features_with_microsoft_webhook_on_alerts:
             parameters['environment']['MICROSOFT_WEBHOOK_ON_ALERTS'] = toggles.features_with_microsoft_webhook_on_alerts
@@ -38,9 +38,6 @@ class ToMicrosoftTeams(Construct):
             description="Transmit information to Microsoft Teams",
             handler="to_microsoft_teams_handler.handle_spa_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "EventRule",
              description="Route an event to Microsoft Teams",

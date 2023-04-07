@@ -25,22 +25,19 @@ from .parameters_construct import Parameters
 
 class OnAssignedAccount(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
         parameters['environment']['PREPARATION_BUILDSPEC_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.PREPARATION_BUILDSPEC_PARAMETER)
-        self.functions = [self.on_tag(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_tag(parameters=parameters)]
 
-    def on_tag(self, parameters, permissions) -> Function:
+    def on_tag(self, parameters) -> Function:
         function = Function(
             self, "FromTag",
             function_name="{}OnAssignedAccount".format(toggles.environment_identifier),
             description="Start preparation of an assigned account",
             handler="on_assigned_account_handler.handle_tag_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
 
         Rule(self, "TagRule",
              description="Route the tagging of assigned accounts to lambda function",

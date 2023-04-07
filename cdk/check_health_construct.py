@@ -21,19 +21,14 @@ from aws_cdk.aws_lambda import Function
 
 class CheckHealth(Construct):
 
-    def __init__(self, scope: Construct, id: str, parameters={}, permissions=[]) -> None:
+    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
-        self.functions = [self.on_run(parameters=parameters, permissions=permissions)]
+        self.functions = [self.on_run(parameters=parameters)]
 
-    def on_run(self, parameters, permissions) -> Function:
-        function = Function(
+    def on_run(self, parameters) -> Function:
+        return Function(
             self, "FromInvoke",
             function_name="{}CheckHealth".format(toggles.environment_identifier),
             description="Check the internal state of run-time",
             handler="check_health_handler.handle_event",
             **parameters)
-
-        for permission in permissions:
-            function.add_to_role_policy(permission)
-
-        return function
