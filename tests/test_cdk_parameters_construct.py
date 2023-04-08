@@ -19,11 +19,13 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+from aws_cdk import Stack
+from aws_cdk.assertions import Template
 import pytest
 
-from cdk import Parameters
+from cdk import Configuration, Parameters
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
@@ -42,3 +44,12 @@ def test_get_organizational_unit_parameter():
 
     test = Parameters.get_organizational_unit_parameter(environment='Fake', identifier='ou-abc')
     assert test == '/Fake/OrganizationalUnits/ou-abc'
+
+
+@pytest.mark.unit_tests
+def test_resources_count():
+    Configuration.initialize()
+    stack = Stack()
+    Parameters(scope=stack, id='my_construct')
+    resources = Template.from_stack(stack).find_resources(type="AWS::SSM::Parameter")
+    assert len(resources.keys()) >= 3
