@@ -25,7 +25,7 @@ import pytest
 
 from cdk import Configuration, Parameters
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

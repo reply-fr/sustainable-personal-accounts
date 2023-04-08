@@ -27,7 +27,7 @@ from cdk import Configuration
 from cdk.on_activity_construct import OnActivity
 from cdk.serverless_stack import ServerlessStack
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

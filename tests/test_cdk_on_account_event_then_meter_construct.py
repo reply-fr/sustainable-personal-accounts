@@ -27,7 +27,7 @@ from cdk import Configuration
 from cdk.on_account_event_then_meter_construct import OnAccountEventThenMeter
 from cdk.serverless_stack import ServerlessStack
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

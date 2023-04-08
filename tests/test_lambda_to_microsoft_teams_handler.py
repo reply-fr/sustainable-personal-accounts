@@ -26,7 +26,7 @@ import pytest
 from lambdas import Events
 from lambdas.to_microsoft_teams_handler import handle_spa_event, post_message
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests

@@ -26,7 +26,7 @@ import pytest
 from cdk import Configuration
 from cdk.reports_construct import Reports
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
