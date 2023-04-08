@@ -29,7 +29,7 @@ from session import get_account_session, get_organizations_session
 class Costs:
 
     @classmethod
-    def enumerate_daily_cost_per_account(cls, day, session=None):
+    def enumerate_daily_cost_per_account(cls, day=None, session=None):
         logging.info("Fetching daily cost and usage information per account")
         day = day or date.today()
         start = day - timedelta(days=1)
@@ -90,7 +90,7 @@ class Costs:
             yield account, breakdown
 
     @classmethod
-    def enumerate_monthly_breakdown_for_account(cls, account, day, session=None):
+    def enumerate_monthly_breakdown_for_account(cls, account, day=None, session=None):
         logging.info(f"Fetching monthly cost and usage information for account '{account}'...")
         day = day or date.today()
         session = session or get_account_session(account=account)
