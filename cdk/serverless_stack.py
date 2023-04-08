@@ -78,7 +78,7 @@ class ServerlessStack(Stack):
         functions = []
         for label in labels:
 
-            environment = self.get_environment().copy()
+            environment = self.get_environment(bucket_name=self.reports.bucket.bucket_name).copy()
             parameters = self.get_parameters(environment=environment).copy()
 
             constructs[label] = globals()[label](self, label, parameters=parameters)
@@ -108,7 +108,8 @@ class ServerlessStack(Stack):
         for key in toggles.automation_tags.keys():  # cascaded to constructs and to other resources
             Tags.of(self).add(key, toggles.automation_tags[key])
 
-    def get_environment(self) -> dict:  # shared across all lambda functions
+    @classmethod
+    def get_environment(cls, bucket_name=None) -> dict:  # shared across all lambda functions
         environment = dict(
             ACCOUNTS_PARAMETER=Parameters.get_account_parameter(environment=toggles.environment_identifier),
             AUTOMATION_ACCOUNT=toggles.automation_account_id,
@@ -116,14 +117,17 @@ class ServerlessStack(Stack):
             ENVIRONMENT_IDENTIFIER=toggles.environment_identifier,
             EVENT_BUS_ARN=f"arn:aws:events:{toggles.automation_region}:{toggles.automation_account_id}:event-bus/default",
             ORGANIZATIONAL_UNITS_PARAMETER=Parameters.get_organizational_unit_parameter(environment=toggles.environment_identifier),
-            REPORTS_BUCKET_NAME=self.reports.bucket.bucket_name,
             ROLE_ARN_TO_MANAGE_ACCOUNTS=toggles.automation_role_arn_to_manage_accounts,
             ROLE_NAME_TO_MANAGE_CODEBUILD=toggles.automation_role_name_to_manage_codebuild,
             TAG_PREFIX=toggles.features_with_tag_prefix,
             VERBOSITY=toggles.automation_verbosity)
+        if bucket_name:
+            environment['REPORTS_BUCKET_NAME'] = bucket_name
         return environment
 
-    def get_parameters(self, environment) -> dict:  # passed to every lambda functions
+    @classmethod
+    def get_parameters(cls, environment=None) -> dict:  # passed to every lambda functions
+        environment = environment or cls.get_environment()
         parameters = dict(
             architecture=Architecture.ARM_64 if toggles.features_with_arm_architecture else Architecture.X86_64,
             code=AssetCode("lambdas.out"),  # code and dependencies are copied there in Makefile

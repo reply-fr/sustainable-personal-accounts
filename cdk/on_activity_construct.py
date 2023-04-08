@@ -17,7 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from constructs import Construct
 from aws_cdk import RemovalPolicy
-from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table
+from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table, TableEncryption
 from aws_cdk.aws_events import EventPattern, Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
@@ -43,6 +43,7 @@ class OnActivity(Construct):
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             sort_key={'name': 'Order', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
+            encryption=TableEncryption.AWS_MANAGED,
             removal_policy=RemovalPolicy.DESTROY,
             time_to_live_attribute="Expiration")
 
