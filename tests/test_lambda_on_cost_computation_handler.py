@@ -25,11 +25,9 @@ from unittest.mock import patch
 import os
 import pytest
 
-from lambdas.on_cost_computation_handler import (
-    get_report_key,
-)
+from lambdas.on_cost_computation_handler import get_report_key
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
