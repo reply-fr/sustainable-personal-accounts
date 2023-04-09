@@ -15,26 +15,22 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from .account import Account, State
-from .email import Email
-from .events import Events
-from .key_value_store import KeyValueStore
-from .logger import setup_logging, trap_exception, LOGGING_FORMAT
-from .metric import put_metric_data
-from .session import get_account_session, get_assumed_session
-from .settings import Settings
-from .worker import Worker
+import boto3
+from unittest.mock import patch
+from moto import mock_ses
+import os
+import pytest
 
-__all__ = ['Account',
-           'Email',
-           'Events',
-           'KeyValueStore',
-           'LOGGING_FORMAT',
-           'Settings',
-           'State',
-           'get_account_session',
-           'get_assumed_session',
-           'put_metric_data',
-           'setup_logging',
-           'trap_exception',
-           'Worker']
+from lambdas import Email
+
+pytestmark = pytest.mark.wip
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ORIGIN_EMAIL_RECIPIENT='alice@example.com'))
+@mock_ses
+def test_send():
+    ses = boto3.client('ses')
+    ses.verify_email_identity(EmailAddress='alice@example.com')
+    parameters = dict(recipients=['bob@example.com'], subject='my subject', text='my message')
+    assert Email.send(**parameters) == '[OK]'

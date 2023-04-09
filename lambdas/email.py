@@ -15,26 +15,25 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from .account import Account, State
-from .email import Email
-from .events import Events
-from .key_value_store import KeyValueStore
-from .logger import setup_logging, trap_exception, LOGGING_FORMAT
-from .metric import put_metric_data
-from .session import get_account_session, get_assumed_session
-from .settings import Settings
-from .worker import Worker
+from boto3.session import Session
+import logging
+import os
 
-__all__ = ['Account',
-           'Email',
-           'Events',
-           'KeyValueStore',
-           'LOGGING_FORMAT',
-           'Settings',
-           'State',
-           'get_account_session',
-           'get_assumed_session',
-           'put_metric_data',
-           'setup_logging',
-           'trap_exception',
-           'Worker']
+
+class Email:
+
+    @classmethod
+    def send(cls, recipients, subject, text, session=None):
+        logging.info("Sending an email")
+        session = session or Session()
+        ses = session.client('ses')
+        try:
+            ses.send_email(
+                Source=os.environ['ORIGIN_EMAIL_RECIPIENT'],
+                Destination=dict(ToAddresses=recipients),
+                Message=dict(Subject=dict(Data=subject, Charset='UTF-8'),
+                             Body=dict(Text=dict(Data=text, Charset='UTF-8')))
+            )
+            return '[OK]'
+        except ses.exceptions.MessageRejected as exception:
+            logging.exception(exception)
