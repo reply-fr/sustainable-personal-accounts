@@ -16,7 +16,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from .account import Account, State
-from .email import Email
+from .e_mail import Email
 from .events import Events
 from .key_value_store import KeyValueStore
 from .logger import setup_logging, trap_exception, LOGGING_FORMAT

@@ -73,7 +73,7 @@ def test_get_object_as_mime_attachment():
         Email.get_object_as_mime_attachment(object='s3://my_bucket/some/path/hello.txt')
 
     s3.put_object(Bucket="my_bucket",
-                  Key='/some/path/hello.txt',
+                  Key='some/path/hello.txt',
                   Body='hello world!')
 
     item = Email.get_object_as_mime_attachment(object='s3://my_bucket/some/path/hello.txt')
@@ -95,7 +95,7 @@ def test_send_objects():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
 
     s3.put_object(Bucket="my_bucket",
-                  Key='/some/path/hello.txt',
+                  Key='some/path/hello.txt',
                   Body='hello world!')
 
     parameters = dict(sender='alice@example.com',

@@ -56,19 +56,20 @@ class Email:
     def get_object_as_mime_attachment(cls, object, session=None):
         if not object.startswith('s3://'):
             raise ValueError("Missing object prefix 's3://'")
-        bucket, path = object[5:].split('/', 1)
-        key = '/' + path
+        bucket, key = object[5:].split('/', 1)
         logging.debug(f"Looking for S3 bucket '{bucket}' and object '{key}'")
         session = session or Session()
         s3 = session.client('s3')
         try:
             stream = s3.get_object(Bucket=bucket, Key=key)['Body']
             return cls.get_mime_attachment(name=os.path.basename(key), content=stream.read())
+        except s3.exceptions.NoSuchBucket:
+            raise ValueError(f"Bucket {bucket} does not exist")
         except s3.exceptions.NoSuchKey:
             raise ValueError(f"Object {object} does not exist")
 
     @classmethod
-    def send_objects(cls, sender, recipients, subject, text, html, objects):
+    def send_objects(cls, sender, recipients, subject, objects, text, html=None):
         logging.info("Sending an email with attachments from S3 objects")
         logging.debug(f"Subject: {subject}")
         container = cls.get_mime_container(subject=subject, sender=sender, recipients=recipients)
@@ -85,6 +86,8 @@ class Email:
         session = session or Session()
         ses = session.client('ses')
         try:
+            if type(recipients) == str:
+                recipients = [recipient.strip() for recipient in recipients.split(',')]
             ses.send_raw_email(Source=sender, Destinations=recipients, RawMessage=dict(Data=raw))
             return '[OK]'
         except ses.exceptions.MessageRejected as exception:
@@ -92,7 +95,7 @@ class Email:
             raise ValueError("Unable to send a SES raw message")
 
     @classmethod
-    def send_text(cls, sender, recipients, subject, text, html):
+    def send_text(cls, sender, recipients, subject, text, html=None):
         logging.info("Sending an email with text")
         logging.debug(f"Subject: {subject}")
         container = cls.get_mime_container(subject=subject, sender=sender, recipients=recipients)
