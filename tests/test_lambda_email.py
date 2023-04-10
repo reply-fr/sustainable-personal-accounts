@@ -17,9 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from base64 import b64decode
 import boto3
-from unittest.mock import patch
 from moto import mock_s3, mock_ses
-import os
 import pytest
 
 from lambdas import Email
@@ -88,7 +86,6 @@ def test_get_object_as_mime_attachment():
 
 
 @pytest.mark.integration_tests
-@patch.dict(os.environ, dict(ORIGIN_EMAIL_RECIPIENT='alice@example.com'))
 @mock_s3
 @mock_ses
 def test_send_objects():
@@ -101,34 +98,31 @@ def test_send_objects():
                   Key='/some/path/hello.txt',
                   Body='hello world!')
 
+    parameters = dict(sender='alice@example.com',
+                      recipients=['bob@example.com'],
+                      subject='monthly reports are available',
+                      text='please find attached the reports for previous month',
+                      html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
+                      objects=['s3://my_bucket/some/path/hello.txt'])
+
     with pytest.raises(ValueError):  # origin email has not been verified
-        parameters = dict(recipients=['bob@example.com'],
-                          subject='monthly reports are available',
-                          text='please find attached the reports for previous month',
-                          html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
-                          objects=['s3://my_bucket/some/path/hello.txt'])
         Email.send_objects(**parameters)
 
     ses = boto3.client('ses')
     ses.verify_email_identity(EmailAddress='alice@example.com')
 
-    parameters = dict(recipients=['bob@example.com'],
-                      subject='monthly reports are available',
-                      text='please find attached the reports for previous month',
-                      html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
-                      objects=['s3://my_bucket/some/path/hello.txt'])
     assert Email.send_objects(**parameters) == '[OK]'
 
 
 @pytest.mark.integration_tests
-@patch.dict(os.environ, dict(ORIGIN_EMAIL_RECIPIENT='alice@example.com'))
 @mock_ses
 def test_send_text():
 
     ses = boto3.client('ses')
     ses.verify_email_identity(EmailAddress='alice@example.com')
 
-    parameters = dict(recipients=['bob@example.com'],
+    parameters = dict(sender='alice@example.com',
+                      recipients=['bob@example.com'],
                       subject='monthly reports are available',
                       text='please find attached the reports for previous month',
                       html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month')

@@ -68,35 +68,33 @@ class Email:
             raise ValueError(f"Object {object} does not exist")
 
     @classmethod
-    def send_objects(cls, recipients, subject, text, html, objects):
+    def send_objects(cls, sender, recipients, subject, text, html, objects):
         logging.info("Sending an email with attachments from S3 objects")
         logging.debug(f"Subject: {subject}")
-        container = cls.get_mime_container(subject=subject, sender=os.environ['ORIGIN_EMAIL_RECIPIENT'], recipients=recipients)
+        container = cls.get_mime_container(subject=subject, sender=sender, recipients=recipients)
         container.attach(cls.get_mime_message(text=text, html=html))
         for object in objects:
             container.attach(cls.get_object_as_mime_attachment(object=object))
-        return cls.send_raw_email(recipients=recipients, raw=container.as_string())
+        return cls.send_raw_email(sender=sender, recipients=recipients, raw=container.as_string())
 
     @classmethod
-    def send_raw_email(cls, recipients, raw, session=None):
+    def send_raw_email(cls, sender, recipients, raw, session=None):
         logging.debug("Sending SES raw message")
-        logging.debug(f"From: {os.environ['ORIGIN_EMAIL_RECIPIENT']}")
+        logging.debug(f"From: {sender}")
         logging.debug(f"To: {recipients}")
         session = session or Session()
         ses = session.client('ses')
         try:
-            ses.send_raw_email(Source=os.environ['ORIGIN_EMAIL_RECIPIENT'],
-                               Destinations=recipients,
-                               RawMessage=dict(Data=raw))
+            ses.send_raw_email(Source=sender, Destinations=recipients, RawMessage=dict(Data=raw))
             return '[OK]'
         except ses.exceptions.MessageRejected as exception:
             logging.exception(exception)
             raise ValueError("Unable to send a SES raw message")
 
     @classmethod
-    def send_text(cls, recipients, subject, text, html):
+    def send_text(cls, sender, recipients, subject, text, html):
         logging.info("Sending an email with text")
         logging.debug(f"Subject: {subject}")
-        container = cls.get_mime_container(subject=subject, sender=os.environ['ORIGIN_EMAIL_RECIPIENT'], recipients=recipients)
+        container = cls.get_mime_container(subject=subject, sender=sender, recipients=recipients)
         container.attach(cls.get_mime_message(text=text, html=html))
-        return cls.send_raw_email(recipients=recipients, raw=container.as_string())
+        return cls.send_raw_email(sender=sender, recipients=recipients, raw=container.as_string())
