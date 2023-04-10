@@ -30,8 +30,13 @@ class OnCostComputation(Construct):
             self.functions = []
             return
 
-        parameters['environment']['REPORTING_COSTS_PREFIX'] = toggles.reporting_costs_prefix
         parameters['environment']['COST_MANAGEMENT_TAG'] = toggles.features_with_cost_management_tag
+        parameters['environment']['REPORTING_COSTS_PREFIX'] = toggles.reporting_costs_prefix
+        if toggles.features_with_origin_email_recipient:
+            parameters['environment']['ORIGIN_EMAIL_RECIPIENT'] = toggles.features_with_origin_email_recipient
+        if toggles.features_with_cost_email_recipients:
+            parameters['environment']['COST_EMAIL_RECIPIENTS'] = ', '.join(toggles.features_with_cost_email_recipients)
+
         self.functions = [self.monthly(parameters=parameters),
                           self.daily(parameters=parameters)]
 

@@ -25,6 +25,7 @@ setup_logging()
 
 from account import Account
 from costs import Costs
+from e_mail import Email
 from events import Events
 from metric import put_metric_data
 from settings import Settings
@@ -72,14 +73,22 @@ def handle_monthly_report(event=None, context=None, session=None):
     costs = Costs.get_amounts_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     for cost_center in costs.keys():
         store_report(report=Costs.build_detailed_csv_report(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
-                     path=get_report_key(label=cost_center, day=last_day_of_previous_month))
+                     path=get_report_path(label=cost_center, day=last_day_of_previous_month))
         store_report(report=Costs.build_excel_report_for_cost_center(cost_center=cost_center, day=last_day_of_previous_month, breakdown=costs[cost_center]),
-                     path=get_report_key(label=cost_center, day=last_day_of_previous_month, suffix='xlsx'))
+                     path=get_report_path(label=cost_center, day=last_day_of_previous_month, suffix='xlsx'))
     store_report(report=Costs.build_summary_csv_report(costs=costs, day=last_day_of_previous_month),
-                 path=get_report_key(label='Summary', day=last_day_of_previous_month))
-    store_report(report=Costs.build_summary_excel_report(costs=costs, day=last_day_of_previous_month),
-                 path=get_report_key(label='Summary', day=last_day_of_previous_month, suffix='xlsx'))
+                 path=get_report_path(label='Summary', day=last_day_of_previous_month))
+    path = get_report_path(label='Summary', day=last_day_of_previous_month, suffix='xlsx')
+    store_report(report=Costs.build_summary_excel_report(costs=costs, day=last_day_of_previous_month), path=path)
+    email_report(day=last_day_of_previous_month, object=f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path}")
     return '[OK]'
+
+
+def get_report_path(label, day=None, suffix='csv'):
+    day = day or date.today()
+    return '/'.join([os.environ["REPORTING_COSTS_PREFIX"],
+                     label,
+                     f"{day.year:04d}-{day.month:02d}-{label}-costs.{suffix}"])
 
 
 def store_report(path, report):
@@ -89,8 +98,16 @@ def store_report(path, report):
                                   Body=report)
 
 
-def get_report_key(label, day=None, suffix='csv'):
-    day = day or date.today()
-    return '/'.join([os.environ["REPORTING_COSTS_PREFIX"],
-                     label,
-                     f"{day.year:04d}-{day.month:02d}-{label}-costs.{suffix}"])
+def email_report(day, object):
+    sender = os.environ.get('ORIGIN_EMAIL_RECIPIENT')
+    if not sender:
+        logging.debug("Skipping the sending of cost report; Set 'with_origin_email_recipient' attribute to activate the feature")
+        return
+    recipients = os.environ.get('COST_EMAIL_RECIPIENTS')
+    if not recipients:
+        logging.debug("Skipping the sending of cost report; Set 'with_cost_email_recipients' attribute with list of report recipients")
+        return
+
+    subject = f"Summary cost report for {day.year:04d}-{day.month:02d}"
+    text = f"You will find attached the summary cost report for {day.year:04d}-{day.month:02d}"
+    return Email.send_objects(sender=sender, recipients=recipients, subject=subject, text=text, objects=[object])

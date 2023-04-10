@@ -20,18 +20,44 @@ import logging
 logging.getLogger("botocore").setLevel(logging.CRITICAL)
 logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 
+import boto3
 from datetime import date
 from unittest.mock import patch
+from moto import mock_s3, mock_ses
 import os
 import pytest
 
-from lambdas.on_cost_computation_handler import get_report_key
+from lambdas.on_cost_computation_handler import email_report, get_report_path
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(COST_EMAIL_RECIPIENTS='alice@example.com, bob@example.com',
+                             ORIGIN_EMAIL_RECIPIENT='costs@example.com',
+                             REPORTING_COSTS_PREFIX="costs"))
+@mock_s3
+@mock_ses
+def test_email_report():
+    day = date(2023, 3, 31)
+    path = get_report_path(label='Summary', day=day, suffix='test')
+
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+
+    s3.put_object(Bucket="my_bucket",
+                  Key=path,
+                  Body='hello world!')
+
+    ses = boto3.client('ses')
+    ses.verify_email_identity(EmailAddress='costs@example.com')
+
+    assert email_report(day=day, object=f"s3://my_bucket/{path}") == '[OK]'
 
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs"))
-def test_get_report_key():
-    result = get_report_key(label='test', day=date(2023, 3, 25), suffix='xyz')
+def test_get_report_path():
+    result = get_report_path(label='test', day=date(2023, 3, 25), suffix='xyz')
     assert result == 'costs/test/2023-03-test-costs.xyz'
