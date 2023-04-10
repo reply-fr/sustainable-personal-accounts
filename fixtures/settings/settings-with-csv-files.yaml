@@ -118,7 +118,10 @@ accounts:
 # additional features that can be activated optionally
 features:
 
-  # list of external configuration files to load -- relative to the settings file
+  # list of external configuration files to load -- path is relative to the settings file itself
+  # - heading line of each file should have a column 'Account', and one or more columns starting with 'Tag:', or 'Prepare:' or 'Purge:'
+  # - default value: empty list
+  #
   with_csv_files:
   - finops-setup.csv
   - security-setup.csv

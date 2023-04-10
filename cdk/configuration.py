@@ -42,12 +42,14 @@ class Configuration:
         defaults='dict',
         environment_identifier='str',
         features_with_arm_architecture='bool',
+        features_with_cost_email_recipients='list',
+        features_with_cost_management_tag='str',
         features_with_csv_files='list',
         features_with_email_subscriptions_on_alerts='list',
         features_with_microsoft_webhook_on_alerts='str',
+        features_with_origin_email_recipient='str',
         features_with_response_plan_arn='str',
         features_with_tag_prefix='str',
-        features_with_cost_management_tag='str',
         metering_activities_datastore='str',
         metering_activities_ttl_in_seconds='int',
         metering_shadows_datastore='str',
@@ -131,12 +133,14 @@ class Configuration:
         toggles.automation_tags = {}
         toggles.automation_verbosity = 'INFO'
         toggles.features_with_arm_architecture = False
-        toggles.features_with_csv_files = []
-        toggles.features_with_email_subscriptions_on_alerts = []
+        toggles.features_with_cost_email_recipients = None
+        toggles.features_with_cost_management_tag = None
+        toggles.features_with_csv_files = None
+        toggles.features_with_email_subscriptions_on_alerts = None
         toggles.features_with_microsoft_webhook_on_alerts = None
+        toggles.features_with_origin_email_recipient = None
         toggles.features_with_response_plan_arn = ''
         toggles.features_with_tag_prefix = 'account-'
-        toggles.features_with_cost_management_tag = False
         toggles.metering_activities_datastore = 'SpaActivitiesTable'
         toggles.metering_activities_ttl_in_seconds = 366 * 24 * 60 * 60
         toggles.metering_shadows_datastore = 'SpaShadowsTable'
@@ -168,7 +172,7 @@ class Configuration:
         if 'defaults' in settings.keys():
             cls.set_attribute('defaults', settings['defaults'], toggles=toggles)
 
-        toggles.features_with_csv_files = []
+        toggles.features_with_csv_files = None
         for key in settings.keys():
             if key == 'defaults':
                 continue
@@ -180,8 +184,9 @@ class Configuration:
             else:
                 cls.set_attribute(key, settings[key], toggles=toggles)
 
-        for file in toggles.features_with_csv_files:
-            cls.set_from_csv_file(os.path.join(path or '.', file), toggles=toggles)
+        if toggles.features_with_csv_files:
+            for file in toggles.features_with_csv_files:
+                cls.set_from_csv_file(os.path.join(path or '.', file), toggles=toggles)
 
     @classmethod
     def set_from_csv_file(cls, file, toggles=None):
@@ -310,19 +315,20 @@ class Configuration:
     @classmethod
     def validate_attribute(cls, key, value, context):
         kind = context.get(key)
-        if kind:
-            if (kind == 'bool') and not isinstance(value, bool):
-                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
-            elif (kind == 'dict') and not isinstance(value, dict):
-                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
-            elif (kind == 'int') and not isinstance(value, int):
-                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
-            elif (kind == 'list') and not isinstance(value, list):
-                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
-            elif (kind == 'str') and not isinstance(value, str):
-                raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
-        else:
-            raise AttributeError(f"Unknown configuration attribute '{key}'")
+        if value:
+            if kind:
+                if (kind == 'bool') and not isinstance(value, bool):
+                    raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
+                elif (kind == 'dict') and not isinstance(value, dict):
+                    raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
+                elif (kind == 'int') and not isinstance(value, int):
+                    raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
+                elif (kind == 'list') and not isinstance(value, list):
+                    raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
+                elif (kind == 'str') and not isinstance(value, str):
+                    raise AttributeError(f"Invalid type '{type(value).__name__}' for configuration attribute '{key}'")
+            else:
+                raise AttributeError(f"Unknown configuration attribute '{key}'")
 
     @classmethod
     def validate_preparation_attributes(cls, item):

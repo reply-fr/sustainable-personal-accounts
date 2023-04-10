@@ -44,3 +44,11 @@ Scenario: where cloud costs are computed and released every month
       And code pushes detailed monthly reports as one Excel file per cost center on S3 reporting bucket
       And code pushes summary monthly report as one CSV file listing every cost center on S3 reporting bucket
       And code pushes summary monthly report as one Excel file listing every cost center on S3 reporting bucket
+
+Scenario: where costs per cost center are spread over email every month
+    Given an existing SPA system
+      And the attribute 'with_origin_email_recipient' is set to 'cost@example.com' in the section 'features'
+      And the attribute 'with_cost_email_recipients' is set to 'alice@example.com, bob@example.com' in the section 'features'
+     When the Lambda function 'OnMonthlyCostsReport' is invoked
+     Then code pushes summary monthly report as one Excel file listing every cost center on S3 reporting bucket
+      And code sends the summary monthly Excel report over email to recipients 'alice@example.com, bob@example.com'

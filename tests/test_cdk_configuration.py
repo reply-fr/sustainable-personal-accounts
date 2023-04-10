@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from cdk import Configuration
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -103,11 +103,13 @@ def test_set_default_values(toggles):
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.automation_verbosity == 'INFO'
     assert toggles.features_with_arm_architecture is False
-    assert toggles.features_with_csv_files == []
-    assert toggles.features_with_email_subscriptions_on_alerts == []
+    assert toggles.features_with_cost_email_recipients is None
+    assert toggles.features_with_cost_management_tag is None
+    assert toggles.features_with_csv_files is None
+    assert toggles.features_with_email_subscriptions_on_alerts is None
     assert toggles.features_with_microsoft_webhook_on_alerts is None
+    assert toggles.features_with_origin_email_recipient is None
     assert toggles.features_with_tag_prefix == 'account-'
-    assert toggles.features_with_cost_management_tag is False
     assert toggles.metering_activities_datastore == 'SpaActivitiesTable'
     assert toggles.metering_activities_ttl_in_seconds == 31622400
     assert toggles.metering_shadows_datastore == 'SpaShadowsTable'
@@ -179,10 +181,12 @@ def test_set_from_yaml(toggles):
     assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/preparation_account_template.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'fixtures/buildspec/purge_account_with_awsweeper_template.yaml'
     assert toggles.features_with_arm_architecture is True
+    assert toggles.features_with_cost_email_recipients == ['alice@example.com', 'bob@example.com']
+    assert toggles.features_with_cost_management_tag == 'cost-center'
     assert toggles.features_with_email_subscriptions_on_alerts == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
     assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
+    assert toggles.features_with_origin_email_recipient == 'spa@example.com'
     assert toggles.features_with_tag_prefix == 'account-'
-    assert toggles.features_with_cost_management_tag == 'cost-center'
     assert toggles.metering_activities_datastore == 'SpaActivitiesTable'
     assert toggles.metering_activities_ttl_in_seconds == 31622400
     assert toggles.metering_shadows_datastore == 'SpaShadowsTable'

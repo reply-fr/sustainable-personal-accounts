@@ -237,9 +237,30 @@ features:
   #
   with_arm_architecture: true
 
+  # these e-mail addresses receive monthly cost reports -- also require settings of 'with_origin_email_recipient'
+  # - allowed value: valid email addresses, e.g., 'alice@example.com'
+  # - default value: no value
+  #
+  with_cost_email_recipients:
+  - alice@example.com
+  - bob@example.com
+
+  # this is the tag key that is used across settings for cost management
+  # automated processing of costs is deployed only if this is set to a valid string
+  # - allowed value: key of the tag that is used for cost mangement, e.g., 'cost-center'
+  # - default value: no value
+  #
+  with_cost_management_tag: cost-center
+
+  # list of external configuration files to load -- path is relative to the settings file itself
+  # - heading line of each file should have a column 'Account', and one or more columns starting with 'Tag:', or 'Prepare:' or 'Purge:'
+  # - default value: no value
+  #
+  with_csv_files:
+
   # these e-mail addresses receive messages on alerts, e.g., billing alerts, CodeBuild failures, etc.
   # - allowed values: a list of valid e-mail addresses
-  # - default value: empty list
+  # - default value: no value
   #
   with_email_subscriptions_on_alerts:
   - finops_alerts@acme.com
@@ -251,14 +272,14 @@ features:
   #
   with_microsoft_webhook_on_alerts: https://acme.webhook.office.com/webhookb2/892ca8xf-9423
 
+  # this e-mail address is used for the sending of automated messages
+  # - allowed value: an email addresses that has been validated by AWS SES
+  # - default value: no value
+  #
+  with_origin_email_recipient: spa@example.com
+
   # this prefix is used for tags added programmatically, e.g., 'account-holder'
   # - default value: "account-""
   #
   with_tag_prefix: "account-"
 
-  # this is the tag key that is used across settings for cost management
-  # automated processing of costs is deployed only if this is set to a valid string
-  # - allowed value: key of the tag that is used for cost mangement, e.g., 'cost-center'
-  # - default value: False
-  #
-  with_cost_management_tag: cost-center
