@@ -15,9 +15,10 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+from base64 import b64decode
 import boto3
 from unittest.mock import patch
-from moto import mock_ses
+from moto import mock_s3, mock_ses
 import os
 import pytest
 
@@ -27,10 +28,108 @@ pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
+def test_get_mime_attachment():
+    item = Email.get_mime_attachment(name='hello.txt', content=b'hello world!')
+    assert item.is_multipart() is False
+    assert set(item.keys()) == {'Content-Disposition', 'Content-Transfer-Encoding', 'Content-Type', 'MIME-Version'}
+    assert item.get('Content-Disposition') == 'attachment; filename="hello.txt"'
+    assert b64decode(item.get_payload()) == b'hello world!'
+
+    item = Email.get_mime_attachment(name='héllo wôrld.txt', content=b'hello world!')
+    assert item.is_multipart() is False
+    assert set(item.keys()) == {'Content-Disposition', 'Content-Transfer-Encoding', 'Content-Type', 'MIME-Version'}
+    assert item.get('Content-Disposition') == "attachment; filename*=utf-8''h%C3%A9llo%20w%C3%B4rld.txt"
+    assert b64decode(item.get_payload()) == b'hello world!'
+
+
+@pytest.mark.unit_tests
+def test_get_mime_container():
+    item = Email.get_mime_container(subject='subject', sender='alice@example.com', recipients=['bob@example.com', 'charles@example.com'])
+    assert item.is_multipart() is True
+    assert set(item.keys()) == {'Content-Type', 'From', 'MIME-Version', 'Subject', 'To'}
+    assert item.get_payload() == []
+
+
+@pytest.mark.unit_tests
+def test_get_mime_message():
+    item = Email.get_mime_message(text='hello world!')
+    assert item.is_multipart() is False
+    assert set(item.keys()) == {'Content-Type', 'MIME-Version', 'Content-Transfer-Encoding'}
+    assert b64decode(item.get_payload()) == b'hello world!'
+
+    item = Email.get_mime_message(text='hello world!', html='<h1>hello world!</h1>')
+    assert item.is_multipart() is True
+    assert set(item.keys()) == {'Content-Type', 'MIME-Version'}
+    assert len(item.get_payload()) == 2
+
+
+@pytest.mark.integration_tests
+@mock_s3
+def test_get_object_as_mime_attachment():
+
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+
+    with pytest.raises(ValueError):  # object does not exist
+        Email.get_object_as_mime_attachment(object='s3://my_bucket/some/path/hello.txt')
+
+    s3.put_object(Bucket="my_bucket",
+                  Key='/some/path/hello.txt',
+                  Body='hello world!')
+
+    item = Email.get_object_as_mime_attachment(object='s3://my_bucket/some/path/hello.txt')
+    assert item.is_multipart() is False
+    assert set(item.keys()) == {'Content-Disposition', 'Content-Transfer-Encoding', 'Content-Type', 'MIME-Version'}
+    assert b64decode(item.get_payload()) == b'hello world!'
+
+    with pytest.raises(ValueError):  # malformed object name
+        Email.get_object_as_mime_attachment(object='my_bucket/some/path/hello.txt')
+
+
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ORIGIN_EMAIL_RECIPIENT='alice@example.com'))
+@mock_s3
 @mock_ses
-def test_send():
+def test_send_objects():
+
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+
+    s3.put_object(Bucket="my_bucket",
+                  Key='/some/path/hello.txt',
+                  Body='hello world!')
+
+    with pytest.raises(ValueError):  # origin email has not been verified
+        parameters = dict(recipients=['bob@example.com'],
+                          subject='monthly reports are available',
+                          text='please find attached the reports for previous month',
+                          html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
+                          objects=['s3://my_bucket/some/path/hello.txt'])
+        Email.send_objects(**parameters)
+
     ses = boto3.client('ses')
     ses.verify_email_identity(EmailAddress='alice@example.com')
-    parameters = dict(recipients=['bob@example.com'], subject='my subject', text='my message')
-    assert Email.send(**parameters) == '[OK]'
+
+    parameters = dict(recipients=['bob@example.com'],
+                      subject='monthly reports are available',
+                      text='please find attached the reports for previous month',
+                      html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
+                      objects=['s3://my_bucket/some/path/hello.txt'])
+    assert Email.send_objects(**parameters) == '[OK]'
+
+
+@pytest.mark.integration_tests
+@patch.dict(os.environ, dict(ORIGIN_EMAIL_RECIPIENT='alice@example.com'))
+@mock_ses
+def test_send_text():
+
+    ses = boto3.client('ses')
+    ses.verify_email_identity(EmailAddress='alice@example.com')
+
+    parameters = dict(recipients=['bob@example.com'],
+                      subject='monthly reports are available',
+                      text='please find attached the reports for previous month',
+                      html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month')
+    assert Email.send_text(**parameters) == '[OK]'
