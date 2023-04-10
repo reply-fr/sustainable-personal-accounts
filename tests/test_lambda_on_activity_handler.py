@@ -28,7 +28,7 @@ import os
 import pytest
 
 from lambdas import Events, KeyValueStore
-from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_daily_report, get_hashes, get_report_key
+from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_daily_report, get_hashes, get_report_path
 
 # pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_activities_table
@@ -109,7 +109,7 @@ def test_handle_monthly_report():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
     assert handle_monthly_report(day=date(year=2023, month=4, day=20)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
-                             Key=get_report_key(label="DevOps Tools"))
+                             Key=get_report_path(label="DevOps Tools"))
     assert response['ContentLength'] > 100
     report = response['Body'].read().decode('utf-8')
     assert len(report.split("\n")) == 20
@@ -131,7 +131,7 @@ def test_handle_daily_report():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
     assert handle_daily_report(day=date(year=2023, month=3, day=30)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
-                             Key=get_report_key(label="DevOps Tools"))
+                             Key=get_report_path(label="DevOps Tools"))
     assert response['ContentLength'] > 100
     report = response['Body'].read().decode('utf-8')
     assert len(report.split("\n")) == 20
@@ -164,8 +164,8 @@ def test_get_hashes():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_ACTIVITIES_PREFIX="all/the/activities"))
-def test_get_report_key():
-    key = get_report_key("CostCenterOne", date(2022, 12, 25))
+def test_get_report_path():
+    key = get_report_path("CostCenterOne", date(2022, 12, 25))
     assert key == "all/the/activities/CostCenterOne/2022-12-CostCenterOne-activities.csv"
-    key = get_report_key("CostCenterTwo", date(2023, 1, 2))
+    key = get_report_path("CostCenterTwo", date(2023, 1, 2))
     assert key == "all/the/activities/CostCenterTwo/2023-01-CostCenterTwo-activities.csv"

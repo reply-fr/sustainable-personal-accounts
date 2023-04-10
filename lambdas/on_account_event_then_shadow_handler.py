@@ -92,11 +92,11 @@ def store_report(report):
     logging.info("Storing inventory report")
     logging.debug(report)
     boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
-                                  Key=get_report_key(),
+                                  Key=get_report_path(),
                                   Body=report)
 
 
-def get_report_key(today=None):
+def get_report_path(today=None):
     today = today or date.today()
     return '/'.join([os.environ["REPORTING_INVENTORIES_PREFIX"],
                      f"{today.year:04d}",

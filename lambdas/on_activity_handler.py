@@ -111,11 +111,11 @@ def store_report(label, report):
     logging.info("Storing activity report")
     logging.debug(report)
     boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
-                                  Key=get_report_key(label),
+                                  Key=get_report_path(label),
                                   Body=report)
 
 
-def get_report_key(label, day=None):
+def get_report_path(label, day=None):
     day = day or date.today()
     return '/'.join([os.environ["REPORTING_ACTIVITIES_PREFIX"],
                      label,

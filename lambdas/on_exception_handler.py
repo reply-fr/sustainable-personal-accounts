@@ -103,7 +103,7 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
     logging.info("Attaching cost and usage report to incident report")
     try:
         breakdown = Costs.enumerate_monthly_breakdown_for_account(account=account, day=day, session=session)
-        path = get_report_key(label=str(account), day=day)
+        path = get_report_path(label=str(account), day=day)
         store_report(path=path, report=Costs.build_excel_report_for_account(account=account, day=day, breakdown=breakdown))
         add_related_item(incident_arn=incident_arn,
                          title='Cost and Usage Report',
@@ -114,7 +114,7 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
         logging.error(exception)
 
 
-def get_report_key(label, day=None):
+def get_report_path(label, day=None):
     day = day or date.today()
     return '/'.join([os.environ["REPORTING_EXCEPTIONS_PREFIX"],
                      label,

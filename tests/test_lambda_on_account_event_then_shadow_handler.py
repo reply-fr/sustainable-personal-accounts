@@ -27,7 +27,7 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_report, build_report, get_report_key
+from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_report, build_report, get_report_path
 from lambdas.key_value_store import KeyValueStore
 
 # pytestmark = pytest.mark.wip
@@ -85,7 +85,7 @@ def test_handle_report():
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
     assert handle_report() == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
-                             Key=get_report_key())
+                             Key=get_report_path())
     assert response['ContentLength'] > 100
     report = response['Body'].read().decode('utf-8')
     assert len(report.split("\n")) == 10
@@ -106,8 +106,8 @@ def test_build_report():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_INVENTORIES_PREFIX="all/the/inventories"))
-def test_get_report_key():
-    key = get_report_key(date(2022, 12, 25))
+def test_get_report_path():
+    key = get_report_path(date(2022, 12, 25))
     assert key == "all/the/inventories/2022/12/2022-12-25-inventory.csv"
-    key = get_report_key(date(2023, 1, 2))
+    key = get_report_path(date(2023, 1, 2))
     assert key == "all/the/inventories/2023/01/2023-01-02-inventory.csv"
