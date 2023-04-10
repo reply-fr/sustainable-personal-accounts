@@ -64,7 +64,7 @@ class Settings:
 
     @classmethod
     def enumerate_identifiers_by_path(cls, path, session=None):
-        logging.debug(f"Enurating identifiers in path {path}")
+        logging.debug(f"Enumerating identifiers in path {path}")
         session = session or Session()
         chunk = session.client('ssm').get_parameters_by_path(Path=path)
         while chunk.get('Parameters'):
