@@ -82,6 +82,7 @@ A set of workbooks are available for common operations on Sustainable Personal A
 - [Full Setup of SPA](./workbooks/full-setup-of-spa.md) - Start here for initial installation
 - [Create a personal account](./workbooks/create-a-personal-account.md) - Add manually an account handled by SPA
 - [Add Microsoft Teams webhook](./workbooks/add-microsoft-teams-webhook.md) - Forward SPA notifications to ChatOps channels
+- [Transmit reports over email](./workbooks/transmit-reports-over-email.md) - Forward SPA reports to selected email recipients
 - [Release all managed accounts](./workbooks/release-managed-accounts.md) - Set all state machines to RELEASED state
 - [Reset all managed accounts](./workbooks/reset-managed-accounts.md) - Set all state machines to VANILLA state
 
