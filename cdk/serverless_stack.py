@@ -154,6 +154,10 @@ class ServerlessStack(Stack):
                             resources=['*']),
 
             PolicyStatement(effect=Effect.ALLOW,
+                            actions=['ses:SendRawEmail'],
+                            resources=['*']),
+
+            PolicyStatement(effect=Effect.ALLOW,
                             actions=['sns:Publish', 'sns:Subscribe'],
                             resources=['*']),
 
