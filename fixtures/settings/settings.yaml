@@ -276,7 +276,7 @@ features:
   # - allowed value: an email addresses that has been validated by AWS SES, e.g., '"no reply" <spa@example.com>'
   # - default value: no value
   #
-  with_origin_email_recipient: '"no reply" <spa@example.com>'
+  with_origin_email_recipient: spa@example.com
 
   # this prefix is used for tags added programmatically, e.g., 'account-holder'
   # - default value: "account-""

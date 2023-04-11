@@ -17,6 +17,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from base64 import b64decode
 import boto3
+import botocore
+from unittest.mock import ANY, Mock
 from moto import mock_s3, mock_ses
 import pytest
 
@@ -42,9 +44,18 @@ def test_get_mime_attachment():
 
 @pytest.mark.unit_tests
 def test_get_mime_container():
-    item = Email.get_mime_container(subject='subject', sender='alice@example.com', recipients=['bob@example.com', 'charles@example.com'])
+    item = Email.get_mime_container(subject='subject', sender='alice@example.com', recipients='"Bob" <bob@example.com>, charles@example.com')
     assert item.is_multipart() is True
     assert set(item.keys()) == {'Content-Type', 'From', 'MIME-Version', 'Subject', 'To'}
+    assert item.get('From') == 'alice@example.com'
+    assert item.get('To') == '"Bob" <bob@example.com>, charles@example.com'
+    assert item.get_payload() == []
+
+    item = Email.get_mime_container(subject='subject', sender='zoe@example.com', recipients=['"Bob" <bob@example.com>', 'charles@example.com'])
+    assert item.is_multipart() is True
+    assert set(item.keys()) == {'Content-Type', 'From', 'MIME-Version', 'Subject', 'To'}
+    assert item.get('From') == 'zoe@example.com'
+    assert item.get('To') == '"Bob" <bob@example.com>, charles@example.com'
     assert item.get_payload() == []
 
 
@@ -69,7 +80,7 @@ def test_get_object_as_mime_attachment():
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
 
-    with pytest.raises(ValueError):  # object does not exist
+    with pytest.raises(botocore.exceptions.ClientError):  # object does not exist
         Email.get_object_as_mime_attachment(object='s3://my_bucket/some/path/hello.txt')
 
     s3.put_object(Bucket="my_bucket",
@@ -99,19 +110,42 @@ def test_send_objects():
                   Body='hello world!')
 
     parameters = dict(sender='alice@example.com',
-                      recipients=['bob@example.com'],
+                      recipients='bob@example.com, charles@example.com',
                       subject='monthly reports are available',
                       text='please find attached the reports for previous month',
                       html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
                       objects=['s3://my_bucket/some/path/hello.txt'])
 
-    with pytest.raises(ValueError):  # origin email has not been verified
+    with pytest.raises(botocore.exceptions.ClientError):  # origin email has not been verified
         Email.send_objects(**parameters)
 
     ses = boto3.client('ses')
     ses.verify_email_identity(EmailAddress='alice@example.com')
 
+    mock = Mock()
+    assert Email.send_objects(**parameters, session=mock) == '[OK]'
+    mock.client.return_value.send_raw_email.assert_called_with(
+        Source='alice@example.com',
+        Destinations=['bob@example.com', 'charles@example.com'],
+        RawMessage={'Data': ANY}
+    )
+
+    parameters = dict(sender='alice@example.com',
+                      recipients=['"Bob" <bob@example.com>', 'charles@example.com'],  # with a list instead of a string
+                      subject='monthly reports are available',
+                      text='please find attached the reports for previous month',
+                      html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month',
+                      objects=['s3://my_bucket/some/path/hello.txt'])
     assert Email.send_objects(**parameters) == '[OK]'
+
+    mock = Mock()
+    assert Email.send_objects(**parameters, session=mock) == '[OK]'
+    mock.client.return_value.send_raw_email.assert_called_with(
+        Source='alice@example.com',
+        Destinations=['"Bob" <bob@example.com>', 'charles@example.com'],
+        RawMessage={'Data': ANY}
+    )
+
 
 
 @pytest.mark.integration_tests
@@ -122,8 +156,30 @@ def test_send_text():
     ses.verify_email_identity(EmailAddress='alice@example.com')
 
     parameters = dict(sender='alice@example.com',
-                      recipients=['bob@example.com'],
-                      subject='monthly reports are available',
-                      text='please find attached the reports for previous month',
-                      html='<h1>Monthly reports</h1>\nPlease find attached the reports for previous month')
-    assert Email.send_text(**parameters) == '[OK]'
+                      subject='hello world!',
+                      text="what's up, Doc?",
+                      html='<h1>Hello world!</h1>')
+    assert Email.send_text(recipients='bob@example.com, charles@example.com',
+                           **parameters) == '[OK]'
+    assert Email.send_text(recipients=['"Bob" <bob@example.com>', 'charles@example.com'],
+                           **parameters) == '[OK]'
+
+    mock = Mock()
+    assert Email.send_text(recipients='bob@example.com, charles@example.com',
+                           **parameters,
+                           session=mock) == '[OK]'
+    mock.client.return_value.send_raw_email.assert_called_with(
+        Source='alice@example.com',
+        Destinations=['bob@example.com', 'charles@example.com'],
+        RawMessage={'Data': ANY}
+    )
+
+    mock = Mock()
+    assert Email.send_text(recipients=['"Bob" <bob@example.com>', 'charles@example.com'],
+                           **parameters,
+                           session=mock) == '[OK]'
+    mock.client.return_value.send_raw_email.assert_called_with(
+        Source='alice@example.com',
+        Destinations=['"Bob" <bob@example.com>', 'charles@example.com'],
+        RawMessage={'Data': ANY}
+    )
