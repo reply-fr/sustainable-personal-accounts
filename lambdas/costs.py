@@ -28,6 +28,8 @@ from session import get_account_session, get_organizations_session
 
 class Costs:
 
+    COSTLY_RECORDS = ['Usage', 'Upfront', 'Recurring', 'Support', 'Tax', 'Other']
+
     @classmethod
     def enumerate_daily_cost_per_account(cls, day=None, session=None):
         logging.info("Fetching daily cost and usage information per account")
@@ -39,7 +41,7 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
                           Granularity='DAILY',
                           Metrics=['UnblendedCost'],
-                          Filter=dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund']))),
+                          Filter=dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS)),
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT')])
         chunk = costs.get_cost_and_usage(**parameters)
         logging.debug(chunk)
@@ -66,7 +68,7 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
                           Granularity='MONTHLY',
                           Metrics=['UnblendedCost'],
-                          Filter=dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund']))),
+                          Filter=dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS)),
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
                                    dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
@@ -99,7 +101,7 @@ class Costs:
                           Granularity='MONTHLY',
                           Metrics=['UnblendedCost'],
                           Filter=dict(And=[dict(Dimensions=dict(Key='LINKED_ACCOUNT', Values=[account])),
-                                           dict(Not=dict(Dimensions=dict(Key='RECORD_TYPE', Values=['Credit', 'Refund'])))]),
+                                           dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS))]),
                           GroupBy=[dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
         logging.debug(chunk)
