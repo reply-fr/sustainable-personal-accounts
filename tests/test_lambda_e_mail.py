@@ -147,7 +147,6 @@ def test_send_objects():
     )
 
 
-
 @pytest.mark.integration_tests
 @mock_ses
 def test_send_text():

@@ -45,7 +45,7 @@ class OnCostComputation(Construct):
         function = Function(self, "Monthly",
                             function_name="{}OnMonthlyCostsReport".format(toggles.environment_identifier),
                             description="Report costs from previous month",
-                            handler="on_cost_computation_handler.handle_monthly_report",
+                            handler="on_cost_computation_handler.handle_monthly_reports",
                             memory_size=1024,  # accomodate for hundreds of accounts and related data
                             **parameters)
 
@@ -62,7 +62,7 @@ class OnCostComputation(Construct):
         function = Function(self, "Daily",
                             function_name="{}OnDailyCostsMetric".format(toggles.environment_identifier),
                             description="Measure daily costs",
-                            handler="on_cost_computation_handler.handle_daily_metric",
+                            handler="on_cost_computation_handler.handle_daily_metrics",
                             **parameters)
 
         Rule(self, "TriggerDaily",

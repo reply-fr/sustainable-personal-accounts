@@ -26,7 +26,7 @@ import pytest
 
 from lambdas.costs import Costs
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 sample_daily_chunk = {
@@ -42,6 +42,7 @@ sample_daily_chunk = {
                          'RetryAttempts': 0}}
 
 
+@pytest.mark.unit_tests
 def test_enumerate_daily_cost_per_account():
     mock = Mock()
     mock.client.return_value.get_cost_and_usage.return_value = sample_daily_chunk
@@ -78,6 +79,7 @@ sample_monthly_chunk_per_account = {
                          'RetryAttempts': 0}}
 
 
+@pytest.mark.unit_tests
 def test_enumerate_monthly_breakdown_per_account():
     mock = Mock()
     mock.client.return_value.get_cost_and_usage.return_value = sample_monthly_chunk_per_account
@@ -114,11 +116,103 @@ sample_monthly_chunk_for_account = {
                          'RetryAttempts': 0}}
 
 
+@pytest.mark.unit_tests
 def test_enumerate_monthly_breakdown_for_account():
     mock = Mock()
     mock.client.return_value.get_cost_and_usage.return_value = sample_monthly_chunk_for_account
     results = [item for item in Costs.enumerate_monthly_breakdown_for_account(account='123456789012', session=mock)]
     assert len(results) == 17
+
+
+sample_chunk_of_monthly_charges_per_account = {
+    'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'LINKED_ACCOUNT'},
+                         {'Type': 'DIMENSION', 'Key': 'RECORD_TYPE'}],
+    'ResultsByTime': [{'TimePeriod': {'Start': '2023-03-01', 'End': '2023-04-01'},
+                       'Total': {},
+                       'Groups': [{'Keys': ['123456789012', 'Solution Provider Program Discount'], 'Metrics': {'UnblendedCost': {'Amount': '-0.8038363727', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '5.19', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Usage'], 'Metrics': {'UnblendedCost': {'Amount': '26.7945452638', 'Unit': 'USD'}}},
+                                  {'Keys': ['456789012345', 'Solution Provider Program Discount'], 'Metrics': {'UnblendedCost': {'Amount': '-0.0167705004', 'Unit': 'USD'}}},
+                                  {'Keys': ['456789012345', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '0.11', 'Unit': 'USD'}}},
+                                  {'Keys': ['456789012345', 'Usage'], 'Metrics': {'UnblendedCost': {'Amount': '0.5590172084', 'Unit': 'USD'}}},
+                                  {'Keys': ['789012345678', 'Solution Provider Program Discount'], 'Metrics': {'UnblendedCost': {'Amount': '-0.6905270498', 'Unit': 'USD'}}},
+                                  {'Keys': ['789012345678', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '4.46', 'Unit': 'USD'}}},
+                                  {'Keys': ['789012345678', 'Usage'], 'Metrics': {'UnblendedCost': {'Amount': '23.0175687783', 'Unit': 'USD'}}},
+                                  {'Keys': ['012345678901', 'Support'], 'Metrics': {'UnblendedCost': {'Amount': '1.0368862512', 'Unit': 'USD'}}},
+                                  {'Keys': ['012345678901', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '0.24', 'Unit': 'USD'}}},
+                                  {'Keys': ['012345678901', 'Usage'], 'Metrics': {'UnblendedCost': {'Amount': '1.2295395649', 'Unit': 'USD'}}},
+                                  {'Keys': ['345678901234', 'Solution Provider Program Discount'], 'Metrics': {'UnblendedCost': {'Amount': '-0.0356584397', 'Unit': 'USD'}}},
+                                  {'Keys': ['345678901234', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '0.23', 'Unit': 'USD'}}},
+                                  {'Keys': ['345678901234', 'Usage'], 'Metrics': {'UnblendedCost': {'Amount': '1.1886139495', 'Unit': 'USD'}}}],
+                       'Estimated': False}],
+    'DimensionValueAttributes': [{'Value': '123456789012', 'Attributes': {'description': 'alice@example.com'}},
+                                 {'Value': '456789012345', 'Attributes': {'description': 'bob@example.com'}},
+                                 {'Value': '789012345678', 'Attributes': {'description': 'charles@reply.com'}},
+                                 {'Value': '012345678901', 'Attributes': {'description': 'david@example.com'}},
+                                 {'Value': '345678901234', 'Attributes': {'description': 'estelle@example.com'}}],
+    'ResponseMetadata': {'RequestId': 'ab34a27c-18f3-4ad9-a5e2-6f93b9e2a80f',
+                         'HTTPStatusCode': 200,
+                         'HTTPHeaders': {'date': 'Wed, 12 Apr 2023 20:10:21 GMT', 'content-type': 'application/x-amz-json-1.1', 'content-length': '23622', 'connection': 'keep-alive', 'cache-control': 'no-cache'},
+                         'RetryAttempts': 0}}
+
+sample_accounts = {
+    '123456789012': {'name': 'alice@example.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product A'}},
+    '456789012345': {'name': 'bob@example.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product B'}},
+    '789012345678': {'name': 'charles@reply.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product C'}},
+    '012345678901': {'name': 'david@example.com', 'unit_name': 'Non-Committed', 'tags': {'cost-center': 'Product A'}},
+    '345678901234': {'name': 'estelle@example.com', 'unit_name': 'Non-Committed', 'tags': {'cost-center': 'Product C'}}
+}
+
+
+@pytest.mark.unit_tests
+def test_enumerate_monthly_charges_per_account():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
+    results = {account for account, _ in Costs.enumerate_monthly_charges_per_account(session=mock)}
+    assert results == {'123456789012', '456789012345', '789012345678', '012345678901', '345678901234'}
+
+
+@pytest.mark.unit_tests
+def test_get_charges_per_cost_center():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
+    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
+    assert charges == {'Product A': [{'account': '123456789012', 'charge': 'Solution Provider Program Discount', 'amount': '-0.8038363727', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                     {'account': '123456789012', 'charge': 'Tax', 'amount': '5.19', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                     {'account': '123456789012', 'charge': 'Usage', 'amount': '26.7945452638', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                     {'account': '012345678901', 'charge': 'Support', 'amount': '1.0368862512', 'name': 'david@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '012345678901', 'charge': 'Tax', 'amount': '0.24', 'name': 'david@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '012345678901', 'charge': 'Usage', 'amount': '1.2295395649', 'name': 'david@example.com', 'unit': 'Non-Committed'}],
+                       'Product B': [{'account': '456789012345', 'charge': 'Solution Provider Program Discount', 'amount': '-0.0167705004', 'name': 'bob@example.com', 'unit': 'Committed'},
+                                     {'account': '456789012345', 'charge': 'Tax', 'amount': '0.11', 'name': 'bob@example.com', 'unit': 'Committed'},
+                                     {'account': '456789012345', 'charge': 'Usage', 'amount': '0.5590172084', 'name': 'bob@example.com', 'unit': 'Committed'}],
+                       'Product C': [{'account': '789012345678', 'charge': 'Solution Provider Program Discount', 'amount': '-0.6905270498', 'name': 'charles@reply.com', 'unit': 'Committed'},
+                                     {'account': '789012345678', 'charge': 'Tax', 'amount': '4.46', 'name': 'charles@reply.com', 'unit': 'Committed'},
+                                     {'account': '789012345678', 'charge': 'Usage', 'amount': '23.0175687783', 'name': 'charles@reply.com', 'unit': 'Committed'},
+                                     {'account': '345678901234', 'charge': 'Solution Provider Program Discount', 'amount': '-0.0356584397', 'name': 'estelle@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '345678901234', 'charge': 'Tax', 'amount': '0.23', 'name': 'estelle@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '345678901234', 'charge': 'Usage', 'amount': '1.1886139495', 'name': 'estelle@example.com', 'unit': 'Non-Committed'}]}
+
+
+@pytest.mark.unit_tests
+def test_build_summary_of_charges_csv_report():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
+    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
+    report = Costs.build_summary_of_charges_csv_report(charges=charges, day=date(2023, 3, 31))
+    assert len(report) > 200
+    lines = report.split('\n', 2)
+    assert lines[0].strip() == 'Cost Center,Month,Organizational Unit,Charges (USD),Solution Provider Program Discount (USD),Support (USD),Tax (USD),Usage (USD)'
+    assert lines[1].strip() == 'Product A,2023-03,Committed,31.1807088911,-0.8038363727,0.0,5.19,26.7945452638'
+
+
+@pytest.mark.unit_tests
+def test_build_summary_of_charges_excel_report():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
+    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
+    report = Costs.build_summary_of_charges_excel_report(charges=charges, day=date(2023, 3, 31))
+    assert len(report) > 200
 
 
 sample_breakdown = [
@@ -434,14 +528,14 @@ sample_breakdown = [
 
 
 @pytest.mark.unit_tests
-def test_build_detailed_csv_report():
-    report = Costs.build_detailed_csv_report(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
+def test_build_breakdown_csv_report_for_cost_center():
+    report = Costs.build_breakdown_csv_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
     assert len(report.strip().split('\n')) == 46
 
 
 @pytest.mark.unit_tests
-def test_build_excel_report_for_cost_center():
-    report = Costs.build_excel_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
+def test_build_breakdown_excel_report_for_cost_center():
+    report = Costs.build_breakdown_excel_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
     assert len(report) > 200
 
 
@@ -539,12 +633,12 @@ sample_costs = {
 
 
 @pytest.mark.unit_tests
-def test_build_summary_csv_report():
-    report = Costs.build_summary_csv_report(costs=sample_costs, day=date(2023, 3, 23))
+def test_build_breakdown_csv_report():
+    report = Costs.build_breakdown_csv_report(costs=sample_costs, day=date(2023, 3, 23))
     assert len(report.strip().split('\n')) == 9
 
 
 @pytest.mark.unit_tests
-def test_build_summary_excel_report():
-    report = Costs.build_summary_excel_report(costs=sample_costs, day=date(2023, 3, 23))
+def test_build_breakdown_excel_report():
+    report = Costs.build_breakdown_excel_report(costs=sample_costs, day=date(2023, 3, 23))
     assert len(report) > 200

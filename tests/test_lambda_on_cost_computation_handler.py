@@ -27,7 +27,7 @@ from moto import mock_s3, mock_ses
 import os
 import pytest
 
-from lambdas.on_cost_computation_handler import email_report, get_report_path
+from lambdas.on_cost_computation_handler import email_reports, get_report_path
 
 pytestmark = pytest.mark.wip
 
@@ -38,9 +38,9 @@ pytestmark = pytest.mark.wip
                              REPORTING_COSTS_PREFIX="costs"))
 @mock_s3
 @mock_ses
-def test_email_report():
+def test_email_reports():
     day = date(2023, 3, 31)
-    path = get_report_path(label='Summary', day=day, suffix='test')
+    path = get_report_path(cost_center='Summary', label='services', day=day, suffix='test')
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
@@ -53,11 +53,11 @@ def test_email_report():
     ses = boto3.client('ses')
     ses.verify_email_identity(EmailAddress='costs@example.com')
 
-    assert email_report(day=day, object=f"s3://my_bucket/{path}") == '[OK]'
+    assert email_reports(day=day, objects=[f"s3://my_bucket/{path}"]) == '[OK]'
 
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs"))
 def test_get_report_path():
-    result = get_report_path(label='test', day=date(2023, 3, 25), suffix='xyz')
-    assert result == 'costs/test/2023-03-test-costs.xyz'
+    result = get_report_path(cost_center='product-a', label='charges', day=date(2023, 3, 25), suffix='xyz')
+    assert result == 'costs/product-a/2023-03-product-a-charges.xyz'

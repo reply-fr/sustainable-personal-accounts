@@ -119,13 +119,46 @@ class Costs:
                 break
 
     @classmethod
-    def get_amounts_per_cost_center(cls, accounts, day, session):
+    def enumerate_monthly_charges_per_account(cls, day=None, session=None):
+        logging.info("Fetching monthly cost and charges information per account")
+        day = day or date.today()
+        start = day.replace(day=1)                         # first day of this month is included
+        end = (start + timedelta(days=32)).replace(day=1)  # first day of next month is excluded
+        session = session or get_organizations_session()
+        costs = session.client('ce')
+        parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
+                          Granularity='MONTHLY',
+                          Metrics=['UnblendedCost'],
+                          GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
+                                   dict(Type='DIMENSION', Key='RECORD_TYPE')])
+        chunk = costs.get_cost_and_usage(**parameters)
+        logging.debug(chunk)
+        charges_per_account = {}
+        while chunk.get('ResultsByTime'):
+            for result in chunk['ResultsByTime']:
+                for group in result['Groups']:
+                    account = group['Keys'][0]
+                    charge = group['Keys'][1]
+                    amount = group['Metrics']['UnblendedCost']['Amount']
+                    cumulated = charges_per_account.get(account, [])
+                    cumulated.append(dict(account=account, charge=charge, amount=amount))
+                    charges_per_account[account] = cumulated
+            if chunk.get('NextPageToken'):
+                chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
+                logging.debug(chunk)
+            else:
+                break
+        for account, charges in charges_per_account.items():
+            yield account, charges
+
+    @classmethod
+    def get_breakdowns_per_cost_center(cls, accounts, day=None, session=None):
         costs = {}
         for account, breakdown in cls.enumerate_monthly_breakdown_per_account(day=day, session=session):
-            logging.info(f"Processing data for account '{account}'")
+            logging.debug(f"Processing services for account '{account}'")
             attributes = accounts.get(str(account), {})
-            more = dict(name=attributes.get('name', Account.get_name(account)),
-                        unit=attributes.get('unit_name', Account.get_organizational_unit_name(account)))
+            more = dict(name=attributes.get('name') or Account.get_name(account),
+                        unit=attributes.get('unit_name') or Account.get_organizational_unit_name(account))
             for item in breakdown:
                 item.update(more)
             logging.debug(breakdown)
@@ -136,8 +169,26 @@ class Costs:
         return costs
 
     @classmethod
-    def build_detailed_csv_report(cls, cost_center, day, breakdown):
-        logging.info(f"Building detailed CSV report for cost center '{cost_center}'")
+    def get_charges_per_cost_center(cls, accounts, day=None, session=None):
+        costs = {}
+        for account, charges in cls.enumerate_monthly_charges_per_account(day=day, session=session):
+            logging.debug(f"Processing charges for account '{account}'")
+            attributes = accounts.get(str(account), {})
+            more = dict(name=attributes.get('name') or Account.get_name(account),
+                        unit=attributes.get('unit_name') or Account.get_organizational_unit_name(account))
+            for item in charges:
+                item.update(more)
+            logging.debug(charges)
+            attributes = accounts.get(str(account), {})
+            cost_center = Account.get_cost_center(tags=attributes.get('tags', {}))
+            cumulated = costs.get(cost_center, [])
+            cumulated.extend(charges)
+            costs[cost_center] = cumulated
+        return costs
+
+    @classmethod
+    def build_breakdown_csv_report_for_cost_center(cls, cost_center, day, breakdown):
+        logging.info(f"Building breakdown CSV report for cost center '{cost_center}'")
         buffer = io.StringIO()
         writer = DictWriter(buffer, fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)'])
         writer.writeheader()
@@ -164,8 +215,8 @@ class Costs:
         return buffer.getvalue()
 
     @classmethod
-    def build_summary_csv_report(cls, costs, day):
-        logging.info("Building summary CSV cost report")
+    def build_breakdown_csv_report(cls, costs, day):
+        logging.info("Building summary CSV report")
         buffer = io.StringIO()
         writer = DictWriter(buffer, fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Amount (USD)'])
         writer.writeheader()
@@ -230,7 +281,7 @@ class Costs:
         return buffer.getvalue()
 
     @classmethod
-    def build_excel_report_for_cost_center(cls, cost_center, day, breakdown):
+    def build_breakdown_excel_report_for_cost_center(cls, cost_center, day, breakdown):
         logging.info(f"Building detailed Excel report for cost center '{cost_center}'")
         buffer = io.BytesIO()
         workbook = xlsxwriter.Workbook(buffer)
@@ -264,7 +315,7 @@ class Costs:
         return buffer.getvalue()
 
     @classmethod
-    def build_summary_excel_report(cls, costs, day):
+    def build_breakdown_excel_report(cls, costs, day):
         logging.info("Building summary Excel cost report")
         buffer = io.BytesIO()
         workbook = xlsxwriter.Workbook(buffer)
@@ -308,3 +359,116 @@ class Costs:
         worksheet.set_column(3, 3, widths[2], amount_format)
         workbook.close()
         return buffer.getvalue()
+
+    @classmethod
+    def build_summary_of_charges_csv_report(cls, charges, day):
+        logging.info("Building CSV report: summary of charges")
+        buffer = io.StringIO()
+        types = set()
+        for cost_center in charges.keys():
+            types = types.union(set(item['charge'] for item in charges[cost_center]))
+        labels = {k: f"{k} (USD)" for k in types}
+        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Charges (USD)']
+        headers.extend(sorted(list(labels.values())))
+        logging.debug(headers)
+        writer = DictWriter(buffer, fieldnames=headers)
+        writer.writeheader()
+        for cost_center in charges.keys():
+            units = {}
+            for item in charges[cost_center]:
+                amount = float(item['amount'])
+                unit = item['unit']
+                values = units.get(unit, {})
+                charge = item['charge']
+                values[charge] = values.get(charge, 0.0) + amount
+                values['total'] = values.get('total', 0.0) + amount
+                units[unit] = values
+            for name in units.keys():
+                values = units[name]
+                row = {'Cost Center': cost_center,
+                       'Month': day.isoformat()[:7],
+                       'Organizational Unit': name,
+                       'Charges (USD)': values['total']}
+                for key, header in labels.items():
+                    row[header] = values.get(key, 0.0)
+                logging.debug(row)
+                writer.writerow(row)
+        return buffer.getvalue()
+
+    @classmethod
+    def build_summary_of_charges_excel_report(cls, charges, day):
+        logging.info("Building Excel report: summary of charges")
+        buffer = io.BytesIO()
+        workbook = xlsxwriter.Workbook(buffer)
+        worksheet = workbook.add_worksheet()
+        types = set()
+        for cost_center in charges.keys():
+            types = types.union(set(item['charge'] for item in charges[cost_center]))
+        labels = sorted(types)
+        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Charges (USD)']
+        headers.extend([f"{label} (USD)" for label in labels])
+        logging.debug(headers)
+        worksheet.write_row(0, 0, headers)
+        widths = {index: len(headers[index]) for index in range(len(headers))}
+        subs = []
+        row = 1
+        month = day.isoformat()[:7]
+        for cost_center in charges.keys():
+            head = row
+            units = {}
+            for item in charges[cost_center]:
+                amount = float(item['amount'])
+                unit = item['unit']
+                values = units.get(unit, {})
+                charge = item['charge']
+                values[charge] = values.get(charge, 0.0) + amount
+                values['total'] = values.get('total', 0.0) + amount
+                units[unit] = values
+            for name, values in units.items():
+                data = [str(cost_center), month, name]
+                data.append(values['total'])
+                for key in labels:
+                    data.append(values.get(key, 0.0))
+                logging.debug(data)
+                worksheet.write_row(row, 0, data)
+                worksheet.set_row(row, None, None, {'level': 2, 'hidden': True})
+                row += 1
+            data = [str(cost_center), month, '']
+            for delta in range(1 + len(labels)):
+                data.append(f"=SUM({xl_rowcol_to_cell(head, 3 + delta)}:{xl_rowcol_to_cell(row - 1, 3 + delta)})")
+            logging.debug(data)
+            worksheet.write_row(row, 0, data)
+            worksheet.set_row(row, None, None, {'level': 1, 'collapsed': True})
+            subs.append([xl_rowcol_to_cell(row, 3 + delta) for delta in range(1 + len(labels))])
+            for index in range(len(data)):
+                widths[index] = max(widths[index], len(str(data[index])))
+            row += 1
+        cls.add_total_row(worksheet=worksheet, row=row, month=month, subs=subs)
+        cls.set_columns(workbook=workbook, worksheet=worksheet, widths=widths)
+        workbook.close()
+        return buffer.getvalue()
+
+    @classmethod
+    def add_total_row(cls, worksheet, row, month, subs):
+        data = ['TOTAL', month, '']
+        columns = len(subs[0])
+        verticals = []
+        for delta in range(columns):
+            verticals.append([])
+        for cumulated in subs:
+            for delta in range(columns):
+                verticals[delta].append(cumulated[delta])
+        for vertical in verticals:
+            data.append('=' + '+'.join(vertical))
+        logging.debug(data)
+        worksheet.write_row(row, 0, data)
+
+    @classmethod
+    def set_columns(cls, workbook, worksheet, widths):
+        amount_format = workbook.add_format({'num_format': '# ##0.00'})
+        amount_format.set_align('right')
+        for index in range(len(widths)):
+            if index > 2:
+                worksheet.set_column(index, index, widths[index], amount_format)
+            else:
+                worksheet.set_column(index, index, widths[index])
