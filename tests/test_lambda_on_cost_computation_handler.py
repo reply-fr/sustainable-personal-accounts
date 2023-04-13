@@ -22,14 +22,45 @@ logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 
 import boto3
 from datetime import date
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from moto import mock_s3, mock_ses
 import os
 import pytest
 
-from lambdas.on_cost_computation_handler import email_reports, get_report_path
+from lambdas.on_cost_computation_handler import build_charge_reports_per_cost_center, build_service_reports_per_cost_center, email_reports, get_report_path, store_report
+from tests.test_lambda_costs import sample_accounts, sample_chunk_monthly_charges_per_account, sample_chunk_monthly_services_per_account
 
 pytestmark = pytest.mark.wip
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
+                             REPORTS_BUCKET_NAME="my_bucket"))
+@mock_s3
+def test_build_charge_reports_per_cost_center():
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+
+    day = date(2023, 3, 31)
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_charges_per_account
+    build_charge_reports_per_cost_center(accounts=sample_accounts, day=day, session=mock)
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
+                             REPORTS_BUCKET_NAME="my_bucket"))
+@mock_s3
+def test_build_service_reports_per_cost_center():
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+
+    day = date(2023, 3, 31)
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_services_per_account
+    build_service_reports_per_cost_center(accounts=sample_accounts, day=day, session=mock)
 
 
 @pytest.mark.unit_tests
@@ -57,7 +88,34 @@ def test_email_reports():
 
 
 @pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ORIGIN_EMAIL_RECIPIENT=''))
+def test_email_reports_without_origin_email_recipient():
+    day = date(2023, 3, 31)
+    assert email_reports(day=day, objects=[]) is None
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(COST_EMAIL_RECIPIENTS='',
+                             ORIGIN_EMAIL_RECIPIENT='costs@example.com'))
+def test_email_reports_without_cost_email_recipients():
+    day = date(2023, 3, 31)
+    assert email_reports(day=day, objects=[]) is None
+
+
+@pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs"))
 def test_get_report_path():
     result = get_report_path(cost_center='product-a', label='charges', day=date(2023, 3, 25), suffix='xyz')
     assert result == 'costs/product-a/2023-03-product-a-charges.xyz'
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(COST_EMAIL_RECIPIENTS='alice@example.com, bob@example.com',
+                             ORIGIN_EMAIL_RECIPIENT='costs@example.com',
+                             REPORTS_BUCKET_NAME="my_bucket"))
+@mock_s3
+def test_store_report():
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+    store_report(path="path/hello.txt", report="hello world") == '[OK]'

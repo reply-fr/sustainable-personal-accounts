@@ -102,9 +102,9 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
 
     logging.info("Attaching cost and usage report to incident report")
     try:
-        breakdown = Costs.enumerate_monthly_breakdown_for_account(account=account, day=day, session=session)
+        breakdown = Costs.enumerate_monthly_costs_for_account(account=account, day=day, session=session)
         path = get_report_path(label=str(account), day=day)
-        store_report(path=path, report=Costs.build_excel_report_for_account(account=account, day=day, breakdown=breakdown))
+        store_report(path=path, report=Costs.build_breakdown_of_costs_excel_report_for_account(account=account, day=day, breakdown=breakdown))
         add_related_item(incident_arn=incident_arn,
                          title='Cost and Usage Report',
                          url=get_report_url(path=path),

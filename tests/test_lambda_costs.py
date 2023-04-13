@@ -29,7 +29,7 @@ from lambdas.costs import Costs
 pytestmark = pytest.mark.wip
 
 
-sample_daily_chunk = {
+sample_chunk_daily_costs_per_account = {
     'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'LINKED_ACCOUNT'}],
     'ResultsByTime': [{'TimePeriod': {'Start': '2023-04-07', 'End': '2023-04-08'},
                        'Total': {},
@@ -41,53 +41,7 @@ sample_daily_chunk = {
                          'HTTPHeaders': {'date': 'Sat, 08 Apr 2023 20:49:44 GMT', 'content-type': 'application/x-amz-json-1.1', 'content-length': '368', 'connection': 'keep-alive', 'x-amzn-requestid': '7e93bf36-a74e-4d67-9359-1756a4fcacd6', 'cache-control': 'no-cache'},
                          'RetryAttempts': 0}}
 
-
-@pytest.mark.unit_tests
-def test_enumerate_daily_cost_per_account():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_daily_chunk
-    results = {account for account, cost in Costs.enumerate_daily_cost_per_account(session=mock)}
-    assert results == {'123456789012'}
-
-
-sample_monthly_chunk_per_account = {
-    'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'LINKED_ACCOUNT'}, {'Type': 'DIMENSION', 'Key': 'SERVICE'}],
-    'ResultsByTime': [{'TimePeriod': {'Start': '2023-04-01', 'End': '2023-05-01'},
-                       'Total': {},
-                       'Groups': [{'Keys': ['123456789012', 'AWS CloudTrail'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AWS Config'], 'Metrics': {'UnblendedCost': {'Amount': '0.621', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AWS Key Management Service'], 'Metrics': {'UnblendedCost': {'Amount': '0.2375000019', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AWS Lambda'], 'Metrics': {'UnblendedCost': {'Amount': '0.0007388303', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AWS Secrets Manager'], 'Metrics': {'UnblendedCost': {'Amount': '0.1911111092', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AWS Systems Manager'], 'Metrics': {'UnblendedCost': {'Amount': '7.03337', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AWS X-Ray'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Amazon Connect Customer Profiles'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Amazon DynamoDB'], 'Metrics': {'UnblendedCost': {'Amount': '0.0012142925', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Amazon Kinesis Firehose'], 'Metrics': {'UnblendedCost': {'Amount': '0.00575622', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Amazon Simple Notification Service'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Amazon Simple Queue Service'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Amazon Simple Storage Service'], 'Metrics': {'UnblendedCost': {'Amount': '0.0181906402', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'AmazonCloudWatch'], 'Metrics': {'UnblendedCost': {'Amount': '2.2405013391', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'CloudWatch Events'], 'Metrics': {'UnblendedCost': {'Amount': '0.000353', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'CodeBuild'], 'Metrics': {'UnblendedCost': {'Amount': '0.005', 'Unit': 'USD'}}},
-                                  {'Keys': ['123456789012', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '2', 'Unit': 'USD'}}}],
-                       'Estimated': True}],
-    'DimensionValueAttributes': [{'Value': '123456789012', 'Attributes': {'description': 'Automation'}}],
-    'ResponseMetadata': {'RequestId': 'bb61aa02-dda7-40b4-a74c-b2edc61ee577',
-                         'HTTPStatusCode': 200,
-                         'HTTPHeaders': {'date': 'Sat, 08 Apr 2023 21:02:05 GMT', 'content-type': 'application/x-amz-json-1.1', 'content-length': '2166', 'connection': 'keep-alive', 'x-amzn-requestid': 'bb61aa02-dda7-40b4-a74c-b2edc61ee577', 'cache-control': 'no-cache'},
-                         'RetryAttempts': 0}}
-
-
-@pytest.mark.unit_tests
-def test_enumerate_monthly_breakdown_per_account():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_monthly_chunk_per_account
-    results = {account for account, cost in Costs.enumerate_monthly_breakdown_per_account(session=mock)}
-    assert results == {'123456789012'}
-
-
-sample_monthly_chunk_for_account = {
+sample_chunk_monthly_costs_for_account = {
     'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'SERVICE'}],
     'ResultsByTime': [{'TimePeriod': {'Start': '2023-04-01', 'End': '2023-04-08'},
                        'Total': {},
@@ -115,16 +69,15 @@ sample_monthly_chunk_for_account = {
                          'HTTPHeaders': {'date': 'Sat, 08 Apr 2023 21:10:05 GMT', 'content-type': 'application/x-amz-json-1.1', 'content-length': '1804', 'connection': 'keep-alive', 'x-amzn-requestid': '93e000ed-78a1-4a46-8eb6-2da749244e14', 'cache-control': 'no-cache'},
                          'RetryAttempts': 0}}
 
+sample_accounts = {
+    '123456789012': {'name': 'alice@example.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product A'}},
+    '456789012345': {'name': 'bob@example.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product B'}},
+    '789012345678': {'name': 'charles@reply.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product C'}},
+    '012345678901': {'name': 'david@example.com', 'unit_name': 'Non-Committed', 'tags': {'cost-center': 'Product A'}},
+    '345678901234': {'name': 'estelle@example.com', 'unit_name': 'Non-Committed', 'tags': {'cost-center': 'Product C'}}
+}
 
-@pytest.mark.unit_tests
-def test_enumerate_monthly_breakdown_for_account():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_monthly_chunk_for_account
-    results = [item for item in Costs.enumerate_monthly_breakdown_for_account(account='123456789012', session=mock)]
-    assert len(results) == 17
-
-
-sample_chunk_of_monthly_charges_per_account = {
+sample_chunk_monthly_charges_per_account = {
     'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'LINKED_ACCOUNT'},
                          {'Type': 'DIMENSION', 'Key': 'RECORD_TYPE'}],
     'ResultsByTime': [{'TimePeriod': {'Start': '2023-03-01', 'End': '2023-04-01'},
@@ -155,67 +108,35 @@ sample_chunk_of_monthly_charges_per_account = {
                          'HTTPHeaders': {'date': 'Wed, 12 Apr 2023 20:10:21 GMT', 'content-type': 'application/x-amz-json-1.1', 'content-length': '23622', 'connection': 'keep-alive', 'cache-control': 'no-cache'},
                          'RetryAttempts': 0}}
 
-sample_accounts = {
-    '123456789012': {'name': 'alice@example.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product A'}},
-    '456789012345': {'name': 'bob@example.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product B'}},
-    '789012345678': {'name': 'charles@reply.com', 'unit_name': 'Committed', 'tags': {'cost-center': 'Product C'}},
-    '012345678901': {'name': 'david@example.com', 'unit_name': 'Non-Committed', 'tags': {'cost-center': 'Product A'}},
-    '345678901234': {'name': 'estelle@example.com', 'unit_name': 'Non-Committed', 'tags': {'cost-center': 'Product C'}}
-}
+sample_chunk_monthly_services_per_account = {
+    'GroupDefinitions': [{'Type': 'DIMENSION', 'Key': 'LINKED_ACCOUNT'}, {'Type': 'DIMENSION', 'Key': 'SERVICE'}],
+    'ResultsByTime': [{'TimePeriod': {'Start': '2023-04-01', 'End': '2023-05-01'},
+                       'Total': {},
+                       'Groups': [{'Keys': ['123456789012', 'AWS CloudTrail'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AWS Config'], 'Metrics': {'UnblendedCost': {'Amount': '0.621', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AWS Key Management Service'], 'Metrics': {'UnblendedCost': {'Amount': '0.2375000019', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AWS Lambda'], 'Metrics': {'UnblendedCost': {'Amount': '0.0007388303', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AWS Secrets Manager'], 'Metrics': {'UnblendedCost': {'Amount': '0.1911111092', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AWS Systems Manager'], 'Metrics': {'UnblendedCost': {'Amount': '7.03337', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AWS X-Ray'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Amazon Connect Customer Profiles'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Amazon DynamoDB'], 'Metrics': {'UnblendedCost': {'Amount': '0.0012142925', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Amazon Kinesis Firehose'], 'Metrics': {'UnblendedCost': {'Amount': '0.00575622', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Amazon Simple Notification Service'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Amazon Simple Queue Service'], 'Metrics': {'UnblendedCost': {'Amount': '0', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Amazon Simple Storage Service'], 'Metrics': {'UnblendedCost': {'Amount': '0.0181906402', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'AmazonCloudWatch'], 'Metrics': {'UnblendedCost': {'Amount': '2.2405013391', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'CloudWatch Events'], 'Metrics': {'UnblendedCost': {'Amount': '0.000353', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'CodeBuild'], 'Metrics': {'UnblendedCost': {'Amount': '0.005', 'Unit': 'USD'}}},
+                                  {'Keys': ['123456789012', 'Tax'], 'Metrics': {'UnblendedCost': {'Amount': '2', 'Unit': 'USD'}}}],
+                       'Estimated': True}],
+    'DimensionValueAttributes': [{'Value': '123456789012', 'Attributes': {'description': 'Automation'}}],
+    'ResponseMetadata': {'RequestId': 'bb61aa02-dda7-40b4-a74c-b2edc61ee577',
+                         'HTTPStatusCode': 200,
+                         'HTTPHeaders': {'date': 'Sat, 08 Apr 2023 21:02:05 GMT', 'content-type': 'application/x-amz-json-1.1', 'content-length': '2166', 'connection': 'keep-alive', 'x-amzn-requestid': 'bb61aa02-dda7-40b4-a74c-b2edc61ee577', 'cache-control': 'no-cache'},
+                         'RetryAttempts': 0}}
 
-
-@pytest.mark.unit_tests
-def test_enumerate_monthly_charges_per_account():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
-    results = {account for account, _ in Costs.enumerate_monthly_charges_per_account(session=mock)}
-    assert results == {'123456789012', '456789012345', '789012345678', '012345678901', '345678901234'}
-
-
-@pytest.mark.unit_tests
-def test_get_charges_per_cost_center():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
-    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
-    assert charges == {'Product A': [{'account': '123456789012', 'charge': 'Solution Provider Program Discount', 'amount': '-0.8038363727', 'name': 'alice@example.com', 'unit': 'Committed'},
-                                     {'account': '123456789012', 'charge': 'Tax', 'amount': '5.19', 'name': 'alice@example.com', 'unit': 'Committed'},
-                                     {'account': '123456789012', 'charge': 'Usage', 'amount': '26.7945452638', 'name': 'alice@example.com', 'unit': 'Committed'},
-                                     {'account': '012345678901', 'charge': 'Support', 'amount': '1.0368862512', 'name': 'david@example.com', 'unit': 'Non-Committed'},
-                                     {'account': '012345678901', 'charge': 'Tax', 'amount': '0.24', 'name': 'david@example.com', 'unit': 'Non-Committed'},
-                                     {'account': '012345678901', 'charge': 'Usage', 'amount': '1.2295395649', 'name': 'david@example.com', 'unit': 'Non-Committed'}],
-                       'Product B': [{'account': '456789012345', 'charge': 'Solution Provider Program Discount', 'amount': '-0.0167705004', 'name': 'bob@example.com', 'unit': 'Committed'},
-                                     {'account': '456789012345', 'charge': 'Tax', 'amount': '0.11', 'name': 'bob@example.com', 'unit': 'Committed'},
-                                     {'account': '456789012345', 'charge': 'Usage', 'amount': '0.5590172084', 'name': 'bob@example.com', 'unit': 'Committed'}],
-                       'Product C': [{'account': '789012345678', 'charge': 'Solution Provider Program Discount', 'amount': '-0.6905270498', 'name': 'charles@reply.com', 'unit': 'Committed'},
-                                     {'account': '789012345678', 'charge': 'Tax', 'amount': '4.46', 'name': 'charles@reply.com', 'unit': 'Committed'},
-                                     {'account': '789012345678', 'charge': 'Usage', 'amount': '23.0175687783', 'name': 'charles@reply.com', 'unit': 'Committed'},
-                                     {'account': '345678901234', 'charge': 'Solution Provider Program Discount', 'amount': '-0.0356584397', 'name': 'estelle@example.com', 'unit': 'Non-Committed'},
-                                     {'account': '345678901234', 'charge': 'Tax', 'amount': '0.23', 'name': 'estelle@example.com', 'unit': 'Non-Committed'},
-                                     {'account': '345678901234', 'charge': 'Usage', 'amount': '1.1886139495', 'name': 'estelle@example.com', 'unit': 'Non-Committed'}]}
-
-
-@pytest.mark.unit_tests
-def test_build_summary_of_charges_csv_report():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
-    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
-    report = Costs.build_summary_of_charges_csv_report(charges=charges, day=date(2023, 3, 31))
-    assert len(report) > 200
-    lines = report.split('\n', 2)
-    assert lines[0].strip() == 'Cost Center,Month,Organizational Unit,Charges (USD),Solution Provider Program Discount (USD),Support (USD),Tax (USD),Usage (USD)'
-    assert lines[1].strip() == 'Product A,2023-03,Committed,31.1807088911,-0.8038363727,0.0,5.19,26.7945452638'
-
-
-@pytest.mark.unit_tests
-def test_build_summary_of_charges_excel_report():
-    mock = Mock()
-    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_of_monthly_charges_per_account
-    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
-    report = Costs.build_summary_of_charges_excel_report(charges=charges, day=date(2023, 3, 31))
-    assert len(report) > 200
-
-
-sample_breakdown = [
+sample_breakdown_of_services = [
     {
         "account": "123456789012",
         "service": "AWS CloudTrail",
@@ -526,26 +447,7 @@ sample_breakdown = [
     },
 ]
 
-
-@pytest.mark.unit_tests
-def test_build_breakdown_csv_report_for_cost_center():
-    report = Costs.build_breakdown_csv_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
-    assert len(report.strip().split('\n')) == 46
-
-
-@pytest.mark.unit_tests
-def test_build_breakdown_excel_report_for_cost_center():
-    report = Costs.build_breakdown_excel_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown, day=date(2023, 3, 23))
-    assert len(report) > 200
-
-
-@pytest.mark.unit_tests
-def test_build_excel_report_for_account():
-    report = Costs.build_excel_report_for_account(account='123456789012', breakdown=sample_breakdown, day=date(2023, 3, 23))
-    assert len(report) > 200
-
-
-sample_costs = {
+sample_summary_of_services = {
     "Data": [
         {
             "account": "123456789012",
@@ -633,12 +535,130 @@ sample_costs = {
 
 
 @pytest.mark.unit_tests
-def test_build_breakdown_csv_report():
-    report = Costs.build_breakdown_csv_report(costs=sample_costs, day=date(2023, 3, 23))
+def test_enumerate_daily_costs_per_account():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_daily_costs_per_account
+    results = {account for account, cost in Costs.enumerate_daily_costs_per_account(session=mock)}
+    assert results == {'123456789012'}
+
+
+@pytest.mark.unit_tests
+def test_enumerate_monthly_costs_for_account():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_costs_for_account
+    results = [item for item in Costs.enumerate_monthly_costs_for_account(account='123456789012', session=mock)]
+    assert len(results) == 17
+
+
+@pytest.mark.unit_tests
+def test_enumerate_monthly_charges_per_account():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_charges_per_account
+    results = {account for account, _ in Costs.enumerate_monthly_charges_per_account(session=mock)}
+    assert results == {'123456789012', '456789012345', '789012345678', '012345678901', '345678901234'}
+
+
+@pytest.mark.unit_tests
+def test_enumerate_monthly_services_per_account():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_services_per_account
+    results = {account for account, cost in Costs.enumerate_monthly_services_per_account(session=mock)}
+    assert results == {'123456789012'}
+
+
+@pytest.mark.unit_tests
+def test_get_charges_per_cost_center():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_charges_per_account
+    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
+    assert charges == {'Product A': [{'account': '123456789012', 'charge': 'Solution Provider Program Discount', 'amount': '-0.8038363727', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                     {'account': '123456789012', 'charge': 'Tax', 'amount': '5.19', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                     {'account': '123456789012', 'charge': 'Usage', 'amount': '26.7945452638', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                     {'account': '012345678901', 'charge': 'Support', 'amount': '1.0368862512', 'name': 'david@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '012345678901', 'charge': 'Tax', 'amount': '0.24', 'name': 'david@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '012345678901', 'charge': 'Usage', 'amount': '1.2295395649', 'name': 'david@example.com', 'unit': 'Non-Committed'}],
+                       'Product B': [{'account': '456789012345', 'charge': 'Solution Provider Program Discount', 'amount': '-0.0167705004', 'name': 'bob@example.com', 'unit': 'Committed'},
+                                     {'account': '456789012345', 'charge': 'Tax', 'amount': '0.11', 'name': 'bob@example.com', 'unit': 'Committed'},
+                                     {'account': '456789012345', 'charge': 'Usage', 'amount': '0.5590172084', 'name': 'bob@example.com', 'unit': 'Committed'}],
+                       'Product C': [{'account': '789012345678', 'charge': 'Solution Provider Program Discount', 'amount': '-0.6905270498', 'name': 'charles@reply.com', 'unit': 'Committed'},
+                                     {'account': '789012345678', 'charge': 'Tax', 'amount': '4.46', 'name': 'charles@reply.com', 'unit': 'Committed'},
+                                     {'account': '789012345678', 'charge': 'Usage', 'amount': '23.0175687783', 'name': 'charles@reply.com', 'unit': 'Committed'},
+                                     {'account': '345678901234', 'charge': 'Solution Provider Program Discount', 'amount': '-0.0356584397', 'name': 'estelle@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '345678901234', 'charge': 'Tax', 'amount': '0.23', 'name': 'estelle@example.com', 'unit': 'Non-Committed'},
+                                     {'account': '345678901234', 'charge': 'Usage', 'amount': '1.1886139495', 'name': 'estelle@example.com', 'unit': 'Non-Committed'}]}
+
+
+@pytest.mark.unit_tests
+def test_get_services_per_cost_center():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_services_per_account
+    services = Costs.get_services_per_cost_center(accounts=sample_accounts, session=mock)
+    print(services)
+    assert services == {'Product A': [{'account': '123456789012', 'service': 'AWS CloudTrail', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AWS Config', 'amount': '0.621', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AWS Key Management Service', 'amount': '0.2375000019', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AWS Lambda', 'amount': '0.0007388303', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AWS Secrets Manager', 'amount': '0.1911111092', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AWS Systems Manager', 'amount': '7.03337', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AWS X-Ray', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Amazon Connect Customer Profiles', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Amazon DynamoDB', 'amount': '0.0012142925', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Amazon Kinesis Firehose', 'amount': '0.00575622', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Amazon Simple Notification Service', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Amazon Simple Queue Service', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Amazon Simple Storage Service', 'amount': '0.0181906402', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'AmazonCloudWatch', 'amount': '2.2405013391', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'CloudWatch Events', 'amount': '0.000353', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'CodeBuild', 'amount': '0.005', 'name': 'alice@example.com', 'unit': 'Committed'},
+                                      {'account': '123456789012', 'service': 'Tax', 'amount': '2', 'name': 'alice@example.com', 'unit': 'Committed'}]}
+
+
+@pytest.mark.unit_tests
+def test_build_breakdown_of_costs_excel_report_for_account():
+    report = Costs.build_breakdown_of_costs_excel_report_for_account(account='123456789012', breakdown=sample_breakdown_of_services, day=date(2023, 3, 23))
+    assert len(report) > 200
+
+
+@pytest.mark.unit_tests
+def test_build_breakdown_of_services_csv_report_for_cost_center():
+    report = Costs.build_breakdown_of_services_csv_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown_of_services, day=date(2023, 3, 23))
+    assert len(report.strip().split('\n')) == 46
+
+
+@pytest.mark.unit_tests
+def test_build_breakdown_of_services_excel_report_for_cost_center():
+    report = Costs.build_breakdown_of_services_excel_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown_of_services, day=date(2023, 3, 23))
+    assert len(report) > 200
+
+
+@pytest.mark.unit_tests
+def test_build_summary_of_charges_csv_report():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_charges_per_account
+    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
+    report = Costs.build_summary_of_charges_csv_report(charges=charges, day=date(2023, 3, 31))
+    assert len(report) > 200
+    lines = report.split('\n', 2)
+    assert lines[0].strip() == 'Cost Center,Month,Organizational Unit,Charges (USD),Solution Provider Program Discount (USD),Support (USD),Tax (USD),Usage (USD)'
+    assert lines[1].strip() == 'Product A,2023-03,Committed,31.1807088911,-0.8038363727,0.0,5.19,26.7945452638'
+
+
+@pytest.mark.unit_tests
+def test_build_summary_of_charges_excel_report():
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_charges_per_account
+    charges = Costs.get_charges_per_cost_center(accounts=sample_accounts, session=mock)
+    report = Costs.build_summary_of_charges_excel_report(charges=charges, day=date(2023, 3, 31))
+    assert len(report) > 200
+
+
+@pytest.mark.unit_tests
+def test_build_summary_of_services_csv_report():
+    report = Costs.build_summary_of_services_csv_report(costs=sample_summary_of_services, day=date(2023, 3, 23))
     assert len(report.strip().split('\n')) == 9
 
 
 @pytest.mark.unit_tests
-def test_build_breakdown_excel_report():
-    report = Costs.build_breakdown_excel_report(costs=sample_costs, day=date(2023, 3, 23))
+def test_build_summary_of_services_excel_report():
+    report = Costs.build_summary_of_services_excel_report(costs=sample_summary_of_services, day=date(2023, 3, 23))
     assert len(report) > 200

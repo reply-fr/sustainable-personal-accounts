@@ -41,7 +41,7 @@ def handle_daily_metrics(event=None, context=None, session=None):
     logging.info(f"Computing daily cost metrics per cost center for '{yesterday}'")
     accounts = Settings.scan_settings_for_all_managed_accounts()
     costs = {}
-    for account, amount in Costs.enumerate_daily_cost_per_account(day=yesterday, session=session):
+    for account, amount in Costs.enumerate_daily_costs_per_account(day=yesterday, session=session):
         logging.info(f"Computing daily costs for account '{account}'")
         cost_center = Account.get_cost_center(tags=accounts.get(str(account), {}).get('tags', {}))
         costs[cost_center] = costs.get(cost_center, 0.0) + float(amount)
@@ -70,49 +70,38 @@ def handle_monthly_reports(event=None, context=None, session=None):
         last_day_of_previous_month = date.today().replace(day=1) - timedelta(days=1)
     accounts = Settings.scan_settings_for_all_managed_accounts()
 
-    build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
-
-
-def build_service_reports_per_cost_center(accounts, day, session):
-    logging.info(f"Computing service reports per cost center for month {day.isoformat()[:7]}")
-    services = Costs.get_breakdowns_per_cost_center(accounts=accounts, day=day, session=session)
-    for cost_center in services.keys():
-        store_report(report=Costs.build_breakdown_csv_report_for_cost_center(cost_center=cost_center, day=day, breakdown=services[cost_center]),
-                     path=get_report_path(cost_center=cost_center, label='services', day=day))
-        store_report(report=Costs.build_breakdown_excel_report_for_cost_center(cost_center=cost_center, day=day, breakdown=services[cost_center]),
-                     path=get_report_path(cost_center=cost_center, label='services', day=day, suffix='xlsx'))
-
-    store_report(report=Costs.build_breakdown_csv_report(costs=services, day=day),
-                 path=get_report_path(cost_center='Summary', label='services', day=day))
-    path = get_report_path(cost_center='Summary', label='services', day=day, suffix='xlsx')
-    store_report(report=Costs.build_breakdown_excel_report(costs=services, day=day), path=path)
+    build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
 
 
 def build_charge_reports_per_cost_center(accounts, day, session):
     logging.info(f"Computing charge reports per cost center for month {day.isoformat()[:7]}")
     charges = Costs.get_charges_per_cost_center(accounts=accounts, day=day, session=session)
-    path_xlsx = get_report_path(cost_center='Summary', label='charges', day=day, suffix='xlsx')
-    store_report(report=Costs.build_summary_of_charges_excel_report(charges=charges, day=day), path=path_xlsx)
-    path_csv = get_report_path(cost_center='Summary', label='charges', day=day, suffix='csv')
-    store_report(report=Costs.build_summary_of_charges_csv_report(charges=charges, day=day), path=path_csv)
-    email_reports(day=day, objects=[f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path_xlsx}",
-                                    f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path_csv}"])
+
+    path_of_xlsx = get_report_path(cost_center='Summary', label='charges', day=day, suffix='xlsx')
+    store_report(report=Costs.build_summary_of_charges_excel_report(charges=charges, day=day), path=path_of_xlsx)
+
+    path_of_csv = get_report_path(cost_center='Summary', label='charges', day=day, suffix='csv')
+    store_report(report=Costs.build_summary_of_charges_csv_report(charges=charges, day=day), path=path_of_csv)
+
+    email_reports(day=day, objects=[f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path_of_xlsx}",
+                                    f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path_of_csv}"])
     return '[OK]'
 
 
-def get_report_path(cost_center, label, day=None, suffix='csv'):
-    day = day or date.today()
-    return '/'.join([os.environ["REPORTING_COSTS_PREFIX"],
-                     cost_center,
-                     f"{day.year:04d}-{day.month:02d}-{cost_center}-{label}.{suffix}"])
+def build_service_reports_per_cost_center(accounts, day, session):
+    logging.info(f"Computing service reports per cost center for month {day.isoformat()[:7]}")
+    services = Costs.get_services_per_cost_center(accounts=accounts, day=day, session=session)
+    for cost_center in services.keys():
+        store_report(report=Costs.build_breakdown_of_services_csv_report_for_cost_center(cost_center=cost_center, day=day, breakdown=services[cost_center]),
+                     path=get_report_path(cost_center=cost_center, label='services', day=day))
+        store_report(report=Costs.build_breakdown_of_services_excel_report_for_cost_center(cost_center=cost_center, day=day, breakdown=services[cost_center]),
+                     path=get_report_path(cost_center=cost_center, label='services', day=day, suffix='xlsx'))
 
-
-def store_report(path, report):
-    logging.info(f"Storing report on S3 bucket on '{path}'")
-    boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
-                                  Key=path,
-                                  Body=report)
+    store_report(report=Costs.build_summary_of_services_csv_report(costs=services, day=day),
+                 path=get_report_path(cost_center='Summary', label='services', day=day))
+    path = get_report_path(cost_center='Summary', label='services', day=day, suffix='xlsx')
+    store_report(report=Costs.build_summary_of_services_excel_report(costs=services, day=day), path=path)
 
 
 def email_reports(day, objects):
@@ -128,3 +117,17 @@ def email_reports(day, objects):
     subject = f"Summary cost report for {day.year:04d}-{day.month:02d}"
     text = f"You will find attached the summary cost report for {day.year:04d}-{day.month:02d}"
     return Email.send_objects(sender=sender, recipients=recipients, subject=subject, text=text, objects=objects)
+
+
+def get_report_path(cost_center, label, day=None, suffix='csv'):
+    day = day or date.today()
+    return '/'.join([os.environ["REPORTING_COSTS_PREFIX"],
+                     cost_center,
+                     f"{day.year:04d}-{day.month:02d}-{cost_center}-{label}.{suffix}"])
+
+
+def store_report(path, report):
+    logging.info(f"Storing report on S3 bucket on '{path}'")
+    boto3.client("s3").put_object(Bucket=os.environ['REPORTS_BUCKET_NAME'],
+                                  Key=path,
+                                  Body=report)
