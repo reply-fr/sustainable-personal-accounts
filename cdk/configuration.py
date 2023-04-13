@@ -221,7 +221,7 @@ class Configuration:
             raise ValueError("Missing value in column 'Account'")
         account = other['account']
 
-        configuration = toggles.accounts.get(account, json.loads(json.dumps(toggles.defaults)))  # complete copy of default dict
+        configuration = toggles.accounts.get(account) or json.loads(json.dumps(toggles.defaults))  # complete copy of default dict
         configuration['identifier'] = account
         if other.get('note'):
             configuration['note'] = other['note']
