@@ -59,6 +59,7 @@ class Configuration:
         organizational_units='list',
         reporting_activities_prefix='str',
         reporting_costs_prefix='str',
+        reporting_costs_markdown_template='str',
         reporting_exceptions_prefix='str',
         reporting_inventories_prefix='str',
         worker_preparation_buildspec_template_file='str',
@@ -127,7 +128,7 @@ class Configuration:
         toggles.defaults = {}
 
         # other default values
-        toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (alpha)"
+        toggles.automation_cockpit_markdown_text = "# Sustainable Personal Accounts Dashboard\nCurrently under active development (beta)"
         toggles.automation_role_name_to_manage_codebuild = 'AWSControlTowerExecution'
         toggles.automation_subscribed_email_addresses = []
         toggles.automation_tags = {}
@@ -149,6 +150,7 @@ class Configuration:
         toggles.metering_transactions_ttl_in_seconds = 60 * 60
         toggles.reporting_activities_prefix = 'SpaReports/Activities'
         toggles.reporting_costs_prefix = 'SpaReports/Costs'
+        toggles.reporting_costs_markdown_template = "You will find attached cloud cost reports for {month}"
         toggles.reporting_exceptions_prefix = 'SpaReports/Exceptions'
         toggles.reporting_inventories_prefix = 'SpaReports/Inventories'
 

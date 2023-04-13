@@ -283,3 +283,13 @@ features:
   #
   with_tag_prefix: "account-"
 
+
+reporting:
+
+  # this is the markdown template used to send email messages along cost reports
+  # - {month} of the reports
+  costs_markdown_template: |
+    # Cost reports for {month}
+
+    Hello, please find attached the cost reports for {month}. The Excel file has been designed for easy
+    interaction with data. The CSV file is for automated processing by software.

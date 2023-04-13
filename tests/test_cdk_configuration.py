@@ -116,6 +116,7 @@ def test_set_default_values(toggles):
     assert toggles.metering_shadows_ttl_in_seconds == 15811200
     assert toggles.metering_transactions_datastore == 'SpaTransactionsTable'
     assert toggles.metering_transactions_ttl_in_seconds == 3600
+    assert toggles.reporting_costs_markdown_template == "You will find attached cloud cost reports for {month}"
 
 
 @pytest.mark.unit_tests
@@ -193,6 +194,10 @@ def test_set_from_yaml(toggles):
     assert toggles.metering_shadows_ttl_in_seconds == 15811200
     assert toggles.metering_transactions_datastore == 'SpaTransactionsTable'
     assert toggles.metering_transactions_ttl_in_seconds == 900
+    assert toggles.reporting_costs_markdown_template == ("# Cost reports for {month}\n"
+                                                         "\n"
+                                                         "Hello, please find attached the cost reports for {month}. The Excel file has been designed for easy\n"
+                                                         "interaction with data. The CSV file is for automated processing by software.\n")
 
 
 @pytest.mark.unit_tests

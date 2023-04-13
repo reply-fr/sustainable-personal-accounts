@@ -32,6 +32,7 @@ class OnCostComputation(Construct):
 
         parameters['environment']['COST_MANAGEMENT_TAG'] = toggles.features_with_cost_management_tag
         parameters['environment']['REPORTING_COSTS_PREFIX'] = toggles.reporting_costs_prefix
+        parameters['environment']['REPORTING_COSTS_MARKDOWN'] = toggles.reporting_costs_markdown_template
         if toggles.features_with_origin_email_recipient:
             parameters['environment']['ORIGIN_EMAIL_RECIPIENT'] = toggles.features_with_origin_email_recipient
         if toggles.features_with_cost_email_recipients:

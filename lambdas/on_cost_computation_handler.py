@@ -18,6 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import boto3
 from datetime import date, timedelta
 import logging
+from markdown import markdown
 import os
 
 from logger import setup_logging, trap_exception
@@ -115,8 +116,10 @@ def email_reports(day, objects):
         return
 
     subject = f"Summary cost report for {day.year:04d}-{day.month:02d}"
-    text = f"You will find attached the summary cost report for {day.year:04d}-{day.month:02d}"
-    return Email.send_objects(sender=sender, recipients=recipients, subject=subject, text=text, objects=objects)
+    simple = f"You will find attached cloud cost reports for {day.year:04d}-{day.month:02d}"
+    template = os.environ.get('REPORTING_COSTS_MARKDOWN') or "You will find attached cloud cost reports for {month}"
+    complex = template.format(month=f"{day.year:04d}-{day.month:02d}")
+    return Email.send_objects(sender=sender, recipients=recipients, subject=subject, text=simple, html=markdown(complex), objects=objects)
 
 
 def get_report_path(cost_center, label, day=None, suffix='csv'):

@@ -37,6 +37,7 @@ setuptools.setup(
 
     install_requires=[  # list here only dependencies for lambda functions; other go to requirements.txt
         "boto3",
+        "markdown",
         "pymsteams",
         "xlsxwriter"
     ],
