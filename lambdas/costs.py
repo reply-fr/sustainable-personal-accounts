@@ -291,7 +291,7 @@ class Costs:
         logging.debug(headers)
         writer = DictWriter(buffer, fieldnames=headers)
         writer.writeheader()
-        for cost_center in charges.keys():
+        for cost_center in sorted(charges.keys()):
             units = {}
             for item in charges[cost_center]:
                 amount = float(item['amount'])
@@ -331,7 +331,7 @@ class Costs:
         subs = []
         row = 1
         month = day.isoformat()[:7]
-        for cost_center in charges.keys():
+        for cost_center in sorted(charges.keys()):
             head = row
             units = {}
             for item in charges[cost_center]:
@@ -373,7 +373,7 @@ class Costs:
         writer = DictWriter(buffer, fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Amount (USD)'])
         writer.writeheader()
         summary = 0.0
-        for cost_center in costs.keys():
+        for cost_center in sorted(costs.keys()):
             units = {}
             total = 0.0
             for item in costs[cost_center]:
@@ -415,7 +415,7 @@ class Costs:
         subs = []
         row = 1
         month = day.isoformat()[:7]
-        for cost_center in costs.keys():
+        for cost_center in sorted(costs.keys()):
             head = row
             units = {}
             for item in costs[cost_center]:
