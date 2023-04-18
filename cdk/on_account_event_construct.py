@@ -16,9 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
+from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 from lambdas import Events
 
@@ -30,8 +32,16 @@ class OnAccountEvent(Construct):
         self.functions = [self.on_event(parameters=parameters)]
 
     def on_event(self, parameters) -> Function:
+
+        function_name = toggles.environment_identifier + "OnAccountEvent"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "FromEvent",
-                            function_name="{}OnAccountEvents".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Listen events from the bus",
                             handler="on_account_event_handler.handle_account_event",
                             **parameters)

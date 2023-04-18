@@ -21,6 +21,7 @@ from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table, TableEncrypt
 from aws_cdk.aws_events import EventPattern, Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 from lambdas import Events
 
@@ -30,15 +31,10 @@ class OnAccountEventThenShadow(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
-        parameters['environment']['METERING_SHADOWS_DATASTORE'] = toggles.metering_shadows_datastore
-        parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
-        parameters['environment']['REPORTING_INVENTORIES_PREFIX'] = toggles.reporting_inventories_prefix
-        self.functions = [self.on_event(parameters=parameters),
-                          self.on_schedule(parameters=parameters)]
-
+        self.table_name = toggles.environment_identifier + toggles.metering_shadows_datastore
         self.table = Table(
             self, "ShadowsTable",
-            table_name=toggles.metering_shadows_datastore,
+            table_name=self.table_name,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             sort_key={'name': 'Order', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
@@ -46,13 +42,26 @@ class OnAccountEventThenShadow(Construct):
             removal_policy=RemovalPolicy.DESTROY,
             time_to_live_attribute="Expiration")
 
+        parameters['environment']['METERING_SHADOWS_DATASTORE'] = self.table_name
+        parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
+        parameters['environment']['REPORTING_INVENTORIES_PREFIX'] = toggles.reporting_inventories_prefix
+        self.functions = [self.on_event(parameters=parameters),
+                          self.on_schedule(parameters=parameters)]
+
         for function in self.functions:
             self.table.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnAccountEventsThenShadow"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "FromEvent",
-                            function_name="{}OnAccountEventsThenShadow".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Persist last event for each account",
                             handler="on_account_event_then_shadow_handler.handle_account_event",
                             **parameters)
@@ -69,8 +78,15 @@ class OnAccountEventThenShadow(Construct):
 
     def on_schedule(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnInventoryReport"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "FromSchedule",
-                            function_name="{}OnInventoryReport".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Report inventories, from shadows",
                             handler="on_account_event_then_shadow_handler.handle_report",
                             **parameters)

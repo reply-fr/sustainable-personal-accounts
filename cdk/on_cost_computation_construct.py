@@ -16,9 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
+from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 
 class OnCostComputation(Construct):
@@ -43,8 +45,15 @@ class OnCostComputation(Construct):
 
     def monthly(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnMonthlyCostsReport"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "Monthly",
-                            function_name="{}OnMonthlyCostsReport".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Report costs from previous month",
                             handler="on_cost_computation_handler.handle_monthly_reports",
                             memory_size=1024,  # accomodate for hundreds of accounts and related data
@@ -60,8 +69,15 @@ class OnCostComputation(Construct):
 
     def daily(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnDailyCostsMetric"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "Daily",
-                            function_name="{}OnDailyCostsMetric".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Measure daily costs",
                             handler="on_cost_computation_handler.handle_daily_metrics",
                             **parameters)

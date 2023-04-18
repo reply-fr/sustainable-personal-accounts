@@ -16,10 +16,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
+from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import Effect, ManagedPolicy, PolicyStatement
 from aws_cdk.aws_lambda import Function, FunctionUrlAuthType
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
 from lambdas import Events
@@ -45,8 +47,15 @@ class OnException(Construct):
 
     def on_exception(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnException"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "FromEvent",
-                            function_name="{}OnException".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Handle exceptions",
                             handler="on_exception_handler.handle_exception",
                             **parameters)
@@ -67,8 +76,16 @@ class OnException(Construct):
         return function
 
     def on_download(self, parameters) -> Function:
+
+        function_name = toggles.environment_identifier + "OnExceptionAttachmentDownload"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "FromUrl",
-                            function_name="{}OnExceptionAttachmentDownload".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Serve requests for attachment download",
                             handler="on_exception_handler.handle_attachment_request",
                             reserved_concurrent_executions=1,  # throttling above 10 RPS

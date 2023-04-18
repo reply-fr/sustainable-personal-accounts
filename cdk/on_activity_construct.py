@@ -21,6 +21,7 @@ from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table, TableEncrypt
 from aws_cdk.aws_events import EventPattern, Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 from lambdas import Events
 
@@ -30,16 +31,10 @@ class OnActivity(Construct):
     def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
 
-        parameters['environment']['METERING_ACTIVITIES_DATASTORE'] = toggles.metering_activities_datastore
-        parameters['environment']['METERING_ACTIVITIES_TTL'] = str(toggles.metering_activities_ttl_in_seconds)
-        parameters['environment']['REPORTING_ACTIVITIES_PREFIX'] = toggles.reporting_activities_prefix
-        self.functions = [self.on_event(parameters=parameters),
-                          self.monthly(parameters=parameters),
-                          self.daily(parameters=parameters)]
-
+        self.table_name = toggles.environment_identifier + toggles.metering_activities_datastore
         self.table = Table(
             self, "ActivitiesTable",
-            table_name=toggles.metering_activities_datastore,
+            table_name=self.table_name,
             partition_key={'name': 'Identifier', 'type': AttributeType.STRING},
             sort_key={'name': 'Order', 'type': AttributeType.STRING},
             billing_mode=BillingMode.PAY_PER_REQUEST,
@@ -47,13 +42,27 @@ class OnActivity(Construct):
             removal_policy=RemovalPolicy.DESTROY,
             time_to_live_attribute="Expiration")
 
+        parameters['environment']['METERING_ACTIVITIES_DATASTORE'] = self.table_name
+        parameters['environment']['METERING_ACTIVITIES_TTL'] = str(toggles.metering_activities_ttl_in_seconds)
+        parameters['environment']['REPORTING_ACTIVITIES_PREFIX'] = toggles.reporting_activities_prefix
+        self.functions = [self.on_event(parameters=parameters),
+                          self.monthly(parameters=parameters),
+                          self.daily(parameters=parameters)]
+
         for function in self.functions:
             self.table.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnActivityEvent"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "FromEvent",
-                            function_name="{}OnActivityEvent".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Persist activity records",
                             handler="on_activity_handler.handle_record",
                             **parameters)
@@ -70,8 +79,15 @@ class OnActivity(Construct):
 
     def monthly(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnMonthlyActivitiesReport"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "Monthly",
-                            function_name="{}OnMonthlyActivitiesReport".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Report activities from previous month",
                             handler="on_activity_handler.handle_monthly_report",
                             **parameters)
@@ -86,8 +102,15 @@ class OnActivity(Construct):
 
     def daily(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "OnDailyActivitiesReport"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         function = Function(self, "Daily",
-                            function_name="{}OnDailyActivitiesReport".format(toggles.environment_identifier),
+                            function_name=function_name,
                             description="Report ongoing activities",
                             handler="on_activity_handler.handle_daily_report",
                             **parameters)

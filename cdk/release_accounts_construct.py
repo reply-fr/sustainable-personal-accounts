@@ -16,7 +16,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
+from aws_cdk import RemovalPolicy
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 
 class ReleaseAccounts(Construct):
@@ -26,9 +28,17 @@ class ReleaseAccounts(Construct):
         self.functions = [self.on_run(parameters=parameters)]
 
     def on_run(self, parameters) -> Function:
+
+        function_name = toggles.environment_identifier + "ReleaseAccounts"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         return Function(
             self, "FromInvoke",
-            function_name="{}ReleaseAccounts".format(toggles.environment_identifier),
+            function_name=function_name,
             description="Release all managed accounts",
             handler="release_accounts_handler.handle_event",
             **parameters)

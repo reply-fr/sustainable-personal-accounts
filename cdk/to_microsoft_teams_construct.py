@@ -16,9 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
+from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
 
 class ToMicrosoftTeams(Construct):
@@ -29,12 +31,19 @@ class ToMicrosoftTeams(Construct):
 
     def on_event(self, parameters) -> Function:
 
+        function_name = toggles.environment_identifier + "ToMicrosoftTeams"
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
         if toggles.features_with_microsoft_webhook_on_alerts:
             parameters['environment']['MICROSOFT_WEBHOOK_ON_ALERTS'] = toggles.features_with_microsoft_webhook_on_alerts
 
         function = Function(
             self, "OnEvent",
-            function_name="{}ToMicrosoftTeams".format(toggles.environment_identifier),
+            function_name=function_name,
             description="Transmit information to Microsoft Teams",
             handler="to_microsoft_teams_handler.handle_spa_event",
             **parameters)
