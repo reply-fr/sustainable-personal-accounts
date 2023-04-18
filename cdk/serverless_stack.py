@@ -132,7 +132,7 @@ class ServerlessStack(Stack):
             architecture=Architecture.ARM_64 if toggles.features_with_arm_architecture else Architecture.X86_64,
             code=AssetCode("lambdas.out"),  # code and dependencies are copied there in Makefile
             environment=environment,
-            log_retention=RetentionDays.THREE_MONTHS,
+            # log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
             runtime=Runtime.PYTHON_3_9,
             tracing=Tracing.ACTIVE)
