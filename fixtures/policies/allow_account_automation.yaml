@@ -1,0 +1,52 @@
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Sid": "AllowToNavigateTheOrganizationAndToTagAccountsVisualEditor0",
+         "Effect":"Allow",
+         "Action":[
+            "organizations:AttachPolicy",
+            "organizations:CreatePolicy",
+            "organizations:Describe*",
+            "organizations:DetachPolicy",
+            "organizations:List*",
+            "organizations:TagResource",
+            "organizations:UntagResource",
+            "organizations:UpdatePolicy"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Sid": "AllowToDescribeAccounts",
+         "Effect": "Allow",
+         "Action": [
+            "account:PutAlternateContact",
+            "account:DeleteAlternateContact",
+            "account:GetAlternateContact",
+            "account:GetContactInformation",
+            "account:PutContactInformation",
+            "account:ListRegions",
+            "account:EnableRegion",
+            "account:DisableRegion"
+         ],
+         "Resource": "*"
+      },
+      {
+         "Sid": "AllowToAssumeRole",
+         "Effect":"Allow",
+         "Action":[
+            "sts:AssumeRole"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Sid": "AllowToAccessCostInformation",
+         "Effect": "Allow",
+         "Action": [
+            "aws-portal:ViewBilling",
+            "ce:*"
+         ],
+         "Resource": "*"
+      }
+   ]
+}
