@@ -5,32 +5,32 @@
       "Sid": "SpaDenyCreationOfCostlyResources",
       "Effect": "Deny",
       "Action": [
-        "acm-pca:CreateCertificateAuthority"
-        "globalaccelerator:CreateAccelerator"
-        "redshift:CreateCluster"
+        "acm-pca:CreateCertificateAuthority",
+        "globalaccelerator:CreateAccelerator",
+        "redshift:CreateCluster",
         "shield:CreateSubscription"
       ],
       "Resource": "*"
     },
     {
       "Sid": "SpaDenyContractCommitments",
-      "Effect": "Allow",
+      "Effect": "Deny",
       "Action": [
-        "organizations:*",
-        "route53domains:TransferDomain",
-        "redshift:PurchaseReservedNodeOffering",
-        "ec2:PurchaseReservedInstancesOffering",
-        "savingsplans:*",
-        "ec2:PurchaseHostReservation",
-        "rds:PurchaseReservedDBInstancesOffering",
+        "ec2:AcceptReservedInstancesExchangeQuote",
         "ec2:CreateCapacityReservation",
-        "ec2:PurchaseScheduledInstances",
         "ec2:CreateReservedInstancesListing",
+        "ec2:PurchaseHostReservation",
+        "ec2:PurchaseReservedInstancesOffering",
+        "ec2:PurchaseScheduledInstances",
+        "rds:PurchaseReservedDBInstancesOffering",
+        "redshift:PurchaseReservedNodeOffering",
+        "route53domains:RegisterDomain",
+        "route53domains:TransferDomain",
+        "s3:PutBucketObjectLockConfiguration",
         "s3:PutObjectLegalHold",
         "s3:PutObjectRetention",
-        "route53domains:RegisterDomain",
-        "ec2:AcceptReservedInstancesExchangeQuote",
-        "s3:PutBucketObjectLockConfiguration"      ],
+        "savingsplans:*"
+      ],
       "Resource": "*"
     }
   ]
