@@ -110,12 +110,12 @@ def test_set_default_values(toggles):
     assert toggles.features_with_microsoft_webhook_on_alerts is None
     assert toggles.features_with_origin_email_recipient is None
     assert toggles.features_with_tag_prefix == 'account-'
-    assert toggles.metering_activities_datastore == 'SpaBetaActivitiesTable'
+    assert toggles.metering_activities_datastore == 'ActivitiesTable'
     assert toggles.metering_activities_ttl_in_seconds == 31622400
-    assert toggles.metering_shadows_datastore == 'SpaBetaShadowsTable'
+    assert toggles.metering_shadows_datastore == 'ShadowsTable'
     assert toggles.metering_shadows_ttl_in_seconds == 15811200
-    assert toggles.metering_transactions_datastore == 'SpaBetaTransactionsTable'
-    assert toggles.metering_transactions_ttl_in_seconds == 3600
+    assert toggles.metering_transactions_datastore == 'TransactionsTable'
+    assert toggles.metering_transactions_ttl_in_seconds == 10800
     assert toggles.reporting_costs_markdown_template == "You will find attached cloud cost reports for {month}"
 
 
