@@ -9,7 +9,7 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 - Under Windows WSL, you may have to install python3-venv, gcc, rustc, libffi-dev -- else use Cloud9
 - Packages installed on your workstation include: make, python
 
-## Step 1 - Create an AWS Organization
+## Step 1 - Create or use an AWS Organization
 
 SPA is leveraging AWS Organization for events management and for account management across AWS accounts.
 
@@ -42,29 +42,95 @@ If you do not have Control Tower, then configure your landing zone to generate E
 
 We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organisational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams.
 
-We recommend to create an AWS account named `Automation` to host SPA code. This should be considered production level, and put in the appropriate OU.
+We recommend to create an AWS account named `Automation` to host SPA code. This should be considered production level, and put in the appropriate Organizational Unit.
 
 Take a note of the `Automation` account identifier, a string of 12 digits. This will be used in the next step to create a trusted relationship with the top-level account of the AWS Organization.
 
 ## Step 4 - Create a role for SPA automation
 
-SPA is using a limited set of AWS features related to AWS Organization, such as: list OU, list accounts in OU, tag an AWS account, and so on. From the top-level account of your AWS Organisation, visit the IAM Console and create a role that can be assumed from the `Automation` account. Take a note of the ARN of the role that you create, since you will enter it into the settings file used by SPA.
+SPA is using a limited set of AWS features related to AWS Organization, such as: list OU, list accounts in OU, tag an AWS account, and so on. SPA can also make good use of AWS Cost Explorer to compute costs based on account tags. And to act on managed accounts, SPA needs to assume a role on these accounts.
+
+From the top-level account of your AWS Organisation, visit the IAM Console and create a role that can be assumed from the `Automation` account. Take a note of the ARN of the role that you create, since you will enter it into the settings file used by SPA.
 
 Here is the full sequence of activities for this step:
 - From the AWS Console of the top-level account of the AWS Organization, select IAM service
+- In the left pane, click on `Policies`
+- Click on button `Create policy`
+- in the JSON tab, paste the content below. You can also find it in the file `fixtures/policies/allow_account_automation.json` of the SPA repository:
+
+```json
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Sid": "AllowToNavigateTheOrganizationAndToTagAccounts",
+         "Effect":"Allow",
+         "Action":[
+            "organizations:AttachPolicy",
+            "organizations:CreatePolicy",
+            "organizations:Describe*",
+            "organizations:DetachPolicy",
+            "organizations:List*",
+            "organizations:TagResource",
+            "organizations:UntagResource",
+            "organizations:UpdatePolicy"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Sid": "AllowToDescribeAccounts",
+         "Effect": "Allow",
+         "Action": [
+            "account:PutAlternateContact",
+            "account:DeleteAlternateContact",
+            "account:GetAlternateContact",
+            "account:GetContactInformation",
+            "account:PutContactInformation",
+            "account:ListRegions",
+            "account:EnableRegion",
+            "account:DisableRegion"
+         ],
+         "Resource": "*"
+      },
+      {
+         "Sid": "AllowToAssumeRole",
+         "Effect":"Allow",
+         "Action":[
+            "sts:AssumeRole"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Sid": "AllowToAccessCostInformation",
+         "Effect": "Allow",
+         "Action": [
+            "aws-portal:ViewBilling",
+            "ce:*"
+         ],
+         "Resource": "*"
+      }
+   ]
+}
+```
+
+- Adjust these statements to your specific needs and requirements. More specifically, consider the statement `AllowToAssumeRole` and narrow resources that can be assumed, or add a condition using `aws:ResourceOrgPath`
+- Click on button `Next: Tags`
+- Click on button `Next: Review`
+- Give a name to the policy, e.g., `SpaPermissions` and a description, e.g., "Permissions given to SPA Lambdas on top-level account"
 - In the left pane, click on `Roles`
 - Click on button `Create role`
 - For a trusted entity type, check `AWS Account`
 - Select `Another AWS account` and paste the 12 digits of the `Automation` account identifier
 - Let options cleared
-- Select the managed permission policy `AWSOrganizationsFullAccess`
+- Click on button `Next`
+- On the following page, search for the policy that you have created above and select it
 - Click on button `Next`
 - On the following page, enter a role name such as `SpaAssumedRole` and a description, for example: "This role is assumed by SPA from the Automation account"
 - Click on button `Create role`
 - Search for roles starting with "Spa" and visit the page for the role that you have created
 - Take note of the ARN role, a string similar to that: `arn:aws:iam::123456789012:role/SpaAssumedRole`
 
-SPA is also assuming a role to act on the accounts that it manages. If you rely on AWS Control Tower then you may want to leverage the role `AWSControlTowerExecutionRole` and there is additional no IAM setup. If your architecture dictates the usage of another role, then please ensure that the Lambda functions of SPA will be given the permission to assume this role. When the setup is not correct, then access denied is reported into the logs of the Lambda functions `OnAssignedAccount` and `OnExpiredAccount`.
+SPA is also assuming a role to act on the accounts that it manages. If you rely on AWS Control Tower then you may want to leverage the role `AWSControlTowerExecutionRole` and there is additional no IAM setup. If you fear the super-power given to SPA across all of your AWS Organization, then you can add a condition that limits the permission to selected Organizational Unit. You can also deploy a specific role via a AWS StackSet to a limited number of accounts and/or Organizational Units. When the setup is not correct, then access denied is reported into the logs of the Lambda functions `OnAssignedAccount` and `OnExpiredAccount`.
 
 ## Step 5 - Receive all events on Automation account
 
@@ -79,7 +145,7 @@ Following activities are related to this step:
 - Click on the `default` event bus, the one that will be used by SPA
 - Take note of the event bus ARN, something like `arn:aws:events:eu-west-1:123456789012:event-bus/default`
 - Click on the button `Manage permissions`
-- Insert a statement, using the event bus ARN and the Organization ID, similar to the following one:
+- Do not copy paste the following, but insert a statement in the policy, using the event bus ARN and the Organization ID, similar to the following one:
 
 ```
 {
@@ -162,12 +228,19 @@ Following activities are related to this step:
 - Click on the button `Next`
 - Review the setup then click on button `Create rule`
 
+## Step 7 - Activate AWS Incident Manager
 
-## Step 7 - Create Organizational Units for personal accounts
+AWS Incident Manager is used by SPA to record budget alerts and other operational exceptions, and to support easy handling of these. This is a great building block for serverless application, that can be integrated into ServiceNow and to Jira if needed. Before SPA can use it programatically, you have to enable the usage of the service. Go to the page [Getting started with Incident Manager](https://docs.aws.amazon.com/incident-manager/latest/userguide/getting-started.html) and follow instructions.
 
-We recommend to create several OUs under the Sandbox Organizational Unit. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behaviour on AWS accounts that they contain. Take a note of OU identifiers that you create, since you will enter them into the settings file used by SPA.
+This step is mandatory, and the deployment of SPA may fail if you do not activate AWS Incident Manager manually.
 
-## Step 8 - Clone the SPA repository on your workstation
+## Step 8 - Create Organizational Units for personal accounts
+
+We recommend to create one general `Sandboxes` Organizational Unit, possibly with multiple child Organizational Units. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behaviour on AWS accounts that they contain. Take a note of OU identifiers that you create, since you will enter them into the settings file used by SPA.
+
+The easiest way to create Organizational Units in the context of Control Tower is to do it directly from within the Control Tower Console. With this way of working, new OU are registered automatically in Control Tower. If you create OU from the AWS Organizations Console, or programmatically, then you have to register new OU in Control Tower anyway.
+
+## Step 9 - Clone the SPA repository on your workstation and configure the software
 
 ```
 $ git clone git@github.com:reply-fr/sustainable-personal-accounts.git
@@ -175,17 +248,18 @@ $ cd sustainable-personal-accounts
 $ make setup
 ```
 
-## Step 9 - Configure SPA
-
 You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. In the context of Control Tower, this can be `AWSControlTowerExecution`. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
 
 ## Step 10 - Deploy SPA
 
-One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can deploy SPA:
+To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can deploy SPA:
 
 ```
+$ export AWS_PROFILE=automation-sso
+$ aws sso login
+$ aws sts get-caller-identity
 $ make shell
-$ make deploy
+(venv) make deploy
 ```
 
 ## Step 11 - Inspect the solution

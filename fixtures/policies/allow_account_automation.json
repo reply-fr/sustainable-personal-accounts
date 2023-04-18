@@ -2,7 +2,7 @@
    "Version":"2012-10-17",
    "Statement":[
       {
-         "Sid": "AllowToNavigateTheOrganizationAndToTagAccountsVisualEditor0",
+         "Sid": "AllowToNavigateTheOrganizationAndToTagAccounts",
          "Effect":"Allow",
          "Action":[
             "organizations:AttachPolicy",
