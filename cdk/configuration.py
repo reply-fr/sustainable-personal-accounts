@@ -142,11 +142,11 @@ class Configuration:
         toggles.features_with_origin_email_recipient = None
         toggles.features_with_response_plan_arn = ''
         toggles.features_with_tag_prefix = 'account-'
-        toggles.metering_activities_datastore = 'SpaActivitiesTable'
+        toggles.metering_activities_datastore = "{}ActivitiesTable".format(toggles.environment_identifier)
         toggles.metering_activities_ttl_in_seconds = 366 * 24 * 60 * 60
-        toggles.metering_shadows_datastore = 'SpaShadowsTable'
+        toggles.metering_shadows_datastore = "{}ShadowsTable".format(toggles.environment_identifier)
         toggles.metering_shadows_ttl_in_seconds = 183 * 24 * 60 * 60
-        toggles.metering_transactions_datastore = 'SpaTransactionsTable'
+        toggles.metering_transactions_datastore = "{}TransactionsTable".format(toggles.environment_identifier)
         toggles.metering_transactions_ttl_in_seconds = 60 * 60
         toggles.reporting_activities_prefix = 'SpaReports/Activities'
         toggles.reporting_costs_prefix = 'SpaReports/Costs'

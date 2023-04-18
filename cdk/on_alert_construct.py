@@ -34,13 +34,14 @@ from lambdas import Worker
 
 class OnAlert(Construct):
 
-    QUEUE_NAME = "SpaAlerts"
 
     TOPIC_DISPLAY_NAME = "Topic for alerts identified in managed accounts"
-    TOPIC_NAME = "SpaAlerts"
 
     def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
+
+        self.QUEUE_NAME = "{}Alerts".format(toggles.environment_identifier)
+        self.TOPIC_NAME = "{}Alerts".format(toggles.environment_identifier)
 
         self.topic = Topic(
             self, "Topic",
