@@ -193,21 +193,21 @@ class Costs:
         amount_format = workbook.add_format({'num_format': '# ##0.00'})
         amount_format.set_align('right')
         worksheet = workbook.add_worksheet()
-        headers = ['Account', 'Month', 'Service', 'Amount (USD)']
+        headers = ['Month', 'Account', 'Service', 'Amount (USD)']
         worksheet.write_row(0, 0, headers)
         widths = {index: len(headers[index]) for index in range(len(headers))}
         row = 1
         for item in breakdown:
-            data = [str(account),
-                    day.isoformat()[:7],
+            data = [day.isoformat()[:7],
+                    str(account),
                     str(item['service']),
                     float(item['amount'])]
             worksheet.write_row(row, 0, data)
             for index in range(len(data)):
                 widths[index] = max(widths[index], len(str(data[index])))
             row += 1
-        worksheet.write(row, 0, str(account))
-        worksheet.write(row, 1, day.isoformat()[:7])
+        worksheet.write(row, 0, day.isoformat()[:7])
+        worksheet.write(row, 1, str(account))
         worksheet.write(row, 2, 'TOTAL')
         worksheet.write(row, 3, "=SUM(D2:{})".format(xl_rowcol_to_cell(row - 1, 3)))
         for index in range(4):
@@ -220,22 +220,22 @@ class Costs:
     def build_breakdown_of_services_csv_report_for_cost_center(cls, cost_center, day, breakdown):
         logging.info(f"Building CSV report: breakdown of services for cost center '{cost_center}'")
         buffer = io.StringIO()
-        writer = DictWriter(buffer, fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)'])
+        writer = DictWriter(buffer, fieldnames=['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)'])
         writer.writeheader()
         total = 0.0
         for item in breakdown:
             amount = float(item['amount'])
             total += amount
-            row = {'Cost Center': cost_center,
-                   'Month': day.isoformat()[:7],
+            row = {'Month': day.isoformat()[:7],
+                   'Cost Center': cost_center,
                    'Account': item['account'],
                    'Name': item.get('name', ''),
                    'Organizational Unit': item.get('unit', ''),
                    'Service': item['service'],
                    'Amount (USD)': amount}
             writer.writerow(row)
-        row = {'Cost Center': cost_center,
-               'Month': day.isoformat()[:7],
+        row = {'Month': day.isoformat()[:7],
+               'Cost Center': cost_center,
                'Account': 'TOTAL',
                'Name': '',
                'Organizational Unit': '',
@@ -252,13 +252,13 @@ class Costs:
         amount_format = workbook.add_format({'num_format': '# ##0.00'})
         amount_format.set_align('right')
         worksheet = workbook.add_worksheet()
-        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)']
+        headers = ['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)']
         worksheet.write_row(0, 0, headers)
         widths = {index: len(headers[index]) for index in range(len(headers))}
         row = 1
         for item in breakdown:
-            data = [str(cost_center),
-                    day.isoformat()[:7],
+            data = [day.isoformat()[:7],
+                    str(cost_center),
                     str(item['unit']),
                     str(item['account']),
                     str(item['name']),
@@ -268,8 +268,8 @@ class Costs:
             for index in range(len(data)):
                 widths[index] = max(widths[index], len(str(data[index])))
             row += 1
-        worksheet.write(row, 0, cost_center)
-        worksheet.write(row, 1, day.isoformat()[:7])
+        worksheet.write(row, 0, day.isoformat()[:7])
+        worksheet.write(row, 1, cost_center)
         worksheet.write(row, 2, 'TOTAL')
         worksheet.write(row, 6, "=SUM(G2:{})".format(xl_rowcol_to_cell(row - 1, 6)))
         for index in range(6):
@@ -286,7 +286,7 @@ class Costs:
         for cost_center in charges.keys():
             types = types.union(set(item['charge'] for item in charges[cost_center]))
         labels = {k: f"{k} (USD)" for k in types}
-        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Charges (USD)']
+        headers = ['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Charges (USD)']
         headers.extend(sorted(list(labels.values())))
         logging.debug(headers)
         writer = DictWriter(buffer, fieldnames=headers)
@@ -295,26 +295,27 @@ class Costs:
             units = {}
             for item in charges[cost_center]:
                 accounts = units.get(item['unit']) or {}
-                values = accounts.get(item['account']) or []
+                label = f"{item['name']} ({item['account']})"
+                values = accounts.get(label) or []
                 values.append(item)
-                accounts[item['account']] = values
+                accounts[label] = values
                 units[item['unit']] = accounts
             for name in sorted(units.keys()):
                 accounts = units[name]
                 for account in sorted(accounts.keys()):
                     total = 0.0
-                    row = {'Cost Center': cost_center,
-                        'Month': day.isoformat()[:7],
-                        'Organizational Unit': name,
-                        'Account': account}
+                    row = {'Month': day.isoformat()[:7],
+                           'Cost Center': cost_center,
+                           'Organizational Unit': name,
+                           'Account': account}
                     for item in accounts[account]:
                         header = labels[item['charge']]
                         amount = float(item['amount'])
                         row[header] = amount
                         total += amount
                     row['Charges (USD)'] = total
-                logging.debug(row)
-                writer.writerow(row)
+                    logging.debug(row)
+                    writer.writerow(row)
         return buffer.getvalue()
 
     @classmethod
@@ -327,45 +328,47 @@ class Costs:
         for cost_center in charges.keys():
             types = types.union(set(item['charge'] for item in charges[cost_center]))
         labels = sorted(types)
-        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Charges (USD)']
+        headers = ['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Charges (USD)']
         headers.extend([f"{label} (USD)" for label in labels])
         logging.debug(headers)
         worksheet.write_row(0, 0, headers)
         widths = {index: len(headers[index]) for index in range(len(headers))}
-        subs = []
+        units_subs = []
         row = 1
         month = day.isoformat()[:7]
         for cost_center in sorted(charges.keys()):
-            head = row
-            units = {}
-            for item in charges[cost_center]:
-                amount = float(item['amount'])
-                unit = item['unit']
-                values = units.get(unit, {})
-                charge = item['charge']
-                values[charge] = values.get(charge, 0.0) + amount
-                values['total'] = values.get('total', 0.0) + amount
-                units[unit] = values
-            for name, values in units.items():
-                data = [str(cost_center), month, name]
-                data.append(values['total'])
-                for key in labels:
-                    data.append(values.get(key, 0.0))
+            units = cls.set_breakdowns_per_unit_and_per_account(items=charges[cost_center])
+            accounts_subs = []
+            for unit in sorted(units.keys()):
+                unit_head = row
+                accounts = units[unit]
+                for account in sorted(accounts.keys()):
+                    total = 0.0
+                    data = [month, str(cost_center), unit, str(account)]
+                    amounts = accounts[account]
+                    for amount in amounts.values():
+                        total += amount
+                    data.append(total)
+                    for label in labels:
+                        data.append(amounts.get(label, 0.0))
+                    logging.debug(data)
+                    worksheet.write_row(row, 0, data)
+                    worksheet.set_row(row, None, None, {'level': 3, 'hidden': True})
+                    for index in range(len(data)):
+                        widths[index] = max(widths[index], len(str(data[index])))
+                    row += 1
+                data = [month, str(cost_center), unit, '']
+                for delta in range(1 + len(labels)):
+                    data.append(f"=SUM({xl_rowcol_to_cell(unit_head, 4 + delta)}:{xl_rowcol_to_cell(row - 1, 4 + delta)})")
                 logging.debug(data)
                 worksheet.write_row(row, 0, data)
                 worksheet.set_row(row, None, None, {'level': 2, 'hidden': True})
+                accounts_subs.append([xl_rowcol_to_cell(row, 4 + delta) for delta in range(1 + len(labels))])
                 row += 1
-            data = [str(cost_center), month, '']
-            for delta in range(1 + len(labels)):
-                data.append(f"=SUM({xl_rowcol_to_cell(head, 3 + delta)}:{xl_rowcol_to_cell(row - 1, 3 + delta)})")
-            logging.debug(data)
-            worksheet.write_row(row, 0, data)
-            worksheet.set_row(row, None, None, {'level': 1, 'collapsed': True})
-            subs.append([xl_rowcol_to_cell(row, 3 + delta) for delta in range(1 + len(labels))])
-            for index in range(len(data)):
-                widths[index] = max(widths[index], len(str(data[index])))
+            cls.set_cost_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), subs=accounts_subs)
+            units_subs.append([xl_rowcol_to_cell(row, 4 + delta) for delta in range(1 + len(labels))])
             row += 1
-        cls.set_total_row(worksheet=worksheet, row=row, month=month, subs=subs)
+        cls.set_total_row(worksheet=worksheet, row=row, month=month, subs=units_subs)
         cls.set_columns(workbook=workbook, worksheet=worksheet, widths=widths)
         workbook.close()
         return buffer.getvalue()
@@ -374,7 +377,7 @@ class Costs:
     def build_summary_of_services_csv_report(cls, costs, day):
         logging.info("Building CSV report: summary of services")
         buffer = io.StringIO()
-        writer = DictWriter(buffer, fieldnames=['Cost Center', 'Month', 'Organizational Unit', 'Amount (USD)'])
+        writer = DictWriter(buffer, fieldnames=['Month', 'Cost Center', 'Organizational Unit', 'Amount (USD)'])
         writer.writeheader()
         summary = 0.0
         for cost_center in sorted(costs.keys()):
@@ -388,18 +391,18 @@ class Costs:
                 total += amount
             summary += total
             for name in units.keys():
-                row = {'Cost Center': cost_center,
-                       'Month': day.isoformat()[:7],
+                row = {'Month': day.isoformat()[:7],
+                       'Cost Center': cost_center,
                        'Organizational Unit': name,
                        'Amount (USD)': units[name]}
                 writer.writerow(row)
-            row = {'Cost Center': cost_center,
-                   'Month': day.isoformat()[:7],
+            row = {'Month': day.isoformat()[:7],
+                   'Cost Center': cost_center,
                    'Organizational Unit': '',
                    'Amount (USD)': total}
             writer.writerow(row)
-        row = {'Cost Center': 'TOTAL',
-               'Month': day.isoformat()[:7],
+        row = {'Month': day.isoformat()[:7],
+               'Cost Center': 'TOTAL',
                'Organizational Unit': '',
                'Amount (USD)': summary}
         writer.writerow(row)
@@ -413,7 +416,7 @@ class Costs:
         amount_format = workbook.add_format({'num_format': '# ##0.00'})
         amount_format.set_align('right')
         worksheet = workbook.add_worksheet()
-        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Amount (USD)']
+        headers = ['Month', 'Cost Center', 'Organizational Unit', 'Amount (USD)']
         worksheet.write_row(0, 0, headers)
         widths = {index: len(headers[index]) for index in range(len(headers))}
         subs = []
@@ -428,12 +431,12 @@ class Costs:
                 value = units.get(name, 0.0)
                 units[name] = value + amount
             for name in units.keys():
-                data = [str(cost_center), month, name, units[name]]
+                data = [month, str(cost_center), name, units[name]]
                 worksheet.write_row(row, 0, data)
                 worksheet.set_row(row, None, None, {'level': 2, 'hidden': True})
                 row += 1
-            data = [str(cost_center),
-                    month,
+            data = [month,
+                    str(cost_center),
                     '',
                     f"=SUM({xl_rowcol_to_cell(head, 3)}:{xl_rowcol_to_cell(row - 1, 3)})"]
             worksheet.write_row(row, 0, data)
@@ -442,8 +445,8 @@ class Costs:
             row += 1
             for index in range(len(data)):
                 widths[index] = max(widths[index], len(str(data[index])))
-        worksheet.write(row, 0, 'TOTAL')
-        worksheet.write(row, 1, month)
+        worksheet.write(row, 0, month)
+        worksheet.write(row, 1, 'TOTAL')
         worksheet.write(row, 3, '=' + '+'.join(subs))
         for index in range(3):
             worksheet.set_column(index, index, widths[index])
@@ -452,18 +455,46 @@ class Costs:
         return buffer.getvalue()
 
     @classmethod
+    def set_breakdowns_per_unit_and_per_account(cls, items):
+        units = {}
+        for item in items:
+            accounts = units.get(item['unit']) or {}
+            label = f"{item['name']} ({item['account']})"
+            amounts = accounts.get(label) or {}
+            amounts[item['charge']] = float(item['amount'])
+            accounts[label] = amounts
+            units[item['unit']] = accounts
+        return units
+
+    @classmethod
     def set_columns(cls, workbook, worksheet, widths):
         amount_format = workbook.add_format({'num_format': '# ##0.00'})
         amount_format.set_align('right')
         for index in range(len(widths)):
-            if index > 2:
+            if index > 3:
                 worksheet.set_column(index, index, widths[index], amount_format)
             else:
                 worksheet.set_column(index, index, widths[index])
 
     @classmethod
+    def set_cost_row(cls, worksheet, row, month, cost, subs):
+        data = [month, cost, '', '']
+        columns = len(subs[0])
+        verticals = []
+        for delta in range(columns):
+            verticals.append([])
+        for cumulated in subs:
+            for delta in range(columns):
+                verticals[delta].append(cumulated[delta])
+        for vertical in verticals:
+            data.append('=' + '+'.join(vertical))
+        logging.debug(data)
+        worksheet.write_row(row, 0, data)
+        worksheet.set_row(row, None, None, {'level': 1, 'collapsed': True})
+
+    @classmethod
     def set_total_row(cls, worksheet, row, month, subs):
-        data = ['TOTAL', month, '']
+        data = [month, 'TOTAL', '', '']
         columns = len(subs[0])
         verticals = []
         for delta in range(columns):
