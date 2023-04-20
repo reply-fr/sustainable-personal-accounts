@@ -286,7 +286,7 @@ class Costs:
         for cost_center in charges.keys():
             types = types.union(set(item['charge'] for item in charges[cost_center]))
         labels = {k: f"{k} (USD)" for k in types}
-        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Charges (USD)']
+        headers = ['Cost Center', 'Month', 'Organizational Unit', 'Account', 'Charges (USD)']
         headers.extend(sorted(list(labels.values())))
         logging.debug(headers)
         writer = DictWriter(buffer, fieldnames=headers)
@@ -294,21 +294,25 @@ class Costs:
         for cost_center in sorted(charges.keys()):
             units = {}
             for item in charges[cost_center]:
-                amount = float(item['amount'])
-                unit = item['unit']
-                values = units.get(unit, {})
-                charge = item['charge']
-                values[charge] = values.get(charge, 0.0) + amount
-                values['total'] = values.get('total', 0.0) + amount
-                units[unit] = values
-            for name in units.keys():
-                values = units[name]
-                row = {'Cost Center': cost_center,
-                       'Month': day.isoformat()[:7],
-                       'Organizational Unit': name,
-                       'Charges (USD)': values['total']}
-                for key, header in labels.items():
-                    row[header] = values.get(key, 0.0)
+                accounts = units.get(item['unit']) or {}
+                values = accounts.get(item['account']) or []
+                values.append(item)
+                accounts[item['account']] = values
+                units[item['unit']] = accounts
+            for name in sorted(units.keys()):
+                accounts = units[name]
+                for account in sorted(accounts.keys()):
+                    total = 0.0
+                    row = {'Cost Center': cost_center,
+                        'Month': day.isoformat()[:7],
+                        'Organizational Unit': name,
+                        'Account': account}
+                    for item in accounts[account]:
+                        header = labels[item['charge']]
+                        amount = float(item['amount'])
+                        row[header] = amount
+                        total += amount
+                    row['Charges (USD)'] = total
                 logging.debug(row)
                 writer.writerow(row)
         return buffer.getvalue()

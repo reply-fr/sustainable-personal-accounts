@@ -639,8 +639,8 @@ def test_build_summary_of_charges_csv_report():
     report = Costs.build_summary_of_charges_csv_report(charges=charges, day=date(2023, 3, 31))
     assert len(report) > 200
     lines = report.split('\n', 2)
-    assert lines[0].strip() == 'Cost Center,Month,Organizational Unit,Charges (USD),Solution Provider Program Discount (USD),Support (USD),Tax (USD),Usage (USD)'
-    assert lines[1].strip() == 'Product A,2023-03,Committed,31.1807088911,-0.8038363727,0.0,5.19,26.7945452638'
+    assert lines[0].strip() == 'Cost Center,Month,Organizational Unit,Account,Charges (USD),Solution Provider Program Discount (USD),Support (USD),Tax (USD),Usage (USD)'
+    assert lines[1].strip() == 'Product A,2023-03,Committed,123456789012,31.1807088911,-0.8038363727,,5.19,26.7945452638'
 
 
 @pytest.mark.unit_tests
