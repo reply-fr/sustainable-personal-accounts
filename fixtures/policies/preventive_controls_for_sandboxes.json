@@ -46,6 +46,19 @@
               "ram:RequestedAllowsExternalPrincipals": "true"
           }
       }
+    },
+    {
+      "Sid": "SpaDenyEverythingFromRootUser",
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "StringLike": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::*:root"
+          ]
+        }
+      }
     }
   ]
 }
