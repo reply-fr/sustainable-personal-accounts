@@ -59,6 +59,29 @@
           ]
         }
       }
+    },
+    {
+      "Sid": "SpaDenyAllOutsideRequestedRegions",
+      "Effect": "Deny",
+      "NotAction": [
+          "cloudfront:*",
+          "iam:*",
+          "route53:*",
+          "support:*"
+      ],
+      "Resource": "*",
+      "Condition": {
+          "StringNotEquals": {
+              "aws:RequestedRegion": [
+                  "ap-east-1",
+                  "eu-central-1",
+                  "eu-west-1",
+                  "eu-west-3",
+                  "us-east-1",
+                  "us-west-2"
+              ]
+          }
+      }
     }
   ]
 }
