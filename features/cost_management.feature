@@ -4,7 +4,7 @@ As a system administrator,
 I observe AWS costs as a daily metric
 so as to monitor and to manage consumption of AWS resources per cost center
 
-As an acountant,
+As an accountant,
 I need a monthly breakdown of AWS costs per cost center
 so as to charge back cost centers individually
 
