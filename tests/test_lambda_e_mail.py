@@ -78,7 +78,7 @@ def test_get_object_as_mime_attachment():
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
 
     with pytest.raises(botocore.exceptions.ClientError):  # object does not exist
         Email.get_object_as_mime_attachment(object='s3://my_bucket/some/path/hello.txt')
@@ -103,7 +103,7 @@ def test_send_objects():
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
 
     s3.put_object(Bucket="my_bucket",
                   Key='some/path/hello.txt',

@@ -53,7 +53,7 @@ def test_handle_exception():
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
 
     ssm = boto3.client("ssm")
     ssm.put_parameter(Name='my_endpoints',
@@ -92,7 +92,7 @@ def test_handle_attachment_request():
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
     s3.put_object(Bucket="my_bucket", Key="exceptions/my/test.csv", Body="hello,world\nhello,universe")
 
     with open('fixtures/events/sample_direct_download_request.json') as stream:
@@ -113,7 +113,7 @@ def test_download_attachment():
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
     s3.put_object(Bucket="my_bucket", Key="exceptions/my/test.csv", Body="hello,world\nhello,universe")
 
     sec_fetch_headers = {

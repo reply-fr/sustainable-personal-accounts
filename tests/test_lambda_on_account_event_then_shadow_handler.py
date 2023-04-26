@@ -82,7 +82,7 @@ def test_handle_report():
     populate_shadows_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
     assert handle_report() == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_path())

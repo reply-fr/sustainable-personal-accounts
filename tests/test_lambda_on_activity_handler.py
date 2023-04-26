@@ -106,7 +106,7 @@ def test_handle_monthly_report():
     populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
     assert handle_monthly_report(day=date(year=2023, month=4, day=20)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_path(label="DevOps Tools"))
@@ -128,7 +128,7 @@ def test_handle_daily_report():
     populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
     assert handle_daily_report(day=date(year=2023, month=3, day=30)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_path(label="DevOps Tools"))

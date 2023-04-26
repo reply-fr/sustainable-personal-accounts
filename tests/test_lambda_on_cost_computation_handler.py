@@ -40,7 +40,7 @@ pytestmark = pytest.mark.wip
 def test_build_charge_reports_per_cost_center():
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
 
     day = date(2023, 3, 31)
     mock = Mock()
@@ -55,7 +55,7 @@ def test_build_charge_reports_per_cost_center():
 def test_build_service_reports_per_cost_center():
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
 
     day = date(2023, 3, 31)
     mock = Mock()
@@ -75,7 +75,7 @@ def test_email_reports():
 
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
 
     s3.put_object(Bucket="my_bucket",
                   Key=path,
@@ -117,5 +117,5 @@ def test_get_report_path():
 def test_store_report():
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
-                     CreateBucketConfiguration=dict(LocationConstraint=s3.meta.region_name))
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
     store_report(path="path/hello.txt", report="hello world") == '[OK]'
