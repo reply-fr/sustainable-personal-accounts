@@ -68,20 +68,18 @@ class Account:
     def enumerate_tags(cls, account, session=None):
         session = session or get_organizations_session()
 
-        token = None
-        while True:
-            logging.debug(f"Listing tags for account '{account}'")
-            parameters = dict(ResourceId=account)
-            if token:
-                parameters['NextToken'] = token
-            chunk = session.client('organizations').list_tags_for_resource(**parameters)
-
+        logging.debug(f"Listing tags for account '{account}'")
+        parameters = dict(ResourceId=account)
+        chunk = session.client('organizations').list_tags_for_resource(**parameters)
+        while chunk:
             for item in chunk['Tags']:
                 logging.debug(json.dumps(item))
                 yield item
 
             token = chunk.get('NextToken')
-            if not token:
+            if token:
+                chunk = session.client('organizations').list_tags_for_resource(**parameters, NextToken=token)
+            else:
                 break
 
     @classmethod
