@@ -128,4 +128,3 @@ def get_event_label(record, success=True):
         'maintenance': 'SuccessfulMaintenanceEvent' if success else 'FailedMaintenanceException',
     }
     return labels.get(record['transaction'], 'GenericException')
-
