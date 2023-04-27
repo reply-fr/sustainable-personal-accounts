@@ -19,15 +19,18 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
+import io
 from unittest.mock import patch
-from moto import mock_cloudwatch, mock_dynamodb, mock_events
+from moto import mock_cloudwatch, mock_dynamodb, mock_events, mock_organizations
 import os
+from cProfile import Profile
+from pstats import Stats
 import pytest
 
 from lambdas import Events
 from lambdas.on_account_event_then_meter_handler import handle_account_event, handle_stream_event
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table
 
 
@@ -37,6 +40,7 @@ from tests.fixture_key_value_store import create_my_table
                              VERBOSITY='DEBUG'))
 @mock_cloudwatch
 @mock_dynamodb
+@mock_organizations
 def test_handle_account_event_for_maintenance_transaction():
     create_my_table()
 
@@ -54,8 +58,14 @@ def test_handle_account_event_for_maintenance_transaction():
                                                context=dict(account="123456789012",
                                                             label="ReleasedAccount",
                                                             environment="envt1"))
-    assert handle_account_event(event=expired, emit=my_emit_spa_event) == '[OK] ExpiredAccount 123456789012'
-    assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
+
+    with Profile() as profiler:
+        assert handle_account_event(event=expired, emit=my_emit_spa_event) == '[OK] ExpiredAccount 123456789012'
+        assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
+    stream = io.StringIO()
+    stats = Stats(profiler, stream=stream).sort_stats('cumulative')
+    stats.print_stats('[^w/]+/lambdas/', 10)
+    print(stream.getvalue())
 
 
 @pytest.mark.integration_tests
@@ -64,6 +74,7 @@ def test_handle_account_event_for_maintenance_transaction():
                              VERBOSITY='DEBUG'))
 @mock_cloudwatch
 @mock_dynamodb
+@mock_organizations
 def test_handle_account_event_for_on_boarding_transaction():
     create_my_table()
 
@@ -81,8 +92,13 @@ def test_handle_account_event_for_on_boarding_transaction():
                                                context=dict(account="123456789012",
                                                             label="ReleasedAccount",
                                                             environment="envt1"))
-    assert handle_account_event(event=created, emit=my_emit_spa_event) == '[OK] CreatedAccount 123456789012'
-    assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
+    with Profile() as profiler:
+        assert handle_account_event(event=created, emit=my_emit_spa_event) == '[OK] CreatedAccount 123456789012'
+        assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
+    stream = io.StringIO()
+    stats = Stats(profiler, stream=stream).sort_stats('cumulative')
+    stats.print_stats('[^w/]+/lambdas/', 10)
+    print(stream.getvalue())
 
 
 @pytest.mark.integration_tests
@@ -92,6 +108,7 @@ def test_handle_account_event_for_on_boarding_transaction():
 @mock_cloudwatch
 @mock_dynamodb
 @mock_events
+@mock_organizations
 def test_handle_account_event():
     create_my_table()
 

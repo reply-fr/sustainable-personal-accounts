@@ -37,13 +37,13 @@ def handle_account_event(event, context=None, emit=None):
                                  ttl=os.environ.get('METERING_TRANSACTIONS_TTL', str(30 * 60)))
 
     if input.label == 'CreatedAccount':
-        handle_created_event(input.account, transactions=transactions)
+        begin_transaction(transaction='on-boarding', account_id=input.account, transactions=transactions)
 
     elif input.label == 'ExpiredAccount':
-        handle_expired_event(input.account, transactions=transactions)
+        begin_transaction(transaction='maintenance', account_id=input.account, transactions=transactions)
 
     elif input.label == 'ReleasedAccount':
-        handle_released_event(input.account, transactions=transactions, emit=emit)
+        end_transaction(input.account, transactions=transactions, emit=emit)
 
     else:
         logging.debug(f"Do not meter event '{input.label}'")
@@ -51,81 +51,38 @@ def handle_account_event(event, context=None, emit=None):
     return f"[OK] {input.label} {input.account}"
 
 
-def handle_created_event(account_id, transactions):
-    hash = f"OnBoarding {account_id}"
-    logging.info(f"Beginning transaction '{hash}'")
-    transaction = {'transaction': 'on-boarding',
+def begin_transaction(transaction, account_id, transactions):
+    logging.info(f"Beginning transaction '{transaction}' for account '{account_id}")
+    transaction = {'transaction': transaction,
                    'account': account_id,
                    'begin': time(),
                    'identifier': str(uuid4())}
     logging.debug(transaction)
-    transactions.remember(hash, value=transaction)
+    transactions.remember(account_id, value=transaction)
 
 
-def handle_expired_event(account_id, transactions):
-    hash = f"Maintenance {account_id}"
-    logging.info(f"Beginning transaction '{hash}'")
-    transaction = {'transaction': 'maintenance',
-                   'account': account_id,
-                   'begin': time(),
-                   'identifier': str(uuid4())}
-    logging.debug(transaction)
-    transactions.remember(hash, value=transaction)
-
-
-def handle_released_event(account_id, transactions, emit=None):
-    update_maintenance_transaction(account_id, transactions=transactions, emit=emit)
-    update_onboarding_transaction(account_id, transactions=transactions, emit=emit)
-
-
-def update_maintenance_transaction(account_id, transactions, emit=None):
-    hash = f"Maintenance {account_id}"
-    ongoing = transactions.retrieve(hash)
-    if ongoing:
+def end_transaction(account_id, transactions, emit=None):
+    record = transactions.retrieve(account_id)
+    if record:
         logging.info(f"Ending transaction '{hash}'")
-        transactions.forget(hash)
+        transactions.forget(account_id)
         transaction = Account.list_tags(account_id)
         transaction['cost-center'] = Account.get_cost_center(transaction)
-        transaction.update(ongoing)
+        transaction.update(record)
         transaction['end'] = time()
         transaction['duration'] = transaction['end'] - transaction['begin']
         logging.debug(transaction)
         emit = emit or Events.emit_spa_event
-        emit(label='SuccessfulMaintenanceEvent',
+        emit(label=get_event_label(record, success=True),
              payload=transaction)
         put_metric_data(name='TransactionsByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(transaction)),
                                     dict(Name='Environment', Value=Events.get_environment())])
         put_metric_data(name='TransactionsByLabel',
-                        dimensions=[dict(Name='Label', Value="MaintenanceTransaction"),
+                        dimensions=[dict(Name='Label', Value=get_dimension_label(record)),
                                     dict(Name='Environment', Value=Events.get_environment())])
     else:
-        logging.debug(f"No transaction '{hash}'")
-
-
-def update_onboarding_transaction(account_id, transactions, emit=None):
-    hash = f"OnBoarding {account_id}"
-    ongoing = transactions.retrieve(hash)
-    if ongoing:
-        logging.info(f"Ending transaction '{hash}'")
-        transactions.forget(hash)
-        transaction = Account.list_tags(account_id)
-        transaction['cost-center'] = Account.get_cost_center(transaction)
-        transaction.update(ongoing)
-        transaction['end'] = time()
-        transaction['duration'] = transaction['end'] - transaction['begin']
-        logging.debug(transaction)
-        emit = emit or Events.emit_spa_event
-        emit(label='SuccessfulOnBoardingEvent',
-             payload=transaction)
-        put_metric_data(name='TransactionsByCostCenter',
-                        dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(transaction)),
-                                    dict(Name='Environment', Value=Events.get_environment())])
-        put_metric_data(name='TransactionsByLabel',
-                        dimensions=[dict(Name='Label', Value="OnBoardingTransaction"),
-                                    dict(Name='Environment', Value=Events.get_environment())])
-    else:
-        logging.debug(f"No transaction '{hash}'")
+        logging.debug(f"No on-going transaction for account '{account_id}'")
 
 
 @trap_exception
@@ -153,11 +110,22 @@ def handle_stream_event(event, context=None, emit=None):  # processing record ex
 def handle_expired_record(record, emit=None):
     logging.info(record)
 
-    event_labels = {
-        'on-boarding': 'FailedOnBoardingException',
-        'maintenance': 'FailedMaintenanceException',
-    }
-    label = event_labels.get(record['transaction'], 'GenericException')
-
     emit = emit or Events.emit_spa_event
-    emit(label=label, payload=record)
+    emit(label=get_event_label(record, success=False), payload=record)
+
+
+def get_dimension_label(record):
+    labels = {
+        'on-boarding': 'OnBoardingTransaction',
+        'maintenance': 'MaintenanceTransaction',
+    }
+    return labels[record['transaction']]
+
+
+def get_event_label(record, success=True):
+    labels = {
+        'on-boarding': 'SuccessfulOnBoardingEvent' if success else 'FailedOnBoardingException',
+        'maintenance': 'SuccessfulMaintenanceEvent' if success else 'FailedMaintenanceException',
+    }
+    return labels.get(record['transaction'], 'GenericException')
+
