@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 from boto3.session import Session
 import json
+import logging
 from types import SimpleNamespace
 
 
@@ -35,12 +36,16 @@ def create_organizational_unit(parent, name, session):
     return result["OrganizationalUnit"]["Id"]
 
 
+def put_parameter(name, value, session):
+    logging.debug(f"Putting parameter {name}")
+    session.client('ssm').put_parameter(Name=name,
+                                        Value=json.dumps(value),
+                                        Type='String')
+
+
 def given_a_small_setup(environment='Spa'):
 
-    session = Session(aws_access_key_id='testing',
-                      aws_secret_access_key='testing',
-                      aws_session_token='testing',
-                      region_name='eu-west-1')
+    session = Session()
 
     context = SimpleNamespace(session=session)
 
@@ -66,9 +71,9 @@ def given_a_small_setup(environment='Spa'):
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }
-    session.client('ssm').put_parameter(Name=f"/{environment}/Accounts/{context.crm_account}",
-                                        Value=json.dumps(context.settings_crm_account),
-                                        Type='String')
+    put_parameter(name=f"/{environment}/Accounts/{context.crm_account}",
+                  value=context.settings_crm_account,
+                  session=session)
 
     context.settings_erp_account = {
         'account_tags': {'CostCenter': 'erp', 'Sponsor': 'Eric Roger Plea'},
@@ -83,9 +88,9 @@ def given_a_small_setup(environment='Spa'):
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }
-    session.client('ssm').put_parameter(Name=f"/{environment}/Accounts/{context.erp_account}",
-                                        Value=json.dumps(context.settings_erp_account),
-                                        Type='String')
+    put_parameter(name=f"/{environment}/Accounts/{context.erp_account}",
+                  value=context.settings_erp_account,
+                  session=session)
 
     context.sandbox_ou_name = 'Sandbox'
     context.sandbox_ou = create_organizational_unit(parent=context.root_id, name=context.sandbox_ou_name, session=session)
@@ -105,9 +110,9 @@ def given_a_small_setup(environment='Spa'):
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }
-    session.client('ssm').put_parameter(Name=f"/{environment}/OrganizationalUnits/{context.sandbox_ou}",
-                                        Value=json.dumps(context.settings_sandbox_ou),
-                                        Type='String')
+    put_parameter(name=f"/{environment}/OrganizationalUnits/{context.sandbox_ou}",
+                  value=context.settings_sandbox_ou,
+                  session=session)
 
     # following entities exit in the organization but are not in scope of settings
     context.unmanaged_ou = create_organizational_unit(parent=context.root_id, name='unmanaged', session=session)
@@ -126,9 +131,9 @@ def given_a_small_setup(environment='Spa'):
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }
-    session.client('ssm').put_parameter(Name=f"/{environment}/OrganizationalUnits/ou-alien",
-                                        Value=json.dumps(context.settings_alien_ou),
-                                        Type='String')
+    put_parameter(name=f"/{environment}/OrganizationalUnits/ou-alien",
+                  value=context.settings_alien_ou,
+                  session=session)
 
     context.settings_alien_account = {
         'account_tags': {'CostCenter': 'alien', 'Sponsor': 'whoKnows'},
@@ -143,8 +148,8 @@ def given_a_small_setup(environment='Spa'):
             'variables': {'DRY_RUN': 'TRUE'}
         }
     }
-    session.client('ssm').put_parameter(Name=f"/{environment}/Accounts/210987654321",
-                                        Value=json.dumps(context.settings_alien_account),
-                                        Type='String')
+    put_parameter(name=f"/{environment}/Accounts/210987654321",
+                  value=context.settings_alien_account,
+                  session=session)
 
     return context
