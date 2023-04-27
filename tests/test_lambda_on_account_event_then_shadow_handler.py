@@ -76,6 +76,7 @@ def test_handle_account_event_on_unexpected_environment():
                              REPORTING_INVENTORIES_PREFIX="my_inventories",
                              VERBOSITY='INFO'))
 @mock_dynamodb
+@mock_organizations
 @mock_s3
 def test_handle_report():
     create_my_table()
@@ -96,6 +97,7 @@ def test_handle_report():
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='INFO'))
 @mock_dynamodb
+@mock_organizations
 def test_build_report():
     create_my_table()
     populate_shadows_table()
