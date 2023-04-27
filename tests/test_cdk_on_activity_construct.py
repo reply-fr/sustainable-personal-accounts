@@ -32,7 +32,7 @@ from cdk.serverless_stack import ServerlessStack
 
 @pytest.mark.unit_tests
 def test_dynamodb_encryption():
-    Configuration.initialize()
+    Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
     OnActivity(scope=stack, id='my_construct', parameters=ServerlessStack.get_parameters())
     template = Template.from_stack(stack)
@@ -43,7 +43,7 @@ def test_dynamodb_encryption():
 
 @pytest.mark.unit_tests
 def test_resources_count():
-    Configuration.initialize()
+    Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
     OnActivity(scope=stack, id='my_construct', parameters=ServerlessStack.get_parameters())
     template = Template.from_stack(stack)

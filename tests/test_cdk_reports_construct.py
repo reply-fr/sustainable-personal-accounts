@@ -31,7 +31,7 @@ from cdk.reports_construct import Reports
 
 @pytest.mark.unit_tests
 def test_bucket_encryption():
-    Configuration.initialize()
+    Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
     Reports(scope=stack, id='my_construct')
     template = Template.from_stack(stack)
@@ -42,7 +42,7 @@ def test_bucket_encryption():
 
 @pytest.mark.unit_tests
 def test_resources_count():
-    Configuration.initialize()
+    Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
     Reports(scope=stack, id='my_construct')
     template = Template.from_stack(stack)

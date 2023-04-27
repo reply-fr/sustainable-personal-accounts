@@ -48,7 +48,7 @@ def test_get_organizational_unit_parameter():
 
 @pytest.mark.unit_tests
 def test_resources_count():
-    Configuration.initialize()
+    Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
     Parameters(scope=stack, id='my_construct')
     resources = Template.from_stack(stack).find_resources(type="AWS::SSM::Parameter")
