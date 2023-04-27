@@ -24,7 +24,7 @@ import pytest
 
 from lambdas import Email
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
