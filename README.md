@@ -81,6 +81,7 @@ Note that the scope of SPA is limited to the effective part of AWS accounts life
 
 A set of workbooks are available for common operations on Sustainable Personal Accounts, such as:
 - [Full Setup of SPA](./workbooks/full-setup-of-spa.md) - Start here for initial installation
+- [Manage preventive controls](./workbooks/manage-preventive-controls.md) - Define guardrails for personal accounts
 - [Create a personal account](./workbooks/create-a-personal-account.md) - Add manually an account handled by SPA
 - [Add Microsoft Teams webhook](./workbooks/add-microsoft-teams-webhook.md) - Forward SPA notifications to ChatOps channels
 - [Transmit reports over email](./workbooks/transmit-reports-over-email.md) - Forward SPA reports to selected email recipients
