@@ -39,7 +39,7 @@ help:
 .EXPORT_ALL_VARIABLES:
 
 # by default, use this AWS region -- mostly useful for "make all-tests" in a pipeline
-AWS_DEFAULT_REGION ?= eu-west-3
+AWS_DEFAULT_REGION ?= eu-west-1
 
 # determine which shell is used for commands launched by make
 MAKESHELL ?= /bin/bash
