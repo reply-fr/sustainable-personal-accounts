@@ -273,7 +273,7 @@ features:
   with_microsoft_webhook_on_alerts: https://acme.webhook.office.com/webhookb2/892ca8xf-9423
 
   # this e-mail address is used for the sending of automated messages
-  # - allowed value: an email addresses that has been validated by AWS SES, e.g., '"no reply" <spa@example.com>'
+  # - allowed value: an email address that has been validated by AWS SES, e.g., '"no reply" <spa@example.com>'
   # - default value: no value
   #
   with_origin_email_recipient: spa@example.com
