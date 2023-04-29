@@ -38,6 +38,9 @@ help:
 # ensure that child processes get variables set in this Makefile
 .EXPORT_ALL_VARIABLES:
 
+# by default, use this AWS region -- mostly useful for "make all-tests" in a pipeline
+AWS_DEFAULT_REGION ?= eu-west-3
+
 # determine which shell is used for commands launched by make
 MAKESHELL ?= /bin/bash
 
