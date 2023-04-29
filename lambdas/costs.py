@@ -357,12 +357,7 @@ class Costs:
                     for index in range(len(data)):
                         widths[index] = max(widths[index], len(str(data[index])))
                     row += 1
-                data = [month, str(cost_center), unit, '']
-                for delta in range(1 + len(labels)):
-                    data.append(f"=SUM({xl_rowcol_to_cell(unit_head, 4 + delta)}:{xl_rowcol_to_cell(row - 1, 4 + delta)})")
-                logging.debug(data)
-                worksheet.write_row(row, 0, data)
-                worksheet.set_row(row, None, None, {'level': 2, 'hidden': True})
+                cls.set_unit_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), unit=unit, unit_head=unit_head, columns=len(labels))
                 accounts_subs.append([xl_rowcol_to_cell(row, 4 + delta) for delta in range(1 + len(labels))])
                 row += 1
             cls.set_cost_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), subs=accounts_subs)
@@ -506,3 +501,12 @@ class Costs:
             data.append('=' + '+'.join(vertical))
         logging.debug(data)
         worksheet.write_row(row, 0, data)
+
+    @classmethod
+    def set_unit_row(cls, worksheet, row, month, cost, unit, unit_head, columns):
+        data = [month, cost, unit, '']
+        for delta in range(1 + columns):
+            data.append(f"=SUM({xl_rowcol_to_cell(unit_head, 4 + delta)}:{xl_rowcol_to_cell(row - 1, 4 + delta)})")
+        logging.debug(data)
+        worksheet.write_row(row, 0, data)
+        worksheet.set_row(row, None, None, {'level': 2, 'hidden': True})
