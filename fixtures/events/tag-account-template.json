@@ -11,8 +11,8 @@
         "eventVersion": "1.08",
         "userIdentity": {
             "type": "AssumedRole",
-            "principalId": "ARxxxxyyyyzzzzP3XWQIX:john.foo@acme.com",
-            "arn": "arn:aws:sts::111111111111:assumed-role/AWSAdministratorAccess/john.foo@acme.com",
+            "principalId": "ARxxxxyyyyzzzzP3XWQIX:john.foo@example.com",
+            "arn": "arn:aws:sts::111111111111:assumed-role/AWSAdministratorAccess/john.foo@example.com",
             "accountId": "111111111111",
             "accessKeyId": "ASxxxxyyyyzzzzPVTVVR",
             "sessionContext": {

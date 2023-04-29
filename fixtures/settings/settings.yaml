@@ -30,7 +30,7 @@ automation:
   # these tags are used on resources deployed in automation account
   tags:
     cost-imputation: shared
-    account-manager: john.foo@acme.com
+    account-manager: john.foo@example.com
 
   # this defines the amount of text sent to logs
   # - allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -116,7 +116,7 @@ organizational_units:
     account_tags:
       cost-imputation: 'abc'
       cost-center: 'Foo Bar'
-      account-manager: foo.bar@acme.com
+      account-manager: foo.bar@example.com
 
     preparation: # of managed accounts
 
@@ -145,7 +145,7 @@ organizational_units:
     account_tags:
       cost-imputation: 'xyz'
       cost-center: 'Mister Jones'
-      account-manager: jones@acme.com
+      account-manager: jones@example.com
 
     preparation: # of managed accounts
 
@@ -182,7 +182,7 @@ accounts:
     account_tags:
       cost-imputation: 'SB-123'
       cost-center: 'Alice'
-      account-manager: alice@acme.com
+      account-manager: alice@example.com
 
     preparation: # of this account
 
@@ -208,7 +208,7 @@ accounts:
     account_tags:
       cost-imputation: 'SB-456'
       cost-center: 'Bob'
-      account-manager: bob@acme.com
+      account-manager: bob@example.com
 
     preparation: # of this account
 
@@ -263,8 +263,8 @@ features:
   # - default value: no value
   #
   with_email_subscriptions_on_alerts:
-  - finops_alerts@acme.com
-  - cloud_operations@acme.com
+  - finops_alerts@example.com
+  - cloud_operations@example.com
 
   # this webhook receives messages on alerts, e.g., billing alerts, CodeBuild failures, etc.
   # - allowed values: URL provided from a configured incoming Webhook in Microsoft Teams

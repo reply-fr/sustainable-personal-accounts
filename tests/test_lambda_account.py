@@ -216,7 +216,7 @@ def test_get_organizational_unit_name():
 
 @pytest.mark.unit_tests
 def test_validate_holder():
-    Account.validate_holder('alpha-nc.aws.cloudops.fr@acme.com')
+    Account.validate_holder('alpha-nc.aws.cloudops.fr@example.com')
 
 
 @pytest.mark.unit_tests

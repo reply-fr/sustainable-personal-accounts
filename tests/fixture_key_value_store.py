@@ -92,14 +92,14 @@ def populate_activities_table():
 
 def populate_shadows_table():
     samples = [
-        [('__account__', '222222222222'), ('__email__', 'alice@acme.com'), ('__name__', 'Alice'), ('__manager__', 'bob@acme.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
-        [('__account__', '333333333333'), ('__email__', 'bob@acme.com'), ('__name__', 'Bob'), ('__manager__', 'cesar@acme.com'), ('__cost__', 'Computing Tools'), ('__state__', 'released')],
-        [('__account__', '444444444444'), ('__email__', 'cesar@acme.com'), ('__name__', 'César'), ('__manager__', 'alfred@acme.com'), ('__cost__', 'Tools'), ('__state__', 'released')],
-        [('__account__', '555555555555'), ('__email__', 'efoe@acme.com'), ('__name__', 'Efoe'), ('__manager__', 'cesar@acme.com'), ('__cost__', 'Computing Tools'), ('__state__', 'released')],
-        [('__account__', '666666666666'), ('__email__', 'francis@acme.com'), ('__name__', 'Francis'), ('__manager__', 'bob@acme.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'assigned')],
-        [('__account__', '777777777777'), ('__email__', 'gustav@acme.com'), ('__name__', 'Gustav'), ('__manager__', 'bob@acme.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
-        [('__account__', '888888888888'), ('__email__', 'irene@acme.com'), ('__name__', 'Irène'), ('__manager__', 'bob@acme.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
-        [('__account__', '999999999999'), ('__email__', 'joe@acme.com'), ('__name__', 'Joe'), ('__manager__', 'alfred@acme.com'), ('__cost__', 'Reporting Tools'), ('__state__', 'purged')],
+        [('__account__', '222222222222'), ('__email__', 'alice@example.com'), ('__name__', 'Alice'), ('__manager__', 'bob@example.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
+        [('__account__', '333333333333'), ('__email__', 'bob@example.com'), ('__name__', 'Bob'), ('__manager__', 'cesar@example.com'), ('__cost__', 'Computing Tools'), ('__state__', 'released')],
+        [('__account__', '444444444444'), ('__email__', 'cesar@example.com'), ('__name__', 'César'), ('__manager__', 'alfred@example.com'), ('__cost__', 'Tools'), ('__state__', 'released')],
+        [('__account__', '555555555555'), ('__email__', 'efoe@example.com'), ('__name__', 'Efoe'), ('__manager__', 'cesar@example.com'), ('__cost__', 'Computing Tools'), ('__state__', 'released')],
+        [('__account__', '666666666666'), ('__email__', 'francis@example.com'), ('__name__', 'Francis'), ('__manager__', 'bob@example.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'assigned')],
+        [('__account__', '777777777777'), ('__email__', 'gustav@example.com'), ('__name__', 'Gustav'), ('__manager__', 'bob@example.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
+        [('__account__', '888888888888'), ('__email__', 'irene@example.com'), ('__name__', 'Irène'), ('__manager__', 'bob@example.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
+        [('__account__', '999999999999'), ('__email__', 'joe@example.com'), ('__name__', 'Joe'), ('__manager__', 'alfred@example.com'), ('__cost__', 'Reporting Tools'), ('__state__', 'purged')],
     ]
 
     template = json.dumps({'hash': '__account__',

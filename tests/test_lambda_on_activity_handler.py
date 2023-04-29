@@ -36,8 +36,8 @@ from tests.fixture_key_value_store import create_my_table, populate_activities_t
 
 sample_payload = json.dumps(
     {"account-state": "released",
-     "cost-owner": "bob@acme.com",
-     "account-holder": "alice@acme.com",
+     "cost-owner": "bob@example.com",
+     "account-holder": "alice@example.com",
      "cost-center": "Tools",
      "transaction": "on-boarding",
      "account": "123456789012",

@@ -69,7 +69,7 @@ accounts:
     account_tags:
       cost-imputation: 'SB-123'
       cost-center: 'Alice'
-      account-manager: alice@acme.com
+      account-manager: alice@example.com
 
     preparation: # of this account
 
@@ -95,7 +95,7 @@ accounts:
     account_tags:
       cost-imputation: 'SB-456'
       cost-center: 'Bob'
-      account-manager: bob@acme.com
+      account-manager: bob@example.com
 
     preparation: # of this account
 

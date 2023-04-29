@@ -23,7 +23,7 @@ Therefore, we suggest to provide AWS account only to people who are in capacity 
 Following details have to be provided to provision a new personal AWS account:
 - First name
 - Last name
-- Corporate e-mail address, e.g., `j.foo@acme.com`
+- Corporate e-mail address, e.g., `j.foo@example.com`
 - Organisation that is owning the budget for cloud resources (aka, name of a business unit or of a team)
 
 Ideally, the request should be submitted by the owner of cloud budget, for proper separation of duties. Also, the request should be accepted by the team in charge of SPA operations.

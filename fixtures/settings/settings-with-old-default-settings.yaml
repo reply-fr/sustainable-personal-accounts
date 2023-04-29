@@ -114,7 +114,7 @@ organizational_units:
     account_tags:
       CostCenter: 'abc'
       Sponsor: 'Foo Bar'
-      "account:manager": foo.bar@acme.com
+      "account:manager": foo.bar@example.com
 
     # preparation of assigned account
     #
@@ -152,7 +152,7 @@ organizational_units:
     account_tags:
       CostCenter: 'xyz'
       Sponsor: 'Mister Jones'
-      "account:manager": jones@acme.com
+      "account:manager": jones@example.com
 
     # preparation of assigned account
     #
@@ -240,7 +240,7 @@ accounts:
     account_tags:
       CostCenter: 'SB-123'
       Sponsor: 'Alice'
-      "account:manager": alice@acme.com
+      "account:manager": alice@example.com
 
     # preparation of this account
     #
@@ -275,7 +275,7 @@ accounts:
     account_tags:
       CostCenter: 'SB-456'
       Sponsor: 'Bob'
-      "account:manager": bob@acme.com
+      "account:manager": bob@example.com
 
     # preparation of assigned account
     #
@@ -316,8 +316,8 @@ features:
   # - default value: empty list
   #
   with_email_subscriptions_on_alerts:
-  - finops_alerts@acme.com
-  - cloud_operations@acme.com
+  - finops_alerts@example.com
+  - cloud_operations@example.com
 
   # this webhook receives messages on alerts, e.g., billing alerts, CodeBuild failures, etc.
   # - allowed values: URL provided from a configured incoming Webhook in Microsoft Teams

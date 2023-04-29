@@ -175,7 +175,7 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_region == 'eu-west-1'
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
-    assert toggles.automation_tags == {'account-manager': 'john.foo@acme.com', 'cost-imputation': 'shared'}
+    assert toggles.automation_tags == {'account-manager': 'john.foo@example.com', 'cost-imputation': 'shared'}
     assert toggles.automation_verbosity == 'ERROR'
     assert toggles.environment_identifier == 'SpaDemo'
     assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
@@ -184,7 +184,7 @@ def test_set_from_yaml(toggles):
     assert toggles.features_with_arm_architecture is True
     assert toggles.features_with_cost_email_recipients == ['alice@example.com', 'bob@example.com']
     assert toggles.features_with_cost_management_tag == 'cost-center'
-    assert toggles.features_with_email_subscriptions_on_alerts == ['finops_alerts@acme.com', 'cloud_operations@acme.com']
+    assert toggles.features_with_email_subscriptions_on_alerts == ['finops_alerts@example.com', 'cloud_operations@example.com']
     assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
     assert toggles.features_with_origin_email_recipient == 'spa@example.com'
     assert toggles.features_with_tag_prefix == 'account-'
@@ -217,7 +217,7 @@ def test_set_from_csv_files(toggles):
     assert toggles.accounts['123456789012'] == {'identifier': '123456789012',
                                                 'note': 'one specific account',                                        # accounts
                                                 'account_tags': {'ServiceNow Domain': 'CloudOps',                      # security
-                                                                 'account-manager': 'alice@acme.com',                  # accounts
+                                                                 'account-manager': 'alice@example.com',                  # accounts
                                                                  'cost-center': 'ApplicationOne Department',           # accounts overwritten by finops
                                                                  'cost-imputation': 'SB-123',                          # accounts
                                                                  'managed-by': 'SPA'},                                 # default
@@ -233,7 +233,7 @@ def test_set_from_csv_files(toggles):
 
     assert toggles.accounts['210987654321'] == {'identifier': '210987654321',
                                                 'note': 'another specific account',                                   # accounts
-                                                'account_tags': {'account-manager': 'bob@acme.com',                   # accounts
+                                                'account_tags': {'account-manager': 'bob@example.com',                   # accounts
                                                                  'cost-center': 'Bob',                                # accounts
                                                                  'cost-imputation': 'SB-456',                         # accounts
                                                                  'managed-by': 'SPA'},                                # default
