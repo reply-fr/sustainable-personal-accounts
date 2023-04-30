@@ -30,20 +30,45 @@ setup_logging()
 from account import Account
 from events import Events
 from key_value_store import KeyValueStore
+from metric import put_metric_data
 
 
 @trap_exception
 def handle_record(event, context=None):
     logging.debug(event)
-    input = Events.decode_spa_event(event)
-    logging.info(f"Remembering {input.label}")
-    records = get_table()
+    record = Events.decode_spa_event(event)
+    save_record(record=record)
+    put_metrics(record=record)
+    return f"[OK] {record.label}"
+
+
+def save_record(record):
+    logging.info(f"Remembering {record.label}")
     stamp = datetime.utcnow().isoformat()
-    payload = input.payload
+    payload = record.payload
     payload['stamp'] = stamp
-    logging.debug(input.payload)
+    logging.debug(record.payload)
+    records = get_table()
     records.remember(hash=stamp[:10], range=stamp[11:], value=payload)
-    return f"[OK] {input.label}"
+
+
+def put_metrics(record):
+    logging.info(f"Putting metrics for {record.label}")
+    put_metric_data(name='TransactionsByCostCenter',
+                    dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(record.payload)),
+                                dict(Name='Environment', Value=Events.get_environment())])
+    put_metric_data(name='TransactionsByLabel',
+                    dimensions=[dict(Name='Label', Value=get_dimension_label(record.payload)),
+                                dict(Name='Environment', Value=Events.get_environment())])
+
+
+def get_dimension_label(record):
+    labels = {
+        'console-login': 'ConsoleLoginTransaction',
+        'on-boarding': 'OnBoardingTransaction',
+        'maintenance': 'MaintenanceTransaction',
+    }
+    return labels.get(record['transaction'], 'GenericTransaction')
 
 
 @trap_exception

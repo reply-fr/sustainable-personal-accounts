@@ -23,14 +23,14 @@ import boto3
 from datetime import date
 import json
 from unittest.mock import patch
-from moto import mock_dynamodb, mock_s3
+from moto import mock_cloudwatch, mock_dynamodb, mock_s3
 import os
 import pytest
 
 from lambdas import Events, KeyValueStore
 from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_daily_report, get_hashes, get_report_path
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_activities_table
 
 
@@ -52,6 +52,7 @@ sample_payload = json.dumps(
                              METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
+@mock_cloudwatch
 def test_store_end_report():
     create_my_table()
 
@@ -71,6 +72,7 @@ def test_store_end_report():
                              METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
+@mock_cloudwatch
 def test_handle_record():
     create_my_table()
 

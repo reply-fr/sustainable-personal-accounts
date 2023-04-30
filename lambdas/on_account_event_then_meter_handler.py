@@ -27,7 +27,6 @@ setup_logging()
 from account import Account
 from events import Events
 from key_value_store import KeyValueStore
-from metric import put_metric_data
 
 
 @trap_exception
@@ -75,12 +74,6 @@ def end_transaction(account_id, transactions, emit=None):
         emit = emit or Events.emit_spa_event
         emit(label=get_event_label(record, success=True),
              payload=transaction)
-        put_metric_data(name='TransactionsByCostCenter',
-                        dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(transaction)),
-                                    dict(Name='Environment', Value=Events.get_environment())])
-        put_metric_data(name='TransactionsByLabel',
-                        dimensions=[dict(Name='Label', Value=get_dimension_label(record)),
-                                    dict(Name='Environment', Value=Events.get_environment())])
     else:
         logging.debug(f"No on-going transaction for account '{account_id}'")
 
@@ -112,14 +105,6 @@ def handle_expired_record(record, emit=None):
 
     emit = emit or Events.emit_spa_event
     emit(label=get_event_label(record, success=False), payload=record)
-
-
-def get_dimension_label(record):
-    labels = {
-        'on-boarding': 'OnBoardingTransaction',
-        'maintenance': 'MaintenanceTransaction',
-    }
-    return labels[record['transaction']]
 
 
 def get_event_label(record, success=True):
