@@ -135,6 +135,7 @@ export BROWSER_PYSCRIPT
 BROWSER := venv/bin/python -c "$$BROWSER_PYSCRIPT"
 
 coverage: venv/bin/activate
+	rm -rf cdk.out/
 	venv/bin/python -m coverage run --omit "*/venv/*,*/tests/*,*/lambdas.out/*" -m pytest
 	venv/bin/python -m coverage report -m
 	venv/bin/python -m coverage html
