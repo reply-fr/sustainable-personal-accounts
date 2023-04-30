@@ -77,22 +77,13 @@ def handle_signin_event(event=None, context=None):
     return f"[OK] {account_id}"
 
 
-@trap_exception
-def handle_report(event=None, context=None):
-    logging.info("Producing inventory reports from shadows")
-    store = get_table()
-    report = build_report(records=store.scan())  # /!\ memory-bound
-    store_report(report)
-    return "[OK]"
-
-
 def handle_signin_with_assumed_role(account_id, identity):
     logging.info(f"Signin event on account {account_id} for role assumed by {identity}")
     settings = Settings.get_settings_for_account(identifier=account_id)  # we shadow only managed accounts
     shadows = get_table()
     shadow = shadows.retrieve(hash=str(account_id)) or {}
     stamps = shadow.get('stamps', {})
-    stamps['last_console_login'] = datetime.utcnow().replace(microsecond=0).isoformat()
+    stamps['ConsoleLogin'] = datetime.utcnow().replace(microsecond=0).isoformat()
     shadow['stamps'] = stamps
     logging.debug(shadow)
     shadows.remember(hash=str(account_id), value=shadow)  # /!\ no lock
@@ -106,6 +97,15 @@ def handle_signin_with_account_root(account_id):
     logging.info(f"Signin event on account {account_id} for root")
 
 
+@trap_exception
+def handle_report(event=None, context=None):
+    logging.info("Producing inventory reports from shadows")
+    store = get_table()
+    report = build_report(records=store.scan())  # /!\ memory-bound
+    store_report(report)
+    return "[OK]"
+
+
 def get_table():
     return KeyValueStore(table_name=os.environ.get('METERING_SHADOWS_DATASTORE', 'SpaShadowsTable'),
                          ttl=os.environ.get('METERING_SHADOWS_TTL', str(181 * 24 * 60 * 60)))
@@ -114,7 +114,7 @@ def get_table():
 def build_report(records):
     logging.info("Building inventory report from shadows")
     buffer = io.StringIO()
-    writer = DictWriter(buffer, fieldnames=['Cost Center', 'Cost Owner', 'Organizational Unit', 'Account', 'Name', 'Email', 'State'])
+    writer = DictWriter(buffer, fieldnames=['Cost Center', 'Cost Owner', 'Organizational Unit', 'Account', 'Name', 'Email', 'State', 'Console Login'])
     writer.writeheader()
     for record in records:
         item = record['value']
@@ -124,7 +124,8 @@ def build_report(records):
                'Email': item['email'],
                'Organizational Unit': Account.get_organizational_unit_name(item['id']),
                'Name': item['name'],
-               'State': item['tags']['account-state']}
+               'State': item['tags']['account-state'],
+               'Console Login': item.get('stamps', {}).get('ConsoleLogin') or '-'}
         writer.writerow(row)
     return buffer.getvalue()
 

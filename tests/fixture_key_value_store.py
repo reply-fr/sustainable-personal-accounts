@@ -116,11 +116,12 @@ def populate_shadows_table():
                                               'cost-center': '__cost__'},
                                      'unit': 'ou-1234-12345678',
                                      'last_state': 'ReleasedAccount',
-                                     'stamps': {'ExpiredAccount': '2023-03-09T22:11:49',
-                                                'PurgeReport': '2023-03-09T22:13:29',
-                                                'PurgedAccount': '2023-03-09T22:13:39',
-                                                'AssignedAccount': '2023-03-09T22:13:59',
+                                     'stamps': {'AssignedAccount': '2023-03-09T22:13:59',
+                                                'ConsoleLogin': '2023-03-09T22:13:29',
+                                                'ExpiredAccount': '2023-03-09T22:11:49',
                                                 'PreparedAccount': '2023-03-09T22:15:14',
+                                                'PurgedAccount': '2023-03-09T22:13:39',
+                                                'PurgeReport': '2023-03-09T22:13:29',
                                                 'ReleasedAccount': '2023-03-09T22:15:24'},
                                      'last_purge_log': "purge log"}})
 

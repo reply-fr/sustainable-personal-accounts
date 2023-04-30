@@ -141,7 +141,15 @@ def test_handle_report():
                              Key=get_report_path())
     assert response['ContentLength'] > 100
     report = response['Body'].read().decode('utf-8')
-    assert len(report.split("\n")) == 10
+    assert report == ("Cost Center,Cost Owner,Organizational Unit,Account,Name,Email,State,Console Login\r\n"
+                      "DevOps Tools,bob@example.com,Unknown,222222222222,Alice,alice@example.com,released,2023-03-09T22:13:29\r\n"
+                      "Computing Tools,cesar@example.com,Unknown,333333333333,Bob,bob@example.com,released,2023-03-09T22:13:29\r\n"
+                      "Tools,alfred@example.com,Unknown,444444444444,César,cesar@example.com,released,2023-03-09T22:13:29\r\n"
+                      "Computing Tools,cesar@example.com,Unknown,555555555555,Efoe,efoe@example.com,released,2023-03-09T22:13:29\r\n"
+                      "DevOps Tools,bob@example.com,Unknown,666666666666,Francis,francis@example.com,assigned,2023-03-09T22:13:29\r\n"
+                      "DevOps Tools,bob@example.com,Unknown,777777777777,Gustav,gustav@example.com,released,2023-03-09T22:13:29\r\n"
+                      "DevOps Tools,bob@example.com,Unknown,888888888888,Irène,irene@example.com,released,2023-03-09T22:13:29\r\n"
+                      "Reporting Tools,alfred@example.com,Unknown,999999999999,Joe,joe@example.com,purged,2023-03-09T22:13:29\r\n")
 
 
 @pytest.mark.integration_tests
