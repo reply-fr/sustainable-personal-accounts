@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: |
+  This template forwards events from default bus in AWS region where IAM Identity Center has been deployed
+  to the default bus of the account were SPA has been deployed.
+
+Parameters:
+
+  TargetBusArn:
+    Description: |
+      The ARN of the default bus in the account and region where SPA has been deployed.
+      For example: arn:aws:events:eu-west-1:123456789012:event-bus/default
+    Type: String
+
+Resources:
+
+  EventForwarder:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: ForwardSigninEventsToSustainablePersonalAccounts
+      Description: |
+        Forward to SPA the successful logins on the AWS Console
+      EventPattern:
+        detail:
+          eventSource: ["signin.amazonaws.com"]
+          eventName: ["ConsoleLogin"]
+      Targets:
+        - Arn: !Ref TargetBusArn
+          Id: ToSustainablePersonalAccounts
+          RoleArn: !GetAtt EventForwarderRole.Arn
+
+  EventForwarderRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: ForwardSigninEventsToSustainablePersonalAccountsRole
+      Description: |
+        Allow Eventbridge to forward events
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "events.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: AllowToPutSigninEventsToSustainablePersonalAccounts
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: ["events:PutEvents"]
+                Resource:
+                  - !Ref TargetBusArn
