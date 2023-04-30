@@ -79,7 +79,12 @@ def handle_signin_event(event=None, context=None):
 
 def handle_signin_with_assumed_role(account_id, identity):
     logging.info(f"Signin event on account {account_id} for role assumed by {identity}")
-    settings = Settings.get_settings_for_account(identifier=account_id)  # we shadow only managed accounts
+    Settings.get_settings_for_account(identifier=account_id)  # exception if account is not managed
+    update_shadow(account_id)
+    put_event(label='ConsoleLoginEvent', account_id=account_id)
+
+
+def update_shadow(account_id):
     shadows = get_table()
     shadow = shadows.retrieve(hash=str(account_id)) or {}
     stamps = shadow.get('stamps', {})
@@ -87,6 +92,14 @@ def handle_signin_with_assumed_role(account_id, identity):
     shadow['stamps'] = stamps
     logging.debug(shadow)
     shadows.remember(hash=str(account_id), value=shadow)  # /!\ no lock
+
+
+def put_event(label, account_id, emit=None):
+    payload = Account.list_tags(account_id)
+    payload['cost-center'] = Account.get_cost_center(payload)
+    payload.update(dict(transaction='console-login', account=account_id))
+    emit = emit or Events.emit_activity_event
+    emit(label=label, payload=payload)
 
 
 def handle_signin_with_account_user(account_id, user_name):

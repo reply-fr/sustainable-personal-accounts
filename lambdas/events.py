@@ -19,7 +19,9 @@ from boto3.session import Session
 import json
 import logging
 import os
+from time import time
 from types import SimpleNamespace
+from uuid import uuid4
 
 from account import Account
 
@@ -27,6 +29,7 @@ from account import Account
 class Events:
 
     ACTIVITY_EVENT_LABELS = [
+        'ConsoleLoginEvent',
         'SuccessfulMaintenanceEvent',
         'SuccessfulOnBoardingEvent']
 
@@ -179,6 +182,22 @@ class Events:
         event = cls.build_account_event(label=label, account=account, message=message)
         cls.put_event(event=event, session=session)
         return event
+
+    @classmethod
+    def emit_activity_event(cls, label, payload, session=None):
+        if label not in cls.ACTIVITY_EVENT_LABELS:
+            raise ValueError(f"Unexpected label '{label}' for an activity event")
+        for mandatory in ['account', 'cost-center', 'transaction']:
+            if not payload.get(mandatory):
+                raise ValueError(f"Missing attribute '{mandatory}' in activity")
+        if not payload.get('end'):
+            payload['end'] = time()
+        if not payload.get('begin'):
+            payload['begin'] = payload['end']
+        payload['duration'] = payload['end'] - payload['begin']
+        if not payload.get('identifier'):
+            payload['identifier'] = str(uuid4())
+        return cls.emit_spa_event(label=label, payload=payload, session=session)
 
     @classmethod
     def emit_spa_event(cls, label, payload=None, session=None):

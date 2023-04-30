@@ -46,9 +46,9 @@ def test_handle_account_event_for_maintenance_transaction():
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulMaintenanceEvent'
-        assert set(payload.keys()) == {'transaction', 'account', 'cost-center', 'identifier', 'begin', 'end', 'duration'}
+        assert set(payload.keys()) == {'transaction', 'account', 'cost-center', 'begin', 'end'}
         assert payload['account'] == "123456789012"
-        assert payload['duration'] > 0.0
+        assert payload['transaction'] == 'maintenance'
 
     expired = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                               context=dict(account="123456789012",
@@ -80,9 +80,9 @@ def test_handle_account_event_for_on_boarding_transaction():
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulOnBoardingEvent'
-        assert set(payload.keys()) == {'transaction', 'account', 'cost-center', 'identifier', 'begin', 'end', 'duration'}
+        assert set(payload.keys()) == {'transaction', 'account', 'cost-center', 'begin', 'end'}
         assert payload['account'] == "123456789012"
-        assert payload['duration'] > 0.0
+        assert payload['transaction'] == 'on-boarding'
 
     created = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
                                               context=dict(account="123456789012",

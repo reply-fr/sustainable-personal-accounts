@@ -19,7 +19,6 @@ import json
 import logging
 import os
 from time import time
-from uuid import uuid4
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -52,28 +51,23 @@ def handle_account_event(event, context=None, emit=None):
 
 def begin_transaction(transaction, account_id, transactions):
     logging.info(f"Beginning transaction '{transaction}' for account '{account_id}")
-    transaction = {'transaction': transaction,
-                   'account': account_id,
-                   'begin': time(),
-                   'identifier': str(uuid4())}
-    logging.debug(transaction)
-    transactions.remember(account_id, value=transaction)
+    record = Account.list_tags(account_id)
+    record['cost-center'] = Account.get_cost_center(record)
+    record.update(dict(transaction=transaction, account=account_id, begin=time()))
+    logging.debug(record)
+    transactions.remember(account_id, value=record)
 
 
 def end_transaction(account_id, transactions, emit=None):
     record = transactions.retrieve(account_id)
     if record:
-        logging.info(f"Ending transaction '{hash}'")
+        transaction = record['transaction']
+        logging.info(f"Ending transaction '{transaction}' for account '{account_id}")
         transactions.forget(account_id)
-        transaction = Account.list_tags(account_id)
-        transaction['cost-center'] = Account.get_cost_center(transaction)
-        transaction.update(record)
-        transaction['end'] = time()
-        transaction['duration'] = transaction['end'] - transaction['begin']
-        logging.debug(transaction)
-        emit = emit or Events.emit_spa_event
-        emit(label=get_event_label(record, success=True),
-             payload=transaction)
+        record['end'] = time()
+        logging.debug(record)
+        emit = emit or Events.emit_activity_event
+        emit(label=get_event_label(record, success=True), payload=record)
     else:
         logging.debug(f"No on-going transaction for account '{account_id}'")
 

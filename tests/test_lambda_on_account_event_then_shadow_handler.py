@@ -22,7 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import boto3
 from datetime import date
 from unittest.mock import patch
-from moto import mock_dynamodb, mock_organizations, mock_s3, mock_ssm
+from moto import mock_dynamodb, mock_events, mock_organizations, mock_s3, mock_ssm
 import os
 import pytest
 
@@ -84,6 +84,7 @@ def test_handle_signin_event_for_account_root():
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='INFO'))
 @mock_dynamodb
+@mock_events
 @mock_organizations
 @mock_ssm
 def test_handle_signin_event_for_assumed_role():
