@@ -22,7 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import boto3
 from datetime import date
 from unittest.mock import patch
-from moto import mock_dynamodb, mock_organizations, mock_s3
+from moto import mock_dynamodb, mock_organizations, mock_s3, mock_ssm
 import os
 import pytest
 
@@ -32,6 +32,7 @@ from lambdas.key_value_store import KeyValueStore
 
 pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_shadows_table
+from tests.fixture_small_setup import given_a_small_setup
 
 
 @pytest.mark.integration_tests
@@ -72,11 +73,52 @@ def test_handle_account_event_on_unexpected_environment():
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-def test_handle_signin_event():
-    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-event-template.json",
+def test_handle_signin_event_for_account_root():
+    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-account-root-template.json",
+                                            context=dict(account_id="123456789012"))
+    assert handle_signin_event(event=event) == "[OK] 123456789012"
+
+
+@pytest.mark.integration_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             METERING_SHADOWS_DATASTORE="my_table",
+                             VERBOSITY='INFO'))
+@mock_dynamodb
+@mock_organizations
+@mock_ssm
+def test_handle_signin_event_for_assumed_role():
+    context = given_a_small_setup(environment='envt1')
+    create_my_table()
+
+    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-assumed-role-template.json",
+                                            context=dict(account_id=context.alice_account,
+                                                         account_holder="alice@example.com"))
+    assert handle_signin_event(event=event) == "[OK] " + str(context.alice_account)
+
+    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-assumed-role-template.json",
                                             context=dict(account_id="123456789012",
                                                          account_holder="alice@example.com"))
-    assert handle_signin_event(event=event) == "[OK] 123456789012 (alice@example.com)"
+    assert handle_signin_event(event=event) == "[DEBUG] No settings could be found for account 123456789012"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+def test_handle_signin_event_for_iam_user():
+    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-iam-user-template.json",
+                                            context=dict(account_id="123456789012",
+                                                         account_holder="alice"))
+    assert handle_signin_event(event=event) == "[OK] 123456789012"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+def test_handle_signin_event_for_unknown_identity_type():
+    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-account-root-template.json",
+                                            context=dict(account_id="123456789012"))
+    event["detail"]["userIdentity"]["type"] = '*alien*'
+    assert handle_signin_event(event=event) == "[DEBUG] Do not know how to handle identity type '*alien*'"
 
 
 @pytest.mark.integration_tests

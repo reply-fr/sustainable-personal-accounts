@@ -30,6 +30,7 @@ setup_logging()
 from account import Account
 from events import Events
 from key_value_store import KeyValueStore
+from settings import Settings
 
 
 @trap_exception
@@ -62,11 +63,18 @@ def handle_signin_event(event=None, context=None):
     if event["detail"]["responseElements"] != dict(ConsoleLogin="Success"):
         raise ValueError("This event is not a successful console login")
     account_id = event["detail"]["userIdentity"]["accountId"]
-    user_principal = event["detail"]["userIdentity"]["principalId"]
-    session_principal = event["detail"]["userIdentity"]["sessionContext"]["sessionIssuer"]["principalId"]
-    account_holder = user_principal[len(session_principal) + 1:]
-    logging.info(f"Signin event on account {account_id} for {account_holder}")
-    return f"[OK] {account_id} ({account_holder})"
+    identity_type = event["detail"]["userIdentity"]["type"]
+    if identity_type == 'AssumedRole':
+        identity = event["detail"]["userIdentity"]["arn"].split('/')[-1]
+        handle_signin_with_assumed_role(account_id=account_id, identity=identity)
+    elif identity_type == 'IAMUser':
+        user_name = event["detail"]["userIdentity"]["userName"]
+        handle_signin_with_account_user(account_id=account_id, user_name=user_name)
+    elif identity_type == 'Root':
+        handle_signin_with_account_root(account_id=account_id)
+    else:
+        raise ValueError(f"Do not know how to handle identity type '{identity_type}'")
+    return f"[OK] {account_id}"
 
 
 @trap_exception
@@ -76,6 +84,26 @@ def handle_report(event=None, context=None):
     report = build_report(records=store.scan())  # /!\ memory-bound
     store_report(report)
     return "[OK]"
+
+
+def handle_signin_with_assumed_role(account_id, identity):
+    logging.info(f"Signin event on account {account_id} for role assumed by {identity}")
+    settings = Settings.get_settings_for_account(identifier=account_id)  # we shadow only managed accounts
+    shadows = get_table()
+    shadow = shadows.retrieve(hash=str(account_id)) or {}
+    stamps = shadow.get('stamps', {})
+    stamps['last_console_login'] = datetime.utcnow().replace(microsecond=0).isoformat()
+    shadow['stamps'] = stamps
+    logging.debug(shadow)
+    shadows.remember(hash=str(account_id), value=shadow)  # /!\ no lock
+
+
+def handle_signin_with_account_user(account_id, user_name):
+    logging.info(f"Signin event on account {account_id} for IAM user {user_name}")
+
+
+def handle_signin_with_account_root(account_id):
+    logging.info(f"Signin event on account {account_id} for root")
 
 
 def get_table():
