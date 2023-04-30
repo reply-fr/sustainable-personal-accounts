@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Description: |
-  This template forwards events from default bus in AWS region where IAM Identity Center has been deployed
+  This template forwards events from default bus in an AWS region
   to the default bus of the account were SPA has been deployed.
 
 Parameters:
