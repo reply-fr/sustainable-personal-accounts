@@ -46,6 +46,7 @@ class OnAccountEventThenShadow(Construct):
         parameters['environment']['METERING_SHADOWS_TTL'] = str(toggles.metering_shadows_ttl_in_seconds)
         parameters['environment']['REPORTING_INVENTORIES_PREFIX'] = toggles.reporting_inventories_prefix
         self.functions = [self.on_event(parameters=parameters),
+                          self.on_signin(parameters=parameters),
                           self.on_schedule(parameters=parameters)]
 
         for function in self.functions:
@@ -72,6 +73,29 @@ class OnAccountEventThenShadow(Construct):
                  source=['SustainablePersonalAccounts'],
                  detail={"Environment": [toggles.environment_identifier]},
                  detail_type=Events.ACCOUNT_EVENT_LABELS),
+             targets=[LambdaFunction(function)])
+
+        return function
+
+    def on_signin(self, parameters, name="UpdateShadowOnSignin") -> Function:
+
+        function_name = toggles.environment_identifier + name
+
+        LogGroup(self, function_name + "Log",
+                 log_group_name=f"/aws/lambda/{function_name}",
+                 retention=RetentionDays.THREE_MONTHS,
+                 removal_policy=RemovalPolicy.DESTROY)
+
+        function = Function(self, name,
+                            function_name=function_name,
+                            description="Update shadow record on signin event",
+                            handler="on_account_event_then_shadow_handler.handle_signin_event",
+                            **parameters)
+
+        Rule(self, "SigninRule",
+             description="Trigger Lambda function on signin event",
+             event_pattern=EventPattern(
+                 detail={"eventSource": ["signin.amazonaws.com"], "eventName": ["ConsoleLogin"]}),
              targets=[LambdaFunction(function)])
 
         return function

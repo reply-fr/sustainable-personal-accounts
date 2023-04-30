@@ -30,7 +30,7 @@ import pytest
 from lambdas.on_cost_computation_handler import build_charge_reports_per_cost_center, build_service_reports_per_cost_center, email_reports, get_report_path, store_report
 from tests.test_lambda_costs import sample_accounts, sample_chunk_monthly_charges_per_account, sample_chunk_monthly_services_per_account
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests

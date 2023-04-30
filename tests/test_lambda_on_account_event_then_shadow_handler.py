@@ -27,14 +27,14 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_report, build_report, get_report_path
+from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_signin_event, handle_report, build_report, get_report_path
 from lambdas.key_value_store import KeyValueStore
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
@@ -71,6 +71,16 @@ def test_handle_account_event_on_unexpected_environment():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+def test_handle_signin_event():
+    event = Events.load_event_from_template(template="fixtures/events/signin-console-login-event-template.json",
+                                            context=dict(account_id="123456789012",
+                                                         account_holder="alice@example.com"))
+    assert handle_signin_event(event=event) == "[OK] 123456789012 (alice@example.com)"
+
+
+@pytest.mark.integration_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              REPORTS_BUCKET_NAME="my_bucket",
                              REPORTING_INVENTORIES_PREFIX="my_inventories",
@@ -92,7 +102,7 @@ def test_handle_report():
     assert len(report.split("\n")) == 10
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='INFO'))

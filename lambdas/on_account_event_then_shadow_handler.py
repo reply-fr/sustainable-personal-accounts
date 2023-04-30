@@ -57,6 +57,19 @@ def handle_account_event(event, context=None, emit=None):
 
 
 @trap_exception
+def handle_signin_event(event=None, context=None):
+    logging.debug(event)
+    if event["detail"]["responseElements"] != dict(ConsoleLogin="Success"):
+        raise ValueError("This event is not a successful console login")
+    account_id = event["detail"]["userIdentity"]["accountId"]
+    user_principal = event["detail"]["userIdentity"]["principalId"]
+    session_principal = event["detail"]["userIdentity"]["sessionContext"]["sessionIssuer"]["principalId"]
+    account_holder = user_principal[len(session_principal) + 1:]
+    logging.info(f"Signin event on account {account_id} for {account_holder}")
+    return f"[OK] {account_id} ({account_holder})"
+
+
+@trap_exception
 def handle_report(event=None, context=None):
     logging.info("Producing inventory reports from shadows")
     store = get_table()
