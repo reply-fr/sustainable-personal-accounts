@@ -77,16 +77,16 @@ class OnAccountEventThenShadow(Construct):
 
         return function
 
-    def on_signin(self, parameters, name="UpdateShadowOnSignin") -> Function:
+    def on_signin(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + name
+        function_name = toggles.environment_identifier + "UpdateShadowOnSignin"
 
         LogGroup(self, function_name + "Log",
                  log_group_name=f"/aws/lambda/{function_name}",
                  retention=RetentionDays.THREE_MONTHS,
                  removal_policy=RemovalPolicy.DESTROY)
 
-        function = Function(self, name,
+        function = Function(self, "FromConsoleLogin",
                             function_name=function_name,
                             description="Update shadow record on signin event",
                             handler="on_account_event_then_shadow_handler.handle_signin_event",
