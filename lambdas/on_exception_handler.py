@@ -72,7 +72,7 @@ def start_incident(label, payload, session=None):
 
 
 def tag_incident(incident_arn, payload, session=None):
-    account = payload.get('account', '123456789012')
+    account = payload.get('account')
     if not account:
         logging.debug(f"No account identifier in {payload}")
         return
@@ -94,7 +94,6 @@ def tag_incident(incident_arn, payload, session=None):
 
 
 def attach_cost_report(incident_arn, payload, session=None, day=None):
-    day = day or date.today()
     account = payload.get('account')
     if not account:
         logging.debug(f"No account identifier in {payload}")
@@ -102,6 +101,7 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
 
     logging.info("Attaching cost and usage report to incident report")
     try:
+        day = day or date.today()
         breakdown = Costs.enumerate_monthly_costs_for_account(account=account, day=day, session=session)
         path = get_report_path(label=str(account), day=day)
         store_report(path=path, report=Costs.build_breakdown_of_costs_excel_report_for_account(account=account, day=day, breakdown=breakdown))

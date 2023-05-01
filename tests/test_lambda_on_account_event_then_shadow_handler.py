@@ -27,7 +27,7 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_account_event_then_shadow_handler import handle_account_event, handle_signin_event, handle_report, build_report, get_report_path
+from lambdas.on_account_event_then_shadow_handler import (handle_account_event, handle_console_login_event, handle_report, build_report, get_report_path)
 from lambdas.key_value_store import KeyValueStore
 
 pytestmark = pytest.mark.wip
@@ -70,13 +70,17 @@ def test_handle_account_event_on_unexpected_environment():
     assert handle_account_event(event=event) == "[DEBUG] Unexpected environment 'alien*environment'"
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-def test_handle_signin_event_for_account_root():
+@mock_events
+@mock_organizations
+@mock_ssm
+def test_handle_console_login_event_for_account_root():
+    context = given_a_small_setup(environment="envt1")
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-account-root-template.json",
-                                            context=dict(account_id="123456789012"))
-    assert handle_signin_event(event=event) == "[OK] 123456789012"
+                                            context=dict(account_id=context.alice_account))
+    assert handle_console_login_event(event=event) == f"[OK] {context.alice_account}"
 
 
 @pytest.mark.integration_tests
@@ -87,39 +91,44 @@ def test_handle_signin_event_for_account_root():
 @mock_events
 @mock_organizations
 @mock_ssm
-def test_handle_signin_event_for_assumed_role():
+def test_handle_console_login_event_for_assumed_role():
     context = given_a_small_setup(environment='envt1')
     create_my_table()
 
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-assumed-role-template.json",
                                             context=dict(account_id=context.alice_account,
                                                          account_holder="alice@example.com"))
-    assert handle_signin_event(event=event) == "[OK] " + str(context.alice_account)
+    assert handle_console_login_event(event=event) == f"[OK] {context.alice_account}"
 
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-assumed-role-template.json",
                                             context=dict(account_id="123456789012",
                                                          account_holder="alice@example.com"))
-    assert handle_signin_event(event=event) == "[DEBUG] No settings could be found for account 123456789012"
+    assert handle_console_login_event(event=event) == "[DEBUG] No settings could be found for account 123456789012"
 
 
-@pytest.mark.unit_tests
+@pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-def test_handle_signin_event_for_iam_user():
+@mock_events
+@mock_organizations
+@mock_ssm
+def test_handle_console_login_event_for_iam_user():
+    context = given_a_small_setup(environment='envt1')
+
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-iam-user-template.json",
-                                            context=dict(account_id="123456789012",
-                                                         account_holder="alice"))
-    assert handle_signin_event(event=event) == "[OK] 123456789012"
+                                            context=dict(account_id=context.bob_account,
+                                                         account_holder="bob"))
+    assert handle_console_login_event(event=event) == f"[OK] {context.bob_account}"
 
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-def test_handle_signin_event_for_unknown_identity_type():
+def test_handle_console_login_event_for_unknown_identity_type():
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-account-root-template.json",
                                             context=dict(account_id="123456789012"))
     event["detail"]["userIdentity"]["type"] = '*alien*'
-    assert handle_signin_event(event=event) == "[DEBUG] Do not know how to handle identity type '*alien*'"
+    assert handle_console_login_event(event=event) == "[DEBUG] Do not know how to handle identity type '*alien*'"
 
 
 @pytest.mark.integration_tests

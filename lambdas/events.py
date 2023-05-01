@@ -44,6 +44,8 @@ class Events:
 
     EXCEPTION_EVENT_LABELS = [
         'BudgetAlertException',
+        'ConsoleLoginWithIamUserException',
+        'ConsoleLoginWithRootException',
         'FailedCodebuildException',
         'FailedMaintenanceException',
         'FailedOnBoardingException',
@@ -197,6 +199,15 @@ class Events:
         payload['duration'] = payload['end'] - payload['begin']
         if not payload.get('identifier'):
             payload['identifier'] = str(uuid4())
+        return cls.emit_spa_event(label=label, payload=payload, session=session)
+
+    @classmethod
+    def emit_exception_event(cls, label, payload, session=None):
+        if label not in cls.EXCEPTION_EVENT_LABELS:
+            raise ValueError(f"Unexpected label '{label}' for an exception event")
+        for mandatory in ['account', 'message', 'title']:
+            if not payload.get(mandatory):
+                raise ValueError(f"Missing attribute '{mandatory}' in exception")
         return cls.emit_spa_event(label=label, payload=payload, session=session)
 
     @classmethod

@@ -151,6 +151,12 @@ class Account:
         return item
 
     @classmethod
+    def get_account_label(cls, account, session=None) -> str:
+        session = session or get_organizations_session()
+        name = session.client('organizations').describe_account(AccountId=account)['Account']['Name']
+        return f"{name} ({account})"
+
+    @classmethod
     def get_name(cls, account, session=None):
         session = session or get_organizations_session()
         return session.client('organizations').describe_account(AccountId=account)['Account']['Name']

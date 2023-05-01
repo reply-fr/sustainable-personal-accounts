@@ -58,7 +58,7 @@ def handle_account_event(event, context=None, emit=None):
 
 
 @trap_exception
-def handle_signin_event(event=None, context=None):
+def handle_console_login_event(event=None, context=None):
     logging.debug(event)
     if event["detail"]["responseElements"] != dict(ConsoleLogin="Success"):
         raise ValueError("This event is not a successful console login")
@@ -66,22 +66,22 @@ def handle_signin_event(event=None, context=None):
     identity_type = event["detail"]["userIdentity"]["type"]
     if identity_type == 'AssumedRole':
         identity = event["detail"]["userIdentity"]["arn"].split('/')[-1]
-        handle_signin_with_assumed_role(account_id=account_id, identity=identity)
+        handle_console_login_with_assumed_role(account_id=account_id, identity=identity)
     elif identity_type == 'IAMUser':
         user_name = event["detail"]["userIdentity"]["userName"]
-        handle_signin_with_account_user(account_id=account_id, user_name=user_name)
+        handle_console_login_with_account_user(account_id=account_id, user_name=user_name)
     elif identity_type == 'Root':
-        handle_signin_with_account_root(account_id=account_id)
+        handle_console_login_with_account_root(account_id=account_id)
     else:
         raise ValueError(f"Do not know how to handle identity type '{identity_type}'")
     return f"[OK] {account_id}"
 
 
-def handle_signin_with_assumed_role(account_id, identity):
-    logging.info(f"Signin event on account {account_id} for role assumed by {identity}")
+def handle_console_login_with_assumed_role(account_id, identity):
+    logging.info(f"Console login on account {account_id} with role assumed by {identity}")
     Settings.get_settings_for_account(identifier=account_id)  # exception if account is not managed
     update_shadow(account_id)
-    put_event(label='ConsoleLoginEvent', account_id=account_id)
+    put_activity_event(label='ConsoleLoginEvent', account_id=account_id)
 
 
 def update_shadow(account_id):
@@ -94,7 +94,7 @@ def update_shadow(account_id):
     shadows.remember(hash=str(account_id), value=shadow)  # /!\ no lock
 
 
-def put_event(label, account_id, emit=None):
+def put_activity_event(label, account_id, emit=None):
     payload = Account.list_tags(account_id)
     payload['cost-center'] = Account.get_cost_center(payload)
     payload.update(dict(transaction='console-login', account=account_id))
@@ -102,12 +102,24 @@ def put_event(label, account_id, emit=None):
     emit(label=label, payload=payload)
 
 
-def handle_signin_with_account_user(account_id, user_name):
-    logging.info(f"Signin event on account {account_id} for IAM user {user_name}")
+def handle_console_login_with_account_user(account_id, user_name, emit=None):
+    label = Account.get_account_label(account_id)
+    logging.info(f"Console login on account {label} with IAM user {user_name} credentials")
+    emit = emit or Events.emit_exception_event
+    emit(label='ConsoleLoginWithIamUserException',
+         payload=dict(account=account_id,
+                      message=f"Check unexpected activity on account {label}",
+                      title=f"Console login on account {label} with IAM user {user_name} credentials"))
 
 
-def handle_signin_with_account_root(account_id):
-    logging.info(f"Signin event on account {account_id} for root")
+def handle_console_login_with_account_root(account_id, emit=None):
+    label = Account.get_account_label(account_id)
+    logging.info(f"Console login on account {label} with account root credentials")
+    emit = emit or Events.emit_exception_event
+    emit(label='ConsoleLoginWithRootException',
+         payload=dict(account=account_id,
+                      message=f"Check unexpected activity on account {label}",
+                      title=f"Console login on account {label} with account root credentials"))
 
 
 @trap_exception

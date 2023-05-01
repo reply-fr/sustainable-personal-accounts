@@ -53,10 +53,12 @@ def handle_codebuild_event(event, context, session=None):
     logging.info("Receiving failures from CodeBuild")
     logging.info(event)
     input = Events.decode_codebuild_event(event)
-    Events.emit_spa_event(label='FailedCodebuildException',
-                          payload=input.__dict__,
-                          session=session)
-    return '[OK]'
+    Events.emit_exception_event(label='FailedCodebuildException',
+                                payload=dict(account=input.account,
+                                             message=f"You should inspect Codebuild project '{input.project}' that has status '{input.status}'",
+                                             title=f"Codebuild event for account {input.account}"),
+                                session=session)
+    return f"[OK] {input.account}"
 
 
 @trap_exception
@@ -72,15 +74,15 @@ def handle_sqs_record(record, session=None):
     try:
         body = json.loads(record['body'])
         account_id = body['TopicArn'].split(':')[4]
-        label = get_account_label(account_id=account_id, session=session)
+        label = Account.get_account_label(account=account_id, session=session)
         title = get_subject(account=label)
         message = get_notification_message(account=label, message=body['Message'])
         publish_notification(notification=dict(Message=message, Subject=title), session=session)
-        Events.emit_spa_event(label='BudgetAlertException',
-                              payload=dict(account=account_id,
-                                           message=get_notification_message(account=label, message=body['Message']),
-                                           title=get_subject(account=label)),
-                              session=session)
+        Events.emit_exception_event(label='BudgetAlertException',
+                                    payload=dict(account=account_id,
+                                                 message=get_notification_message(account=label, message=body['Message']),
+                                                 title=get_subject(account=label)),
+                                    session=session)
     except json.decoder.JSONDecodeError:
         publish_notification(notification=dict(Message=message, Subject="Alert message"), session=session)
         Events.emit_spa_event(label='GenericException',
@@ -106,11 +108,6 @@ def publish_notification_on_sns(notification, session=None):
         logging.info(f"Publishing on SNS: {topic_arn}")
         session = session or Session()
         session.client('sns').publish(TopicArn=topic_arn, **notification)
-
-
-def get_account_label(account_id, session=None) -> str:
-    account = Account.describe(account_id, session=session)
-    return f"{account.id} ({account.email})"
 
 
 def get_codebuild_message(account, project, status) -> str:
