@@ -43,22 +43,27 @@ def handle_record(event, context=None):
 
 
 def save_record(record):
-    logging.info(f"Remembering {record.label}")
     stamp = datetime.utcnow().isoformat()
     payload = record.payload
     payload['stamp'] = stamp
+    account = payload.get('account', '-')
+    logging.info(f"Remembering {record.label} for account '{account}'")
     logging.debug(record.payload)
     records = get_table()
     records.remember(hash=stamp[:10], range=stamp[11:], value=payload)
 
 
 def put_metrics(record):
-    logging.info(f"Putting metrics for {record.label}")
+    cost_center = Account.get_cost_center(record.payload)
+    logging.info(f"Putting metric for {record.label} on cost center '{cost_center}'")
     put_metric_data(name='TransactionsByCostCenter',
-                    dimensions=[dict(Name='CostCenter', Value=Account.get_cost_center(record.payload)),
+                    dimensions=[dict(Name='CostCenter', Value=cost_center),
                                 dict(Name='Environment', Value=Events.get_environment())])
+
+    label = get_dimension_label(record.payload)
+    logging.info(f"Putting metric for {record.label} on label '{label}'")
     put_metric_data(name='TransactionsByLabel',
-                    dimensions=[dict(Name='Label', Value=get_dimension_label(record.payload)),
+                    dimensions=[dict(Name='Label', Value=label),
                                 dict(Name='Environment', Value=Events.get_environment())])
 
 

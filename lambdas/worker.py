@@ -35,11 +35,36 @@ class Worker:
         }
     }
 
+    CONSOLE_LOGIN_EVENT_PATTERN = {
+        "detail": {
+            "eventSource": ["signin.amazonaws.com"],
+            "eventName": ["ConsoleLogin"]
+        }
+    }
+
     PROJECT_NAME_FOR_ACCOUNT_PREPARATION = "SpaProjectForAccountPreparation"
     PROJECT_NAME_FOR_ACCOUNT_PURGE = "SpaProjectForAccountPurge"
 
     @classmethod
-    def deploy_events_rule(cls, event_bus_arn, role_arn, name="SpaEventsRuleForCodebuild", description="", session=None):
+    def deploy_codebuild_events_rule(cls, event_bus_arn, role_arn, session=None):
+        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
+                               role_arn=role_arn,
+                               name="SpaEventsRuleForCodebuild",
+                               description="Forward Codebuild events to global event bus",
+                               pattern=cls.CODEBUILD_EVENT_PATTERN,
+                               session=session)
+
+    @classmethod
+    def deploy_console_login_events_rule(cls, event_bus_arn, role_arn, session=None):
+        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
+                               role_arn=role_arn,
+                               name="SpaEventsRuleForConsoleLogin",
+                               description="Forward Console Login events to global event bus",
+                               pattern=cls.CONSOLE_LOGIN_EVENT_PATTERN,
+                               session=session)
+
+    @classmethod
+    def deploy_events_rule(cls, event_bus_arn, role_arn, name, pattern, description="", session=None):
         session = session or Session()
         events = session.client('events')
 
@@ -51,7 +76,7 @@ class Worker:
 
         events.put_rule(
             Name=name,
-            EventPattern=json.dumps(cls.CODEBUILD_EVENT_PATTERN),
+            EventPattern=json.dumps(pattern),
             Description=description,
             Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
 
@@ -251,14 +276,6 @@ class Worker:
         except ClientError as error:
             logging.error(error)
 
-    @classmethod
-    def forward_codebuild_events_to_central_bus(cls, event_bus_arn, session=None):
-        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn,
-                                              session=session)
-        cls.deploy_events_rule(event_bus_arn=event_bus_arn,
-                               role_arn=role_arn,
-                               session=session)
-
     @staticmethod
     def get_preparation_variables(details, settings, event_bus_arn, topic_arn) -> dict:
         variables = dict(BUDGET_AMOUNT=200,
@@ -316,7 +333,9 @@ class Worker:
         logging.info(f"Preparing account '{details.id}'...")
         logging.debug(f"account: {details.__dict__}")
         logging.debug(f"settings: {settings}")
-        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
+        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn, session=session)
+        cls.deploy_console_login_events_rule(event_bus_arn=event_bus_arn, role_arn=role_arn, session=session)
+        cls.deploy_codebuild_events_rule(event_bus_arn=event_bus_arn, role_arn=role_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PREPARATION,
                            description="This project prepares an AWS account before being released to cloud engineer",
                            buildspec=buildspec,
@@ -332,7 +351,8 @@ class Worker:
         session = session or get_account_session(account_id)
 
         logging.info(f"Purging account '{account_id}'...")
-        cls.forward_codebuild_events_to_central_bus(event_bus_arn=event_bus_arn, session=session)
+        role_arn = cls.deploy_role_for_events(event_bus_arn=event_bus_arn, session=session)
+        cls.deploy_codebuild_events_rule(event_bus_arn=event_bus_arn, role_arn=role_arn, session=session)
         cls.deploy_project(name=cls.PROJECT_NAME_FOR_ACCOUNT_PURGE,
                            description="This project purges an AWS account of cloud resources",
                            buildspec=buildspec,
