@@ -90,9 +90,8 @@ class ServerlessStack(Stack):
 
             self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
 
-        tables = []  # monitored in cloudwatch dashboard
-        # for label in ['OnAccountEventThenMeter', 'OnAccountEventThenShadow', 'OnActivity']:
-        for label in ['OnActivity']:
+        tables = []  # the list of dynamodb tables
+        for label in ['OnAccountEventThenMeter', 'OnAccountEventThenShadow', 'OnActivity']:
             tables.append(constructs[label].table)
 
         Cockpit(self,
