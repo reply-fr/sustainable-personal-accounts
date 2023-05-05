@@ -122,7 +122,7 @@ class Cockpit(Construct):
                                  label='',
                                  period=Duration.days(1))],
             left_y_axis=dict(show_units=False),
-            stacked=True,
+            stacked=False,
             height=6,
             width=8)
 
