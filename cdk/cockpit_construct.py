@@ -63,11 +63,9 @@ class Cockpit(Construct):
             self.get_lambda_errors_widget(functions=functions))
 
         self.cockpit.add_widgets(
-            # self.get_dynamodb_request_latency_widget(tables=tables),
-            self.get_dynamodb_read_capacity_units_widget(tables=tables),
-            self.get_dynamodb_write_capacity_units_widget(tables=tables),
-            self.get_dynamodb_system_errors_widget(tables=tables),
-            self.get_dynamodb_user_errors_widget(tables=tables))
+            self.get_dynamodb_read_capacity_units_widget(),
+            self.get_dynamodb_write_capacity_units_widget(),
+            self.get_dynamodb_errors_widget())
 
     def get_search_expression(self, by=None, environment=None, metric=None, statistic=None, duration=None):
         expression = "SEARCH('{SustainablePersonalAccount, ___by___, Environment} Environment=""___environment___"" MetricName=""___metric___""', '___statistic___', ___duration___)"
@@ -169,37 +167,41 @@ class Cockpit(Construct):
                            stacked=True,
                            width=8)
 
-    # def get_dynamodb_request_latency_widget(self, tables):
-    #     return GraphWidget(title="DynamoDB latency",
-    #                        left=[x.metric_successful_request_latency() for x in tables],
-    #                        left_y_axis=dict(show_units=False),
-    #                        stacked=True,
-    #                        width=8)
+    def get_dynamodb_search_expression(self, metric=None, statistic=None, duration=None):
+        expression = "SEARCH('{AWS/DynamoDB,TableName} MetricName=""___metric___""', '___statistic___', ___duration___)"
+        replacements = {'___metric___': metric or "ConsumedReadCapacityUnits",
+                        '___statistic___': statistic or 'Sum',
+                        '___duration___': duration or 60}
+        for key in replacements.keys():
+            expression = expression.replace(key, str(replacements[key]))
+        return expression
 
-    def get_dynamodb_read_capacity_units_widget(self, tables):
+    def get_dynamodb_read_capacity_units_widget(self):
         return GraphWidget(title="DynamoDB read capacity units",
-                           left=[x.metric_consumed_read_capacity_units() for x in tables],
+                           left=[MathExpression(expression=self.get_dynamodb_search_expression(metric='ConsumedReadCapacityUnits'),
+                                                label='',
+                                                period=Duration.minutes(5))],
                            left_y_axis=dict(show_units=False),
                            stacked=True,
-                           width=6)
+                           width=8)
 
-    def get_dynamodb_write_capacity_units_widget(self, tables):
+    def get_dynamodb_write_capacity_units_widget(self):
         return GraphWidget(title="DynamoDB write capacity units",
-                           left=[x.metric_consumed_write_capacity_units() for x in tables],
+                           left=[MathExpression(expression=self.get_dynamodb_search_expression(metric='ConsumedWriteCapacityUnits'),
+                                                label='',
+                                                period=Duration.minutes(5))],
                            left_y_axis=dict(show_units=False),
                            stacked=True,
-                           width=6)
+                           width=8)
 
-    def get_dynamodb_system_errors_widget(self, tables):
+    def get_dynamodb_errors_widget(self):
         return GraphWidget(title="DynamoDB errors",
-                           left=[x.metric_system_errors_for_operations() for x in tables],
+                           left=[MathExpression(expression=self.get_dynamodb_search_expression(metric='SystemErrorsForOperations'),
+                                                label='SystemErrorsForOperations',
+                                                period=Duration.minutes(5)),
+                                 MathExpression(expression=self.get_dynamodb_search_expression(metric='UserErrors'),
+                                                label='UserErrors',
+                                                period=Duration.minutes(5))],
                            left_y_axis=dict(show_units=False),
                            stacked=True,
-                           width=6)
-
-    def get_dynamodb_user_errors_widget(self, tables):
-        return GraphWidget(title="DynamoDB errors",
-                           left=[x.metric_user_errors() for x in tables],
-                           left_y_axis=dict(show_units=False),
-                           stacked=True,
-                           width=6)
+                           width=8)
