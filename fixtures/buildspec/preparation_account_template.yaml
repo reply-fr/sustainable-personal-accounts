@@ -105,3 +105,5 @@ phases:
     - echo "Removing obsolete budget names"
     - aws budgets delete-budget --account-id $ACCOUNT --budget-name DataReplyBudget || true
     - aws budgets delete-budget --account-id $ACCOUNT --budget-name StormReplyBudget || true
+    - echo "Enforce IAM password policy"
+    - aws iam update-account-password-policy --minimum-password-length 24 --require-numbers --require-uppercase-characters --require-lowercase-characters --require-symbols --max-password-age 90 --password-reuse-prevention 12 --hard-expiry
