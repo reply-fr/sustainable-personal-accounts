@@ -1,4 +1,4 @@
-Feature: management of AWS accounts with tags
+Feature: direct management of AWS account states
 
 As a system administrator,
 I can check account tags
@@ -10,7 +10,11 @@ in order to set the state of an account
 
 As a system administrator,
 I can align all account tags
-so as to recover from transient states and software bugs
+so as to recover from transient states and from software bugs
+
+As a system administrator,
+I can trigger an expiration manually
+so as to pass all accounts through a maintenance cycle
 
 
 Scenario: where account states are checked globally
