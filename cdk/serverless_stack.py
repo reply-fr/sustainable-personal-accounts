@@ -25,7 +25,6 @@ from .check_accounts_construct import CheckAccounts
 from .check_health_construct import CheckHealth
 from .cockpit_construct import Cockpit
 from .on_account_event_construct import OnAccountEvent
-from .on_account_event_then_shadow_construct import OnAccountEventThenShadow
 from .on_activity_construct import OnActivity
 from .on_alert_construct import OnAlert
 from .on_assigned_account_construct import OnAssignedAccount
@@ -57,7 +56,6 @@ class ServerlessStack(Stack):
             'CheckAccounts',
             'CheckHealth',
             'OnAccountEvent',
-            'OnAccountEventThenShadow',
             'OnActivity',
             'OnAlert',
             'OnAssignedAccount',
@@ -91,7 +89,7 @@ class ServerlessStack(Stack):
             self.reports.bucket.grant_read_write(function)  # give permission to produce and edit reports
 
         tables = []  # the list of dynamodb tables
-        for label in ['OnActivity', 'OnAccountEventThenShadow', 'OnTransactionMetering']:
+        for label in ['OnAccountEvent', 'OnActivity', 'OnTransactionMetering']:
             tables.append(constructs[label].table)
 
         Cockpit(self,
