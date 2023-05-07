@@ -24,6 +24,16 @@ Scenario: where a failed maintenance transaction triggers an exception
      When the event 'FailedMaintenanceException' is emitted
      Then the Lambda function 'OnException' is invoked
 
+Scenario: where a console login with root credentials triggers an exception
+    Given an existing SPA system
+     When the event 'ConsoleLoginWithRootException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
+Scenario: where a console login with IAM user credentials triggers an exception
+    Given an existing SPA system
+     When the event 'ConsoleLoginWithIamUserException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
 Scenario: where a generic exception is handled
     Given an existing SPA system
      When the event 'GenericException' is emitted
