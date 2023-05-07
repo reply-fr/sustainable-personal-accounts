@@ -27,7 +27,7 @@ from aws_cdk.aws_logs import LogGroup, RetentionDays
 from lambdas import Events
 
 
-class OnAccountEventThenMeter(Construct):
+class OnTransactionMetering(Construct):
 
     def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
@@ -54,7 +54,7 @@ class OnAccountEventThenMeter(Construct):
 
     def on_event(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnAccountEventThenMeter"
+        function_name = toggles.environment_identifier + "OnTransactionMetering"
 
         LogGroup(self, function_name + "Log",
                  log_group_name=f"/aws/lambda/{function_name}",
@@ -64,7 +64,7 @@ class OnAccountEventThenMeter(Construct):
         function = Function(self, "FromEvent",
                             function_name=function_name,
                             description="Turn events to transactions",
-                            handler="on_account_event_then_meter_handler.handle_account_event",
+                            handler="on_transaction_metering_handler.handle_account_event",
                             **parameters)
 
         Rule(self, "EventRule",
@@ -79,7 +79,7 @@ class OnAccountEventThenMeter(Construct):
 
     def on_stream(self, parameters, table) -> Function:
 
-        function_name = toggles.environment_identifier + "OnMeteringStream"
+        function_name = toggles.environment_identifier + "OnTransactionTimeOut"
 
         LogGroup(self, function_name + "Log",
                  log_group_name=f"/aws/lambda/{function_name}",
@@ -89,7 +89,7 @@ class OnAccountEventThenMeter(Construct):
         function = Function(self, "FromStream",
                             function_name=function_name,
                             description="Process metering stream",
-                            handler="on_account_event_then_meter_handler.handle_stream_event",
+                            handler="on_transaction_metering_handler.handle_stream_event",
                             **parameters)
 
         function.add_event_source(DynamoEventSource(  # stream items that have expired
