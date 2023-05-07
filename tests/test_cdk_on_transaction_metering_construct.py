@@ -24,7 +24,7 @@ from aws_cdk.assertions import Template
 import pytest
 
 from cdk import Configuration
-from cdk.on_account_event_then_meter_construct import OnAccountEventThenMeter
+from cdk.on_transaction_metering_construct import OnTransactionMetering
 from cdk.serverless_stack import ServerlessStack
 
 # pytestmark = pytest.mark.wip
@@ -34,7 +34,7 @@ from cdk.serverless_stack import ServerlessStack
 def test_dynamodb_encryption():
     Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
-    OnAccountEventThenMeter(scope=stack, id='my_construct', parameters=ServerlessStack.get_parameters())
+    OnTransactionMetering(scope=stack, id='my_construct', parameters=ServerlessStack.get_parameters())
     template = Template.from_stack(stack)
     template.has_resource_properties(
         "AWS::DynamoDB::Table",
@@ -45,6 +45,6 @@ def test_dynamodb_encryption():
 def test_resources_count():
     Configuration.initialize(stream='fixtures/settings/settings.yaml')
     stack = Stack()
-    OnAccountEventThenMeter(scope=stack, id='my_construct', parameters=ServerlessStack.get_parameters())
+    OnTransactionMetering(scope=stack, id='my_construct', parameters=ServerlessStack.get_parameters())
     template = Template.from_stack(stack)
     template.resource_count_is("AWS::DynamoDB::Table", 1)
