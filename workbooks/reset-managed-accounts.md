@@ -5,7 +5,7 @@ Recently we changed naming conventions for tags used by SPA and this broken the 
 
 Since the state of an account is contained in a tag attached to it, for such situations you can use AWS Organizations to change tags of any account. For this you would visit the page of each account and then add the tag `account-state` and set it to value `released`. This operation is feasible for some dozens of accounts, but can become tedious for large number of accounts. Therefore the need to reset accounts to the VANILLA state with a simple invocation of a Lambda function devoted to this usage. If you are stuck, one day, with hundreds of AWS accounts in strange state, then you can restore normal operations with this workbook.
 
-## Pre-conditions
+## Prerequisites
 - You suspect that multiple AWS accounts are not tagged appropriately
 - You have AWS credentials to access the AWS account where SPA has been deployed
 

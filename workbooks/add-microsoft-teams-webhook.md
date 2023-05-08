@@ -3,7 +3,7 @@
 ## Overview
 With this workbook you can forward consolidated alerts to a Microsoft Teams channel. This setup is aligned with ChatOps principles, where information originating from the platform is driven to discussion channels for human beings. With a central team of administrators, it fosters collective efficiency and prevents blind sopots that can come with individual e-mail notifications. And when the chat channel is shared across users of SPA, it closes the feedback loop when a billing alert is raised.
 
-## Pre-conditions
+## Prerequisites
 - You have credentials to create a webhook to Microsoft Teams
 - You have access to the settings file of your deployed SPA
 - You have AWS credentials to deploy SPA
@@ -41,6 +41,6 @@ For this step you need to do the following:
 
 To validate the deployment, you can inspect Lambda functions of SPA in the AWS account where SPA has been deployed. The environment variable `MICROSOFT_WEBHOOK_ON_ALERTS` should reflect the webhook URL across all Lambda functions.
 
-## Post-conditions
+## Follow-up
 
 When a billing threshold is reached, an alert is consolidated by SPA and reflected in Microsoft Teams.

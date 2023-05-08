@@ -3,7 +3,7 @@
 ## Overview
 With this workbook you can forward monthly reports to selected email recipients. This way of working is well-adapted to accounting teams and to FinOps teams, since data is reaching their mailboxes at periodic intervals.
 
-## Pre-conditions
+## Prerequisites
 - You have credentials to create a SES origin email address
 - You have access to the settings file of your deployed SPA
 - You have AWS credentials to deploy SPA

@@ -7,7 +7,7 @@ In other terms, since SPA features an event-driven architecture, it breaks when 
 
 Since the state of an account is contained in a tag attached to it, for such situations you can use AWS Organizations to change the state of any account. For this you would visit the page of each account and then change the tag `account-state` to the value `released`. This operation is feasible for some dozens of accounts, but can become tedious for large number of accounts. Therefore the need to reset accounts to the state released with a simple invocation of a Lambda function devoted to this usage. If you are stuck, one day, with hundreds of AWS accounts in strange state, then you can restore normal operations with this workbook.
 
-## Pre-conditions
+## Prerequisites
 - You suspect that multiple AWS accounts are not in RELEASED state
 - You have AWS credentials to access the AWS account where SPA has been deployed
 

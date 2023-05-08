@@ -5,7 +5,7 @@ This workbook is for the creation of a personal account under the control of Sus
 
 Note: The integration of an existing AWS account has proven painful. It is a far better option to create accounts directly from the Account factory, as described below.
 
-## Pre-conditions
+## Prerequisites
 - You have credentials to access the AWS Console for the Master Account of the target AWS Organization.
 - You have needed permissions to manage Control Tower and Account Factory
 

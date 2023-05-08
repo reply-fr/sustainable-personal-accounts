@@ -3,7 +3,7 @@
 ## Overview
 With this workbook you will add preventive controls to an AWS Organization. This creates effective guardrails and limits to what can be done within an AWS account assigned to a person.
 
-## Pre-conditions
+## Prerequisites
 - You have a copy of the SPA git repository
 - You have the permission to manage IAM policies of the management account of the AWS Organization
 - You have the permission to configure Organizational Units of the AWS Organization
@@ -19,7 +19,7 @@ Complete following activities at this step:
 - Click on the button 'Create policy'
 - Give a memorable name to the policy, such as `SpaServiceControlPolicy`
 - Enter a description, e.g., `Guardrails for personal accounts`
-- Navigate the SPA git reposito and look for the file `fixtures/policies/preventive_controls_for_sandboxes.json`
+- Navigate the SPA git repository and look for the file `fixtures/policies/preventive_controls_for_sandboxes.json`
 - Open the file and copy its content
 - Switch to the web console, select the entire text of the policy, and paste the content
 - Click on the bottom button 'Create policy'
@@ -29,7 +29,7 @@ Since personal accounts are put in specific Organizational Units of the AWS Orga
 
 This step can be completed with following activities:
 - From within the AWS Organizations Console, click on 'AWS Accounts'
-- Click on the Organizational UNits that will contain personal accounts, for example, 'Sandboxes'
+- Click on the Organizational Units that will contain personal accounts, for example, 'Sandboxes'
 - Click on the tab 'Policies'
 - Slide down to the section on Service control policies
 - Click on the button 'Attach'
