@@ -68,6 +68,8 @@ setup:
 	@echo "Installing CDK and related NPM modules..."
 	npm install aws-cdk@latest --force
 	cdk --version
+
+bootstrap-cdk:
 	@echo "Bootstrapping CDK..."
 	mkdir -p lambdas.out
 	cp -n fixtures/settings/settings.yaml ./settings.yaml || true
