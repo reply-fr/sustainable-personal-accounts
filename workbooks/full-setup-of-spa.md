@@ -3,11 +3,9 @@
 ## Overview
 This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on one AWS account of a target AWS Organization.
 
-## Pre-conditions
+## Prerequisites
 - You have credentials to access the AWS Console
 - You have received permissions to create a new AWS account
-- Under Windows WSL, you may have to install python3-venv, gcc, rustc, libffi-dev -- else use Cloud9
-- Packages installed on your workstation include: make, python
 
 ## Step 1 - Create or use an AWS Organization
 
@@ -242,6 +240,8 @@ The easiest way to create Organizational Units in the context of Control Tower i
 
 ## Step 9 - Clone the SPA repository on your workstation and configure the software
 
+With following commands you will get a copy of the software on your workstation, and you will install software dependencies such as CDK. The setup relies on python3 and on npm, so you need these installed beforehand.
+
 ```
 $ git clone git@github.com:reply-fr/sustainable-personal-accounts.git
 $ cd sustainable-personal-accounts
@@ -252,21 +252,30 @@ You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` 
 
 ## Step 10 - Deploy SPA
 
-To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can deploy SPA:
+To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
 
 ```
 $ export AWS_PROFILE=automation-sso
 $ aws sso login
 $ aws sts get-caller-identity
 $ make shell
+(venv) make bootstrap-cdk
 (venv) make deploy
 ```
 
 ## Step 11 - Inspect the solution
 
-Use the AWS Console on the `Automation` account. There is a CloudWatch dashboard that reflects metrics for SPA. Code execution is reflected into the Lambda console.
+Use the AWS Console on the `Automation` account. There is a CloudWatch dashboard that reflects metrics for SPA. Code execution is reflected into the Lambda console. You can also inspect DynamoDB tables.
 
-## Post-conditions
+If you expect an AWS account to be handled by SPA, then you set tag `account-state` to the value `vanilla` from the AWS Organizations console of the top-level account. Then move to the AWS Console of the `Automation` account and check the log of the Lambda function `SpaOnAccountEvent`. You should get the full sequence of state changes over a couple of minutes: `CreatedAccount`, `AssignedAccount`, `PreparedAccount` then `ReleasedAccount`.
+
+After this sequence, you can go to the AWS Console of the personal account and inspect the budget that has been set by SPA. In addition, you can also review the Codebuild project that has been executed by SPA during the preparation phase.
+
+To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB shoud reflect your activities on personal accounts.
+
+## Follow-up
 
 - You can now [create new AWS accounts](./create-a-personal-account.md) and let SPA manage them automatically
+- [Manage and troubleshoot account states](./manage-account-states.md) to fix potential issues with the state machine
 - You can [forward consolidated alerts to Microsoft Teams](./add-microsoft-teams-webhook.md) and look for collective efficiency of your entire team
+- Add SCP to Organizational Units to [manage preventive controls of personal accounts](./manage-preventive-controls.md)
