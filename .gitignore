@@ -1,5 +1,6 @@
 .DS_Store
 .coverage
+settings.yaml
 /.vscode
 /PITCHME.html
 /PITCHME.pdf
