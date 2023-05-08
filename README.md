@@ -1,44 +1,73 @@
 # Sustainable Personal Accounts
 
-With this project we promote the idea that each AWS practitioner should have direct access to some AWS account, so as to practice almost freely on the platform and to accelerate innovation of their company. At the same time, in corporate environment there is a need for enforcing policies, for managing costs and for fostering software automation. For this reason, with Sustainable Personal Accounts (SPA), we introduce maintenance windows on AWS accounts and alerts. Central teams can customise code ran on each maintenance window, for example to set billing alerts, to deploy SIEM agents, and to purge cloud resources.
+With this project we promote the idea that each AWS practitioner should have direct access to some AWS account, so as to experiment almost freely on the platform and to accelerate innovation of their company. At the same time, in corporate environment there is a need for enforcing policies, for managing costs and for fostering software automation. For this reason, with Sustainable Personal Accounts (SPA), we introduce maintenance windows on AWS accounts and management by exceptions. Central teams can customise code ran on each maintenance window, for example to set billing alerts, to deploy SIEM agents, and to purge cloud resources. The onboarding process can be customized as well.
 
 ## What can you do with SPA?
 
-With SPA you can:
-- on AWS account creation, align them with corporate policies on security, cost control, and automation
-- configure AWS Budgets automatically within each managed account, and consolidate budget alerts
-- turn budget alerts to incident records that are managed in AWS SSM Incident Manager
-- continuously deploy the DevOps and SIEM toolboxes of your enterprise to AWS sandbox accounts
-- consolidate the costs incurred by sandbox accounts in monthly reports with FinOps breakdown
-- force the purge of cloud resources and enforce Infrastructure-as-Code and Continuous Integration (CI) culture
-- tag AWS accounts, and evolve tags to follow FinOps and CloudOps corporate policies
-- consolidate configuration information from multiple CSV sources (e.g., FinOps, SecOps, Enterprise Architects)
-- manage AWS accounts collectively (by Organization Unit) or individually
-- set maintenance window of your choice
-- adjust maintenance actions to your exact needs (with CodeBuild scripts)
-- manage the overall solution from a single automated CloudWatch dashboard
+As a CTO/CCoE Leader/R&D Director:
+- I recognize that innovative companies distribute sandbox AWS accounts to their staff
+- I provide AWS accounts to cloud practitioners of my enterprise
+- I manage these corporate resources at scale with SPA
 
+As a person who benefits from a personal AWS account:
+- After authentication, I connect to my account with `AWSAdministratorAccess` permission,
+- A budget is set automatically to alert me by email,
+- Cloudbuild projects are executed on my behalf for purging cloud resources and for alignment with corporate policies.
+
+As a DevOps in charge of SPA deployment:
+- I drive the behavior of SPA from a single YAML file with all settings,
+- I can select when maintenance transactions are triggered,
+- I can define settings for each organizational unit for easy scaling
+- I can define settings for individual accounts for fine-grained tuning
+- I can integrate tags from CSV files communicated by other teams (e.g., FinOps, Security, Enterprise Architecture)
+
+As a DevOps in charge of account preparation:
+- I can adjust the Codebuild project used for account preparation to evolving corporate policies
+- I can prevent the execution of Codebuild preparation on selected accounts or organizational units
+- I can inject different budgets and alerts across accounts or organizational units
+- I can change the preparation script itself and customize it to the specific needs of my company
+- I can integrate Codebuild variables from CSV files communicated by other teams (e.g., FinOps, Security, Enterprise Architecture)
+
+As a DevOps in charge of the purge of cloud resources:
+- I can adjust the Codebuild project used for account purge to evolving corporate policies
+- I can prevent the execution of Codebuild purge on selected accounts or organizational units
+- I foster partial purges that protects cloud resources from Control Tower
+- I can select different maximum age of cloud resources accross accounts
+- I can integrate Codebuild variables from CSV files communicated by other teams (e.g., FinOps, Security, Enterprise Architecture)
+
+As a SRE in charge of SPA operations:
+- I can manage preventive controls on personal accounts with SCP
+- An automated CloudWatch dashboard covers technical and functional monitoring in one place
+- Inventories of accounts are produced as CSV files in S3 bucket every week
+- SPA activities, aka, console logins, account on-boarding, account maintenance, are reported as CSV files in S3 bucket every month
+- FinOps reports are produced every month as CSV and Excel files in S3 bucket
+- Management exceptions are managed interactively in Incident Manager
+- Instant cost report is attached to incident records for contextual analysis
+
+As a FinOps engineer:
+- I receive cost reports every month in my mailbox
+- The Excel report consolidates costs per cost center and per organizational unit for easy analysis
+- The CSV report is processed with custom software for automated show-back and charge-back
 
 ## How is this implemented?
+
+SPA is featuring an event-driven architecture, and serverless infrastructure. Centralised lambda functions take care of changing states of accounts. The preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These activities run directly into target accounts as CodeBuild projects.
+
+![architecture](./media/reference-architecture.svg)
 
 Sustainable Personal Accounts has been designed with following principles:
 - the entire solution is configured with one single YAML file
 - the entire infrastructure is deployed with python code and AWS CDK
-- states of the state machine are implemented with tags on AWS accounts -- no database at all
+- the configuration of organizational units and accounts is store in SSM Parameter Store
+- states of the state machine are implemented with tags on AWS accounts -- no database for state management
 - computing resources are entirely serverless, powered by Lambda functions and CodeBuild projects
 - processing is driven by events, powered by AWS EventBridge
+- budget alerts are consolidated over SQS
+- data persistence is provided with DynamoDB tables
 - the preparation of an AWS account is done with a customizable Codebuild project -- adapt it to your corporate policy
 - the purge of an AWS account is done with a customisable Codebuild project -- adapt it to your FinOps best practices
 - monitoring is implemented with a CloudWatch dashboard deployed automatically
 - system can be extended to specific needs via custom event processing
-
-![architecture](./media/reference-architecture.svg)
-
-SPA is featuring an event-driven architecture, and serverless infrastructure. Centralised lambda functions take care of changing states of accounts. The preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These activities run directly into target accounts as CodeBuild projects.
-
-In addition, some resources deployed with SPA are accessible from all accounts of the target AWS Organization:
-- A SQS queue consolidates alerts from managed accounts. For example, when billing alerts are raised in one account, these are forwarded to the central SQS queu and forwarded to the configured administrators.
-- The default event bus of the Automation account can receive events directly from managed accounts, for example from within Codebuild projects. This allow distributed processing to be reported centrally.
 
 ## What do you need to deploy SPA in your environment?
 
@@ -48,11 +77,7 @@ Mandatory requirements:
 * SPA needs an assume role with permissions on the AWS Organization
 * SPA needs an assume role with permissions within each AWS account that it manages
 
-We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO). If Amazon Control Tower does not suit your specific needs, or if you are looking for a vending machine of temporary accounts, then you can consider following solutions or similar:
-- [AWS Samples - Sandbox Accounts for Events](https://github.com/awslabs/sandbox-accounts-for-events)
-- [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
-- [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
-
+We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO).
 
 ## SPA brings maintenance windows to AWS accounts
 
@@ -85,6 +110,7 @@ A set of workbooks are available for common operations on Sustainable Personal A
 - [Create a personal account](./workbooks/create-a-personal-account.md) - Add manually an account handled by SPA
 - [Add Microsoft Teams webhook](./workbooks/add-microsoft-teams-webhook.md) - Forward SPA notifications to ChatOps channels
 - [Transmit reports over email](./workbooks/transmit-reports-over-email.md) - Forward SPA reports to selected email recipients
+- [Manage account states](./workbooks/manage-account-states.md) - Handle account tags by yourself
 - [Release all managed accounts](./workbooks/release-managed-accounts.md) - Set all state machines to RELEASED state
 - [Reset all managed accounts](./workbooks/reset-managed-accounts.md) - Set all state machines to VANILLA state
 
@@ -92,6 +118,13 @@ A set of workbooks are available for common operations on Sustainable Personal A
 ## Frequently asked questions
 
 In this section we address frequent questions about Sustainable Personal Accounts. We also explain most important design decisions on the architecture of the system.
+
+### Q. Can I use SPA for temporary accounts?
+
+No. If you are looking for a vending machine of temporary accounts, then you can consider following solutions or similar:
+- [AWS Samples - Sandbox Accounts for Events](https://github.com/awslabs/sandbox-accounts-for-events)
+- [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
+- [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
 
 ### Q. Can I use this software for my company?
 
