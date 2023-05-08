@@ -38,6 +38,9 @@ help:
 # ensure that child processes get variables set in this Makefile
 .EXPORT_ALL_VARIABLES:
 
+# determine current AWS account
+AWS_CURRENT_ACCOUNT ?= $(shell aws sts get-caller-identity --query "Account" --output text)
+
 # by default, use this AWS region -- mostly useful for "make all-tests" in a pipeline
 AWS_DEFAULT_REGION ?= eu-west-1
 
@@ -62,9 +65,15 @@ setup:
 	@echo "Installing python virtual environment..."
 	python3 -m venv venv
 	. venv/bin/activate && python -m pip install --upgrade pip -r requirements.txt
-	@echo "Installing CDK and other NPM modules..."
-	npm install -g aws-cdk@latest --force
+	@echo "Installing CDK and related NPM modules..."
+	npm install aws-cdk@latest --force
 	cdk --version
+	@echo "Bootstrapping CDK..."
+	mkdir -p lambdas.out
+	cp -n fixtures/settings/settings.yaml ./settings.yaml || true
+	. venv/bin/activate && cdk bootstrap ${AWS_CURRENT_ACCOUNT}/${AWS_DEFAULT_REGION}
+
+setup-marp:
 	@echo "Installing MARP locally..."
 	npm install -g @marp-team/marp-cli --force
 	marp --version
