@@ -1,4 +1,4 @@
-aws-cdk-lib>=2.0.0rc1
+aws-cdk-lib>=2.69.0
 constructs>=10.0.0
 pyyaml
 bandit
@@ -11,5 +11,4 @@ pygount
 pytest
 pytest-cov
 setuptools>=38.6.0
-tox
 -e .
