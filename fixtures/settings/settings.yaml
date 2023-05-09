@@ -36,7 +36,7 @@ automation:
   # - allowed values: DEBUG, INFO, WARNING, ERROR, CRITICAL
   # - default value: INFO
   #
-  verbosity: ERROR
+  verbosity: INFO
 
 
 # parameters for metering
