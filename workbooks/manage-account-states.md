@@ -61,34 +61,51 @@ After this sequence, you can go to the AWS Console of the personal account and i
 
 In the end, if you visit the page of the personal account in AWS Organization, then the value of the tag `account-state` should be `released`.
 
-## Step 4 - Reset all accounts
-Recently we changed naming conventions for tags used by SPA and this broken the state machines. This can also happen if you change the tag prefix in the settings file and redeploy SPA. In both cases, accounts will not feature the expected tags. As a consequence, the maintenance windows will not trigger purge nor preparation activities. And new accounts may not be handled correctly.
+## Step 4 - Force an on-boarding transaction for all accounts
+Sometimes SPA is deployed after the creation of accounts that it manages. These accounts are missing the tag `account-state` that is needed for proper operations of the state machine. As a consequence, these accounts are not prepared as expected before they are accessed by end-users.
+
+Another use case for account reset is when the state machine is broken during a major change of SPA itself. This can also happen if you change the tag prefix in the settings file and redeploy SPA. In both situations, accounts will not feature the expected tags.
 
 You could change tags by yourself to fix such situations, but this is feasible only with few accounts. For large deployments, you can trigger manually the Lambda function `SpaResetAccounts` to tag all accounts at once with tag `account-state` and value `vanilla`.
+
+Activities to on-board existing accounts that are managed by SPA:
+- Move to the AWS Console of the `Automation` account
+- Select the Lambda service
+- Look for the Lambda function `SpaResetAccounts`
+- Select the tab `Test`
+- Click on the button `Test` to trigger the function and to tag managed accounts with tag `account-state` and value `vanilla`.
 
 Learn more:
 - Check the [reset managed accounts](./reset-managed-accounts.md) workbook
 
-To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB shoud reflect your activities on personal accounts.
-within the AWS Organizations Console, click on 'AWS Accounts'
-- Click on the Organizational Uits that will contain personal accounts, for example, 'Sandboxes'
-- Click on the tab 'Policies'
-- Slide down to the section on Service control policies
-- Click on the button 'Attach'
-- In the follwing page, click the checkbox near the SCP that you created previously, e.g., `SpaServiceControlPolicy`
-- Click on the button 'Attach policy'
+## Step 5 - Force a maintenance transaction for all accounts
+SPA triggers maintenance transactions on schedule. But you may want to trigger an urgent purge for some reasons, for example after a major change of the buildspec used for the purge. In such situation you can invoke by yourself the function that expires all accounts. This will set tag `account-state` to the value `expired` and trigger the maintenance cycle.
 
-## Step 5 - Release all accounts
+Activities to start a maintenance window manually:
+- Move to the AWS Console of the `Automation` account
+- Select the Lambda service
+- Look for the Lambda function `SpaOnMaintenanceWindow`
+- Select the tab `Test`
+- Click on the button `Test` to trigger the function and to tag managed accounts with tag `account-state` and value `expired`.
+
+## Step 6 - Release all accounts
 During normal operations of SPA, accounts are in state `released` most of the time. On each maintenance window, each account transitions to states `expired`, then `assigned`, `prepared` and `released` again. From time to time, you may experience situations where the cycle does not complete as expected. This can be due to some transient conditions of the cloud infrastructure, or from some misconfiguration, or from a bug in the software itself. As stated from Werner Vogels, the CTO of Amazon: "everything fails, all the time".
 
 In other terms, since SPA features an event-driven architecture, it breaks when transitions are not processed as expected. Accounts that are not in state `released` are invisible to the maintenance windows of SPA. In such situations, accounts stay in transient state without additional processing.
 
 You could change tags by yourself to fix such situations, but this is feasible only with few accounts. For large deployments, you can trigger manually the Lambda function `SpaReleaseAccounts` to tag all accounts at once with tag `account-state` and value `released`.
 
+Activities to release accounts that are managed by SPA:
+- Move to the AWS Console of the `Automation` account
+- Select the Lambda service
+- Look for the Lambda function `SpaReleaseAccounts`
+- Select the tab `Test`
+- Click on the button `Test` to trigger the function and to tag managed accounts with tag `account-state` and value `released`.
+
 Learn more:
 - Check the [release managed accounts](./release-managed-accounts.md) workbook
 
-## Step 6 - Get reports on account states
+## Step 7 - Get reports on account states
 Every week, SPA generates an inventory of accounts that it manages and saves this as a CSV file in the reporting S3 buckets. These reports feature a column `state` that reflects the value of the tag `account-state`. This can be useful for automated inspection of account states at regular intervals. From the S3 console of the `Automation` account, look for the bucket deployed by SPA, then navigate `SpaReports` and `Inventories`.
 
 ## Follow-up

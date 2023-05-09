@@ -1,9 +1,11 @@
 # Reset Managed Accounts
 
 ## Overview
-Recently we changed naming conventions for tags used by SPA and this broken the state machines. This can also happen if you change the tag prefix in the settings file and redeploy SPA. In both cases, accounts will not feature the expected tags. As a consequence, the maintenance windows wil not trigger purge nor preparation activities.
+Sometimes SPA is deployed after the creation of accounts that it manages. These accounts are missing the tag `account-state` that is needed for proper operations of the state machine. As a consequence, these accounts are not prepared as expected before they are accessed by end-users.
 
-Since the state of an account is contained in a tag attached to it, for such situations you can use AWS Organizations to change tags of any account. For this you would visit the page of each account and then add the tag `account-state` and set it to value `released`. This operation is feasible for some dozens of accounts, but can become tedious for large number of accounts. Therefore the need to reset accounts to the VANILLA state with a simple invocation of a Lambda function devoted to this usage. If you are stuck, one day, with hundreds of AWS accounts in strange state, then you can restore normal operations with this workbook.
+Another use case for account reset is when the state machine is broken during a major change of SPA itself. This can also happen if you change the tag prefix in the settings file and redeploy SPA. In both situations, accounts will not feature the expected tags.
+
+Since the state of an account is contained in a tag attached to it, for such situations you can use AWS Organizations to change tags of any account. For this you would visit the page of each account and then add the tag `account-state` and set it to value `vanilla`. This operation is feasible for some dozens of accounts, but can become tedious for large number of accounts. Therefore the need to reset accounts to the VANILLA state with a simple invocation of a Lambda function devoted to this usage. If you are stuck, one day, with hundreds of AWS accounts in strange state, then you can restore normal operations with this workbook.
 
 ## Prerequisites
 - You suspect that multiple AWS accounts are not tagged appropriately

@@ -130,7 +130,7 @@ Here is the full sequence of activities for this step:
 
 SPA is also assuming a role to act on the accounts that it manages. If you rely on AWS Control Tower then you may want to leverage the role `AWSControlTowerExecutionRole` and there is additional no IAM setup. If you fear the super-power given to SPA across all of your AWS Organization, then you can add a condition that limits the permission to selected Organizational Unit. You can also deploy a specific role via a AWS StackSet to a limited number of accounts and/or Organizational Units. When the setup is not correct, then access denied is reported into the logs of the Lambda functions `OnAssignedAccount` and `OnExpiredAccount`.
 
-## Step 5 - Receive all events on Automation account
+## Step 5 - Receive events on Automation account
 
 Since organizational events are collected by the top-level account of the AWS Organization, we will forward these events to the default bus of the `Automation` account. Actually, we want to make this bus a global resource, accessible from any account. We modify the resource policy of the default bus so that events can be put from any account of the AWS Organization. This is based on Attribute-Based Access Control (ABAC), with a specific IAM condition.
 
@@ -188,7 +188,7 @@ After the update you can control that the resource-based policy for the default 
 ...
 ```
 
-## Step 6 - Forward organizational events to the Automation account
+## Step 6 - Forward organization events to the Automation account
 
 Events related to AWS accounts are posted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region `us-east-1`, and not in the region of your choice. Therefore, we create an Eventbridge rule in the top-level account and in the `us-east-1` region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
 
@@ -200,8 +200,8 @@ Following activities are related to this step:
 - At the top of the AWS Console, select the region `us-east-1`
 - In the left pane, click on `Rules`
 - Click on the `Create rule` button
-- Provide an explicit name such as `forward-organizational-events`
-- Provide an explicit description, e.g., `Detect the creation a,nd modification of AWS accounts`
+- Provide an explicit name such as `ForwardOrganizationalEventsToSustainablePersonalAccounts`
+- Provide an explicit description, e.g., `Detect the creation and modification of AWS accounts`
 - Ensure that the `default` bus has been selected
 - Select the radio button `Rule with an event pattern`
 - Click on the button `Next`
@@ -226,19 +226,62 @@ Following activities are related to this step:
 - Click on the button `Next`
 - Review the setup then click on button `Create rule`
 
-## Step 7 - Activate AWS Incident Manager
+## Step 7 - Forward console logins to the Automation account
 
-AWS Incident Manager is used by SPA to record budget alerts and other operational exceptions, and to support easy handling of these. This is a great building block for serverless application, that can be integrated into ServiceNow and to Jira if needed. Before SPA can use it programatically, you have to enable the usage of the service. Go to the page [Getting started with Incident Manager](https://docs.aws.amazon.com/incident-manager/latest/userguide/getting-started.html) and follow instructions.
+In some setup of CloudTrail the console logins are emitted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region where IAM Identity Center (previously, SSO) has been deployed. This region can be found from the settings of this service. Therefore the need to create an Eventbridge rule in the top-level account and in the SSO region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
+
+Following activities are related to this step:
+- From the AWS Console of the top-level account, select IAM Identity Center service
+- In the left pane, click on `Settings`
+- Look for the deployment region, for example: `eu-west-1`
+- Then move to the AWS Console of the `Automation` account, select Amazon EventBridge service
+- In the left pane, click on `Event buses`
+- Take note of the `default` event bus ARN, something like `arn:aws:events:eu-west-1:123456789012:event-bus/default`
+- From the AWS Console of the top-level account, select Amazon EventBridge service
+- At the top of the AWS Console, select the region that you identified previously, e.g., `eu-west-1`
+- In the left pane, click on `Rules`
+- Click on the `Create rule` button
+- Provide an explicit name such as `ForwardConsoleLoginsToSustainablePersonalAccounts`
+- Provide an explicit description, e.g., `Detect logins to the AWS Console`
+- Ensure that the `default` bus has been selected
+- Select the radio button `Rule with an event pattern`
+- Click on the button `Next`
+- Select the event source as radio button `AWS events or EventBridge partner events`
+- Skip the Sample event section
+- For the event pattern, use following JSON::
+
+```
+{
+  "detail": {
+    "eventSource": ["signin.amazonaws.com"],
+    "eventName": ["ConsoleLogin"]
+  }
+}
+```
+
+- Click on the button `Next`
+- For a target, select radio button `EventBridge event bus`
+- For a target type, select radio button `Event bus in a different account or Region`
+- Paste the ARN of the default event bus in the `Automation` that you noted previously, something like `arn:aws:events:eu-west-1:123456789012:event-bus/default`
+- Select the radio button `Create a new role for this specific resource`
+- Click on the button `Next`
+- Add a neww tag, e.g., key `domain` and value `SustainablePersonalAccount`
+- Click on the button `Next`
+- Review the setup then click on button `Create rule`
+
+## Step 8 - Activate AWS Incident Manager
+
+AWS Incident Manager is used by SPA to record budget alerts and other operational exceptions, and to support easy handling of these. This is a great building block for serverless application, that can be integrated into ServiceNow and to Jira if needed. Before SPA can use it programatically, you have to enable the usage of the service in the `Automation` account in the AWS region where SPA has been deployed. Go to the page [Getting started with Incident Manager](https://docs.aws.amazon.com/incident-manager/latest/userguide/getting-started.html) and follow instructions.
 
 This step is mandatory, and the deployment of SPA may fail if you do not activate AWS Incident Manager manually.
 
-## Step 8 - Create Organizational Units for personal accounts
+## Step 9 - Create Organizational Units for personal accounts
 
 We recommend to create one general `Sandboxes` Organizational Unit, possibly with multiple child Organizational Units. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behaviour on AWS accounts that they contain. Take a note of OU identifiers that you create, since you will enter them into the settings file used by SPA.
 
 The easiest way to create Organizational Units in the context of Control Tower is to do it directly from within the Control Tower Console. With this way of working, new OU are registered automatically in Control Tower. If you create OU from the AWS Organizations Console, or programmatically, then you have to register new OU in Control Tower anyway.
 
-## Step 9 - Clone the SPA repository on your workstation and configure the software
+## Step 10 - Clone the SPA repository on your workstation and configure the software
 
 With following commands you will get a copy of the software on your workstation, and you will install software dependencies such as CDK. The setup relies on python3 and on npm, so you need these installed beforehand.
 
@@ -250,7 +293,9 @@ $ make setup
 
 You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. In the context of Control Tower, this can be `AWSControlTowerExecution`. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
 
-## Step 10 - Deploy SPA
+Note: if you get an error message related to python `bdist wheel` then ensure that your workstation has a full python environment. For example for Ubuntu and WSL, you may have to add the package `python-dev` to pass the `make setup` command.
+
+## Step 11 - Deploy SPA
 
 To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
 
@@ -263,19 +308,28 @@ $ make shell
 (venv) make deploy
 ```
 
-## Step 11 - Inspect the solution
+## Step 12 - Inspect the solution
 
 Use the AWS Console on the `Automation` account. There is a CloudWatch dashboard that reflects metrics for SPA. Code execution is reflected into the Lambda console. You can also inspect DynamoDB tables.
 
-If you expect an AWS account to be handled by SPA, then you set tag `account-state` to the value `vanilla` from the AWS Organizations console of the top-level account. Then move to the AWS Console of the `Automation` account and check the log of the Lambda function `SpaOnAccountEvent`. You should get the full sequence of state changes over a couple of minutes: `CreatedAccount`, `AssignedAccount`, `PreparedAccount` then `ReleasedAccount`.
+Activities to on-board one account manually:
+- If you expect an AWS account to be handled by SPA, then you set tag `account-state` to the value `vanilla` from the AWS Organizations console of the top-level account.
+- Then move to the AWS Console of the `Automation` account and check the log of the Lambda function `SpaOnAccountEvent`. You should get the full sequence of state changes over a couple of minutes: `CreatedAccount`, `AssignedAccount`, `PreparedAccount` then `ReleasedAccount`.
+- After this sequence, you can go to the AWS Console of the personal account and inspect the budget that has been set by SPA. In addition, you can also review the Codebuild project that has been executed by SPA during the preparation phase.
 
-After this sequence, you can go to the AWS Console of the personal account and inspect the budget that has been set by SPA. In addition, you can also review the Codebuild project that has been executed by SPA during the preparation phase.
+Activities to on-board existing accounts:
+- Move to the AWS Console of the `Automation` account
+- Select the Lambda service
+- Look for the Lambda function `SpaResetAccounts`
+- Select the tab `Test`
+- Click on the button `Test` to trigger the function and tag all managed accounts with tag `account-state` and value `vanilla`.
 
 To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB shoud reflect your activities on personal accounts.
 
 ## Follow-up
 
 - You can now [create new AWS accounts](./create-a-personal-account.md) and let SPA manage them automatically
+- You can also [on-board existing accounts](./reset-managed-accounts.md) by setting their states to VANILLA
 - [Manage and troubleshoot account states](./manage-account-states.md) to fix potential issues with the state machine
 - You can [forward consolidated alerts to Microsoft Teams](./add-microsoft-teams-webhook.md) and look for collective efficiency of your entire team
 - Add SCP to Organizational Units to [manage preventive controls of personal accounts](./manage-preventive-controls.md)
