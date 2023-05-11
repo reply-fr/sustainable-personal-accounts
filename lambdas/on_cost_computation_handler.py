@@ -17,9 +17,12 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import boto3
 from datetime import date, timedelta
+import json
 import logging
 from markdown import markdown
 import os
+import time
+import urllib.request
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -79,14 +82,31 @@ def build_charge_reports_per_cost_center(accounts, day, session):
     logging.info(f"Computing charge reports per cost center for month {day.isoformat()[:7]}")
     charges = Costs.get_charges_per_cost_center(accounts=accounts, day=day, session=session)
 
-    path_of_xlsx = get_report_path(cost_center='Summary', label='charges', day=day, suffix='xlsx')
-    store_report(report=Costs.build_summary_of_charges_excel_report(charges=charges, day=day), path=path_of_xlsx)
+    paths = []
 
-    path_of_csv = get_report_path(cost_center='Summary', label='charges', day=day, suffix='csv')
-    store_report(report=Costs.build_summary_of_charges_csv_report(charges=charges, day=day), path=path_of_csv)
+    path = get_report_path(cost_center='Summary', label='charges', day=day, suffix='xlsx')
+    store_report(report=Costs.build_summary_of_charges_excel_report(charges=charges, day=day), path=path)
+    paths.append(path)
 
-    email_reports(day=day, objects=[f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path_of_xlsx}",
-                                    f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path_of_csv}"])
+    currencies = os.environ.get('COST_EXTRA_CURRENCIES')
+    if currencies:
+        rates = get_currency_rates()
+        for currency in currencies.split(','):
+            currency = currency.strip().upper()
+            rate = rates.get(currency)
+            if not rate:
+                logging.error(f"Can not find conversion rate from 'USD' to '{currency}'")
+                continue
+            logging.info(f"Conversion rate from USD to {currency} is {rate}")
+            path = get_report_path(cost_center='Summary', label=f"charges-{currency}", day=day, suffix='xlsx')
+            store_report(report=Costs.build_summary_of_charges_excel_report(charges=charges, day=day, currency=currency, rate=rate), path=path)
+            paths.append(path)
+
+    path = get_report_path(cost_center='Summary', label='charges', day=day, suffix='csv')
+    store_report(report=Costs.build_summary_of_charges_csv_report(charges=charges, day=day), path=path)
+    paths.append(path)
+
+    email_reports(day=day, objects=[f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path}" for path in paths])
     return '[OK]'
 
 
@@ -120,6 +140,29 @@ def email_reports(day, objects):
     template = os.environ.get('REPORTING_COSTS_MARKDOWN') or "You will find attached cloud cost reports for {month}"
     complex = template.format(month=f"{day.year:04d}-{day.month:02d}")
     return Email.send_objects(sender=sender, recipients=recipients, subject=subject, text=simple, html=markdown(complex), objects=objects)
+
+
+def get_currency_rates():
+    logging.debug("Fetching currency rates")
+    return get_json_from_url("https://open.er-api.com/v6/latest/USD")['rates']
+
+
+def get_json_from_url(url, headers={}, retries=5, backoff=3):
+    logging.debug(f"Getting URL '{url}'")
+    request = urllib.request.Request(url=url, headers=headers)
+    for count in range(retries):
+        try:
+            return json.loads(urllib.request.urlopen(request).read())
+        except urllib.error.URLError as exception:
+            logging.warning(exception)
+            if str(exception).startswith('HTTP Error 429'):
+                if count == retries - 1:
+                    raise
+                delay = backoff ** (count + 1)
+                logging.warning(f"Waiting {delay} seconds before retrying URL")
+                time.sleep(delay)
+            else:
+                break
 
 
 def get_report_path(cost_center, label, day=None, suffix='csv'):

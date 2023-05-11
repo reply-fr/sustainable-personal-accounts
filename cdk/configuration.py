@@ -43,6 +43,7 @@ class Configuration:
         environment_identifier='str',
         features_with_arm_architecture='bool',
         features_with_cost_email_recipients='list',
+        features_with_cost_extra_currencies='list',
         features_with_cost_management_tag='str',
         features_with_csv_files='list',
         features_with_email_subscriptions_on_alerts='list',
@@ -135,6 +136,7 @@ class Configuration:
         toggles.automation_verbosity = 'INFO'
         toggles.features_with_arm_architecture = False
         toggles.features_with_cost_email_recipients = None
+        toggles.features_with_cost_extra_currencies = None
         toggles.features_with_cost_management_tag = None
         toggles.features_with_csv_files = None
         toggles.features_with_email_subscriptions_on_alerts = None

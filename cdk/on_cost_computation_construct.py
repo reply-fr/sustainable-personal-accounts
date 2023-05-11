@@ -39,6 +39,8 @@ class OnCostComputation(Construct):
             parameters['environment']['ORIGIN_EMAIL_RECIPIENT'] = toggles.features_with_origin_email_recipient
         if toggles.features_with_cost_email_recipients:
             parameters['environment']['COST_EMAIL_RECIPIENTS'] = ', '.join(toggles.features_with_cost_email_recipients)
+        if toggles.features_with_cost_extra_currencies:
+            parameters['environment']['COST_EXTRA_CURRENCIES'] = ', '.join(toggles.features_with_cost_extra_currencies)
 
         self.functions = [self.monthly(parameters=parameters),
                           self.daily(parameters=parameters)]

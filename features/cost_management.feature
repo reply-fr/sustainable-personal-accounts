@@ -25,6 +25,12 @@ Scenario: where the tag used for cost management is configured
       And the dashboard reflects daily costs per cost center
       And the reporting bucket is populated with monthly reports per cost center
 
+Scenario: where additional currencies are configured for reports
+    Given a settings file 'settings.yaml' adapted to SPA semantics
+     When the attribute 'with_cost_extra_currencies' is set to '[EUR, GBP]' in the section 'features'
+      And SPA is deployed with the settings file 'settings.yaml'
+     Then the environment variable 'COST_EXTRA_CURRENCIES' is set to '[EUR, GBP]' for function 'OnMonthlyCostReport'
+
 Scenario: where cloud costs are computed and released every day
     Given an existing SPA system
      When the Lambda function 'OnDailyCostsMetric' is invoked
@@ -45,10 +51,14 @@ Scenario: where cloud costs are computed and released every month
       And code pushes summary monthly report as one CSV file listing every cost center on S3 reporting bucket
       And code pushes summary monthly report as one Excel file listing every cost center on S3 reporting bucket
 
+Scenario: where reports are produced for extra currencies
+    Given an existing SPA system
+     When the Lambda function 'OnMonthlyCostsReport' is invoked
+     Then code pushes one summary report as one Excel file for each currency of variable 'COST_EXTRA_CURRENCIES'
+
 Scenario: where costs per cost center are spread over email every month
     Given an existing SPA system
       And the attribute 'with_origin_email_recipient' is set to 'cost@example.com' in the section 'features'
       And the attribute 'with_cost_email_recipients' is set to 'alice@example.com, bob@example.com' in the section 'features'
      When the Lambda function 'OnMonthlyCostsReport' is invoked
-     Then code pushes summary monthly report as one Excel file listing every cost center on S3 reporting bucket
-      And code sends the summary monthly Excel report over email to recipients 'alice@example.com, bob@example.com'
+     Then code sends the summary monthly reports (Excel and CSV files) over email to recipients 'alice@example.com, bob@example.com'

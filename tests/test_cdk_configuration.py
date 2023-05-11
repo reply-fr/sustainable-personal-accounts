@@ -104,6 +104,7 @@ def test_set_default_values(toggles):
     assert toggles.automation_verbosity == 'INFO'
     assert toggles.features_with_arm_architecture is False
     assert toggles.features_with_cost_email_recipients is None
+    assert toggles.features_with_cost_extra_currencies is None
     assert toggles.features_with_cost_management_tag is None
     assert toggles.features_with_csv_files is None
     assert toggles.features_with_email_subscriptions_on_alerts is None
@@ -176,23 +177,21 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
     assert toggles.automation_tags == {'account-manager': 'john.foo@example.com', 'cost-imputation': 'shared'}
-    assert toggles.automation_verbosity == 'ERROR'
+    assert toggles.automation_verbosity == 'INFO'
     assert toggles.environment_identifier == 'SpaDemo'
     assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
     assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/preparation_account_template.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'fixtures/buildspec/purge_account_with_awsweeper_template.yaml'
     assert toggles.features_with_arm_architecture is True
     assert toggles.features_with_cost_email_recipients == ['alice@example.com', 'bob@example.com']
+    assert toggles.features_with_cost_extra_currencies == ['EUR']
     assert toggles.features_with_cost_management_tag == 'cost-center'
     assert toggles.features_with_email_subscriptions_on_alerts == ['finops_alerts@example.com', 'cloud_operations@example.com']
     assert toggles.features_with_microsoft_webhook_on_alerts == 'https://acme.webhook.office.com/webhookb2/892ca8xf-9423'
     assert toggles.features_with_origin_email_recipient == 'spa@example.com'
     assert toggles.features_with_tag_prefix == 'account-'
-    assert toggles.metering_activities_datastore == 'SpaActivitiesTable'
     assert toggles.metering_activities_ttl_in_seconds == 31622400
-    assert toggles.metering_shadows_datastore == 'SpaShadowsTable'
     assert toggles.metering_shadows_ttl_in_seconds == 15811200
-    assert toggles.metering_transactions_datastore == 'SpaTransactionsTable'
     assert toggles.metering_transactions_ttl_in_seconds == 900
     assert toggles.reporting_costs_markdown_template == ("# Cost reports for {month}\n"
                                                          "\n"

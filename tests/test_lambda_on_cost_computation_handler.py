@@ -27,10 +27,16 @@ from moto import mock_s3, mock_ses
 import os
 import pytest
 
-from lambdas.on_cost_computation_handler import build_charge_reports_per_cost_center, build_service_reports_per_cost_center, email_reports, get_report_path, store_report
+from lambdas.on_cost_computation_handler import (build_charge_reports_per_cost_center,
+                                                 build_service_reports_per_cost_center,
+                                                 email_reports,
+                                                 get_currency_rates,
+                                                 get_json_from_url,
+                                                 get_report_path,
+                                                 store_report)
 from tests.test_lambda_costs import sample_accounts, sample_chunk_monthly_charges_per_account, sample_chunk_monthly_services_per_account
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
@@ -100,6 +106,19 @@ def test_email_reports_without_origin_email_recipient():
 def test_email_reports_without_cost_email_recipients():
     day = date(2023, 3, 31)
     assert email_reports(day=day, objects=[]) is None
+
+
+@pytest.mark.integration_tests
+def test_get_currency_rates():
+    result = get_currency_rates()
+    assert result['EUR'] > 0.0
+
+
+@pytest.mark.integration_tests
+def test_get_json_from_url():
+    result = get_json_from_url(url="https://open.er-api.com/v6/latest/USD")
+    assert result['base_code'] == 'USD'
+    assert result['rates']['EUR'] > 0.0
 
 
 @pytest.mark.unit_tests

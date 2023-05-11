@@ -319,8 +319,8 @@ class Costs:
         return buffer.getvalue()
 
     @classmethod
-    def build_summary_of_charges_excel_report(cls, charges, day):
-        logging.info("Building Excel report: summary of charges")
+    def build_summary_of_charges_excel_report(cls, charges, day, currency='USD', rate=1.0):
+        logging.info(f"Building Excel report: summary of charges in {currency}")
         buffer = io.BytesIO()
         workbook = xlsxwriter.Workbook(buffer)
         worksheet = workbook.add_worksheet()
@@ -328,8 +328,8 @@ class Costs:
         for cost_center in charges.keys():
             types = types.union(set(item['charge'] for item in charges[cost_center]))
         labels = sorted(types)
-        headers = ['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Charges (USD)']
-        headers.extend([f"{label} (USD)" for label in labels])
+        headers = ['Month', 'Cost Center', 'Organizational Unit', 'Account', f"Charges ({currency})"]
+        headers.extend([f"{label} ({currency})" for label in labels])
         logging.debug(headers)
         worksheet.write_row(0, 0, headers)
         widths = {index: len(headers[index]) for index in range(len(headers))}
@@ -347,10 +347,10 @@ class Costs:
                     data = [month, str(cost_center), unit, str(account)]
                     amounts = accounts[account]
                     for amount in amounts.values():
-                        total += amount
+                        total += amount * rate
                     data.append(total)
                     for label in labels:
-                        data.append(amounts.get(label, 0.0))
+                        data.append(amounts.get(label, 0.0) * rate)
                     logging.debug(data)
                     worksheet.write_row(row, 0, data)
                     worksheet.set_row(row, None, None, {'level': 3, 'hidden': True})

@@ -42,20 +42,11 @@ automation:
 # parameters for metering
 metering:
 
-  # this is the table for storage of metered activities
-  activities_datastore: 'SpaActivitiesTable'
-
   # this is the maximum life for activities, used as TTL for the datastore
   activities_ttl_in_seconds: 31622400
 
-  # this is the table for storage of shadows
-  shadows_datastore: 'SpaShadowsTable'
-
   # this is the maximum life for shadows, used as TTL for the datastore
   shadows_ttl_in_seconds: 15811200
-
-  # this is the table for storage of on-going transactions
-  transactions_datastore: 'SpaTransactionsTable'
 
   # this is the maximum duration of on-going transactions, used as TTL for the datastore
   transactions_ttl_in_seconds: 900
@@ -244,6 +235,12 @@ features:
   with_cost_email_recipients:
   - alice@example.com
   - bob@example.com
+
+  # monthly reports are produced for each of these currencies -- also require settings of 'with_origin_email_recipient'
+  # - allowed value: a list of valid currencies, e.g., 'EUR', 'GBP', etc.
+  # - default value: no value
+  #
+  with_cost_extra_currencies: ['EUR']
 
   # this is the tag key that is used across settings for cost management
   # automated processing of costs is deployed only if this is set to a valid string
