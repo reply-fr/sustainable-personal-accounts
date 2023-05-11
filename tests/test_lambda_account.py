@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from lambdas import Account, State
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from tests.fixture_small_setup import given_a_small_setup
 
 
@@ -77,6 +77,24 @@ def test_get_tag_key():
     assert result == 'hello:world'
     result = Account.get_tag_key(suffix='universe')
     assert result == 'hello:universe'
+
+
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_enumerate_all_accounts():
+    context = given_a_small_setup()
+    ids = {x['Id'] for x in Account.enumerate_all_accounts()}
+    assert ids == {'123456789012', context.alice_account, context.bob_account, context.crm_account, context.erp_account, context.root_account, context.unmanaged_account}
+
+
+@pytest.mark.integration_tests
+@mock_organizations
+@mock_ssm
+def test_scan_all_accounts():
+    context = given_a_small_setup()
+    ids = set(Account.scan_all_accounts().keys())
+    assert ids == {'123456789012', context.alice_account, context.bob_account, context.crm_account, context.erp_account, context.root_account, context.unmanaged_account}
 
 
 @pytest.mark.integration_tests

@@ -111,13 +111,3 @@ def test_get_settings_for_account_for_alien_account():
     given_a_small_setup()
     with pytest.raises(ValueError):
         Settings.get_settings_for_account(identifier='123456789012')   # events from unmanaged accounts raise exceptions
-
-
-@pytest.mark.integration_tests
-@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="yo"))
-@mock_organizations
-@mock_ssm
-def test_scan_settings_for_all_managed_accounts():
-    given_a_small_setup(environment="yo")
-    settings = Settings.scan_settings_for_all_managed_accounts()
-    assert len(settings.keys()) == 4

@@ -116,7 +116,7 @@ def given_a_small_setup(environment='Spa'):
 
     # following entities exit in the organization but are not in scope of settings
     context.unmanaged_ou = create_organizational_unit(parent=context.root_id, name='unmanaged', session=session)
-    context.unamanaged_account = create_account(name='unmanaged', ou=context.unmanaged_ou, session=session, tags={})
+    context.unmanaged_account = create_account(name='unmanaged', ou=context.unmanaged_ou, session=session, tags={})
 
     context.settings_alien_ou = {
         'account_tags': {'CostCenter': 'alien', 'Sponsor': 'whoKnows'},

@@ -124,17 +124,5 @@ class Settings:
         return settings
 
     @classmethod
-    def scan_settings_for_all_managed_accounts(cls):
-        logging.debug("Scan settings for all managed accounts")
-        accounts = {}
-        for account in cls.enumerate_all_managed_accounts():
-            logging.debug(f"Sannning account {account}")
-            try:
-                accounts[account] = Account.describe(account).__dict__
-            except botocore.exceptions.ClientError:
-                logging.error(f"No settings could be found for account {account}")
-        return accounts
-
-    @classmethod
     def get_environment(cls):
         return os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')

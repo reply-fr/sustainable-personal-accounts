@@ -65,6 +65,28 @@ class Account:
             return {}
 
     @classmethod
+    def enumerate_all_accounts(cls, session=None):
+        session = session or get_organizations_session()
+
+        logging.debug("Listing all accounts")
+        chunk = session.client('organizations').list_accounts()
+        while chunk:
+            logging.info("Listing some accounts")
+            for item in chunk['Accounts']:
+                logging.debug(item)
+                yield item
+
+            token = chunk.get('NextToken')
+            if token:
+                chunk = session.client('organizations').list_accounts(NextToken=token)
+            else:
+                break
+
+    @classmethod
+    def scan_all_accounts(cls, session=None):
+        return {x['Id']: cls.describe(id=x['Id']).__dict__ for x in cls.enumerate_all_accounts(session=session)}
+
+    @classmethod
     def enumerate_tags(cls, account, session=None):
         session = session or get_organizations_session()
 

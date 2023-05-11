@@ -32,7 +32,6 @@ from costs import Costs
 from e_mail import Email
 from events import Events
 from metric import put_metric_data
-from settings import Settings
 
 
 @trap_exception
@@ -43,7 +42,7 @@ def handle_daily_metrics(event=None, context=None, session=None):
     else:
         yesterday = date.today() - timedelta(days=1)
     logging.info(f"Computing daily cost metrics per cost center for '{yesterday}'")
-    accounts = Settings.scan_settings_for_all_managed_accounts()
+    accounts = Account.scan_all_accounts()
     costs = {}
     for account, amount in Costs.enumerate_daily_costs_per_account(day=yesterday, session=session):
         logging.info(f"Computing daily costs for account '{account}'")
@@ -72,7 +71,7 @@ def handle_monthly_reports(event=None, context=None, session=None):
             last_day_of_previous_month = date.fromisoformat(event['date'] + '-01')
     else:
         last_day_of_previous_month = date.today().replace(day=1) - timedelta(days=1)
-    accounts = Settings.scan_settings_for_all_managed_accounts()
+    accounts = Account.scan_all_accounts()
 
     build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
