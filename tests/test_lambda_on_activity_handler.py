@@ -30,7 +30,7 @@ import pytest
 from lambdas import Events, KeyValueStore
 from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_daily_report, get_hashes, get_report_path
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_activities_table
 
 

@@ -30,7 +30,7 @@ import pytest
 from lambdas import Events
 from lambdas.on_transaction_metering_handler import handle_account_event, handle_stream_event
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table
 
 

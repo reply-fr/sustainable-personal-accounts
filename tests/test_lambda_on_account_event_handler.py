@@ -30,7 +30,7 @@ from lambdas import Events
 from lambdas.on_account_event_handler import (handle_account_event, handle_console_login_event, handle_report, build_report, get_report_path)
 from lambdas.key_value_store import KeyValueStore
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 from tests.fixture_small_setup import given_a_small_setup
 
