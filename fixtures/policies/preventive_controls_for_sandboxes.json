@@ -34,6 +34,9 @@
                   "us-east-1",
                   "us-west-2"
               ]
+          },
+          "ArnNotLike": {
+            "aws:PrincipalARN": "arn:aws:iam::*:role/AWSControlTowerExecution"
           }
       }
     },
