@@ -271,9 +271,11 @@ Following activities are related to this step:
 
 ## Step 8 - Activate AWS Incident Manager
 
-AWS Incident Manager is used by SPA to record budget alerts and other operational exceptions, and to support easy handling of these. This is a great building block for serverless application, that can be integrated into ServiceNow and to Jira if needed. Before SPA can use it programatically, you have to enable the usage of the service in the `Automation` account in the AWS region where SPA has been deployed. Go to the page [Getting started with Incident Manager](https://docs.aws.amazon.com/incident-manager/latest/userguide/getting-started.html) and follow instructions.
+AWS Incident Manager is used by SPA to record budget alerts and other operational exceptions, and to support easy handling of these. This is a great building block for serverless application, that can be integrated into ServiceNow and to Jira if needed.
 
-This step is mandatory, and the deployment of SPA may fail if you do not activate AWS Incident Manager manually.
+Before SPA can use it programmatically, you have to enable the usage of the service in the `Automation` account in the AWS region where SPA has been deployed. Go to the page [Getting started with Incident Manager](https://docs.aws.amazon.com/incident-manager/latest/userguide/getting-started.html) and follow instructions.
+
+Note: this step is mandatory, and the deployment of SPA will fail if you do not activate AWS Incident Manager manually.
 
 ## Step 9 - Create Organizational Units for personal accounts
 
@@ -307,6 +309,8 @@ $ make shell
 (venv) make bootstrap-cdk
 (venv) make deploy
 ```
+
+Note: if CDK complains about assumed role, then ensure that the environment variable `AWS_DEFAULT_REGION` is not contradicting with the region set in settings file. You can unset the variable `AWS_DEFAULT_REGION` to be sure.
 
 ## Step 12 - Inspect the solution
 
