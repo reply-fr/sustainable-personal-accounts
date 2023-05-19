@@ -64,7 +64,7 @@ class OnCostComputation(Construct):
         Rule(self, "TriggerMonthly",
              rule_name="{}OnMonthlyCostsReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger monthly reporting on costs",
-             schedule=Schedule.cron(day="3", hour="2", minute="42"),
+             schedule=Schedule.cron(day="6", hour="2", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
