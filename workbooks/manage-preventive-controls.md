@@ -1,7 +1,7 @@
 # Manage preventive controls
 
 ## Overview
-With this workbook you will add preventive controls to an AWS Organization. This creates effective guardrails and limits to what can be done within an AWS account assigned to a person.
+With this workbook you create effective guardrails and limits to what can be done within an AWS account assigned to a person.
 
 ## Prerequisites
 - You have a copy of the SPA git repository
@@ -59,7 +59,7 @@ This control is implemented in statement `SpaDenyEverythingFromRootUser`, that i
 If you need to perform a specific operation on an account that requires root authentication, then you have two options. First option: you can detach the SCP policy during the operation, then attach the SCP again. Second option: you move the account to another OU that does not feature the control on root account, perform the operation, then move the account back to its initial place.
 
 ## Step 4 - Prevent deployments anywhere
-The purge of personal accounts requires to visit multiple AWS regions. With this control we deny the creation of resources except on a limited set of well-defined regions.
+The purge of personal accounts requires to visit multiple AWS regions. With this control we deny the creation of resources except on a limited set of well-defined regions. We also release the constraint for Control Tower itself, by checking the role that it is using across accounts.
 
 This control is implemented in statement `SpaDenyAllOutsideRequestedRegions`, that is looking like this:
 ```json
@@ -83,8 +83,11 @@ This control is implemented in statement `SpaDenyAllOutsideRequestedRegions`, th
                 "us-east-1",
                 "us-west-2"
             ]
+        },
+        "ArnNotLike": {
+          "aws:PrincipalARN": "arn:aws:iam::*:role/AWSControlTowerExecution"
         }
-    }
+      }
 }
 ```
 
