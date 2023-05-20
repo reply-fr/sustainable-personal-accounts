@@ -330,6 +330,8 @@ Activities to on-board existing accounts:
 
 To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB shoud reflect your activities on personal accounts.
 
+If you have to go deeper in the inspection of your SPA system, use the [Inspect a production system](./inspect-a-production-system.md) workbook.
+
 ## Follow-up
 
 - You can now [create new AWS accounts](./create-a-personal-account.md) and let SPA manage them automatically
