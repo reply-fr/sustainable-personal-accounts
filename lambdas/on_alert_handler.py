@@ -45,7 +45,7 @@ You will find below a copy of the alert that has been sent automatically to the 
 """
 
 
-SUBJECT_TEMPLATE = "Alert on account '{account}'"
+SUBJECT_TEMPLATE = "Budget alert on account '{account}'"
 
 
 @trap_exception
