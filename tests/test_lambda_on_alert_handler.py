@@ -83,7 +83,7 @@ def test_handle_sqs_event(account_describe_mock):
         assert result == '[OK]'
     account_describe_mock.client.return_value.publish.assert_called_with(TopicArn='arn:aws:sns:eu-west-1:123456789012:test-topic',
                                                                          Message="You will find below a copy of the alert that has been sent automatically to the holder of account 'account-three (111111111111)':\n\n----\n\nsome message",
-                                                                         Subject="Alert on account 'account-three (111111111111)'")
+                                                                         Subject="Budget alert on account 'account-three (111111111111)'")
 
 
 @pytest.mark.unit_tests
