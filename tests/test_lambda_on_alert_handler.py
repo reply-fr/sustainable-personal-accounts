@@ -96,7 +96,7 @@ def test_publish_notification_on_microsoft_teams():
     publish_notification_on_microsoft_teams(notification=notification, session=mock)
     mock.client.assert_called_with('events')
     mock.client.return_value.put_events.assert_called_with(Entries=[{
-        'Detail': '{"ContentType": "application/json", "Environment": "Spa", "Payload": "{\\"Message\\": \\"hello world\\", \\"Subject\\": \\"some subject\\"}"}',
+        'Detail': '{"ContentType": "application/json", "Environment": "Spa", "Payload": {"Message": "hello world", "Subject": "some subject"}}',
         'DetailType': 'MessageToMicrosoftTeams',
         'Source': 'SustainablePersonalAccounts'}])
 

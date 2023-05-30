@@ -99,7 +99,7 @@ def publish_notification(notification, session=None):
 
 
 def publish_notification_on_microsoft_teams(notification, session=None):
-    Events.emit_spa_event("MessageToMicrosoftTeams", payload=json.dumps(notification), session=session)
+    Events.emit_spa_event("MessageToMicrosoftTeams", payload=notification, session=session)
 
 
 def publish_notification_on_sns(notification, session=None):
