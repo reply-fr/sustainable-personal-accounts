@@ -28,7 +28,7 @@ Scenario: where a successful on-boarding transaction is recorded
     Given an existing SPA system
      When a 'SuccessfulOnBoardingEvent' event for account '123456789012' is put from 'SustainablePersonalAccounts'
      Then lambda function 'OnActivityEvent' is executed with the event
-     Then details of the activity are put in a new record in the table 'ActivitiesTable'
+      And details of the activity are put in a new record in the table 'ActivitiesTable'
       And a data point is put to metric 'TransactionsByCostCenter'
       And a data point is put to metric 'TransactionsByLabel'
 
@@ -36,7 +36,7 @@ Scenario: where a successful maintenance transaction is recorded
     Given an existing SPA system
      When a 'SuccessfulMaintenanceEvent' event for account '123456789012' is put from 'SustainablePersonalAccounts'
      Then lambda function 'OnActivityEvent' is executed with the event
-     Then details of the activity are put in a new record in the table 'ActivitiesTable'
+      And details of the activity are put in a new record in the table 'ActivitiesTable'
       And a data point is put to metric 'TransactionsByCostCenter'
       And a data point is put to metric 'TransactionsByLabel'
 
@@ -44,7 +44,7 @@ Scenario: where a regular console login event is metered
     Given an existing SPA system
      When a 'ConsoleLoginEvent' event for account '123456789012' is put from 'SustainablePersonalAccounts'
      Then lambda function 'OnActivityEvent' is executed with the event
-     Then details of the activity are put in a new record in the table 'ActivitiesTable'
+      And details of the activity are put in a new record in the table 'ActivitiesTable'
       And a data point is put to metric 'TransactionsByCostCenter'
       And a data point is put to metric 'TransactionsByLabel'
 
