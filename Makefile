@@ -29,6 +29,7 @@ help:
 	@echo "make bandit - look for secret strings in the code"
 	@echo "make stats - count lines of code and more"
 	@echo "make rebase - pull changes from origin main branch and rebase your code"
+	@echo "make push - rebase from main branch and push current branch to remote repository"
 	@echo "make diff - check foreseen changes in cloud resources before deployment"
 	@echo "make deploy - build or update cloud resources for this workload"
 	@echo "make destroy - delete cloud resources for this workload"
@@ -164,6 +165,9 @@ stats: venv/bin/activate
 
 rebase:
 	git pull --rebase origin main
+
+push: rebase
+	git push
 
 lambdas.out: setup.py lambdas/*.py
 	mkdir -p lambdas.out
