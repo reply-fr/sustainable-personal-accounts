@@ -237,7 +237,7 @@ compute-daily-cost-metric:
 compute-monthly-cost-report:
 	@[ "$(REPORT_MONTH)" ] || (echo "[ERROR] Missing REPORT_MONTH, e.g., REPORT_MONTH=2023-02 make compute-monthly-cost-report" ; exit 1)
 	@echo "Computing cost report for '${REPORT_MONTH}'"
-	aws lambda invoke --function-name SpaOnMonthlyCostsReport \
+	aws lambda invoke --function-name SpaOnMonthlyCostReport \
                       --payload '{"date": "$(REPORT_MONTH)" }' \
                       --invocation-type Event \
                       --cli-binary-format raw-in-base64-out \

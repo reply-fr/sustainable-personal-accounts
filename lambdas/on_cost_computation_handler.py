@@ -73,8 +73,14 @@ def handle_monthly_reports(event=None, context=None, session=None):
         last_day_of_previous_month = date.today().replace(day=1) - timedelta(days=1)
     accounts = Account.scan_all_accounts()
 
-    build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
+    return last_day_of_previous_month, build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
+
+
+@trap_exception
+def handle_monthly_reports_and_emails(event=None, context=None, session=None):
+    day, paths = handle_monthly_reports(event=event, context=context, session=session)
+    email_reports(day=day, objects=paths)
 
 
 def build_charge_reports_per_cost_center(accounts, day, session):
@@ -105,8 +111,7 @@ def build_charge_reports_per_cost_center(accounts, day, session):
     store_report(report=Costs.build_summary_of_charges_csv_report(charges=charges, day=day), path=path)
     paths.append(path)
 
-    email_reports(day=day, objects=[f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path}" for path in paths])
-    return '[OK]'
+    return [f"s3://{os.environ['REPORTS_BUCKET_NAME']}/{path}" for path in paths]
 
 
 def build_service_reports_per_cost_center(accounts, day, session):

@@ -43,27 +43,45 @@ class OnCostComputation(Construct):
             parameters['environment']['COST_EXTRA_CURRENCIES'] = ', '.join(toggles.features_with_cost_extra_currencies)
         parameters['memory_size'] = 1024  # accomodate for hundreds of accounts and related data
 
-        self.functions = [self.monthly(parameters=parameters),
-                          self.daily(parameters=parameters)]
+        self.functions = [self.report(parameters=parameters),
+                          self.report_and_email(parameters=parameters),
+                          self.meter(parameters=parameters)]
 
-    def monthly(self, parameters) -> Function:
+    def report(self, parameters) -> Function:
 
         function = LoggingFunction(self,
-                                   name="OnMonthlyUsageReport",
+                                   name="OnEarlyCostReport",
                                    description="Report usage and support costs from previous month",
-                                   trigger="Monthly",
+                                   trigger="EarlyMonthly",
                                    handler="on_cost_computation_handler.handle_monthly_reports",
                                    parameters=parameters)
 
-        Rule(self, "TriggerMonthly",
-             rule_name="{}OnMonthlyCostsReportTriggerRule".format(toggles.environment_identifier),
-             description="Trigger monthly reporting on costs",
+        Rule(self, "TriggerEarly",
+             rule_name="{}OnEarlyCostReportTriggerRule".format(toggles.environment_identifier),
+             description="Trigger early monthly reporting on costs",
              schedule=Schedule.cron(day="6", hour="2", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
 
-    def daily(self, parameters) -> Function:
+    def report_and_email(self, parameters) -> Function:
+
+        function = LoggingFunction(self,
+                                   name="OnMonthlyCostReport",
+                                   description="Report finalized costs from previous month",
+                                   trigger="LateMonthly",
+                                   handler="on_cost_computation_handler.handle_monthly_reports_and_emails",
+                                   parameters=parameters)
+
+        Rule(self, "TriggerMonthly",
+             rule_name="{}OnMonthlyCostReportTriggerRule".format(toggles.environment_identifier),
+             description="Trigger final monthly reporting on costs",
+             schedule=Schedule.cron(day="14", hour="2", minute="42"),
+             targets=[LambdaFunction(function)])
+
+        return function
+
+    def meter(self, parameters) -> Function:
 
         function = LoggingFunction(self,
                                    name="OnDailyCostsMetric",
