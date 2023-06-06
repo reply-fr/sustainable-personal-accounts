@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "@marp-team/marp-cli": "^1.5.2",
-    "aws-cdk": "^2.69.0",
+    "aws-cdk": "^2.82.0",
     "constructs": "^10.0.0"
   }
 }
