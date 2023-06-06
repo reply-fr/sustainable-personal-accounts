@@ -128,6 +128,7 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
                           Granularity='MONTHLY',
                           Metrics=['UnblendedCost'],
+                          Filter=dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS)),
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
                                    dict(Type='DIMENSION', Key='SERVICE')])
         chunk = costs.get_cost_and_usage(**parameters)
