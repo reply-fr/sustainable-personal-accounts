@@ -21,8 +21,8 @@ from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table, TableEncrypt
 from aws_cdk.aws_events import EventPattern, Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 
+from cdk import LoggingFunction
 from lambdas import Events
 
 
@@ -54,18 +54,12 @@ class OnAccountEvent(Construct):
 
     def on_event(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnAccountEvent"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromEvent",
-                            function_name=function_name,
-                            description="Persist last event for each account",
-                            handler="on_account_event_handler.handle_account_event",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnAccountEvent",
+                                   description="Persist last event for each account",
+                                   trigger="FromEvent",
+                                   handler="on_account_event_handler.handle_account_event",
+                                   parameters=parameters)
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",
@@ -79,18 +73,12 @@ class OnAccountEvent(Construct):
 
     def on_login(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnConsoleLogin"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromConsoleLogin",
-                            function_name=function_name,
-                            description="Update shadow record on signin event",
-                            handler="on_account_event_then_shadow_handler.handle_console_login_event",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnConsoleLogin",
+                                   description="Update shadow record on signin event",
+                                   trigger="FromConsoleLogin",
+                                   handler="on_account_event_handler.handle_console_login_event",
+                                   parameters=parameters)
 
         Rule(self, "ConsoleLoginRule",
              description="Trigger Lambda function on console login event",
@@ -102,22 +90,16 @@ class OnAccountEvent(Construct):
 
     def on_schedule(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnInventoryReport"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromSchedule",
-                            function_name=function_name,
-                            description="Report inventories, from shadows",
-                            handler="on_account_event_then_shadow_handler.handle_report",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnInventoryReport",
+                                   description="Report inventories, from shadows",
+                                   trigger="FromSchedule",
+                                   handler="on_account_event_handler.handle_report",
+                                   parameters=parameters)
 
         Rule(self, "TriggerRule",
              rule_name="{}OnInventoryReportTriggerRule".format(toggles.environment_identifier),
-             description="Trigger periodic reporting on shadows",
+             description="Trigger periodic inventory reports",
              schedule=Schedule.cron(week_day="SAT", hour="3", minute="23"),
              targets=[LambdaFunction(function)])
 

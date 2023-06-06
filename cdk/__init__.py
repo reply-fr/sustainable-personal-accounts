@@ -16,9 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from .configuration import Configuration
+from .logging_function import LoggingFunction
 from .parameters_construct import Parameters
 from .serverless_stack import ServerlessStack
 
 __all__ = ['Configuration',
+           'LoggingFunction',
            'Parameters',
            'ServerlessStack']

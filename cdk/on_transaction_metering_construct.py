@@ -22,8 +22,8 @@ from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function, StartingPosition
 from aws_cdk.aws_lambda_event_sources import DynamoEventSource
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 
+from cdk import LoggingFunction
 from lambdas import Events
 
 
@@ -54,18 +54,12 @@ class OnTransactionMetering(Construct):
 
     def on_event(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnTransactionMetering"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromEvent",
-                            function_name=function_name,
-                            description="Turn events to transactions",
-                            handler="on_transaction_metering_handler.handle_account_event",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnTransactionMetering",
+                                   description="Turn events to transactions",
+                                   trigger="FromEvent",
+                                   handler="on_transaction_metering_handler.handle_account_event",
+                                   parameters=parameters)
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",
@@ -79,18 +73,12 @@ class OnTransactionMetering(Construct):
 
     def on_stream(self, parameters, table) -> Function:
 
-        function_name = toggles.environment_identifier + "OnTransactionTimeOut"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromStream",
-                            function_name=function_name,
-                            description="Process metering stream",
-                            handler="on_transaction_metering_handler.handle_stream_event",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnTransactionTimeOut",
+                                   description="Handle transaction timeouts",
+                                   trigger="FromStream",
+                                   handler="on_transaction_metering_handler.handle_stream_event",
+                                   parameters=parameters)
 
         function.add_event_source(DynamoEventSource(  # stream items that have expired
             table,

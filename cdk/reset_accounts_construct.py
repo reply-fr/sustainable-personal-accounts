@@ -16,9 +16,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import RemovalPolicy
 from aws_cdk.aws_lambda import Function
-from aws_cdk.aws_logs import LogGroup, RetentionDays
+
+from cdk import LoggingFunction
 
 
 class ResetAccounts(Construct):
@@ -29,16 +29,8 @@ class ResetAccounts(Construct):
 
     def on_run(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "ResetAccounts"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        return Function(
-            self, "FromInvoke",
-            function_name=function_name,
-            description="Reset all managed accounts",
-            handler="reset_accounts_handler.handle_event",
-            **parameters)
+        return LoggingFunction(self,
+                               name="ResetAccounts",
+                               description="Reset all managed accounts",
+                               handler="reset_accounts_handler.handle_event",
+                               parameters=parameters)

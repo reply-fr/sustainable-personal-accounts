@@ -16,11 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
-from aws_cdk.aws_logs import LogGroup, RetentionDays
+
+from cdk import LoggingFunction
 
 
 class OnVanillaAccount(Construct):
@@ -35,19 +35,12 @@ class OnVanillaAccount(Construct):
 
     def on_account(self, parameters={}) -> Function:
 
-        function_name = toggles.environment_identifier + "OnVanillaAccount"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(
-            self, "FromAccount",
-            function_name=function_name,
-            description="Change state of created accounts to assigned",
-            handler="on_vanilla_account_handler.handle_organization_event",
-            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnVanillaAccount",
+                                   description="Change state of created accounts to assigned",
+                                   trigger="FromAccount",
+                                   handler="on_vanilla_account_handler.handle_organization_event",
+                                   parameters=parameters)
 
         Rule(self, "NewRule",
              description="Route the landing of an account in managed organizational units to lambda function",
@@ -62,19 +55,12 @@ class OnVanillaAccount(Construct):
 
     def on_tag(self, parameters={}) -> Function:
 
-        function_name = toggles.environment_identifier + "OnVanillaAccountTag"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(
-            self, "FromTag",
-            function_name=function_name,
-            description="Change state of created accounts to assigned",
-            handler="on_vanilla_account_handler.handle_tag_event",
-            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnVanillaAccountTag",
+                                   description="Change state of created accounts to assigned",
+                                   trigger="FromTag",
+                                   handler="on_vanilla_account_handler.handle_tag_event",
+                                   parameters=parameters)
 
         Rule(self, "TagRule",
              description="Route the tagging of vanilla accounts to lambda function",

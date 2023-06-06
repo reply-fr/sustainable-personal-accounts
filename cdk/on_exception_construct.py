@@ -16,14 +16,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import Effect, ManagedPolicy, PolicyStatement
 from aws_cdk.aws_lambda import Function, FunctionUrlAuthType
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
+from cdk import LoggingFunction
 from lambdas import Events
 from .parameters_construct import Parameters
 
@@ -42,23 +41,19 @@ class OnException(Construct):
         parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
         parameters['environment']['REPORTING_EXCEPTIONS_PREFIX'] = toggles.reporting_exceptions_prefix
         parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER)
+        parameters['reserved_concurrent_executions'] = 1  # throttle above 10 RPS
+
         self.functions = [self.on_exception(parameters=parameters),
                           self.on_download(parameters=parameters)]
 
     def on_exception(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnException"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromEvent",
-                            function_name=function_name,
-                            description="Handle exceptions",
-                            handler="on_exception_handler.handle_exception",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnException",
+                                   description="Handle exceptions",
+                                   trigger="FromEvent",
+                                   handler="on_exception_handler.handle_exception",
+                                   parameters=parameters)
 
         function.role.add_managed_policy(ManagedPolicy.from_aws_managed_policy_name('AWSIncidentManagerResolverAccess'))
         function.add_to_role_policy(PolicyStatement(effect=Effect.ALLOW,
@@ -77,19 +72,12 @@ class OnException(Construct):
 
     def on_download(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnExceptionAttachmentDownload"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromUrl",
-                            function_name=function_name,
-                            description="Serve requests for attachment download",
-                            handler="on_exception_handler.handle_attachment_request",
-                            reserved_concurrent_executions=1,  # throttling above 10 RPS
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnExceptionAttachmentDownload",
+                                   description="Serve requests for attachment download",
+                                   trigger="FromUrl",
+                                   handler="on_exception_handler.handle_attachment_request",
+                                   parameters=parameters)
 
         self.web_endpoints["OnException.DownloadAttachment.WebEndpoint"] = function.add_function_url(auth_type=FunctionUrlAuthType.NONE,
                                                                                                      cors=dict(allowed_origins=["*"])).url

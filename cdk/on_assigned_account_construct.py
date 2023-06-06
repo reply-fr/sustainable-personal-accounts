@@ -16,12 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 
+from cdk import LoggingFunction
 from .parameters_construct import Parameters
 
 
@@ -35,19 +34,12 @@ class OnAssignedAccount(Construct):
 
     def on_tag(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnAssignedAccount"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(
-            self, "FromTag",
-            function_name=function_name,
-            description="Start preparation of an assigned account",
-            handler="on_assigned_account_handler.handle_tag_event",
-            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnAssignedAccount",
+                                   description="Start preparation of an assigned account",
+                                   trigger="FromTag",
+                                   handler="on_assigned_account_handler.handle_tag_event",
+                                   parameters=parameters)
 
         Rule(self, "TagRule",
              description="Route the tagging of assigned accounts to lambda function",

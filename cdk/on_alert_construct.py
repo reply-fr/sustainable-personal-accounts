@@ -19,7 +19,6 @@ import boto3
 import logging
 
 from constructs import Construct
-from aws_cdk import Duration, RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement, ServicePrincipal
@@ -28,8 +27,8 @@ from aws_cdk.aws_sns import Topic
 from aws_cdk.aws_sns_subscriptions import EmailSubscription
 from aws_cdk.aws_lambda import Function
 from aws_cdk.aws_lambda_event_sources import SqsEventSource
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 
+from cdk import LoggingFunction
 from lambdas import Worker
 
 
@@ -79,20 +78,12 @@ class OnAlert(Construct):
 
     def on_sqs(self, parameters, queue) -> Function:
 
-        function_name = toggles.environment_identifier + "OnAlertFromSqs"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        parameters['timeout'] = Duration.seconds(20)
-        function = Function(
-            self, "FromAlert",
-            function_name=function_name,
-            description="Be notified on an alert",
-            handler="on_alert_handler.handle_sqs_event",
-            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnAlertFromSqs",
+                                   description="Handle alerts received over SQS queue",
+                                   trigger="FromAlert",
+                                   handler="on_alert_handler.handle_sqs_event",
+                                   parameters=parameters)
 
         function.add_event_source(SqsEventSource(queue))
 
@@ -100,19 +91,12 @@ class OnAlert(Construct):
 
     def on_codebuild(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnAlertFromCodebuild"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(
-            self, "FromCodebuild",
-            function_name=function_name,
-            description="Be notified on a failed Codebuild project",
-            handler="on_alert_handler.handle_codebuild_event",
-            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnAlertFromCodebuild",
+                                   description="Handle failures of CodeBuild projects",
+                                   trigger="FromCodebuild",
+                                   handler="on_alert_handler.handle_codebuild_event",
+                                   parameters=parameters)
 
         Rule(self, "CodebuildRule",
              description="Route the failure of Codebuild project to lambda function",

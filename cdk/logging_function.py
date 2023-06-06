@@ -15,22 +15,24 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from constructs import Construct
+from aws_cdk import RemovalPolicy
 from aws_cdk.aws_lambda import Function
+from aws_cdk.aws_logs import LogGroup, RetentionDays
 
-from cdk import LoggingFunction
 
+def LoggingFunction(context, name, description, handler, trigger="FromInvoke", parameters={}):
 
-class CheckHealth(Construct):
+    function_name = toggles.environment_identifier + name
 
-    def __init__(self, scope: Construct, id: str, parameters={}) -> None:
-        super().__init__(scope, id)
-        self.functions = [self.on_run(parameters=parameters)]
+    LogGroup(context,
+             function_name + "Log",
+             log_group_name=f"/aws/lambda/{function_name}",
+             retention=RetentionDays.THREE_MONTHS,
+             removal_policy=RemovalPolicy.DESTROY)
 
-    def on_run(self, parameters) -> Function:
-
-        return LoggingFunction(self,
-                               name="CheckHealth",
-                               description="Check the internal state of run-time",
-                               handler="check_health_handler.handle_event",
-                               parameters=parameters)
+    return Function(context,
+                    trigger,
+                    function_name=function_name,
+                    description=description,
+                    handler=handler,
+                    **parameters)

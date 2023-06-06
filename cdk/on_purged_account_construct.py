@@ -16,12 +16,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from constructs import Construct
-from aws_cdk import RemovalPolicy
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 
+from cdk import LoggingFunction
 from lambdas import Worker
 
 
@@ -33,19 +32,12 @@ class OnPurgedAccount(Construct):
 
     def on_codebuild(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnPurgedAccountFromCodebuild"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(
-            self, "FromCodebuild",
-            function_name=function_name,
-            description="Change state of purged accounts to assigned",
-            handler="on_purged_account_handler.handle_codebuild_event",
-            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnPurgedAccountFromCodebuild",
+                                   description="Change state of purged accounts to assigned",
+                                   trigger="FromCodebuild",
+                                   handler="on_purged_account_handler.handle_codebuild_event",
+                                   parameters=parameters)
 
         Rule(self, "CodebuildRule",
              description="Route the completion of account purge with Codebuild project to lambda function",
