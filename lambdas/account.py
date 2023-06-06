@@ -175,13 +175,21 @@ class Account:
     @classmethod
     def get_account_label(cls, account, session=None) -> str:
         session = session or get_organizations_session()
-        name = session.client('organizations').describe_account(AccountId=account)['Account']['Name']
-        return f"{name} ({account})"
+        try:
+            name = session.client('organizations').describe_account(AccountId=account)['Account']['Name']
+            return f"{name} ({account})"
+        except botocore.exceptions.ClientError:
+            logging.warning(f"Unable to find account '{account}'")
+            return str(account)
 
     @classmethod
     def get_name(cls, account, session=None):
         session = session or get_organizations_session()
-        return session.client('organizations').describe_account(AccountId=account)['Account']['Name']
+        try:
+            return session.client('organizations').describe_account(AccountId=account)['Account']['Name']
+        except botocore.exceptions.ClientError:
+            logging.warning(f"Unable to find account '{account}'")
+            return 'Unknown'
 
     @classmethod
     def get_organizational_unit(cls, account, session=None):
