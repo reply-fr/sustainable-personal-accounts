@@ -101,13 +101,12 @@ organizational_units:
 
   # settings specific to accounts placed in this organizational unit
   - identifier: 'ou-1234'
-    note: 'a container for some accounts'
+    note: 'Alpha Sandboxes'
 
     # added to every account
     account_tags:
-      cost-imputation: 'abc'
-      cost-center: 'Foo Bar'
-      account-manager: foo.bar@example.com
+      cost-center: 'Alpha'
+      cost-owner: foo.bar@example.com
 
     preparation: # of managed accounts
 
@@ -130,13 +129,12 @@ organizational_units:
 
   # settings specific to accounts placed in this organizational unit
   - identifier: 'ou-5678'
-    note: 'another account container'
+    note: 'Gamma Sandboxes'
 
     # added to every account
     account_tags:
-      cost-imputation: 'xyz'
-      cost-center: 'Mister Jones'
-      account-manager: jones@example.com
+      cost-center: 'Gamma'
+      cost-owner: jones@example.com
 
     preparation: # of managed accounts
 
@@ -171,9 +169,8 @@ accounts:
 
     # added to this account
     account_tags:
-      cost-imputation: 'SB-123'
-      cost-center: 'Alice'
-      account-manager: alice@example.com
+      cost-center: 'SB-123'
+      cost-owner: alice@example.com
 
     preparation: # of this account
 
@@ -197,9 +194,8 @@ accounts:
 
     # added to this account
     account_tags:
-      cost-imputation: 'SB-456'
-      cost-center: 'Bob'
-      account-manager: bob@example.com
+      cost-center: 'SB-456'
+      cost-owner: bob@example.com
 
     preparation: # of this account
 
@@ -236,7 +232,7 @@ features:
   - alice@example.com
   - bob@example.com
 
-  # monthly reports are produced for each of these currencies -- also require settings of 'with_origin_email_recipient'
+  # monthly reports are produced for each of these currencies
   # - allowed value: a list of valid currencies, e.g., 'EUR', 'GBP', etc.
   # - default value: no value
   #
@@ -244,7 +240,7 @@ features:
 
   # this is the tag key that is used across settings for cost management
   # automated processing of costs is deployed only if this is set to a valid string
-  # - allowed value: key of the tag that is used for cost mangement, e.g., 'cost-center'
+  # - allowed value: key of the tag that is used for cost management, e.g., 'cost-center'
   # - default value: no value
   #
   with_cost_management_tag: cost-center
