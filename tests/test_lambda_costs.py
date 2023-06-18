@@ -26,7 +26,7 @@ import pytest
 
 from lambdas.costs import Costs
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 sample_chunk_daily_costs_per_account = {
