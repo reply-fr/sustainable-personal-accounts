@@ -28,9 +28,9 @@ from pstats import Stats
 import pytest
 
 from lambdas import Events
-from lambdas.on_transaction_metering_handler import handle_account_event, handle_stream_event
+from lambdas.on_transaction_metering_handler import handle_account_event, handle_stream_event, handle_expired_record
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table
 
 
@@ -139,3 +139,25 @@ def test_handle_stream_event_on_expired_transaction():
     event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json",
                                             context={})
     assert handle_stream_event(event=event) == "[OK]"
+
+
+@pytest.mark.unit_tests
+def test_handle_expired_record():
+
+    sample = {'account': '123456789012',
+              'account-holder': 'alice@example.com',
+              'account-state': 'expired',
+              'begin': 1687025003.7143958,
+              'cost-center': 'Unicorn',
+              'cost-owner': 'bob@example.com',
+              'transaction': 'maintenance'}
+
+    def validate_event(label, payload):
+        assert label in ['FailedOnBoardingException', 'FailedMaintenanceException', 'GenericException']
+        assert payload['account'] == '123456789012'
+        assert len(payload.get('title')) > 7
+        assert len(payload.get('message')) > 7
+
+    for transaction in ['on-boarding', 'maintenance', 'alien']:
+        sample['transaction'] = transaction
+        handle_expired_record(record=sample, emit=validate_event)

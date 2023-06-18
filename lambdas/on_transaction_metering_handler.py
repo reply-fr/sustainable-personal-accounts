@@ -67,7 +67,7 @@ def end_transaction(account_id, transactions, emit=None):
         record['end'] = time()
         logging.debug(record)
         emit = emit or Events.emit_activity_event
-        emit(label=get_event_label(record, success=True), payload=record)
+        emit(label=get_transaction_label(record), payload=record)
     else:
         logging.debug(f"No on-going transaction for account '{account_id}'")
 
@@ -98,12 +98,40 @@ def handle_expired_record(record, emit=None):
     logging.info(record)
 
     emit = emit or Events.emit_spa_event
-    emit(label=get_event_label(record, success=False), payload=record)
+    record['title'] = get_exception_title(record)
+    record['message'] = get_exception_message(record)
+    emit(label=get_exception_label(record), payload=record)
 
 
-def get_event_label(record, success=True):
+def get_exception_label(record):
     labels = {
-        'on-boarding': 'SuccessfulOnBoardingEvent' if success else 'FailedOnBoardingException',
-        'maintenance': 'SuccessfulMaintenanceEvent' if success else 'FailedMaintenanceException',
+        'on-boarding': 'FailedOnBoardingException',
+        'maintenance': 'FailedMaintenanceException',
     }
     return labels.get(record['transaction'], 'GenericException')
+
+
+def get_exception_title(record):
+    account = record['account']
+    labels = {
+        'on-boarding': f"Failed on-boarding of account '{account}'",
+        'maintenance': f"Failed maintenance of account '{account}'",
+    }
+    return labels.get(record['transaction'], f"Exception on account '{account}'")
+
+
+def get_exception_message(record):
+    account = record['account']
+    labels = {
+        'on-boarding': f"The on-boarding transaction of account '{account}' has timed out. The account has not been released.",
+        'maintenance': f"The maintenance transaction of account '{account}' has timed out. The account has not been released.",
+    }
+    return labels.get(record['transaction'], f"You should inspect account '{account}' and Lambda functions that have acted on it")
+
+
+def get_transaction_label(record):
+    labels = {
+        'on-boarding': 'SuccessfulOnBoardingEvent',
+        'maintenance': 'SuccessfulMaintenanceEvent'
+    }
+    return labels.get(record['transaction'], 'GenericTransaction')
