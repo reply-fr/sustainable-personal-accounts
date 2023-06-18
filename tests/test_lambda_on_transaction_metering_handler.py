@@ -60,6 +60,7 @@ def test_handle_account_event_for_maintenance_transaction():
                                                             environment="envt1"))
 
     with Profile() as profiler:
+        assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
         assert handle_account_event(event=expired, emit=my_emit_spa_event) == '[OK] ExpiredAccount 123456789012'
         assert handle_account_event(event=released, emit=my_emit_spa_event) == '[OK] ReleasedAccount 123456789012'
     stream = io.StringIO()
@@ -136,9 +137,34 @@ def test_handle_account_event_on_unexpected_environment():
                              VERBOSITY='INFO'))
 @mock_events
 def test_handle_stream_event_on_expired_transaction():
-    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json",
-                                            context={})
+    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json", context={})
     assert handle_stream_event(event=event) == "[OK]"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
+                             VERBOSITY='INFO'))
+@mock_events
+def test_handle_stream_event_on_malformed_expired_transaction():
+
+    def do_not_call_me(label, payload):
+        raise Exception("This should not have happened")
+
+    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json", context={})
+    event['Records'][0]['eventName'] = 'TEST'
+    assert handle_stream_event(event=event, emit=do_not_call_me) == "[OK]"
+
+    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json", context={})
+    event['Records'][0]['eventSource'] = 'TEST'
+    assert handle_stream_event(event=event, emit=do_not_call_me) == "[OK]"
+
+    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json", context={})
+    event['Records'][0]['userIdentity'] = 'TEST'
+    assert handle_stream_event(event=event, emit=do_not_call_me) == "[OK]"
+
+    event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json", context={})
+    del event['Records'][0]["dynamodb"]["OldImage"]
+    assert handle_stream_event(event=event, emit=do_not_call_me) == "[OK]"
 
 
 @pytest.mark.unit_tests

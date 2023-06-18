@@ -86,10 +86,9 @@ def handle_stream_event(event, context=None, emit=None):  # processing record ex
 
         try:
             payload = json.loads(item["dynamodb"]["OldImage"]["Value"]["S"])
+            handle_expired_record(record=payload, emit=emit)
         except KeyError:
             logging.error(f"Unable to recognize expired transaction {item}")
-
-        handle_expired_record(record=payload, emit=emit)
 
     return "[OK]"
 
