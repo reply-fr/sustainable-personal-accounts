@@ -34,8 +34,8 @@ class Costs:
     def enumerate_daily_costs_per_account(cls, day=None, session=None):
         logging.info("Fetching daily cost and usage information per account")
         day = day or date.today()
-        start = day - timedelta(days=1)
-        end = day
+        start = day
+        end = day + timedelta(days=1)
         session = session or get_organizations_session()
         costs = session.client('ce')
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
