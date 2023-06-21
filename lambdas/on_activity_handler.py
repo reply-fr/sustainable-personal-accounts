@@ -88,7 +88,7 @@ def handle_monthly_report(event=None, context=None, day=None):
 
 
 @trap_exception
-def handle_daily_report(event=None, context=None, day=None):
+def handle_ongoing_report(event=None, context=None, day=None):
     logging.info("Producing ongoing activity reports")
     reports = build_reports(records=get_records(day))  # /!\ memory-bound
     for label, reporter in reports.items():

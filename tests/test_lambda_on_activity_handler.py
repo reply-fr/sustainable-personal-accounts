@@ -28,7 +28,7 @@ import os
 import pytest
 
 from lambdas import Events, KeyValueStore
-from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_daily_report, get_hashes, get_report_path
+from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_ongoing_report, get_hashes, get_report_path
 
 # pytestmark = pytest.mark.wip
 from tests.fixture_key_value_store import create_my_table, populate_activities_table
@@ -125,13 +125,13 @@ def test_handle_monthly_report():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
-def test_handle_daily_report():
+def test_handle_ongoing_report():
     create_my_table()
     populate_activities_table()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
-    assert handle_daily_report(day=date(year=2023, month=3, day=30)) == "[OK]"
+    assert handle_ongoing_report(day=date(year=2023, month=3, day=30)) == "[OK]"
     response = s3.get_object(Bucket="my_bucket",
                              Key=get_report_path(label="DevOps Tools"))
     assert response['ContentLength'] > 100

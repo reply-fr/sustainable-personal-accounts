@@ -21,8 +21,8 @@ from aws_cdk.aws_dynamodb import AttributeType, BillingMode, Table, TableEncrypt
 from aws_cdk.aws_events import EventPattern, Rule, Schedule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_lambda import Function
-from aws_cdk.aws_logs import LogGroup, RetentionDays
 
+from cdk import LoggingFunction
 from lambdas import Events
 
 
@@ -46,26 +46,20 @@ class OnActivity(Construct):
         parameters['environment']['METERING_ACTIVITIES_TTL'] = str(toggles.metering_activities_ttl_in_seconds)
         parameters['environment']['REPORTING_ACTIVITIES_PREFIX'] = toggles.reporting_activities_prefix
         self.functions = [self.on_event(parameters=parameters),
-                          self.monthly(parameters=parameters),
-                          self.daily(parameters=parameters)]
+                          self.report_previous_month(parameters=parameters),
+                          self.report_ongoing_month(parameters=parameters)]
 
         for function in self.functions:
             self.table.grant_read_write_data(grantee=function)
 
     def on_event(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnActivityEvent"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "FromEvent",
-                            function_name=function_name,
-                            description="Persist activity records",
-                            handler="on_activity_handler.handle_record",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnActivityEvent",
+                                   description="Persist activity records",
+                                   trigger="FromEvent",
+                                   handler="on_activity_handler.handle_record",
+                                   parameters=parameters)
 
         Rule(self, "EventRule",
              description="Route events from SPA to listening lambda function",
@@ -77,48 +71,36 @@ class OnActivity(Construct):
 
         return function
 
-    def monthly(self, parameters) -> Function:
+    def report_previous_month(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnMonthlyActivitiesReport"
-
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "Monthly",
-                            function_name=function_name,
-                            description="Report activities from previous month",
-                            handler="on_activity_handler.handle_monthly_report",
-                            **parameters)
+        function = LoggingFunction(self,
+                                   name="OnPastActivitiesReport",
+                                   description="Report activities from previous month",
+                                   trigger="OnSchedule",
+                                   handler="on_activity_handler.handle_monthly_report",
+                                   parameters=parameters)
 
         Rule(self, "TriggerMonthly",
-             rule_name="{}OnMonthlyActivitiesReportTriggerRule".format(toggles.environment_identifier),
+             rule_name="{}OnPastActivitiesReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger monthly reporting on activities",
              schedule=Schedule.cron(day="1", hour="3", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
 
-    def daily(self, parameters) -> Function:
+    def report_ongoing_month(self, parameters) -> Function:
 
-        function_name = toggles.environment_identifier + "OnDailyActivitiesReport"
+        function = LoggingFunction(self,
+                                   name="OnOngoingActivitiesReport",
+                                   description="Report ongoing activities",
+                                   trigger="Ongoing",
+                                   handler="on_activity_handler.handle_ongoing_report",
+                                   parameters=parameters)
 
-        LogGroup(self, function_name + "Log",
-                 log_group_name=f"/aws/lambda/{function_name}",
-                 retention=RetentionDays.THREE_MONTHS,
-                 removal_policy=RemovalPolicy.DESTROY)
-
-        function = Function(self, "Daily",
-                            function_name=function_name,
-                            description="Report ongoing activities",
-                            handler="on_activity_handler.handle_daily_report",
-                            **parameters)
-
-        Rule(self, "TriggerDaily",
-             rule_name="{}OnDailyActivitiesReportTriggerRule".format(toggles.environment_identifier),
+        Rule(self, "TriggerWeekly",
+             rule_name="{}OnOngoingActivitiesReportTriggerRule".format(toggles.environment_identifier),
              description="Trigger daily reporting on activities",
-             schedule=Schedule.cron(hour="2", minute="42"),
+             schedule=Schedule.cron(week_day="7", hour="2", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
