@@ -93,7 +93,7 @@ class OnCostComputation(Construct):
         Rule(self, "TriggerDaily",
              rule_name="{}OnDailyCostsMetricTriggerRule".format(toggles.environment_identifier),
              description="Trigger daily cost computations",
-             schedule=Schedule.cron(hour="11", minute="42"),
+             schedule=Schedule.cron(hour="0", minute="42"),
              targets=[LambdaFunction(function)])
 
         return function
