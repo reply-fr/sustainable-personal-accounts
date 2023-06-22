@@ -47,6 +47,7 @@ class Configuration:
         features_with_cost_management_tag='str',
         features_with_csv_files='list',
         features_with_email_subscriptions_on_alerts='list',
+        features_with_end_user_documents='dict',
         features_with_microsoft_webhook_on_alerts='str',
         features_with_origin_email_recipient='str',
         features_with_response_plan_arn='str',
@@ -140,6 +141,7 @@ class Configuration:
         toggles.features_with_cost_management_tag = None
         toggles.features_with_csv_files = None
         toggles.features_with_email_subscriptions_on_alerts = None
+        toggles.features_with_end_user_documents = None
         toggles.features_with_microsoft_webhook_on_alerts = None
         toggles.features_with_origin_email_recipient = None
         toggles.features_with_response_plan_arn = ''
@@ -177,6 +179,7 @@ class Configuration:
             cls.set_attribute('defaults', settings['defaults'], toggles=toggles)
 
         toggles.features_with_csv_files = None
+        toggles.features_with_end_user_documents = None
         for key in settings.keys():
             if key == 'defaults':
                 continue

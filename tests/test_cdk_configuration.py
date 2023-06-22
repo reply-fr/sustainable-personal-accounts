@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from cdk import Configuration
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -108,6 +108,7 @@ def test_set_default_values(toggles):
     assert toggles.features_with_cost_management_tag is None
     assert toggles.features_with_csv_files is None
     assert toggles.features_with_email_subscriptions_on_alerts is None
+    assert toggles.features_with_end_user_documents is None
     assert toggles.features_with_microsoft_webhook_on_alerts is None
     assert toggles.features_with_origin_email_recipient is None
     assert toggles.features_with_tag_prefix == 'account-'
@@ -275,6 +276,14 @@ def test_set_from_csv_files(toggles):
                                                                         'PURGE_MODE': '--dry-run',                    # default
                                                                         'TAG_KEY': 'purge',                           # default
                                                                         'TAG_VALUE': 'me'}}}                          # default
+
+
+@pytest.mark.integration_tests
+@pytest.mark.slow
+def test_set_from_templates(toggles):
+    Configuration.set_from_yaml('fixtures/settings/settings-with-templates.yaml', toggles=toggles)
+    assert toggles.automation_account_id == '123456789012'
+    assert toggles.features_with_end_user_documents == {'TermsOfUse': 'fixtures/messages/terms-of-use-template.md'}
 
 
 @pytest.mark.unit_tests

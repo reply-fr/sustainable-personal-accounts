@@ -1,3 +1,6 @@
+---
+title: User Agreement for Personal Sandbox AWS Account
+---
 # User Agreement for Personal Sandbox AWS Account
 
 This User Agreement ("Agreement") governs your use of the personal AWS sandbox account ("Account") provided to you by ___corporation___. By accessing or using this Sandbox Account, you agree to be bound by this Agreement.
