@@ -26,6 +26,7 @@ class Parameters(Construct):
 
     PARAMETER_SEPARATOR = "/"  # /!\ to be duplicated in code/settings.py
     ACCOUNTS_PARAMETER = "Accounts"
+    DOCUMENTS_PARAMETER = "Documents"
     ORGANIZATIONAL_UNITS_PARAMETER = "OrganizationalUnits"
     PREPARATION_BUILDSPEC_PARAMETER = "PreparationBuildspecTemplate"
     PURGE_BUILDSPEC_PARAMETER = "PurgeBuildspecTemplate"
@@ -80,9 +81,28 @@ class Parameters(Construct):
             parameter_name=self.get_parameter(toggles.environment_identifier, self.WEB_ENDPOINTS_PARAMETER),
             tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
 
+        if toggles.features_with_end_user_documents:
+            for label, file in toggles.features_with_end_user_documents.items():
+                content = self.get_document(label, file)
+                StringParameter(
+                    self, label,
+                    string_value=content,
+                    data_type=ParameterDataType.TEXT,
+                    description=f"Document {label}",
+                    parameter_name=self.get_document_parameter(environment=toggles.environment_identifier,
+                                                               identifier=label),
+                    tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+
     @classmethod
     def get_account_parameter(cls, environment, identifier=None):
         attributes = ['', environment, cls.ACCOUNTS_PARAMETER]
+        if identifier:
+            attributes.append(identifier)
+        return cls.PARAMETER_SEPARATOR.join(attributes)
+
+    @classmethod
+    def get_document_parameter(cls, environment, identifier=None):
+        attributes = ['', environment, cls.DOCUMENTS_PARAMETER]
         if identifier:
             attributes.append(identifier)
         return cls.PARAMETER_SEPARATOR.join(attributes)
@@ -107,4 +127,9 @@ class Parameters(Construct):
     def get_buildspec_for_purge(self):
         logging.debug("Getting buildspec for the purge of accounts")
         with open(toggles.worker_purge_buildspec_template_file) as stream:
+            return stream.read()
+
+    def get_document(self, label, file):
+        logging.debug(f"Loading document {label} from file {file}")
+        with open(file) as stream:
             return stream.read()
