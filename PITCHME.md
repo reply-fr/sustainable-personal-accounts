@@ -50,17 +50,6 @@ Each of them deserves a full AWS account to innovate fastly.
 ### -- Felix Adler (1913)
 
 ---
-<!-- _paginate: false -->
-![bg left 90%](./media/backlog-generation.svg)
-
-## <!-- fit -->Experiment, then innovate
-
-👷 As an innovative employee,
-I want to test emerging technology breakthroughs and stick at competitive edge.
-
-🧪 Please help me to sketch ideas on cloud platform before contributing to our software and data products.
-
----
 
 ## :sparkles: Sustainable Personal Accounts
 
@@ -99,35 +88,6 @@ __We trust our employees and colleagues__ - Few cloud accounts go above budget a
 __We influence corporate culture with recycling__ - Maintenance windows enforce resource deletion (cost avoidance) and foster Continuous Integration (CI) at enterprise scale.
 
 __We scale with automated guardrails and with insourced blueprints__
-
----
-![bg left 80%](./media/state-machine-vertical.png)
-
-## State Machine
-
-__Vanilla Accounts__, when they have just been created
-
-<!--
-The recommended way to create accounts is to use the factory created by AWS Control Tower in AWS Service Catalog. You can also integrate an existing AWS account but this is adding a lot of manual work and should be avoided.
--->
-
-__Assigned Accounts__ need guardrails and blueprints
-
-<!--
-When accounts have been assigned, they need to be prepared according to corporate policies and to automation practice. Security team will provide guardrails, such as IAM roles that can be used in corporate SIEM. DevOps team may provide a set of tools useful to developers, including automated CI/CD backend.
--->
-
-__Released Accounts__ are available to individuals
-
-<!--
-Accounts are released once they have been duly prepared. This is the period in time where software engineers can leverage their personal account and achieve maximum innovation speed.
--->
-
-__Expired Accounts__ need purge of resources
-
-<!--
-Maintenance window can very from one day to several months, depending of your corporate policy. On expiration, accounts are purged from existing and then considered as vanilla accounts again.
--->
 
 ---
 ## :factory: Event-driven Architecture
