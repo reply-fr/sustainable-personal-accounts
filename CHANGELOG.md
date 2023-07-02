@@ -4,6 +4,46 @@ Notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres now to [Calendar Versioning](http://calver.org/).
 
+## [23.07.02]
+This release is adding console logins to the transactions managed by SPA. It also expands business support and brings several ptimisations:
+- revise visual diagrams on business functions
+- improve README
+- new FAQ document
+- reduce delay in the computation of daily cost metric
+- align cost reports with the AWS invoicing cycle
+- improve clarity of titles and content of incident records
+- add a workbook on cost management
+- add a workbook to assist on system inspection
+- improve sample SCP to make it compatible with Control Tower
+- improve the full setup workbook
+- improve accuracy of cost and usage reports
+- produce cost and usage reports in different currencies, e.g., EUR
+- improve documentation on account on-boarding
+- add a workbook on account state management
+- reduce the number of cloud resources to prevent quota limitation in CloudFormation
+- add IAM password enforcement to the standard preparation buildspec
+- add technical indicators on DynamoDB to the monitoring dashboard
+- add workbook related to console login management
+- add exception on console login with IAM user or with root credentials
+- mention date of last login in the inventories of accounts
+- record console login events
+- normalize documentation on `@example.com` domain
+- add new commands `make rebase` and `make push` for developers
+- add a workbook related to preventive controls with SCP
+- make tests runnable without access to the Internet
+- add monthly reports on AWS charges
+- structure cost and usage reports with cost center and with Organizational Units
+- include environment identifiers in names of DynamoDB tables to prevent deployment collisions
+- provide a sample IAM policy for permission given to SPA on management account
+- add workbook to configure the transmission of reports over email
+- add markdown template for messages sent with cost reports
+- send messages over email to target recipients
+- add tests to ensure that data is encrypted at rest -- S3 and DynamoDB
+- move to recent versions of CDK
+- align feature files with code capabilities
+- refactor code
+- fix bugs and typos
+
 ## [23.04.02]
 This release is contributing to cloud governance at enterprise scale. New features include following capabilities:
 - management by exception with AWS Incident Manager - every budget alert is now a documented incident record with contextualised tags
