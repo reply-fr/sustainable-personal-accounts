@@ -63,6 +63,18 @@ def handle_daily_metrics(event=None, context=None, session=None):
 
 @trap_exception
 def handle_monthly_reports(event=None, context=None, session=None):
+    build_monthly_reports(event=event, context=context, session=session)
+    return '[OK]'
+
+
+@trap_exception
+def handle_monthly_reports_and_emails(event=None, context=None, session=None):
+    day, paths = handle_monthly_reports(event=event, context=context, session=session)
+    email_reports(day=day, objects=paths)
+    return '[OK]'
+
+
+def build_monthly_reports(event=None, context=None, session=None):
     logging.debug(event)
     if event and event.get('date'):
         try:
@@ -75,12 +87,6 @@ def handle_monthly_reports(event=None, context=None, session=None):
 
     build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     return last_day_of_previous_month, build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
-
-
-@trap_exception
-def handle_monthly_reports_and_emails(event=None, context=None, session=None):
-    day, paths = handle_monthly_reports(event=event, context=context, session=session)
-    email_reports(day=day, objects=paths)
 
 
 def build_charge_reports_per_cost_center(accounts, day, session):
