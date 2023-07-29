@@ -52,7 +52,7 @@
       "Resource": "*"
     },
     {
-      "Sid": "SpaDenyContractCommitments",
+      "Sid": "SpaDenyDurableCommitments",
       "Effect": "Deny",
       "Action": [
         "ec2:AcceptReservedInstancesExchangeQuote",
@@ -85,6 +85,14 @@
               "ram:RequestedAllowsExternalPrincipals": "true"
           }
       }
+    },
+    {
+      "Sid": "SpaDenyLeaveOrganization",
+      "Effect": "Deny",
+      "Action": [
+        "organizations:LeaveOrganization"
+      ],
+      "Resource": "*"
     }
   ]
 }
