@@ -33,8 +33,9 @@ Scenario: where additional currencies are configured for reports
 
 Scenario: where cloud costs are computed and released every day
     Given an existing SPA system
-     When the Lambda function 'OnDailyCostsMetric' is invoked
-     Then code inspects all accounts managed in the system
+     When time is coming for a scheduled execution of 'OnDailyCostsMetric'
+     Then the Lambda function 'OnDailyCostsMetric' is invoked
+      And code inspects all accounts managed in the system
       And code computes cost report for each account on previous day
       And code sums up cost reports per cost center
       And code pushes daily costs as a CloudWatch Metric
@@ -42,8 +43,9 @@ Scenario: where cloud costs are computed and released every day
 
 Scenario: where cloud costs are computed and released every month
     Given an existing SPA system
-     When the Lambda function 'OnMonthlyCostsReport' is invoked
-     Then code inspects all accounts managed in the system
+     When time is coming for a scheduled execution of 'OnMonthlyCostsReport'
+     Then the Lambda function 'OnMonthlyCostsReport' is invoked
+      And code inspects all accounts managed in the system
       And code computes cost report for each account on previous month
       And code sums up cost reports per cost center
       And code pushes detailed monthly reports as one CSV file per cost center on S3 reporting bucket

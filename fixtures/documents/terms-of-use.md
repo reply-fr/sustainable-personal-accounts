@@ -1,9 +1,9 @@
 ---
 title: User Agreement for Personal Sandbox AWS Account
 ---
-# User Agreement for Personal Sandbox AWS Account
+# {{ title }}
 
-This User Agreement ("Agreement") governs your use of the personal AWS sandbox account ("Account") provided to you by ___corporation___. By accessing or using this Sandbox Account, you agree to be bound by this Agreement.
+This User Agreement ("Agreement") governs your use of the personal AWS sandbox account ("Account") provided to you by {{ corporation }}. By accessing or using this Sandbox Account, you agree to be bound by this Agreement.
 
 ## Purpose of the Account
 
@@ -11,13 +11,13 @@ The Account is provided to you for the purpose of accelerating innovation at ind
 
 ## Shared responsibility model
 
-The Account is governed by a shared security model, where you are responsible for data and for cloud resources that you create or deploy on this account, and where ___corporation___ is responsible of the funding and for the blueprints and guardrails supporting cloud operations.
+The Account is governed by a shared security model, where you are responsible for data and for cloud resources that you create or deploy on this account, and where {{ corporation }} is responsible of the funding and for the blueprints and guardrails supporting cloud operations.
 
-## Responsibilities of ___corporation___
+## Responsibilities of {{ corporation }}
 
-___corporation___ provides long-term support to employees involved in cloud innovation, by provisioning and assigning AWS accounts to these employees. ___corporation___ support costs incurred, and allow the users of these sandboxes to learn and to experiment. Learning is referring to practical interactions with AWS Console, API and SDK. This can be done with tutorials, with guided workshops, or with the deployment of existing templates or code available from trusted sources on the Internet. Experimentations is referring to small-scale integration tests or configuration tests. This can be done with some lines of code or templates, with the objective to validate an idea and to document experimentation results.
+{{ corporation }} provides long-term support to employees involved in cloud innovation, by provisioning and assigning AWS accounts to these employees. {{ corporation }} support costs incurred, and allow the users of these sandboxes to learn and to experiment. Learning is referring to practical interactions with AWS Console, API and SDK. This can be done with tutorials, with guided workshops, or with the deployment of existing templates or code available from trusted sources on the Internet. Experimentations is referring to small-scale integration tests or configuration tests. This can be done with some lines of code or templates, with the objective to validate an idea and to document experimentation results.
 
-For each sandbox account, ___corporation___ provides clear governance rules, such as:
+For each sandbox account, {{ corporation }} provides clear governance rules, such as:
 
 - Level of monthly budget that you are entitled to consume on AWS platform – currently, $30 per ccount and per month
 
@@ -31,15 +31,15 @@ For each sandbox account, ___corporation___ provides clear governance rules, suc
 
 ## Your responsibilities
 
-You are responsible for capitalising on lessons that you have learnt while using your Account. For example, we recommend to use code to deploy cloud resources, so that automation is captured in git repositories and benefits all of ___corporation___.
+You are responsible for capitalising on lessons that you have learnt while using your Account. For example, we recommend to use code to deploy cloud resources, so that automation is captured in git repositories and benefits all of {{ corporation }}.
 
-You are responsible for all cloud resources that you deploy on the Account assigned to you, and to related data. This is meaning that you explicitly have to enforce corporate policies of ___corporation___, for example:
+You are responsible for all cloud resources that you deploy on the Account assigned to you, and to related data. This is meaning that you explicitly have to enforce corporate policies of {{ corporation }}, for example:
 
 - Preserve confidentiality and security of credentials related to your Account (e.g., username and password, MFA).
 
 - Use the Account only for the intended purpose described before.
 
-- Comply with all applicable laws, regulations, and AWS & policies of ___corporation___.
+- Comply with all applicable laws, regulations, and AWS & policies of {{ corporation }}.
 
 - Notify Security & IT Ops team immediately of any unauthorized use or suspected security breach of your Account.
 
@@ -61,8 +61,8 @@ While the Account is supporting most products and services of the AWS platform, 
 
 ## Termination of the Account
 
-___corporation___ may terminate your Account at any time for any reason without notice. You may also terminate your Account at any time by following the instructions provided by ___corporation___.
+{{ corporation }} may terminate your Account at any time for any reason without notice. You may also terminate your Account at any time by following the instructions provided by {{ corporation }}.
 
 ## Limitations of Liability
 
-___corporation___ will not be liable to you or any third party for any damages or losses arising from your use of the Account, including but not limited to direct, indirect, incidental, consequential, or punitive damages, even if ___corporation___ or AWS has been advised of the possibility of such damages.
+{{ corporation }} will not be liable to you or any third party for any damages or losses arising from your use of the Account, including but not limited to direct, indirect, incidental, consequential, or punitive damages, even if {{ corporation }} or AWS has been advised of the possibility of such damages.

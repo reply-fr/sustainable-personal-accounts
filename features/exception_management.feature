@@ -6,37 +6,42 @@ so as to support incident management and problem analysis
 
 Scenario: where a budget alert triggers an exception
     Given an existing SPA system
-     When the event 'BudgetAlertException' is emitted
+     When an event 'BudgetAlertException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where a failed codebuild project triggers an exception
     Given an existing SPA system
-     When the event 'FailedCodebuildException' is emitted
+     When an event 'FailedCodebuildException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where a failed on-boarding transaction triggers an exception
     Given an existing SPA system
-     When the event 'FailedOnBoardingException' is emitted
+     When an event 'FailedOnBoardingException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where a failed maintenance transaction triggers an exception
     Given an existing SPA system
-     When the event 'FailedMaintenanceException' is emitted
+     When an event 'FailedMaintenanceException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where a console login with root credentials triggers an exception
     Given an existing SPA system
-     When the event 'ConsoleLoginWithRootException' is emitted
+     When an event 'ConsoleLoginWithRootException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where a console login with IAM user credentials triggers an exception
     Given an existing SPA system
-     When the event 'ConsoleLoginWithIamUserException' is emitted
+     When an event 'ConsoleLoginWithIamUserException' is emitted
+     Then the Lambda function 'OnException' is invoked
+
+Scenario: where an unacknowledged notification triggers an exception
+    Given an existing SPA system
+     When an event 'UnacknowledgedNotificationException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where a generic exception is handled
     Given an existing SPA system
-     When the event 'GenericException' is emitted
+     When an event 'GenericException' is emitted
      Then the Lambda function 'OnException' is invoked
 
 Scenario: where an incident record is created on exception
@@ -48,7 +53,7 @@ Scenario: where an incident record is created on exception
 
 Scenario: where an incident record is enriched with account information
     Given an exception that conveys an account id is put on the automation bus
-      And an incident record is created on exception
+     When an incident record is created on exception
      Then the incident record is tagged with account information
       And a cost report for current month for this account is attached to the incident record
 
