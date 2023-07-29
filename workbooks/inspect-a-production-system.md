@@ -177,7 +177,7 @@ SPA handles following exceptions:
 
 ## Step 6 - Inspect account inventories
 
-SPA produces every week a complete inventory of AWS accounts that it manages. Inventories are useful for quick inspection of a large number of accounts.
+SPA produces inventories of AWS accounts that it manages. Inventories are useful for quick inspection of a large number of accounts.
 
 To inspect most recent inventory:
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
@@ -199,6 +199,7 @@ For each AWS account, the inventory provides information that is useful on trans
 - Cost center - Are costs for this account reported accurately for FinOps reports?
 - Cost owner - Is cost ownership tagged accurately?
 - Organizational Unit that contains the account - Is the account at the right place in the AWS Organization?
+- Last login - Is account really used?
 
 The CSV format has been selected for easy integration with downwards processes. For example, these CSV files can be pushed to a datawarehouse for historical analysis and processing. While such automation is going beyond SPA itself, it can be easily configured with S3 events on the reporting bucket fed by SPA.
 
@@ -240,6 +241,22 @@ To get and to inspect charge types across the entire AWS Organization:
 - There is also a CSV version of the file, for automated integration into downward processes
 
 Note that they may have other versions of the same file if you have asked SPA to convert currencies, e.g. `2023-04-Summary-charges-EUR.xlsx` in Euros instead of USD. This is driven by optional features in SPA settings.
+
+## Step 8 - Inspect activity reports
+
+SPA creates a variety of activity records for accounts that it manages. The main objective of activity records is to report to each cost center the actual service provided by SPA. Activity records relates to account on-boarding, to account maintenance, but also to console logins, etc.
+
+To get and to inspect some activity report for a given cost center:
+- From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
+- Select the reporting S3 bucket that is created with SPA
+- Click on prefix `SpaReports`
+- Click on `Activities`
+- Click on the selected cost center, e.g., `StormFR`
+- Click on the most recent Excel file, e.g., `2023-06-StormFR-activities.csv`
+- Click on the 'Download' button to get a copy of the file on your computer
+- Open the file with and inspect it
+
+The CSV format has been selected for easy integration with downwards processes. For example, these CSV files can be pushed to a datawarehouse for historical analysis and processing. While such automation is going beyond SPA itself, it can be easily configured with S3 events on the reporting bucket fed by SPA.
 
 ## Follow-up
 
