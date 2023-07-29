@@ -34,7 +34,7 @@ class Cockpit(Construct):
     def __init__(self, scope: Construct, id: str, functions, tables):
         super().__init__(scope, id)
 
-        self.cockpit = Dashboard(self, id=id, dashboard_name=id)
+        self.cockpit = Dashboard(self, id=id, dashboard_name=id, start='-P4W')
 
         if toggles.features_with_cost_management_tag:
 
