@@ -4,6 +4,17 @@ Notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres now to [Calendar Versioning](http://calver.org/).
 
+## [23.08.03]
+This release provides essentially bug fixes and small improvements:
+- record identities on console logins
+- bump to CDK 2.89
+- set the span of the monitoring dashboard to 4 weeks
+- improve the workbook related to system inspection
+- integrate changes from AWS on granular permissions related to Cost Explorer
+- prevent accounts to leave the organization
+- fix Lambda errors
+- fix typos in README
+
 ## [23.07.02]
 This release is adding console logins to the transactions managed by SPA. It also expands business support and brings several ptimisations:
 - revise visual diagrams on business functions
