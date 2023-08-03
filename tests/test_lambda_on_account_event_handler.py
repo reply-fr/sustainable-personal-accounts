@@ -27,7 +27,12 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_account_event_handler import (handle_account_event, handle_console_login_event, handle_report, build_report, get_report_path)
+from lambdas.on_account_event_handler import (handle_account_event,
+                                              handle_console_login_event,
+                                              handle_report,
+                                              build_report,
+                                              get_report_path,
+                                              update_shadow_on_console_login)
 from lambdas.key_value_store import KeyValueStore
 
 # pytestmark = pytest.mark.wip
@@ -141,6 +146,21 @@ def test_handle_console_login_event_for_assumed_role():
                                             context=dict(account_id="123456789012",
                                                          account_holder="alice@example.com"))
     assert handle_console_login_event(event=event) == "[DEBUG] No settings could be found for account 123456789012"
+
+
+@pytest.mark.unit_tests
+def test_update_shadow_on_console_login():
+    class Shadows:
+
+        def retrieve(self, *args, **kwargs):
+            return {}
+
+        def remember(self, hash, value):
+            self.attributes = value
+
+    shadows = Shadows()
+    update_shadow_on_console_login(account_id='123456789012', identity='alice@example.com', shadows=shadows)
+    assert shadows.attributes.get('identity_of_last_console_login') == 'alice@example.com'
 
 
 @pytest.mark.integration_tests

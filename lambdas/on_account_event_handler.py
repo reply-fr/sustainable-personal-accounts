@@ -100,16 +100,17 @@ def handle_console_login_event(event=None, context=None):
 def handle_console_login_with_assumed_role(account_id, identity):
     logging.info(f"Console login on account {account_id} with role assumed by {identity}")
     Settings.get_settings_for_account(identifier=account_id)  # exception if account is not managed
-    update_shadow_on_console_login(account_id)
+    update_shadow_on_console_login(account_id=account_id, identity=identity)
     put_activity_event(label='ConsoleLoginEvent', account_id=account_id)
 
 
-def update_shadow_on_console_login(account_id):
-    shadows = get_table()
+def update_shadow_on_console_login(account_id, identity, shadows=None):
+    shadows = shadows or get_table()
     shadow = shadows.retrieve(hash=str(account_id)) or {}
     stamps = shadow.get('stamps', {})
     stamps['ConsoleLogin'] = datetime.utcnow().replace(microsecond=0).isoformat()
     shadow['stamps'] = stamps
+    shadow['identity_of_last_console_login'] = identity
     logging.debug(shadow)
     shadows.remember(hash=str(account_id), value=shadow)  # /!\ no lock
 
