@@ -2,7 +2,7 @@
 
 ## Sustainable Personal Accounts (SPA) automates AWS accounts assigned permanently to employees
 
-With Sustainable Personal Accounts (SPA) control, purge and manage AWS accounts assigned permanently to employees of your enterprise.
+With Sustainable Personal Accounts (SPA) you can control, purge and manage AWS accounts assigned permanently to employees of your enterprise.
 
 ![sustainable-personal-accounts](./media/sustainable-personal-accounts.svg)
 
@@ -86,7 +86,7 @@ Sustainable Personal Accounts has been designed with following principles:
 
 ![cloudwatch-dashboard](./media/cloudwatch-dashboard.png)
 
-The monitoring dashboard provides a combination of business indicators and of technical indocators:
+The monitoring dashboard provides a combination of business indicators and of technical indicators:
 
 - daily costs per cost center
 - daily transactions per cost center
@@ -96,8 +96,8 @@ The monitoring dashboard provides a combination of business indicators and of te
 - invocations of Lambda functions
 - durations of Lambda executions
 - Lambda errors
-- read from DynamoDB tables
-- write to DynamoDB tables
+- read units for DynamoDB tables
+- write units for DynamoDB tables
 - errors with DynamoDB tables
 
 ## Sustainable Personal Accounts interacts with human beings on exceptions
@@ -110,7 +110,7 @@ Sustainable Personal Accounts provides a monitoring dashboard that can be checke
 
 ![incident-record](./media/incident-record.png)
 
-When an exceptional situation is encoutered, Sustainable Personal Accounts creates incident records in SSM Incident Manager. Examples of exceptions:
+When an exceptional situation is encountered, Sustainable Personal Accounts creates an incident record in SSM Incident Manager. Examples of exceptions:
 - budget alert
 - console login with IAM User or with root credentials
 - failed maintenance transaction
@@ -123,11 +123,11 @@ On exception, SPA queries cost explorer and produces a report for on-going costs
 
 Sustainable Personal Accounts produces following kinds of reports:
 
-- inventories of accounts - These reports in CSV format mention cost centers, Organizational Units, dates of last login, and account state. They can be used to detect unused accounts, and accounts that have not be released for some reason.
+- costs - These reports in CSV and in Excel formats are produced for managers of the service, and for managers of cost centers.
 
 - activities such as on-boarding, maintenance and console login - These reports in CSV format are provided to feed a downward system such as a database. They can be used for service analytics.
 
-- costs - These reports in CSV and in Excel formats are produced for managers of the service, and for managers of cost centers.
+- inventories of accounts - These reports in CSV format mention cost centers, Organizational Units, dates of last login, and account state. They can be used to detect unused accounts, and accounts that have not be released for some reason.
 
 Reports are put on a S3 bucket for easy storage. Summary reports can also be transmitted over email to selected recipients, for example to the FinOps mailbox.
 
@@ -135,7 +135,7 @@ Reports are put on a S3 bucket for easy storage. Summary reports can also be tra
 
 ![cost-and-usage-reports](./media/cost-and-usage-reports.png)
 
-FinOps teams can get cost details per cost centers and per Organizational Units. This structure has proven very convenient, since it leverages the strcuture put in AWS Organisations itself.
+FinOps teams can get cost details per cost centers and per Organizational Units. Each AWS account is tagged with one cost center, and is placed in one Organizational Unit. This structure has proven very convenient, since it leverages the structure put in AWS Organisations itself.
 
 ## Sustainable Personal Accounts is driven by configuration files
 
