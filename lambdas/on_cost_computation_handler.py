@@ -45,17 +45,18 @@ def handle_daily_metrics(event=None, context=None, session=None):
     accounts = Account.scan_all_accounts()
     costs = {}
     for account, amount in Costs.enumerate_daily_costs_per_account(day=yesterday, session=session):
-        logging.info(f"Computing daily costs for account '{account}'")
+        logging.info(f"Costs for account '{account}' are {amount:.2f} on {yesterday}")
         cost_center = Account.get_cost_center(tags=accounts.get(str(account), {}).get('tags', {}))
         costs[cost_center] = costs.get(cost_center, 0.0) + float(amount)
     for cost_center in costs.keys():
-        logging.info(f"Putting cost as daily metric for cost center '{cost_center}'")
+        amount = costs[cost_center]
+        logging.info(f"Cost for cost center '{cost_center}' are {amount:.2f} on {yesterday}")
         logging.debug(costs[cost_center])
         put_metric_data(name='DailyCostsByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=cost_center),
                                     dict(Name='Environment', Value=Events.get_environment())],
                         timestamp=yesterday.isoformat(),
-                        value=costs[cost_center],
+                        value=amount,
                         unit='None',
                         session=session)
     return '[OK]'

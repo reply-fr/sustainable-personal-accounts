@@ -50,7 +50,7 @@ class Costs:
                 for group in result['Groups']:
                     account = group['Keys'][0]
                     amount = group['Metrics']['UnblendedCost']['Amount']
-                    yield account, amount
+                    yield account, float(amount)
             if chunk.get('NextPageToken'):
                 chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
                 logging.debug(chunk)
@@ -77,7 +77,7 @@ class Costs:
                     yield {'start': result['TimePeriod']['Start'],
                            'end': result['TimePeriod']['End'],
                            'service': group['Keys'][0],
-                           'amount': group['Metrics']['UnblendedCost']['Amount']}
+                           'amount': float(group['Metrics']['UnblendedCost']['Amount'])}
             if chunk.get('NextPageToken'):
                 chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
                 logging.debug(chunk)

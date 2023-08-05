@@ -68,10 +68,10 @@ class Account:
     def enumerate_all_accounts(cls, session=None):
         session = session or get_organizations_session()
 
-        logging.debug("Listing all accounts")
+        logging.debug("Enumerating all accounts")
         chunk = session.client('organizations').list_accounts()
         while chunk:
-            logging.info("Listing some accounts")
+            logging.info("Enumerating {} accounts".format(len(chunk['Accounts'])))
             for item in chunk['Accounts']:
                 logging.debug(item)
                 yield item
