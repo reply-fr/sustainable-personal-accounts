@@ -62,10 +62,14 @@ VERBOSITY ?= INFO
 # locate python code for static analysis
 CODE_PATH := cdk lambdas ./build_resources.py
 
-setup:
+setup: setup-python setup-cdk
+
+setup-python:
 	@echo "Installing python virtual environment..."
 	python3 -m venv venv
 	. venv/bin/activate && python -m pip install --upgrade pip -r requirements.txt
+
+setup-cdk:
 	@echo "Installing CDK and related NPM modules..."
 	npm install aws-cdk@latest --force
 	cdk --version
@@ -118,8 +122,14 @@ shell:
 
 pre-commit: lint test bandit
 
-lint: venv/bin/activate
+lint: lint-python
+
+lint-python: venv/bin/activate
 	venv/bin/python -m flake8 --max-complexity 8 --ignore E402,E501,F841,W503 --builtins="toggles" --per-file-ignores="cdk/serverless_stack.py:F401 tests/conftest.py:F401" ${CODE_PATH} tests
+
+lint-json:
+	venv/bin/python -m json.tool cdk.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
+	venv/bin/python -m json.tool package.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 
 all-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -ra --durations=0 tests/
@@ -132,7 +142,6 @@ integration-tests: venv/bin/activate lambdas.out
 
 wip-tests: venv/bin/activate
 	venv/bin/python -m pytest -m wip -v tests/
-
 
 define BROWSER_PYSCRIPT
 import os, webbrowser, sys
@@ -155,10 +164,6 @@ coverage: venv/bin/activate
 
 bandit: venv/bin/activate
 	venv/bin/python -m bandit -r ${CODE_PATH}
-
-lint-json:
-	venv/bin/python -m json.tool cdk.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
-	venv/bin/python -m json.tool package.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 
 stats: venv/bin/activate
 	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks *.ini cdk.json package.json *.md *.py *.txt Makefile
