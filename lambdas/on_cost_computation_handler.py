@@ -70,7 +70,7 @@ def handle_monthly_reports(event=None, context=None, session=None):
 
 @trap_exception
 def handle_monthly_reports_and_emails(event=None, context=None, session=None):
-    day, paths = handle_monthly_reports(event=event, context=context, session=session)
+    day, paths = build_monthly_reports(event=event, context=context, session=session)
     email_reports(day=day, objects=paths)
     return '[OK]'
 
