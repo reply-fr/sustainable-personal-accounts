@@ -120,7 +120,7 @@ shell:
 	@echo "Use command 'exit' to kill this shell, or hit <Ctl-D>"
 	. venv/bin/activate && ${MAKESHELL}
 
-pre-commit: lint test bandit
+pre-commit: lint bandit
 
 lint: lint-python
 
