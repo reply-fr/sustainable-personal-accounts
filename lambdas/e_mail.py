@@ -40,7 +40,7 @@ class Email:
         container = MIMEMultipart('mixed')
         container['Subject'] = subject
         container['From'] = sender
-        container['To'] = recipients if type(recipients) == str else ', '.join(recipients)
+        container['To'] = recipients if isinstance(recipients, str) else ', '.join(recipients)
         return container
 
     @classmethod
@@ -78,7 +78,7 @@ class Email:
         logging.debug("Sending SES raw message")
         session = session or Session()
         ses = session.client('ses')
-        if type(recipients) == str:
+        if isinstance(recipients, str):
             recipients = [recipient.strip() for recipient in recipients.split(',')]
         logging.debug(f"From: '{sender}'")
         logging.debug(f"To: '{recipients}'")

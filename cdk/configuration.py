@@ -164,7 +164,7 @@ class Configuration:
 
     @classmethod
     def set_from_yaml(cls, stream, toggles=None):
-        if type(stream) == str:
+        if isinstance(stream, str):
             with open(stream) as handle:
                 logging.info(f"Loading configuration from '{stream}'")
                 settings = yaml.safe_load(handle)
@@ -183,7 +183,7 @@ class Configuration:
         for key in settings.keys():
             if key == 'defaults':
                 continue
-            elif type(settings[key]) == dict:
+            elif isinstance(settings[key], dict):
                 for subkey in settings[key].keys():
                     flatten = "{0}_{1}".format(key, subkey)
                     value = settings[key].get(subkey)
