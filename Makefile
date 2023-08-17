@@ -174,10 +174,10 @@ rebase:
 push: rebase
 	git push
 
-lambdas.out: setup.py lambdas/*.py
+lambdas.out: venv/bin/activate setup.py lambdas/*.py
 	mkdir -p lambdas.out
 	rm -rf lambdas.out/botocore || true
-	pip install --upgrade -e . -t lambdas.out --use-pep517
+	venv/bin/python -m pip install --upgrade -e . -t lambdas.out --use-pep517
 	cp lambdas/*.py lambdas.out
 	touch lambdas.out
 
