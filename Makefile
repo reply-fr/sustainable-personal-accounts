@@ -33,6 +33,7 @@ help:
 	@echo "make diff - check foreseen changes in cloud resources before deployment"
 	@echo "make deploy - build or update cloud resources for this workload"
 	@echo "make destroy - delete cloud resources for this workload"
+	@echo "make history - remember issues and related threads"
 	@echo "make clean - delete transient files in this project"
 	@echo " ... and you should have access to all cdk commands as well, e.g.: cdk ls"
 
@@ -203,6 +204,10 @@ check-accounts:
 	aws lambda invoke --function-name SpaCheckAccounts --log-type Tail --cli-read-timeout 0 check-accounts.log
 	cat check-accounts.log
 	rm check-accounts.log
+
+history: venv/bin/activate
+	mkdir -p history
+	gh2md --multiple-files --no-prs reply-fr/sustainable-personal-accounts history
 
 clean:
 	rm -rf lambdas.out

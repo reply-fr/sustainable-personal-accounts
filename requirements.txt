@@ -4,6 +4,7 @@ pyyaml
 bandit
 coverage
 flake8
+gh2md
 mccabe
 mock
 moto[all]
