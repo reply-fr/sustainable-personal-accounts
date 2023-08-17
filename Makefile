@@ -205,9 +205,11 @@ check-accounts:
 	cat check-accounts.log
 	rm check-accounts.log
 
+.PHONY: history
 history: venv/bin/activate
 	mkdir -p history
-	gh2md --multiple-files --no-prs reply-fr/sustainable-personal-accounts history
+	rm history/*.md
+	gh2md --multiple-files --no-prs --idempotent reply-fr/sustainable-personal-accounts history
 
 clean:
 	rm -rf lambdas.out
