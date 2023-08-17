@@ -87,7 +87,9 @@ def build_monthly_reports(event=None, context=None, session=None):
     accounts = Account.scan_all_accounts()
 
     build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
-    return last_day_of_previous_month, build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
+    reports = build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
+    logging.debug(reports)
+    return last_day_of_previous_month, reports
 
 
 def build_charge_reports_per_cost_center(accounts, day, session):
