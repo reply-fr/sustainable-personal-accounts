@@ -25,14 +25,13 @@ import pytest
 from lambdas.on_maintenance_window_handler import handle_schedule_event
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_small_setup import given_a_small_setup
 from account import Account  # accessible from monkeypatch
 
 
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_handle_schedule_event(monkeypatch):
+def test_handle_schedule_event(given_a_small_setup, monkeypatch):
     context = given_a_small_setup()
 
     processed = []

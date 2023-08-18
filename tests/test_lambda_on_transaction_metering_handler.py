@@ -30,8 +30,7 @@ import pytest
 from lambdas import Events
 from lambdas.on_transaction_metering_handler import handle_account_event, handle_stream_event, handle_expired_record
 
-pytestmark = pytest.mark.wip
-from tests.fixture_key_value_store import create_my_table
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests
@@ -41,8 +40,8 @@ from tests.fixture_key_value_store import create_my_table
 @mock_cloudwatch
 @mock_dynamodb
 @mock_organizations
-def test_handle_account_event_for_maintenance_transaction():
-    create_my_table()
+def test_handle_account_event_for_maintenance_transaction(given_an_empty_table):
+    given_an_empty_table()
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulMaintenanceEvent'
@@ -76,8 +75,8 @@ def test_handle_account_event_for_maintenance_transaction():
 @mock_cloudwatch
 @mock_dynamodb
 @mock_organizations
-def test_handle_account_event_for_on_boarding_transaction():
-    create_my_table()
+def test_handle_account_event_for_on_boarding_transaction(given_an_empty_table):
+    given_an_empty_table()
 
     def my_emit_spa_event(label, payload):
         assert label == 'SuccessfulOnBoardingEvent'
@@ -110,8 +109,8 @@ def test_handle_account_event_for_on_boarding_transaction():
 @mock_dynamodb
 @mock_events
 @mock_organizations
-def test_handle_account_event():
-    create_my_table()
+def test_handle_account_event(given_an_empty_table):
+    given_an_empty_table()
 
     for label in Events.ACCOUNT_EVENT_LABELS:
         event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",

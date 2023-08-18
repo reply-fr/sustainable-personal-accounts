@@ -22,13 +22,12 @@ import pytest
 from lambdas import KeyValueStore
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_key_value_store import create_my_table, populate_shadows_table
 
 
 @pytest.mark.unit_tests
 @mock_dynamodb
-def test_key_value_store():
-    create_my_table()
+def test_key_value_store(given_an_empty_table):
+    given_an_empty_table()
 
     store = KeyValueStore(table_name='my_table')
     store.remember(hash='a', value=dict(hello='world'))
@@ -58,8 +57,8 @@ def test_key_value_store():
 
 @pytest.mark.unit_tests
 @mock_dynamodb
-def test_enumerate():
-    create_my_table()
+def test_enumerate(given_an_empty_table):
+    given_an_empty_table()
 
     store = KeyValueStore(table_name='my_table')
     store.remember(hash='a', range='world', value=dict(hello='world'))
@@ -79,8 +78,8 @@ def test_enumerate():
 
 @pytest.mark.unit_tests
 @mock_dynamodb
-def test_scan():
-    create_my_table()
+def test_scan(given_an_empty_table):
+    given_an_empty_table()
 
     store = KeyValueStore(table_name='my_table')
     store.remember(hash='a', range='world', value=dict(hello='world'))
@@ -96,8 +95,7 @@ def test_scan():
 
 @pytest.mark.unit_tests
 @mock_dynamodb
-def test_scan_from_fixture():
-    create_my_table()
-    count = populate_shadows_table()
+def test_scan_from_fixture(given_a_table_of_shadows):
+    count = given_a_table_of_shadows()
     store = KeyValueStore(table_name='my_table')
     assert len(list(store.scan())) == count

@@ -31,7 +31,6 @@ from lambdas import Events, KeyValueStore
 from lambdas.on_activity_handler import build_reports, handle_record, handle_monthly_report, handle_ongoing_report, get_hashes, get_report_path
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_key_value_store import create_my_table, populate_activities_table
 
 
 sample_payload = json.dumps(
@@ -53,8 +52,8 @@ sample_payload = json.dumps(
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
 @mock_cloudwatch
-def test_store_end_report():
-    create_my_table()
+def test_store_end_report(given_an_empty_table):
+    given_an_empty_table()
 
     event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
                                             context=dict(label='SuccessfulMaintenanceEvent',
@@ -73,8 +72,8 @@ def test_store_end_report():
                              VERBOSITY='DEBUG'))
 @mock_dynamodb
 @mock_cloudwatch
-def test_handle_record():
-    create_my_table()
+def test_handle_record(given_an_empty_table):
+    given_an_empty_table()
 
     for label in Events.ACTIVITY_EVENT_LABELS:
         event = Events.load_event_from_template(template="fixtures/events/spa-event-template.json",
@@ -103,9 +102,8 @@ def test_handle_record_on_unexpected_environment():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
-def test_handle_monthly_report():
-    create_my_table()
-    populate_activities_table()
+def test_handle_monthly_report(given_a_table_of_activities):
+    given_a_table_of_activities()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
@@ -125,9 +123,8 @@ def test_handle_monthly_report():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_s3
-def test_handle_ongoing_report():
-    create_my_table()
-    populate_activities_table()
+def test_handle_ongoing_report(given_a_table_of_activities):
+    given_a_table_of_activities()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
@@ -144,9 +141,8 @@ def test_handle_ongoing_report():
                              METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='INFO'))
 @mock_dynamodb
-def test_build_reports():
-    create_my_table()
-    populate_activities_table()
+def test_build_reports(given_a_table_of_activities):
+    given_a_table_of_activities()
     records = KeyValueStore(table_name="my_table").scan()
     reports = build_reports(records=records)
     assert list(reports.keys()) == ['DevOps Tools', 'Computing Tools', 'Tools', 'Reporting Tools']

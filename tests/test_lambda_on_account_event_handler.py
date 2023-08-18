@@ -36,8 +36,6 @@ from lambdas.on_account_event_handler import (handle_account_event,
 from lambdas.key_value_store import KeyValueStore
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_key_value_store import create_my_table, populate_shadows_table
-from tests.fixture_small_setup import given_a_small_setup
 
 
 @pytest.mark.integration_tests
@@ -47,8 +45,8 @@ from tests.fixture_small_setup import given_a_small_setup
 @mock_dynamodb
 @mock_cloudwatch
 @mock_organizations
-def test_handle_account_event():
-    create_my_table()
+def test_handle_account_event(given_an_empty_table):
+    given_an_empty_table()
 
     for label in Events.ACCOUNT_EVENT_LABELS:
         event = Events.load_event_from_template(template="fixtures/events/account-event-template.json",
@@ -72,8 +70,8 @@ def test_handle_account_event():
 @mock_cloudwatch
 @mock_dynamodb
 @mock_organizations
-def test_handle_preparation_report_event():
-    create_my_table()
+def test_handle_preparation_report_event(given_an_empty_table):
+    given_an_empty_table()
 
     event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
                                             context=dict(account="123456789012",
@@ -90,8 +88,8 @@ def test_handle_preparation_report_event():
 @mock_cloudwatch
 @mock_dynamodb
 @mock_organizations
-def test_handle_purge_report_event():
-    create_my_table()
+def test_handle_purge_report_event(given_an_empty_table):
+    given_an_empty_table()
 
     event = Events.load_event_from_template(template="fixtures/events/report-event-template.json",
                                             context=dict(account="123456789012",
@@ -118,7 +116,7 @@ def test_handle_account_event_on_unexpected_environment():
 @mock_events
 @mock_organizations
 @mock_ssm
-def test_handle_console_login_event_for_account_root():
+def test_handle_console_login_event_for_account_root(given_a_small_setup):
     context = given_a_small_setup(environment="envt1")
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-account-root-template.json",
                                             context=dict(account_id=context.alice_account))
@@ -133,9 +131,9 @@ def test_handle_console_login_event_for_account_root():
 @mock_events
 @mock_organizations
 @mock_ssm
-def test_handle_console_login_event_for_assumed_role():
+def test_handle_console_login_event_for_assumed_role(given_a_small_setup, given_an_empty_table):
     context = given_a_small_setup(environment='envt1')
-    create_my_table()
+    given_an_empty_table()
 
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-assumed-role-template.json",
                                             context=dict(account_id=context.alice_account,
@@ -169,7 +167,7 @@ def test_update_shadow_on_console_login():
 @mock_events
 @mock_organizations
 @mock_ssm
-def test_handle_console_login_event_for_iam_user():
+def test_handle_console_login_event_for_iam_user(given_a_small_setup):
     context = given_a_small_setup(environment='envt1')
 
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-iam-user-template.json",
@@ -197,9 +195,8 @@ def test_handle_console_login_event_for_unknown_identity_type():
 @mock_dynamodb
 @mock_organizations
 @mock_s3
-def test_handle_report():
-    create_my_table()
-    populate_shadows_table()
+def test_handle_report(given_a_table_of_shadows):
+    given_a_table_of_shadows()
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
@@ -225,9 +222,8 @@ def test_handle_report():
                              VERBOSITY='INFO'))
 @mock_dynamodb
 @mock_organizations
-def test_build_report():
-    create_my_table()
-    populate_shadows_table()
+def test_build_report(given_a_table_of_shadows):
+    given_a_table_of_shadows()
     records = KeyValueStore(table_name="my_table").scan()
     report = build_report(records=records)
     assert len(report.split("\n")) == 10

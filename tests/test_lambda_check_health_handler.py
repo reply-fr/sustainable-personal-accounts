@@ -26,7 +26,6 @@ from unittest.mock import patch
 
 from lambdas.check_health_handler import handle_event
 
-from tests.fixture_small_setup import given_a_small_setup
 # pytestmark = pytest.mark.wip
 
 
@@ -34,6 +33,6 @@ from tests.fixture_small_setup import given_a_small_setup
 @patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
 @mock_organizations
 @mock_ssm
-def test_handle_event():
+def test_handle_event(given_a_small_setup):
     given_a_small_setup()
     assert handle_event(event=None, context=None) == '[OK]'

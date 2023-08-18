@@ -17,10 +17,16 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import boto3
 import json
+import pytest
 from time import time
 
 
-def create_my_table():
+@pytest.fixture
+def given_an_empty_table():
+    return _given_an_empty_table
+
+
+def _given_an_empty_table():
     boto3.client('dynamodb').create_table(TableName='my_table',
                                           KeySchema=[dict(AttributeName='Identifier', KeyType='HASH'),
                                                      dict(AttributeName='Order', KeyType='RANGE')],
@@ -30,7 +36,13 @@ def create_my_table():
     boto3.client('dynamodb').get_waiter('table_exists').wait(TableName='my_table')
 
 
-def populate_activities_table():
+@pytest.fixture
+def given_a_table_of_activities():
+    return _given_a_table_of_activities
+
+
+def _given_a_table_of_activities():
+    _given_an_empty_table()
     samples = [
         [('__transaction__', 'on-boarding'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:08:29.749864')],
         [('__transaction__', 'maintenance'), ('__cost__', 'DevOps Tools'), ('__account__', '111111111111'), ('__stamp__', '22:13:12.049022')],
@@ -90,7 +102,13 @@ def populate_activities_table():
     return len(samples)
 
 
-def populate_shadows_table():
+@pytest.fixture
+def given_a_table_of_shadows():
+    return _given_a_table_of_shadows
+
+
+def _given_a_table_of_shadows():
+    _given_an_empty_table()
     samples = [
         [('__account__', '222222222222'), ('__email__', 'alice@example.com'), ('__name__', 'Alice'), ('__manager__', 'bob@example.com'), ('__cost__', 'DevOps Tools'), ('__state__', 'released')],
         [('__account__', '333333333333'), ('__email__', 'bob@example.com'), ('__name__', 'Bob'), ('__manager__', 'cesar@example.com'), ('__cost__', 'Computing Tools'), ('__state__', 'released')],

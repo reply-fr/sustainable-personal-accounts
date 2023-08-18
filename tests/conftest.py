@@ -16,3 +16,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 from fixture_account import account_describe_mock
+
+from fixture_key_value_store import given_an_empty_table, given_a_table_of_activities, given_a_table_of_shadows
+
+from fixture_small_setup import given_a_small_setup
+
+

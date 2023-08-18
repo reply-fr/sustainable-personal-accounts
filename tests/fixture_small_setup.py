@@ -18,6 +18,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from boto3.session import Session
 import json
 import logging
+import pytest
 from types import SimpleNamespace
 
 
@@ -43,7 +44,11 @@ def put_parameter(name, value, session):
                                         Type='String')
 
 
-def given_a_small_setup(environment='Spa'):
+@pytest.fixture
+def given_a_small_setup():
+    return _given_a_small_setup
+
+def _given_a_small_setup(environment='Spa'):
 
     session = Session()
 

@@ -27,13 +27,12 @@ import pytest
 from lambdas import Settings
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_small_setup import given_a_small_setup
 
 
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_enumerate_all_managed_accounts():
+def test_enumerate_all_managed_accounts(given_a_small_setup):
     context = given_a_small_setup()
     accounts = {i for i in Settings.enumerate_all_managed_accounts()}
     assert accounts == {context.crm_account, context.erp_account, context.alice_account, context.bob_account, '210987654321'}
@@ -42,7 +41,7 @@ def test_enumerate_all_managed_accounts():
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_enumerate_accounts():
+def test_enumerate_accounts(given_a_small_setup):
     context = given_a_small_setup()
     accounts = {i for i in Settings.enumerate_accounts()}
     assert accounts == {context.crm_account, context.erp_account, '210987654321'}
@@ -51,7 +50,7 @@ def test_enumerate_accounts():
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_enumerate_organizational_units():
+def test_enumerate_organizational_units(given_a_small_setup):
     context = given_a_small_setup()
     accounts = {i for i in Settings.enumerate_organizational_units()}
     assert accounts == {context.sandbox_ou, 'ou-alien'}
@@ -80,7 +79,7 @@ def test_get_organizational_unit_parameter_name():
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_get_account_settings():
+def test_get_account_settings(given_a_small_setup):
     context = given_a_small_setup()
     settings = Settings.get_account_settings(identifier=context.crm_account)
     assert settings == context.settings_crm_account
@@ -89,7 +88,7 @@ def test_get_account_settings():
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_get_organizational_unit_settings():
+def test_get_organizational_unit_settings(given_a_small_setup):
     context = given_a_small_setup()
     settings = Settings.get_organizational_unit_settings(identifier=context.sandbox_ou)
     assert settings == context.settings_sandbox_ou
@@ -98,7 +97,7 @@ def test_get_organizational_unit_settings():
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_get_settings_for_account():
+def test_get_settings_for_account(given_a_small_setup):
     context = given_a_small_setup()
     settings = Settings.get_settings_for_account(identifier=context.alice_account)
     assert settings == context.settings_sandbox_ou
@@ -107,7 +106,7 @@ def test_get_settings_for_account():
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_get_settings_for_account_for_alien_account():
+def test_get_settings_for_account_for_alien_account(given_a_small_setup):
     given_a_small_setup()
     with pytest.raises(ValueError):
         Settings.get_settings_for_account(identifier='123456789012')   # events from unmanaged accounts raise exceptions

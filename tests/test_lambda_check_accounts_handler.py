@@ -26,14 +26,13 @@ from types import SimpleNamespace
 from lambdas.check_accounts_handler import handle_event, validate_tags
 
 # pytestmark = pytest.mark.wip
-from tests.fixture_small_setup import given_a_small_setup
 from account import Account  # visible from monkeypatch
 
 
 @pytest.mark.integration_tests
 @mock_organizations
 @mock_ssm
-def test_handle_event(monkeypatch):
+def test_handle_event(monkeypatch, given_a_small_setup):
     context = given_a_small_setup()
 
     processed = set()
