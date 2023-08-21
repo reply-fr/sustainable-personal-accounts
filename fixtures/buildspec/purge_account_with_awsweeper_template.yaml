@@ -166,6 +166,9 @@ phases:
       aws_db_instance:
       - created:
           before: ${MAXIMUM_AGE}
+      aws_nat_gateway:
+      - created:
+          before: ${MAXIMUM_AGE}
       EOF
     - |
       while read REGION
