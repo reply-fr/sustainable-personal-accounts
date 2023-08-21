@@ -1,14 +1,22 @@
 # Inspect a production system
 
 ## Overview
-SPA features a distributed architecture, and it does not have a single interface that can be used to control everything. In this workbook we review the main components of the system and ways to inspect their behaviour. We have written this for system engineers, our peers. And we hope they will find here useful guidance during their troubleshooting of production deployments.
+SPA features a distributed architecture, and it does not have a single interface that can be used to control everything. In this workbook we review the main components of the system and ways to inspect their behavior. We have written this for system engineers, our peers. And we hope they will find here useful guidance during their troubleshooting of production deployments.
+1. [Understand the components of the architecture](#step-1)
+2. [Inspect account tags](#step-2)
+3. [Inspect the event bus and event handlers](#step-3)
+4. [Inspect the monitoring dashboard](#step-4)
+5. [Inspect incident records](#step-5)
+6. [Inspect account inventories](#step-6)
+7. [Inspect cost reports](#step-7)
+8. [Inspect activity reports](#step-8)
 
 ## Prerequisites
 - You have credentials to access the AWS Console
 - You have received permissions to manage the AWS Organization where SPA has been deployed
 - You have received permissions to access the AWS account where SPA has been deployed
 
-## Step 1 - Understand the components of the architecture
+## Step 1 - Understand the components of the architecture <a id="step-1"></a>
 
 In this workbook we focus on following components of the SPA architecture:
 * Account Tags
@@ -24,7 +32,7 @@ In following steps we assume following names for accounts and OU that we use:
 - `Alice` and `Bob` are two personal accounts managed by SPA
 - `Sandboxes` is the Organizational Unit (OU) that contains `Alice` and `Bob` accounts
 
-## Step 2 - Inspect account tags
+## Step 2 - Inspect account tags <a id="step-2"></a>
 
 SPA works by tagging AWS accounts, so by looking at account tags you can ensure proper transitions across account states. You can also set or change a tag by yourself to trigger actions from SPA.
 
@@ -58,9 +66,9 @@ To start maintenance of an account, set the account tag `account-state` to value
 
 If you observe some anomalies, or if you have to change the states of several accounts, then refer to the workbook devoted to [the management of account states](./manage-account-states.md).
 
-## Step 3 - Inspect the event bus and event handlers
+## Step 3 - Inspect the event bus and event handlers <a id="step-3"></a>
 
-SPA listens events from the default bus of `Automation`, the account where it has been deployed. Events that match patterns defined in Eventbridge rules are passed to Lambda functions. You can inspect the CloudWatch logs of each Lambda function to monitor activities of the system. The Lambda function `SpaOnAccountEvent` is seeing every transition of accounts, therefore it is a good place to start.
+SPA listens events from the default bus of `Automation`, the account where it has been deployed. Events that match patterns defined in EventBridge rules are passed to Lambda functions. You can inspect the CloudWatch logs of each Lambda function to monitor activities of the system. The Lambda function `SpaOnAccountEvent` is seeing every transition of accounts, therefore it is a good place to start.
 
 Perform following activities to on-board an account and to monitor the process:
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'AWS Organizations'
@@ -96,9 +104,9 @@ To inspect the forwarding of Console Login events to SPA:
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'Amazon EventBridge'
 - ⚠️ Select the region where your IAM Identity Center has been deployed, e.g., `Europe (Ireland) eu-west-1`
 - In the left panel, click on 'Rules'
-- Look for a rule that forward signin events to the default event bus of SPA
+- Look for a rule that forward sign-in events to the default event bus of SPA
 
-A pattern that matches signin events from AWS:
+A pattern that matches sign-in events from AWS:
 ```json
 {"detail":{"eventSource":["signin.amazonaws.com"],"eventName":["ConsoleLogin"]}}
 ```
@@ -110,10 +118,10 @@ arn:aws:events:eu-west-1:123456789012:event-bus/default
 
 For additional guidance on events, you may want to double-check the [Full setup of SPA](./full-setup-of-spa.md) workbook.
 
-## Step 4 - Inspect the monitoring dashboard
+## Step 4 - Inspect the monitoring dashboard <a id="step-4"></a>
 
 SPA comes with a monitoring dashboard that features a combination of technical and functional indicators.
-To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB shoud reflect your activities on personal accounts.
+To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB should reflect your activities on personal accounts.
 
 To inspect the monitoring dashboard:
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'CloudWatch'
@@ -130,7 +138,7 @@ The monitoring dashboard features a comprehensive set of widgets:
 
 - Transactions by label - SPA meters internal activities as transaction: account on-boarding, account maintenance, and console login. Data points here reflect the quantity of accounts managed by SPA, and actual usage of accounts by their holders.
 
-- Transactions by cost center - SPA provides a breakdown of transactions by cost center. These data points reflect the quantity of accounts managed for each cost center, and also the number of conosle logins for each cost center.
+- Transactions by cost center - SPA provides a breakdown of transactions by cost center. These data points reflect the quantity of accounts managed for each cost center, and also the number of console logins for each cost center.
 
 - Events by label - This widget reflects the state transitions of accounts managed by SPA. During normal operations, it should display a series of vertical dots on each maintenance window.
 
@@ -138,17 +146,17 @@ The monitoring dashboard features a comprehensive set of widgets:
 
 - Lambda invocations - With this technical indicator you can verify that SPA behaves correctly, and you can also detect some unusual invocations.
 
-- Lambda durations - With this technical indocator you can check that no Lambda is getting close to the hard limit of 15 minutes of execution.
+- Lambda durations - With this technical indicator you can check that no Lambda is getting close to the hard limit of 15 minutes of execution.
 
 - Lambda errors - If this is not sticking to zero, then there is a run-time error or a bug.
 
 - DynamoDB read capacity units - With this technical indicator you can monitor the costs of DynamoDB.
 
-- DynamonDB write capacity units - With this technical indicator you can monitor the costs of DynamoDB.
+- DynamoDB write capacity units - With this technical indicator you can monitor the costs of DynamoDB.
 
 - DynamoDB errors - If this is not at zero, then there is a run-time error.
 
-## Step 5 - Inspect incident records
+## Step 5 - Inspect incident records <a id="step-5"></a>
 
 SPA automates the work on AWS accounts as much as possible, so that human beings are involved only on exceptional situations. When this happens, SPA creates incident records in AWS Incident Manager.
 
@@ -170,12 +178,12 @@ SPA handles following exceptions:
 
 - Failed maintenance transaction - This happens when an expiration event has been observed, but no related released event. The operator should check potential failures in the purge ran by CodeBuild on the target account.
 
-- Failed on-boarding transaction - This happesn when a vanilla event has been observed, but no released event. The operator should chekc potential failure in the preparation ran by CodeBuild on the target account.
+- Failed on-boarding transaction - This happens when a vanilla event has been observed, but no released event. The operator should check potential failure in the preparation ran by CodeBuild on the target account.
 
 - Generic exception - This is used by experimental code for some situations.
 
 
-## Step 6 - Inspect account inventories
+## Step 6 - Inspect account inventories <a id="step-6"></a>
 
 SPA produces inventories of AWS accounts that it manages. Inventories are useful for quick inspection of a large number of accounts.
 
@@ -201,9 +209,9 @@ For each AWS account, the inventory provides information that is useful on trans
 - Organizational Unit that contains the account - Is the account at the right place in the AWS Organization?
 - Last login - Is account really used?
 
-The CSV format has been selected for easy integration with downwards processes. For example, these CSV files can be pushed to a datawarehouse for historical analysis and processing. While such automation is going beyond SPA itself, it can be easily configured with S3 events on the reporting bucket fed by SPA.
+The CSV format has been selected for easy integration with downwards processes. For example, these CSV files can be pushed to a data warehouse for historical analysis and processing. While such automation is going beyond SPA itself, it can be easily configured with S3 events on the reporting bucket fed by SPA.
 
-## Step 7 - Inspect cost reports
+## Step 7 - Inspect cost reports <a id="step-7"></a>
 
 SPA contributes to FinOps with the production of monthly reports. There are monthly reports for each cost center on their service usage, e.g., S3 and EC2 for the account of `Alice` and AppStream for the account of `Bob`. These reports are posted on the SPA S3 bucket both as CSV files and as Excel files. There are also summary reports that reflect monthly costs either by service or by charge type.
 
@@ -242,7 +250,7 @@ To get and to inspect charge types across the entire AWS Organization:
 
 Note that they may have other versions of the same file if you have asked SPA to convert currencies, e.g. `2023-04-Summary-charges-EUR.xlsx` in Euros instead of USD. This is driven by optional features in SPA settings.
 
-## Step 8 - Inspect activity reports
+## Step 8 - Inspect activity reports <a id="step-8"></a>
 
 SPA creates a variety of activity records for accounts that it manages. The main objective of activity records is to report to each cost center the actual service provided by SPA. Activity records relates to account on-boarding, to account maintenance, but also to console logins, etc.
 
@@ -256,7 +264,7 @@ To get and to inspect some activity report for a given cost center:
 - Click on the 'Download' button to get a copy of the file on your computer
 - Open the file with and inspect it
 
-The CSV format has been selected for easy integration with downwards processes. For example, these CSV files can be pushed to a datawarehouse for historical analysis and processing. While such automation is going beyond SPA itself, it can be easily configured with S3 events on the reporting bucket fed by SPA.
+The CSV format has been selected for easy integration with downwards processes. For example, these CSV files can be pushed to a data warehouse for historical analysis and processing. While such automation is going beyond SPA itself, it can be easily configured with S3 events on the reporting bucket fed by SPA.
 
 ## Follow-up
 
