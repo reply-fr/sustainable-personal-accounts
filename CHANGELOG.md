@@ -4,16 +4,52 @@ Notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres now to [Calendar Versioning](http://calver.org/).
 
+
+## Unreleased
+
+### Added
+- introduce a buildspec to update a SPA environment - #117
+- add history of work done on this project - #118
+- add command "make history" to record project issues and progress - #118
+- add nat gateways to resources that should be purged after some time
+- introduce a SCP policy to prevent usage of root account on non-sandboxes accounts - #116
+
+### Fixed
+- fix: consolidate fixtures in conftest
+- fix E721 errors reported by make lint
+- list generated reports in debug mode
+- use pip from virtual environment to package the lambda zip file
+- use standard command for the setup of cdk
+- use the right function to compute cost reports
+
+### Changed
+- align with reference .gitignore used at Reply
+- iterate on the system inspection workbook - #119
+- use lines instead of stacked areas for widget on cost center activities - #119
+- auto-format features files as per Gherkin specification
+- reduce duration of pre-commit validation
+- use floats instead of strings during computation of cost reports
+- restructure commands in Makefile
+
+### Removed
+
+
 ## [23.08.03]
-This release provides essentially bug fixes and small improvements:
+This release provides essentially bug fixes and small improvements.
+
+### Added
 - record identities on console logins
+- prevent accounts to leave the organization
+
+### Fixed
+- fix Lambda errors
+- fix typos in README
+
+### Changed
 - bump to CDK 2.89
 - set the span of the monitoring dashboard to 4 weeks
 - improve the workbook related to system inspection
 - integrate changes from AWS on granular permissions related to Cost Explorer
-- prevent accounts to leave the organization
-- fix Lambda errors
-- fix typos in README
 
 ## [23.07.02]
 This release is adding console logins to the transactions managed by SPA. It also expands business support and brings several ptimisations:
