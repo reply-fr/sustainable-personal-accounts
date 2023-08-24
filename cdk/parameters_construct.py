@@ -62,7 +62,7 @@ class Parameters(Construct):
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for account preparation",
             parameter_name=self.get_parameter(toggles.environment_identifier, self.PREPARATION_BUILDSPEC_PARAMETER),
-            tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+            tier=ParameterTier.ADVANCED)
 
         string_value = self.get_buildspec_for_purge()  # the buildspec for account purge
         StringParameter(
