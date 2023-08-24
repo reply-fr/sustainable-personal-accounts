@@ -2,6 +2,7 @@
 
 ## Overview
 SPA features a distributed architecture, and it does not have a single interface that can be used to control everything. In this workbook we review the main components of the system and ways to inspect their behavior. We have written this for system engineers, our peers. And we hope they will find here useful guidance during their troubleshooting of production deployments.
+
 1. [Understand the components of the architecture](#step-1)
 2. [Inspect account tags](#step-2)
 3. [Inspect the event bus and event handlers](#step-3)

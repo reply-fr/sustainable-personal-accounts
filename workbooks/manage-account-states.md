@@ -3,12 +3,21 @@
 ## Overview
 With this workbook you will deep dive on account states and understand how they relate to tags attached to them. This will allow you to troubleshoot issues and to recover from failures.
 
+1. [Inspect an account managed by SPA](#step-1)
+2. [Start an on-boarding transaction manually](#step-2)
+3. [Start a maintenance transaction manually](#step-3)
+4. [Force an on-boarding transaction for all accounts](#step-4)
+5. [Force a maintenance transaction for all accounts](#step-5)
+6. [Release all accounts](#step-6)
+7. [Get reports on account states](#step-7)
+
 ## Prerequisites
 - You have credentials to access the AWS Console
 - You have the permission to tag AWS accounts via the AWS Organization Console
 - You have the permission to access the CloudWatch Console of the `Automation` account (where SPA has been deployed)
 
-## Step 1 - Inspect an account managed by SPA
+## Step 1 - Inspect an account managed by SPA <a id="step-1"></a>
+
 The state of an account is managed as a value of a tag of the account itself. Therefore, by inspecting any account of the AWS Organization you will immediately understand its state, and view the outcome of settings as well.
 
 Complete following activities at this step:
@@ -27,7 +36,8 @@ The two first tags, `account-state` and `account-holder` are set by SPA as part 
 
 If an account has no tag, or if it does not have the expected value for a tag, then there is an issue with SPA that you have to fix. The normal state for an AWS account that is managed by SPA is `released`. Any other value is either transient, or it is meaning that SPA is stuck.
 
-## Step 2 - Start an on-boarding transaction manually
+## Step 2 - Start an on-boarding transaction manually <a id="step-2"></a>
+
 Sometimes the setup of SPA is not complete when a personal account is created. Or maybe you have changed settings and want to test the effect on one sample account before the addition of more accounts. In both situations you have to start manually an on-boarding transaction.
 
 This step can be completed by setting the tag `account-state` to the value `vanilla`:
@@ -44,7 +54,8 @@ After this sequence, you can go to the AWS Console of the personal account and i
 
 In the end, if you visit the page of the personal account in AWS Organization, then the value of the tag `account-state` should be `released`.
 
-## Step 3 - Start a maintenance transaction manually
+## Step 3 - Start a maintenance transaction manually <a id="step-3"></a>
+
 This is useful for example is you have changed the script of the purge and you want to test it on one account before the next maintenance cycle.
 
 This step is similar to the previous one, except that you will set the tag `account-state` to the value `expired`:
@@ -61,7 +72,8 @@ After this sequence, you can go to the AWS Console of the personal account and i
 
 In the end, if you visit the page of the personal account in AWS Organization, then the value of the tag `account-state` should be `released`.
 
-## Step 4 - Force an on-boarding transaction for all accounts
+## Step 4 - Force an on-boarding transaction for all accounts <a id="step-4"></a>
+
 Sometimes SPA is deployed after the creation of accounts that it manages. These accounts are missing the tag `account-state` that is needed for proper operations of the state machine. As a consequence, these accounts are not prepared as expected before they are accessed by end-users.
 
 Another use case for account reset is when the state machine is broken during a major change of SPA itself. This can also happen if you change the tag prefix in the settings file and redeploy SPA. In both situations, accounts will not feature the expected tags.
@@ -78,7 +90,8 @@ Activities to on-board existing accounts that are managed by SPA:
 Learn more:
 - Check the [reset managed accounts](./reset-managed-accounts.md) workbook
 
-## Step 5 - Force a maintenance transaction for all accounts
+## Step 5 - Force a maintenance transaction for all accounts <a id="step-5"></a>
+
 SPA triggers maintenance transactions on schedule. But you may want to trigger an urgent purge for some reasons, for example after a major change of the buildspec used for the purge. In such situation you can invoke by yourself the function that expires all accounts. This will set tag `account-state` to the value `expired` and trigger the maintenance cycle.
 
 Activities to start a maintenance window manually:
@@ -88,7 +101,8 @@ Activities to start a maintenance window manually:
 - Select the tab `Test`
 - Click on the button `Test` to trigger the function and to tag managed accounts with tag `account-state` and value `expired`.
 
-## Step 6 - Release all accounts
+## Step 6 - Release all accounts <a id="step-6"></a>
+
 During normal operations of SPA, accounts are in state `released` most of the time. On each maintenance window, each account transitions to states `expired`, then `assigned`, `prepared` and `released` again. From time to time, you may experience situations where the cycle does not complete as expected. This can be due to some transient conditions of the cloud infrastructure, or from some misconfiguration, or from a bug in the software itself. As stated from Werner Vogels, the CTO of Amazon: "everything fails, all the time".
 
 In other terms, since SPA features an event-driven architecture, it breaks when transitions are not processed as expected. Accounts that are not in state `released` are invisible to the maintenance windows of SPA. In such situations, accounts stay in transient state without additional processing.
@@ -105,9 +119,11 @@ Activities to release accounts that are managed by SPA:
 Learn more:
 - Check the [release managed accounts](./release-managed-accounts.md) workbook
 
-## Step 7 - Get reports on account states
+## Step 7 - Get reports on account states <a id="step-7"></a>
+
 Every week, SPA generates an inventory of accounts that it manages and saves this as a CSV file in the reporting S3 buckets. These reports feature a column `state` that reflects the value of the tag `account-state`. This can be useful for automated inspection of account states at regular intervals. From the S3 console of the `Automation` account, look for the bucket deployed by SPA, then navigate `SpaReports` and `Inventories`.
 
 ## Follow-up
+
 If you experience issues with automated state transitions, then you may want to double-check the [full setup of SPA](./full-setup-of-spa.md).
 
