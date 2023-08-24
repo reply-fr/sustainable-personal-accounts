@@ -1,0 +1,49 @@
+# Copyright Reply.com or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+version: 0.2
+
+env:
+  variables:
+    ALERT_THRESHOLD: 80 # percentage of budget
+    BUDGET_AMOUNT: 500.0
+    BUDGET_EMAIL: a@b.com
+    BUDGET_NAME: SPA-budget
+    ENVIRONMENT_IDENTIFIER: None
+    EVENT_BUS_ARN: None
+    TOPIC_ARN: None
+    CODE_GIT_URL: "https://github.com/reply-fr/sustainable-personal-accounts.git"
+    CODE_GIT_BRANCH: "main"
+
+phases:
+  install:
+    commands:
+    - echo "CODE_GIT_URL=$CODE_GIT_URL"
+    - echo "CODE_GIT_BRANCH=$CODE_GIT_BRANCH"
+    - git clone --depth 1 -b ${CODE_GIT_BRANCH} ${CODE_GIT_URL} code
+    - cd code/fixtures/scripts
+    - ls -al
+
+  build:
+    commands:
+    - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+    - echo "ACCOUNT=$ACCOUNT"
+    - echo "ALERT_THRESHOLD=$ALERT_THRESHOLD"
+    - echo "BUDGET_AMOUNT=$BUDGET_AMOUNT"
+    - echo "BUDGET_EMAIL=$BUDGET_EMAIL"
+    - echo "BUDGET_NAME=$BUDGET_NAME"
+    - echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
+    - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
+    - echo "TOPIC_ARN=$TOPIC_ARN"
+    - ./hello_world.sh
