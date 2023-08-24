@@ -379,6 +379,5 @@ class Configuration:
                 region = os.environ.get('CDK_DEFAULT_REGION', None)
         toggles.automation_region = region
 
-        logging.info("AWS environment is account '{0}' and region '{1}'".format(toggles.automation_account_id,
-                                                                                toggles.automation_region))
+        logging.info(f"Deploying on AWS account '{toggles.automation_account_id}' in region '{toggles.automation_region}'")
         toggles.aws_environment = Environment(account=toggles.automation_account_id, region=toggles.automation_region)
