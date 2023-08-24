@@ -21,4 +21,8 @@ from fixture_key_value_store import given_an_empty_table, given_a_table_of_activ
 
 from fixture_small_setup import given_a_small_setup
 
-
+from fixture_cost_explorer import (sample_accounts,
+                                   sample_chunk_daily_costs_per_account,
+                                   sample_chunk_monthly_costs_for_account,
+                                   sample_chunk_monthly_charges_per_account,
+                                   sample_chunk_monthly_services_per_account)

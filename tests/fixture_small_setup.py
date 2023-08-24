@@ -48,6 +48,7 @@ def put_parameter(name, value, session):
 def given_a_small_setup():
     return _given_a_small_setup
 
+
 def _given_a_small_setup(environment='Spa'):
 
     session = Session()

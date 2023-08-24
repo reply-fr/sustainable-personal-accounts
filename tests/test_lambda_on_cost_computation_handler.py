@@ -34,7 +34,6 @@ from lambdas.on_cost_computation_handler import (build_charge_reports_per_cost_c
                                                  get_json_from_url,
                                                  get_report_path,
                                                  store_report)
-from tests.test_lambda_costs import sample_accounts, sample_chunk_monthly_charges_per_account, sample_chunk_monthly_services_per_account
 
 pytestmark = pytest.mark.wip
 
@@ -43,7 +42,7 @@ pytestmark = pytest.mark.wip
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
                              REPORTS_BUCKET_NAME="my_bucket"))
 @mock_s3
-def test_build_charge_reports_per_cost_center():
+def test_build_charge_reports_per_cost_center(sample_chunk_monthly_charges_per_account, sample_accounts):
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
@@ -58,7 +57,7 @@ def test_build_charge_reports_per_cost_center():
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
                              REPORTS_BUCKET_NAME="my_bucket"))
 @mock_s3
-def test_build_service_reports_per_cost_center():
+def test_build_service_reports_per_cost_center(sample_chunk_monthly_services_per_account, sample_accounts):
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
                      CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
