@@ -9,6 +9,7 @@ settings.yaml
 
 # draw.io
 *.drawio.bkp
+*.drawio.dtmp
 
 # terraform
 **/.terraform/*
