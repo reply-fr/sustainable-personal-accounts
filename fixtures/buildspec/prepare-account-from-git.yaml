@@ -46,4 +46,4 @@ phases:
     - echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
     - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
     - echo "TOPIC_ARN=$TOPIC_ARN"
-    - ./hello_world.sh
+    - ./hello-world.sh
