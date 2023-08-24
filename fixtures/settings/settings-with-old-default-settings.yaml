@@ -53,7 +53,7 @@ worker:
 
   # this is the buildspec template for the preparation of an account managed by SPA
   #
-  preparation_buildspec_template_file: "fixtures/buildspec/preparation_account_template.yaml"
+  preparation_buildspec_template_file: "fixtures/buildspec/prepare-account-from-git.yaml"
 
   # this is the buildspec tempalte for the purge of an account managed by SPA
   #

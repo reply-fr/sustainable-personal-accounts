@@ -35,7 +35,7 @@ phases:
     - cd code/fixtures/scripts
     - ls -al
 
-  build:
+  pre_build:
     commands:
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
     - echo "ACCOUNT=$ACCOUNT"
@@ -46,4 +46,8 @@ phases:
     - echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
     - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
     - echo "TOPIC_ARN=$TOPIC_ARN"
-    - ./hello-world.sh
+
+  build:
+    commands:
+    - sh ./set-budget-alert.sh
+    - echo "You can execute your own set of shell scripts here"

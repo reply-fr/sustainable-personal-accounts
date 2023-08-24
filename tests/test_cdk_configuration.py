@@ -181,7 +181,7 @@ def test_set_from_yaml(toggles):
     assert toggles.automation_verbosity == 'INFO'
     assert toggles.environment_identifier == 'SpaDemo'
     assert list(toggles.organizational_units.keys()) == ['ou-1234', 'ou-5678']
-    assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/preparation_account_template.yaml'
+    assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/prepare-account-from-git.yaml'
     assert toggles.worker_purge_buildspec_template_file == 'fixtures/buildspec/purge_account_with_awsweeper_template.yaml'
     assert toggles.features_with_arm_architecture is True
     assert toggles.features_with_cost_email_recipients == ['alice@example.com', 'bob@example.com']

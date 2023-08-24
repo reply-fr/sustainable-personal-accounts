@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright Reply.com or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
@@ -13,14 +15,5 @@
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-echo "hello world"
-
-echo "ACCOUNT=$ACCOUNT"
-echo "ALERT_THRESHOLD=$ALERT_THRESHOLD"
-echo "BUDGET_AMOUNT=$BUDGET_AMOUNT"
-echo "BUDGET_EMAIL=$BUDGET_EMAIL"
-echo "BUDGET_NAME=$BUDGET_NAME"
-echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
-echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
-echo "TOPIC_ARN=$TOPIC_ARN"
+echo "Hello, World!"
 

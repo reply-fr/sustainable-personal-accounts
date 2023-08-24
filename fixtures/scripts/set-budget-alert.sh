@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright Reply.com or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
 # Permission is hereby granted, free of charge, to any person obtaining a copy of this
@@ -12,15 +14,7 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-echo "ACCOUNT=$ACCOUNT"
-echo "ALERT_THRESHOLD=$ALERT_THRESHOLD"
-echo "BUDGET_AMOUNT=$BUDGET_AMOUNT"
-echo "BUDGET_EMAIL=$BUDGET_EMAIL"
-echo "BUDGET_NAME=$BUDGET_NAME"
-echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
-echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
-echo "TOPIC_ARN=$TOPIC_ARN"
+echo "Working on budget alert for this account..."
 
 cat <<EOF >budget.json
 {
@@ -87,6 +81,6 @@ else
     echo "No budget modification"
 fi
 
-echo "Removing obsolete budget names"
-aws budgets delete-budget --account-id $ACCOUNT --budget-name DataReplyBudget || true
-aws budgets delete-budget --account-id $ACCOUNT --budget-name StormReplyBudget || true
+# echo "Removing obsolete budget names"
+# aws budgets delete-budget --account-id $ACCOUNT --budget-name DataReplyBudget || true
+# aws budgets delete-budget --account-id $ACCOUNT --budget-name StormReplyBudget || true
