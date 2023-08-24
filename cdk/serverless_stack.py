@@ -131,7 +131,7 @@ class ServerlessStack(Stack):
             environment=environment,
             # log_retention=RetentionDays.THREE_MONTHS,
             timeout=Duration.seconds(900),
-            runtime=Runtime.PYTHON_3_9,
+            runtime=Runtime.PYTHON_3_11,
             tracing=Tracing.ACTIVE)
         return parameters
 
