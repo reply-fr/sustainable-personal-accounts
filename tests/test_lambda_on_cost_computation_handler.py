@@ -40,7 +40,8 @@ pytestmark = pytest.mark.wip
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
-                             REPORTS_BUCKET_NAME="my_bucket"))
+                             REPORTS_BUCKET_NAME="my_bucket",
+                             COST_EXTRA_CURRENCIES="EUR,ZYX"))
 @mock_s3
 def test_build_charge_reports_per_cost_center(sample_chunk_monthly_charges_per_account, sample_accounts):
     s3 = boto3.client("s3")
