@@ -121,6 +121,7 @@ class Configuration:
 
         # use environment to locate settings file
         toggles.settings_file = os.environ.get('SETTINGS', 'settings.yaml')
+        toggles.settings_path = '.'
 
         # the list of managed accounts and of managed organizational units
         toggles.accounts = {}
@@ -175,15 +176,16 @@ class Configuration:
 
     @classmethod
     def set_from_settings(cls, settings={}, toggles=None, path=None):
+        if path:
+            toggles.settings_path = path
+
         if 'defaults' in settings.keys():
             cls.set_attribute('defaults', settings['defaults'], toggles=toggles)
 
         toggles.features_with_csv_files = None
         toggles.features_with_end_user_documents = None
-        for key in settings.keys():
-            if key == 'defaults':
-                continue
-            elif isinstance(settings[key], dict):
+        for key in filter(lambda key: key != 'defaults', settings.keys()):
+            if isinstance(settings[key], dict):
                 for subkey in settings[key].keys():
                     flatten = "{0}_{1}".format(key, subkey)
                     value = settings[key].get(subkey)

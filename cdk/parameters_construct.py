@@ -17,6 +17,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import json
 import logging
+import os
 
 from constructs import Construct
 from aws_cdk.aws_ssm import ParameterDataType, ParameterTier, StringParameter
@@ -119,15 +120,21 @@ class Parameters(Construct):
         attributes = ['', environment, parameter]
         return cls.PARAMETER_SEPARATOR.join(attributes)
 
+    def get_buildspec_content(self, file):
+        for path in {toggles.settings_path, '.'}:
+            name = os.path.join(path, file)
+            if os.path.isfile(name):
+                with open(name) as stream:
+                    return stream.read()
+        raise AttributeError(f"Cannot locate file '{file}' mentioned in settings")
+
     def get_buildspec_for_preparation(self):
         logging.debug("Getting buildspec for the preparation of accounts")
-        with open(toggles.worker_preparation_buildspec_template_file) as stream:
-            return stream.read()
+        return self.get_buildspec_content(toggles.worker_preparation_buildspec_template_file)
 
     def get_buildspec_for_purge(self):
         logging.debug("Getting buildspec for the purge of accounts")
-        with open(toggles.worker_purge_buildspec_template_file) as stream:
-            return stream.read()
+        return self.get_buildspec_content(toggles.worker_purge_buildspec_template_file)
 
     def get_document(self, label, file):
         logging.debug(f"Loading document {label} from file {file}")

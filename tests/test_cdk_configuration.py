@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from cdk import Configuration
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -98,6 +98,7 @@ def test_set_aws_environment_from_cdk_runtime(toggles):
 
 
 @pytest.mark.unit_tests
+@patch.dict(os.environ, dict(SETTINGS="my_settings.yaml"), clear=True)
 def test_set_default_values(toggles):
     Configuration.set_default_values(toggles=toggles)
     assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
@@ -119,6 +120,8 @@ def test_set_default_values(toggles):
     assert toggles.metering_transactions_datastore == 'TransactionsTable'
     assert toggles.metering_transactions_ttl_in_seconds == 10800
     assert toggles.reporting_costs_markdown_template == "You will find attached cloud cost reports for {month}"
+    assert toggles.settings_file == 'my_settings.yaml'
+    assert toggles.settings_path == '.'
 
 
 @pytest.mark.unit_tests
