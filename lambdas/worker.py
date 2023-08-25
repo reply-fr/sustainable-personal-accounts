@@ -128,17 +128,17 @@ class Worker:
                 time.sleep(retries * 5)
 
     @classmethod
-    def deploy_role_for_codebuild(cls, name="SpaRoleForCodebuild", policy="AdministratorAccess", session=None):
+    def deploy_role_for_codebuild(cls, name="SpaRoleForServerlessComputing", policy="AdministratorAccess", session=None):
         session = session or Session()
         iam = session.client('iam')
 
-        logging.info(f"Deploying role '{name}' for codebuild projects")
+        logging.info(f"Deploying role '{name}' for serverless computing with CodeBuild, ECS and Lambda")
 
         try:
             iam.create_role(
                 RoleName=name,
-                AssumeRolePolicyDocument=cls.get_trusting_policy_document(service="codebuild.amazonaws.com"),
-                Description='Set permissions for Codebuild project',
+                AssumeRolePolicyDocument=cls.get_trusting_policy_document(service="[codebuild.amazonaws.com, ecs.amazonaws.com, ecs-tasks.amazonaws.com, lambda.amazonaws.com]"),
+                Description='Set permissions for serverless computing with CodeBuild, ECS and Lambda',
                 MaxSessionDuration=12 * 60 * 60,
                 Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
             logging.debug(f"Role '{name}' has been created")
