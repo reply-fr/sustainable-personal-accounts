@@ -35,7 +35,7 @@ from lambdas.on_cost_computation_handler import (build_charge_reports_per_cost_c
                                                  get_report_path,
                                                  store_report)
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.mark.unit_tests
