@@ -1,7 +1,7 @@
 # this project
 /cdk.out
 /lambdas.out
-settings.yaml
+/settings.yaml
 /settings
 /PITCHME.html
 /PITCHME.pdf
@@ -10,6 +10,7 @@ settings.yaml
 # draw.io
 *.drawio.bkp
 *.drawio.dtmp
+.$*
 
 # terraform
 **/.terraform/*
