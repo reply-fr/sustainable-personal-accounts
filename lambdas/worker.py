@@ -137,7 +137,7 @@ class Worker:
         try:
             iam.create_role(
                 RoleName=name,
-                AssumeRolePolicyDocument=cls.get_trusting_policy_document(service="[codebuild.amazonaws.com, ecs.amazonaws.com, ecs-tasks.amazonaws.com, lambda.amazonaws.com]"),
+                AssumeRolePolicyDocument=cls.get_trusting_policy_document(service=["codebuild.amazonaws.com", "ecs.amazonaws.com", "ecs-tasks.amazonaws.com", "lambda.amazonaws.com"]),
                 Description='Set permissions for serverless computing with CodeBuild, ECS and Lambda',
                 MaxSessionDuration=12 * 60 * 60,
                 Tags=[dict(Key='origin', Value='SustainablePersonalAccounts')])
