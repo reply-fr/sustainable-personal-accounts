@@ -14,6 +14,24 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+
+[[ "${WITH_START_STOP_EC2_INSTANCES}" = "enabled" ]] || exit 0
+
+echo "Automating the start and stop of EC2 instances..."
+
+START_CRON_EXPRESSION="${START_CRON_EXPRESSION:-0 5 ? * MON-FRI *}"
+echo "- will start EC2 instances on cron '${START_CRON_EXPRESSION}'"
+
+STOP_CRON_EXPRESSION="${STOP_CRON_EXPRESSION:-0 21 ? * MON-FRI *}"
+echo "- will stop EC2 instances on cron '${STOP_CRON_EXPRESSION}'"
+
+WITHOUT_START_STOP_TAG="${WITHOUT_START_STOP_TAG:-operations-do-not-schedule}"
+echo "- will skip EC2 instances tagged with '${WITHOUT_START_STOP_TAG}'"
+
+[[ "${ACCOUNT}" ]] || (echo "- ERROR: missing variable ACCOUNT"; exit 1)
+
+[[ "${CLOUD_CUSTODIAN_ROLE}" ]] || (echo "- ERROR: missing variable CLOUD_CUSTODIAN_ROLE"; exit 1)
+
 echo "Installing Cloud Custodian..."
 pip install c7n
 
@@ -23,22 +41,22 @@ policies:
   - name: night-stop
     mode:
       type: periodic
-      schedule: cron(0 18 ? * MON-FRI *)
+      schedule: cron(${STOP_CRON_EXPRESSION})
       role: arn:aws:iam::${ACCOUNT}:role/${CLOUD_CUSTODIAN_ROLE}
     resource: aws.ec2
     filters:
-      - "tag:without-start-stop": absent
+      - "tag:${WITHOUT_START_STOP_TAG}": absent
     actions:
       - type: stop
 
   - name: morning-start
     mode:
       type: periodic
-      schedule: cron(0 6 ? * MON-FRI *)
+      schedule: cron(${START_CRON_EXPRESSION})
       role: arn:aws:iam::${ACCOUNT}:role/${CLOUD_CUSTODIAN_ROLE}
     resource: aws.ec2
     filters:
-      - "tag:without-start-stop": absent
+      - "tag:${WITHOUT_START_STOP_TAG}": absent
     actions:
       - type: start
 EOF

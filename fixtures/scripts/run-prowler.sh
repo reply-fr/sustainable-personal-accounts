@@ -14,8 +14,13 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-echo "Installing Prowler..."
+[[ "${WITH_PROWLER}" = "enabled" ]] || exit 0
+
+echo "Running prowler..."
+
+echo "Installing prowler..."
 pip install prowler
 
-echo "Running Prowler..."
+echo "Scanning this account..."
 prowler
+exit 0
