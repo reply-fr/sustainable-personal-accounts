@@ -25,8 +25,8 @@ echo "- will start EC2 instances on cron '${START_CRON_EXPRESSION}'"
 STOP_CRON_EXPRESSION="${STOP_CRON_EXPRESSION:-0 21 ? * MON-FRI *}"
 echo "- will stop EC2 instances on cron '${STOP_CRON_EXPRESSION}'"
 
-WITHOUT_START_STOP_TAG="${WITHOUT_START_STOP_TAG:-operations-do-not-schedule}"
-echo "- will skip EC2 instances tagged with '${WITHOUT_START_STOP_TAG}'"
+TAG_WITHOUT_START_STOP="${TAG_WITHOUT_START_STOP:-operations-do-not-schedule}"
+echo "- will skip EC2 instances tagged with '${TAG_WITHOUT_START_STOP}'"
 
 [[ "${ACCOUNT}" ]] || (echo "- ERROR: missing variable ACCOUNT"; exit 1)
 
@@ -45,7 +45,7 @@ policies:
       role: arn:aws:iam::${ACCOUNT}:role/${CLOUD_CUSTODIAN_ROLE}
     resource: aws.ec2
     filters:
-      - "tag:${WITHOUT_START_STOP_TAG}": absent
+      - "tag:${TAG_WITHOUT_START_STOP}": absent
     actions:
       - type: stop
 
@@ -56,7 +56,7 @@ policies:
       role: arn:aws:iam::${ACCOUNT}:role/${CLOUD_CUSTODIAN_ROLE}
     resource: aws.ec2
     filters:
-      - "tag:${WITHOUT_START_STOP_TAG}": absent
+      - "tag:${TAG_WITHOUT_START_STOP}": absent
     actions:
       - type: start
 EOF
