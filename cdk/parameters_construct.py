@@ -37,9 +37,11 @@ class Parameters(Construct):
         super().__init__(scope, id)
 
         for identifier in toggles.accounts.keys():  # one parameter per managed account
+            content = json.dumps(toggles.accounts[identifier], indent=4)
+            logging.debug(f"parameter Accounts/{identifier} = {content}")
             StringParameter(
                 self, f"a-{identifier}",
-                string_value=json.dumps(toggles.accounts[identifier], indent=4),
+                string_value=content,
                 data_type=ParameterDataType.TEXT,
                 description="Parameters for managed account {}".format(identifier),
                 parameter_name=self.get_account_parameter(environment=toggles.environment_identifier,
@@ -47,28 +49,30 @@ class Parameters(Construct):
                 tier=ParameterTier.STANDARD)
 
         for identifier in toggles.organizational_units.keys():  # one parameter per managed organizational unit
+            content = json.dumps(toggles.organizational_units[identifier], indent=4)
+            logging.debug(f"parameter OrganizationalUnits/{identifier} = {content}")
             StringParameter(
                 self, identifier,
-                string_value=json.dumps(toggles.organizational_units[identifier], indent=4),
+                string_value=content,
                 data_type=ParameterDataType.TEXT,
                 description="Parameters for managed organizational unit {}".format(identifier),
                 parameter_name=self.get_organizational_unit_parameter(environment=toggles.environment_identifier,
                                                                       identifier=identifier),
                 tier=ParameterTier.STANDARD)
 
-        string_value = self.get_buildspec_for_preparation()  # the buildspec for account preparation
+        content = self.get_buildspec_for_preparation()  # the buildspec for account preparation
         StringParameter(
             self, "PreparationTemplate",
-            string_value=string_value,
+            string_value=content,
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for account preparation",
             parameter_name=self.get_parameter(toggles.environment_identifier, self.PREPARATION_BUILDSPEC_PARAMETER),
             tier=ParameterTier.ADVANCED)
 
-        string_value = self.get_buildspec_for_purge()  # the buildspec for account purge
+        content = self.get_buildspec_for_purge()  # the buildspec for account purge
         StringParameter(
             self, "PurgeTemplate",
-            string_value=string_value,
+            string_value=content,
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for the purge of accounts",
             parameter_name=self.get_parameter(toggles.environment_identifier, self.PURGE_BUILDSPEC_PARAMETER),
@@ -124,6 +128,7 @@ class Parameters(Construct):
         for path in {toggles.settings_path, '.'}:
             name = os.path.join(path, file)
             if os.path.isfile(name):
+                logging.debug(f"Reading buildspec from {name}")
                 with open(name) as stream:
                     return stream.read()
         raise AttributeError(f"Cannot locate file '{file}' mentioned in settings")
