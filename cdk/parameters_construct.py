@@ -76,15 +76,16 @@ class Parameters(Construct):
             data_type=ParameterDataType.TEXT,
             description="Buildspec template used for the purge of accounts",
             parameter_name=self.get_parameter(toggles.environment_identifier, self.PURGE_BUILDSPEC_PARAMETER),
-            tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+            tier=ParameterTier.STANDARD if len(content) < 4096 else ParameterTier.ADVANCED)
 
+        content = json.dumps(web_endpoints, indent=4)
         StringParameter(
             self, "WebEndpoints",
-            string_value=json.dumps(web_endpoints, indent=4),
+            string_value=content,
             data_type=ParameterDataType.TEXT,
             description="The map of web endpoints exposed to the Internet",
             parameter_name=self.get_parameter(toggles.environment_identifier, self.WEB_ENDPOINTS_PARAMETER),
-            tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+            tier=ParameterTier.ADVANCED)
 
         if toggles.features_with_end_user_documents:
             for label, file in toggles.features_with_end_user_documents.items():
@@ -96,7 +97,7 @@ class Parameters(Construct):
                     description=f"Document {label}",
                     parameter_name=self.get_document_parameter(environment=toggles.environment_identifier,
                                                                identifier=label),
-                    tier=ParameterTier.STANDARD if len(string_value) < 4096 else ParameterTier.ADVANCED)
+                    tier=ParameterTier.STANDARD if len(content) < 4096 else ParameterTier.ADVANCED)
 
     @classmethod
     def get_account_parameter(cls, environment, identifier=None):
