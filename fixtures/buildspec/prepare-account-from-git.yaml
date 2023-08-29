@@ -16,6 +16,12 @@ version: 0.2
 
 env:
   variables:
+
+    # fetch git code
+    CODE_GIT_URL: "https://github.com/reply-fr/sustainable-personal-accounts.git"
+    CODE_GIT_BRANCH: "main"
+
+    # for fixtures/scripts/set-budget-alert.sh
     ALERT_THRESHOLD: 80 # percentage of budget
     BUDGET_AMOUNT: 500.0
     BUDGET_EMAIL: a@b.com
@@ -23,31 +29,35 @@ env:
     ENVIRONMENT_IDENTIFIER: None
     EVENT_BUS_ARN: None
     TOPIC_ARN: None
-    CODE_GIT_URL: "https://github.com/reply-fr/sustainable-personal-accounts.git"
-    CODE_GIT_BRANCH: "main"
+
+    # for fixtures/scripts/schedule-start-stop-ec2-instances.sh
+    WITH_START_STOP_EC2_INSTANCES: disabled
+    CLOUD_CUSTODIAN_ROLE: rolePlaceholder
+    START_CRON_EXPRESSION: "0 5 ? * MON-FRI *"
+    STOP_CRON_EXPRESSION: "0 21 ? * MON-FRI *"
+    TAG_WITHOUT_START_STOP: "tagKeyPlaceholder"
+
+    # for fixtures/scripts/run-prowler.sh
+    WITH_PROWLER: disabled
 
 phases:
   install:
     commands:
-    - echo "CODE_GIT_URL=$CODE_GIT_URL"
-    - echo "CODE_GIT_BRANCH=$CODE_GIT_BRANCH"
-    - git clone --depth 1 -b ${CODE_GIT_BRANCH} ${CODE_GIT_URL} code
-    - cd code/fixtures/scripts
-    - ls -al
+    - |
+      echo "Fetching public code base..."
+      git clone --depth 1 -b ${CODE_GIT_BRANCH} ${CODE_GIT_URL} code
+
+    - |
+      echo "Using public scripts..."
+      cd code/fixtures/scripts
+      ls -al
 
   pre_build:
     commands:
     - ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
-    - echo "ACCOUNT=$ACCOUNT"
-    - echo "ALERT_THRESHOLD=$ALERT_THRESHOLD"
-    - echo "BUDGET_AMOUNT=$BUDGET_AMOUNT"
-    - echo "BUDGET_EMAIL=$BUDGET_EMAIL"
-    - echo "BUDGET_NAME=$BUDGET_NAME"
-    - echo "ENVIRONMENT_IDENTIFIER=$ENVIRONMENT_IDENTIFIER"
-    - echo "EVENT_BUS_ARN=$EVENT_BUS_ARN"
-    - echo "TOPIC_ARN=$TOPIC_ARN"
 
   build:
     commands:
     - sh ./set-budget-alert.sh
-    - echo "You can execute your own set of shell scripts here"
+    - sh ./schedule-start-stop-ec2-instances.sh
+    - sh ./run-prowler.sh
