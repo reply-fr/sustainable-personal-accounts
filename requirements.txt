@@ -1,4 +1,5 @@
 aws-cdk-lib>=2.69.0
+boto3
 constructs>=10.0.0
 pyyaml
 bandit
