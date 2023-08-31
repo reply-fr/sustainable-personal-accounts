@@ -1,0 +1,101 @@
+# Copyright Reply.com or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: Apache-2.0
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+version: 0.2
+
+env:
+  variables:
+    CODE_GIT_URL: "https://github.com/reply-fr/sustainable-personal-accounts.git"
+    CODE_GIT_BRANCH: "main"
+    READ_SETTINGS_ROLE: "arn:aws:iam::123456789012:role/Spa-ReadSettingsRole"
+    SETTINGS_GIT_URL: "codecommit::eu-west-1://SpaSettings"
+    SETTINGS_GIT_BRANCH: "main"
+    SETTINGS_ENVIRONMENT_PATH: "environments/automation"
+    DEPLOY_ENVIRONMENT_ROLE: "arn:aws:iam::456789012345:role/Spa-DeployEnvironmentRole"
+
+phases:
+  install:
+    commands:
+    - |
+      echo "Installing dependencies..."
+      pip install git-remote-codecommit
+
+    - |
+      echo "Assuming role to read private settings..."
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+      $(aws sts assume-role \
+      --role-arn ${READ_SETTINGS_ROLE} \
+      --role-session-name SettingsContext \
+      --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+      --output text))
+
+    - |
+      echo "Fetching private configuration files..."
+      echo "SETTINGS_GIT_URL=$SETTINGS_GIT_URL"
+      echo "SETTINGS_GIT_BRANCH=$SETTINGS_GIT_BRANCH"
+      git clone --depth 1 -b ${SETTINGS_GIT_BRANCH} ${SETTINGS_GIT_URL} settings
+      ls -al settings
+
+    - |
+      echo "Getting back to original service role..."
+      unset AWS_ACCESS_KEY_ID
+      unset AWS_SECRET_ACCESS_KEY
+      unset AWS_SESSION_TOKEN
+
+    - |
+      echo "Contextualizing the environment..."
+      if [ -f "settings/${SETTINGS_ENVIRONMENT_PATH}/variables.sh" ]; then
+        cat settings/${SETTINGS_ENVIRONMENT_PATH}/variables.sh
+        . settings/${SETTINGS_ENVIRONMENT_PATH}/variables.sh
+      fi
+
+    - |
+      echo "Fetching public code..."
+      echo "CODE_GIT_URL=$CODE_GIT_URL"
+      echo "CODE_GIT_BRANCH=$CODE_GIT_BRANCH"
+      git clone --depth 1 -b ${CODE_GIT_BRANCH} ${CODE_GIT_URL} code
+
+    - |
+      echo "Blending public code and private settings..."
+      cp -rf settings/${SETTINGS_ENVIRONMENT_PATH}/* code
+      cd code
+      ls -al
+
+    - |
+      echo "Installing project dependencies..."
+      make setup
+      . venv/bin/activate
+      python --version
+
+  pre_build:
+    commands:
+    - |
+      echo "Testing the overall code base..."
+      make lint
+      make all-tests
+
+  build:
+    commands:
+    - |
+      echo "Assuming role to act on target environment..."
+      export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+      $(aws sts assume-role \
+      --role-arn ${DEPLOY_ENVIRONMENT_ROLE} \
+      --role-session-name TargetUpdateContext \
+      --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+      --output text))
+
+    - |
+      echo "Acting on target environment..."
+      make deploy
