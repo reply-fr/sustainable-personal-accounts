@@ -270,7 +270,6 @@ Next we focus on the IAM service role that has been created aside de CodeBuild p
 - Click on `Create policy`
 - Click on JSON editor
 - Copy and paste the template below, and use 12-digit identifiers of the accounts `DevOps` and `Automation`, respectively
-
     ```json
     {
         "Version": "2012-10-17",
@@ -289,7 +288,6 @@ Next we focus on the IAM service role that has been created aside de CodeBuild p
         ]
     }
     ```
-
 - Click on `Next`
 - Provide a name, e.g., `Spa-AllowAssumeRolesPolicy`
 - Click on `Create policy`
