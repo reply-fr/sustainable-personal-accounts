@@ -45,7 +45,7 @@ phases:
       echo "SETTINGS_GIT_URL=$SETTINGS_GIT_URL"
       echo "SETTINGS_GIT_BRANCH=$SETTINGS_GIT_BRANCH"
       git clone --depth 1 -b ${SETTINGS_GIT_BRANCH} ${SETTINGS_GIT_URL} settings
-      ls -al settings
+      ls -al settings/${SETTINGS_ENVIRONMENT_PATH}
 
     - |
       echo "Getting back to original service role..."
