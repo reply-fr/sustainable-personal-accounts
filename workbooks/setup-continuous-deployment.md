@@ -1,9 +1,9 @@
 # Setup Continuous Deployment
 
 ## Overview
-With this workbook you can automate with GitOps the update of a SPA environment. This suits the requirements of corporate environments where a team is responsible collectively of a cloud workload, and where the team acts on this environment via collaboration on a git repository.
+With this workbook you can automate with GitOps the update of a SPA deployment. This suits the requirements of corporate environments where a team is responsible collectively of a cloud workload, and where the team acts on this environment via collaboration on a git repository.
 
-1. [Understand continuous deployment of SPA](#step-1)
+1. [Understand continuous deployment with GitOps](#step-1)
 2. [Segregate roles and responsibilities](#step-2)
 3. [Deploy a private repository for CloudOps team](#step-3)
 4. [Deploy a role on the target AWS account](#step-4)
@@ -18,7 +18,7 @@ With this workbook you can automate with GitOps the update of a SPA environment.
 - You have credentials to access the AWS Console
 - You have permissions to deploy resources on each AWS account mentioned above
 
-## Step 1 - Understand continuous deployment of SPA <a id="step-1"></a>
+## Step 1 - Understand continuous deployment with GitOps <a id="step-1"></a>
 
 Here we put in place a [GitOps](https://about.gitlab.com/topics/gitops/) approach for the build and for the update of an SPA environment. GitOps requires Infrastructure-as-Code, change management rooted in git, and software automation.
 
@@ -30,9 +30,9 @@ Our GitOps implementation for SPA has specific flavor:
 
 - **Explicit versioning of SPA** - You can stick to one specific version of SPA by mentioning which tag you use, e.g., `v23.8.3` or which git commit hash. You keep SPA versions under control, and you upgrade when you want. If you use only the name of a branch, say, `main` then you will get the very last version of code on each deployment. This can break your production system, and it is not recommended. To stay on the safe side of the business, please go for explicit versioning of your deployed SPA.
 
-- **Software automation** - The build and update of a SPA environment is a linear sequence of shell commands. We put the software pipeline on a separate AWS account so that it cannot be confused with manual configuration. Hands-off! A CodeBuild project provides a serverless and headless shell for all the commands we need.
+- **Software automation** - The build and update of a SPA environment is a linear sequence of shell commands. We put the software pipeline on a separate AWS account so that it cannot be confused with manual configuration. Hands-off, cloud engineers! A CodeBuild project provides a serverless and headless shell for all the commands we need.
 
-In addition, our GitOps implementation spans multiple accounts and is deliberately embracing serverless products from AWS. The following diagram represents the overall GitOps architecture put in place for the SPA use case.
+In addition, our GitOps implementation spans multiple AWS accounts and is deliberately embracing serverless products from AWS. The following diagram represents the overall GitOps architecture put in place for the SPA use case.
 
 ![Continuous deployment of SPA](./medias/continuous-deployment.png)
 
@@ -64,7 +64,9 @@ We get a clear picture of what has to be built, so it is time to make it real, o
 
 ## Step 3 - Deploy a private repository for CloudOps team <a id="step-3"></a>
 
-Activities to create a CodeCommit repository for collaborative work on system configurations:
+### Store private settings in CodeCommit
+
+First, we create a CodeCommit repository for collaborative work on system configurations:
 - Login to the AWS Console of the account `CloudOps`
 - Go to the CodeCommit console in the selected region
 - Click on `Create repository`
@@ -74,9 +76,11 @@ Copy the HTTPS (GRC) reference of the new repository, this is what you will put 
 
 `codecommit::eu-west-1://SpaSettings`
 
+### Give CodeBuild the permission to read private settings
+
 Then we create an IAM role in account `CloudOps` that can be assumed by CodeBuild running in account `DevOps`:
 - Login to the AWS Console of the account `CloudOps`
-- go to the IAM console
+- Go to the IAM console
 - In the left panel, click on Roles
 - Click on button `Create role`
 - For the trusted entity, select AWS account and enter the 12-digit identifier of the account `DevOps`.
@@ -93,7 +97,7 @@ Note the ARN of the new role, since we will refer to it in CodeBuild project as 
 
 Here we create an IAM role in account `Automation` that can be assumed by CodeBuild running in account `DevOps`:
 - Login to the AWS Console of the account `Automation`
-- go to the IAM console
+- Go to the IAM console
 - In the left panel, click on Roles
 - Click on button `Create role`
 - For the trusted entity, select AWS account and enter the 12-digit identifier of the account `DevOps`.
@@ -109,6 +113,8 @@ Note the ARN of the new role, since you will refer to it in CodeBuild project as
 ## Step 5 - Deploy software automation on DevOps account <a id="step-5"></a>
 
 Software automation is implemented with one single CodeBuild project and multiple triggers. In this setup, the `buildspec` does not come from the source code. We provide explicit content instead. from the AWS console, we create a basic CodeBuild project, then we iterate on it to finalize the setup.
+
+### Create a basic CodeBuild project
 
 We start with a basic CodeBuild project:
 - Login to the AWS Console of the account `DevOps`
@@ -126,11 +132,15 @@ We start with a basic CodeBuild project:
 
 After some seconds the project is created. Take note of the ARN, this will be consumed from the account `CloudOps` at a later stage.
 
-We prevent concurrent updates of our SPA environments directly in CodeBuild:
+### Prevent concurrent execution of CodeBuild
+
+The result of multiple concurrent executions of CodeBuild could be destructive. The best approach is to pipeline every update of the SPA environment. We prevent concurrent updates of our SPA environments directly in CodeBuild:
 - Click on `Edit` the `Project configuration`
 - Check `Restrict number of concurrent builds this project can start`
 - This will set a concurrent build limit of 1, which is exactly what we want
 - Click on `Update configuration`
+
+### Automate actions with the AWS CLI, with git and with python
 
 Next we focus on the `buildspec` itself. A sample file is available from the SPA repository on GitHub, that you can adapt to your specific requirements. As reflected below, the structure of the file shows clearly how code is fetched and combined with private settings during the `install` phase. Tests are executed during the `pre_build` phase. And finally, the target environment is built or updated with CDK during the `build` phase.
 
@@ -252,6 +262,8 @@ You have to set variables adapted to your specific context. This can be done eit
 
 - `TARGET_UPDATE_ROLE` - This is the ARN of the role to be assumed from the Account automation, that allow the deployment of SPA cloud resources such as Lambda functions, DynamoDB tables, CloudWatch dashboards, etc.
 
+### Allow CodeBuild to read private settings and to act on target AWS account
+
 Next we focus on the IAM service role that has been created aside de CodeBuild project:
 - Go to the IAM console
 - On the left panel, select 'Policies'
@@ -293,6 +305,8 @@ At this stage you can start the project manually to ensure that it executes with
 
 When the private CodeCommit is updated, we trigger a Lambda function that starts the CodeBuild project.
 
+### Allow the CloudOps team to start DevOps automation
+
 Let start by defining an IAM policy and an IAM role in account `DevOps`. The role will be assumed by Lambda from the account `CloudOps`:
 - Login to the AWS Console of the account `DevOps` -- where the CodeBuild project has been deployed
 - Go to the IAM console
@@ -300,7 +314,6 @@ Let start by defining an IAM policy and an IAM role in account `DevOps`. The rol
 - Click on `Create policy`
 - Click on JSON editor
 - Copy and paste the template below:
-
     ```json
     {
         "Version": "2012-10-17",
@@ -314,7 +327,6 @@ Let start by defining an IAM policy and an IAM role in account `DevOps`. The rol
         ]
     }
     ```
-
 - Click on `Next`
 - Provide a name, e.g., `Spa-AllowCodeBuildStartProject`
 - Click on `Create policy`
@@ -330,6 +342,8 @@ Let start by defining an IAM policy and an IAM role in account `DevOps`. The rol
 
 Take note of the role ARN, since we will use it from the account `CloudOps`.
 
+### Allow a CloudOps principal to start DevOps automation
+
 Next activity is to create an IAM permission in the account `CloudOps`:
 - Login to the AWS Console of the account `CloudOps` -- where private CodeCommit repository is sitting
 - Go to the IAM console
@@ -337,7 +351,6 @@ Next activity is to create an IAM permission in the account `CloudOps`:
 - Click on `Create policy`
 - Click on JSON editor
 - Copy and paste the template below:
-
     ```json
     {
       "Version": "2012-10-17",
@@ -363,11 +376,12 @@ Next activity is to create an IAM permission in the account `CloudOps`:
       ]
     }
     ```
-
 - Click on `Next`
 - Provide a name, e.g., `Spa-OnCodeCommitUpdate`
 - Add some description, e.g., `Permissions given to Lambda function OnCodeCommitUpdate`
 - Click on `Create policy`
+
+### Create Lambda function
 
 Next we create a Lambda function for handling CodeCommit changes:
 - Login to the AWS Console of the account `CloudOps` -- where private CodeCommit repository is sitting
@@ -417,7 +431,11 @@ This code needs some environment variables. Click on the tab `Configuration`, th
 
 - `NAME_OF_PROJECT_TO_START` - This is the name of the CodeBuild project itself, maybe `SpaDeployAutomationEnvironment` or similar.
 
+### Allow the Lambda function to start DevOps automation
+
 The function also needs some permissions to proceed. From the tab `Configuration`, click on `Permissions` on the left panel. Then click on the Role name that has been created by Lambda, e.g., `Spa-OnCodeCommitUpdate-role-ptha9kr0` or similar. Click on `Add permissions` then on `Attach policies`. In the next panel check the policy that you have created previously, e.g., `Spa-OnCodeCommitUpdate`. At the bottom of the page, click on button `Add permissions`.
+
+### Allow CodeCommit to invoke the Lambda function
 
 We also add a resource policy so that CodeCommit is entitled to invoke the Lambda function:
 - In the `Configuration` tab of the Lambda function, select `Permissions`on the left panel.
@@ -428,6 +446,8 @@ We also add a resource policy so that CodeCommit is entitled to invoke the Lambd
 - Source ARN is the one of the CodeCommit repository, e.g., `arn:aws:codecommit:eu-west-1:111111111111:SpaSettings`
 - For the allowed action select `lambda:InvokeFunction`
 - Click on button `Save`
+
+### Trigger the Lambda function on every push to the main git branch
 
 Finally we run the Lambda function on every push to the main branch of the CodeCommit repository:
 - Go to the CodeCommit console
@@ -444,27 +464,26 @@ Finally we run the Lambda function on every push to the main branch of the CodeC
 
 ## Step 7 - Validate the system end-to-end <a id="step-7"></a>
 
+### Change private settings and update SPA
+
 We push a change in the main branch of the SPA settings, and we inspect the automation chain:
 
 - On a local repository of SPA settings, in the branch `main`, edit the file `README.md` and add some text
-
 - Commit the change
-
 - Authenticate to AWS and push the change:
-
-```shell
-$ aws sso login
-$ git push origin main
-```
-
+    ```shell
+    $ aws sso login
+    $ git push origin main
+    ```
 - Using the AWS console on account `CloudOps`, inspect the Lambda function and its CloudWatch log to ensure proper execution
-
 - Using the AWS console on account `DevOps`, inspect the CodeBuild project and its log
+
+### How to troubleshoot issues?
 
 In case of errors, you can act manually on the various components of the architecture for troubleshooting:
 
-- Start the CodeBuild project manually, from the AWS console on account `DevOps`, and inspect the log.
+1. Start the CodeBuild project manually, from the AWS console on account `DevOps`, and inspect the log.
 
-- Test the Lambda function manually from the AWS console on account `CloudOps`, and inspect the log.
+2. Test the Lambda function manually from the AWS console on account `CloudOps`, and inspect the log.
 
-- From the CodeCommit console on account `CloudOps`, go to the trigger and click on the button `Test trigger`. This will invoke the Lambda function and provide immediate feedback.
+3. From the CodeCommit console on account `CloudOps`, go to the trigger and click on the button `Test trigger`. This will invoke the Lambda function and provide immediate feedback.
