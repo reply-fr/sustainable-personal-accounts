@@ -52,15 +52,15 @@ The continuous deployment architecture is split across multiple AWS accounts, an
 
 More specifically, when the CodeBuild project is triggered on account `DevOps`, the following activities are performed successively:
 
-1. **Fetch code from GitHub** - This is implemented with command `git clone` command. The command `make setup` is executed to download and install software dependencies. CodeBuild provides about 220 GiB of storage, so there is plenty of room for significant code base and dependencies.
+1. **Assume role from account `CloudOps` and fetch configuration from CodeCommit repository** - IAM permissions are handled with AWS CLI commands and local environment variables. The command `aws sts assume-role` gets a temporary token from the account CloudOps. This is turned to an IAM authentication context for the `git-remote-commit` package. Configuration files are fetched with command `git clone` performed over HTTPS (GRC) protocol. Some configuration file defines which version of the SPA code base has to be fetched from GitHub.
 
-2. **Assume role from account `CloudOps` and fetch configuration from CodeCommit repository** - IAM permissions are handled with AWS CLI commands and local environment variables. The command `aws sts assume-role` gets a temporary token from the account CloudOps. This is turned to an IAM authentication context for the `git-remote-commit` package. Configuration files are fetched with command `git clone` performed over HTTPS (GRC) protocol. The configuration files are copied on the original code base.
+2. **Fetch code from GitHub** - This is implemented with command `git clone` command. The command `make setup` is executed to download and install software dependencies. CodeBuild provides about 220 GiB of storage, so there is plenty of room for significant code base and dependencies. The private configuration files from CodeCommit are copied onto the original code base from GitHub.
 
 3. **Test the code locally** - This is implemented with commands `make lint` and `make all-tests`. If one of these commands fails, then the process does not go further.
 
 4. **Assume role from account `Automation` and apply changes there** - IAM permissions are handled again with AWS CLI commands and local environment variables. The command `aws sts assume-role` gets a temporary token from the account `Automation`. This is turned to an IAM authentication context to the next shell command: `make deploy`. This creates or updates the target SPA environment.
 
-You have probably noticed how complex stuff is encapsulated in `make` commands. You can read the blog post [Makefile is my buddy](https://bernard357.hashnode.dev/makefile-is-my-buddy) for more details. This encapsulation delineates the hooks invoked in the CodeBuild project, e.g., `make xxx` from the code itself, that is put in the `Makefile`.  In other terms, the `Makefile` is playing here a role equivalent to a `Jenkinsfile` or `.gitlab-ci.yml` in other contexts. Software engineers can tune the `Makefile` to adjust the exact behavior of Continuous Deployment (CD).
+You have probably noticed how complex stuff is encapsulated in `make` commands. You can read the blog post [Makefile is my buddy](https://bernard357.hashnode.dev/makefile-is-my-buddy) for more details. This encapsulation delineates the hooks invoked in the CodeBuild project, e.g., `make xxx`, from actual shell commands, that are put in the `Makefile`.  In other terms, the `Makefile` is playing here a role equivalent to a `Jenkinsfile` or `.gitlab-ci.yml` in other contexts. Software engineers can tune the `Makefile` to adjust the exact behavior of Continuous Deployment (CD).
 
 ## Step 3 - Deploy a private repository for CloudOps team <a id="step-3"></a>
 
