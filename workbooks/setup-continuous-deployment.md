@@ -20,7 +20,7 @@ With this workbook you can automate with GitOps the update of a SPA deployment. 
 
 ## Step 1 - Understand continuous deployment with GitOps <a id="step-1"></a>
 
-Here we put in place a [GitOps](https://about.gitlab.com/topics/gitops/) approach for the build and for the update of an SPA environment. GitOps requires Infrastructure-as-Code, change management rooted in git, and software automation.
+Here we put in place a [GitOps](https://about.gitlab.com/topics/gitops/) approach for the build and for the update of a SPA environment. GitOps requires Infrastructure-as-Code, change management rooted in git, and software automation.
 
 Our GitOps implementation for SPA has specific flavor:
 
@@ -38,9 +38,9 @@ In addition, our GitOps implementation spans multiple AWS accounts and is delibe
 
 1. The code base of SPA is open source, and made available from GitHub. You do not want to update your SPA production environment on every update of this code base. Instead, you want to set explicitly which tag or commit you are using.
 
-2. The exact configuration of your SPA environment is maintained as a private git repository on CodeCommit. Here the CloudOps team can set settings files and CSV files, describe the target configurations of Organizational Units, list AWS accounts and their configurations. They can also provide customized `buildspec` files and shell scripts for the preparation or for the purge of accounts, or both. Each update of the trunk branch induces an update of the SPA environment. Changes are managed with pull requests on branches contributed by team members. [CodeCommit supports pull requests](https://docs.aws.amazon.com/codecommit/latest/userguide/pull-requests.html) from the CodeCommit console, from the AWS CLI and from AWS SDKs. Private content is exposed to the account `DevOps` via a specific IAM role.
+2. The exact configuration of your SPA environment is maintained as a private git repository on CodeCommit. Here the CloudOps team can set settings files and CSV files, describe the target configurations of Organizational Units, list AWS accounts and their configurations. They can also provide customized `buildspec` files and shell scripts for the preparation or for the purge of accounts, or both. Changes are managed with pull requests on branches contributed by team members. [CodeCommit supports pull requests](https://docs.aws.amazon.com/codecommit/latest/userguide/pull-requests.html) from the CodeCommit console, from the AWS CLI and from AWS SDKs. Each update of the trunk branch induces an update of the SPA environment. Private content is exposed to the account `DevOps` via a specific IAM role.
 
-3. When an update is triggered, a specific CodeBuild project is executed in a separate account, named `DevOps`. This fetches the right version of SPA from GitHub, then combines it with the most recent version of the settings from private git repository. Then is runs tests before it builds or updates the target SPA environment.
+3. When an update is triggered, a CodeBuild project is executed in a separate account, named `DevOps`. This fetches the SPA code base from GitHub and the private settings from CodeCommit. This also combines the two set of files and runs non-regression tests. Then it builds or updates the target SPA environment.
 
 4. Since it has a serverless architecture, the target SPA environment is built or updated one component at a time. The capability to act on this environment is granted to the account `DevOps` via a specific IAM role.
 
@@ -48,7 +48,7 @@ Now that we have a global picture of GitOps for SPA, let focus on the automation
 
 ## Step 2 - Segregate roles and responsibilities <a id="step-2"></a>
 
-The continuous deployment architecture is split across multiple AWS accounts, and this allows us to control tightly permissions given to each software entities involved in the process. The CodeBuild project has no specific super-power by itself. Instead, it gets explicit permissions by assuming roles from source and target AWS accounts.
+The continuous deployment architecture is split across multiple AWS accounts, and this allows us to control tightly the permissions that are given to each software entity involved in the process. The CodeBuild project has no specific super-power by itself. Instead, it gets explicit permissions by assuming roles from source and from target AWS accounts.
 
 More specifically, when the CodeBuild project is triggered on account `DevOps`, the following activities are performed successively:
 
@@ -60,9 +60,11 @@ More specifically, when the CodeBuild project is triggered on account `DevOps`, 
 
 4. **Assume role from account `Automation` and apply changes there** - IAM permissions are handled again with AWS CLI commands and local environment variables. The command `aws sts assume-role` gets a temporary token from the account `Automation`. This is turned to an IAM authentication context to the next shell command: `make deploy`. This creates or updates the target SPA environment.
 
-We get a clear picture of what has to be built, so it is time to make it real, one step at a time.
+You have probably noticed how complex stuff is encapsulated in `make` commands. You can read the blog post [Makefile is my buddy](https://bernard357.hashnode.dev/makefile-is-my-buddy) for more details. This encapsulation delineates the hooks invoked in the CodeBuild project, e.g., `make xxx` from the code itself, that is put in the `Makefile`.  In other terms, the `Makefile` is playing here a role equivalent to a `Jenkinsfile` or `.gitlab-ci.yml` in other contexts. Software engineers can tune the `Makefile` to adjust the exact behavior of Continuous Deployment (CD).
 
 ## Step 3 - Deploy a private repository for CloudOps team <a id="step-3"></a>
+
+We get a clear picture of what has to be built, so it is time to make it real, starting with private settings of SPA.
 
 ### Store private settings in CodeCommit
 
@@ -142,23 +144,9 @@ The result of multiple concurrent executions of CodeBuild could be destructive. 
 
 ### Automate actions with the AWS CLI, with git and with python
 
-Next we focus on the `buildspec` itself. A sample file is available from the SPA repository on GitHub, that you can adapt to your specific requirements. As reflected below, the structure of the file shows clearly how code is fetched and combined with private settings during the `install` phase. Tests are executed during the `pre_build` phase. And finally, the target environment is built or updated with CDK during the `build` phase.
+Next we focus on the `buildspec` itself. A sample file is available from the SPA repository on GitHub, that you can adapt to your specific requirements. As reflected below, the structure of the file shows clearly how SPA code is fetched and combined with private settings during the `install` phase. Tests are executed during the `pre_build` phase. And finally, the target environment is built or updated with CDK during the `build` phase.
 
 ```yaml
-# Copyright Reply.com or its affiliates. All Rights Reserved.
-# SPDX-License-Identifier: Apache-2.0
-# Permission is hereby granted, free of charge, to any person obtaining a copy of this
-# software and associated documentation files (the "Software"), to deal in the Software
-# without restriction, including without limitation the rights to use, copy, modify,
-# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
-# permit persons to whom the Software is furnished to do so.
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 version: 0.2
 
 env:
@@ -254,13 +242,13 @@ You have to set variables adapted to your specific context. This can be done eit
 
 - `CODE_GIT_BRANCH` - This is either the HEAD of a branch, e.g., `main` or `trunk`, or a specific git tag, e.g., `v23.08.27` or even a commit hash.
 
-- `SETTINGS_ROLE` - This is the ARN of the role to be assumed from the account `CloudOps`, that gives access to the CodeCommit repository of settings.
+- `READ_SETTINGS_ROLE` - This is the ARN of the role to be assumed from the account `CloudOps`, that gives access to the CodeCommit repository of settings.
 
 - `SETTINGS_GIT_URL` - This is the HTTPS (GRC) reference of the CodeCommit repository. Note the specific access method that is handled with the `git-remote-codecommit` package, something like `codecommit::eu-west-1://SpaSettings`.
 
 - `SETTINGS_GIT_BRANCH` - This is usually the HEAD of the branch `main`, but you can tweak this if needed.
 
-- `TARGET_UPDATE_ROLE` - This is the ARN of the role to be assumed from the Account automation, that allow the deployment of SPA cloud resources such as Lambda functions, DynamoDB tables, CloudWatch dashboards, etc.
+- `DEPLOY_ENVIRONMENT_ROLE` - This is the ARN of the role to be assumed from the account `Automation`, that allows the deployment of SPA cloud resources such as Lambda functions, DynamoDB tables, CloudWatch dashboards, etc.
 
 ### Allow CodeBuild to read private settings and to act on target AWS account
 
