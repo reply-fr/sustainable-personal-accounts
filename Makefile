@@ -132,13 +132,13 @@ lint-json:
 	venv/bin/python -m json.tool cdk.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 	venv/bin/python -m json.tool package.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 
-all-tests: venv/bin/activate lambdas.out
+all-tests: venv/bin/activate
 	venv/bin/python -m pytest -ra --durations=0 tests/
 
 unit-tests: venv/bin/activate
 	venv/bin/python -m pytest -m unit_tests -v tests/
 
-integration-tests: venv/bin/activate lambdas.out
+integration-tests: venv/bin/activate
 	venv/bin/python -m pytest -m integration_tests -v tests/
 
 wip-tests: venv/bin/activate
@@ -166,7 +166,7 @@ coverage: venv/bin/activate
 bandit: venv/bin/activate
 	venv/bin/python -m bandit -r ${CODE_PATH}
 
-stats: venv/bin/activate
+stats:
 	pygount --format=summary ${CODE_PATH} features fixtures media tests workbooks *.ini cdk.json package.json *.md *.py *.txt Makefile
 
 rebase:
