@@ -18,7 +18,7 @@ With this workbook you can automate with GitOps the update of a SPA deployment. 
 - You have credentials to access the AWS Console
 - You have permissions to deploy resources on each AWS account mentioned above
 
-## Step 1 - Understand continuous deployment with GitOps <a id="step-1"></a>
+## Step 1. Understand continuous deployment with GitOps <a id="step-1"></a>
 
 Here we put in place a [GitOps](https://about.gitlab.com/topics/gitops/) approach for the build and for the update of a SPA environment. GitOps requires Infrastructure-as-Code, change management rooted in git, and software automation.
 
@@ -46,7 +46,7 @@ In addition, our GitOps implementation spans multiple AWS accounts and is delibe
 
 Now that we have a global picture of GitOps for SPA, let focus on the automation itself, that is implemented with a CodeBuild project in the account `DevOps`.
 
-## Step 2 - Segregate roles and responsibilities <a id="step-2"></a>
+## Step 2. Segregate roles and responsibilities <a id="step-2"></a>
 
 The continuous deployment architecture is split across multiple AWS accounts, and this allows us to control tightly the permissions that are given to each software entity involved in the process. The CodeBuild project has no specific super-power by itself. Instead, it gets explicit permissions by assuming roles from source and from target AWS accounts.
 
@@ -62,7 +62,7 @@ More specifically, when the CodeBuild project is triggered on account `DevOps`, 
 
 You have probably noticed how complex stuff is encapsulated in `make` commands. You can read the blog post [Makefile is my buddy](https://bernard357.hashnode.dev/makefile-is-my-buddy) for more details. This encapsulation delineates the hooks invoked in the CodeBuild project, e.g., `make xxx`, from actual shell commands, that are put in the `Makefile`.  In other terms, the `Makefile` is playing here a role equivalent to a `Jenkinsfile` or `.gitlab-ci.yml` in other contexts. Software engineers can tune the `Makefile` to adjust the exact behavior of Continuous Deployment (CD).
 
-## Step 3 - Deploy a private repository for CloudOps team <a id="step-3"></a>
+## Step 3. Deploy a private repository for CloudOps team <a id="step-3"></a>
 
 We get a clear picture of what has to be built, so it is time to make it real, starting with private settings of SPA.
 
@@ -95,7 +95,7 @@ Then we create an IAM role in account `CloudOps` that can be assumed by CodeBuil
 
 Note the ARN of the new role, since we will refer to it in CodeBuild project as variable `SETTINGS_ROLE`.
 
-## Step 4 - Deploy a role on the target AWS account <a id="step-4"></a>
+## Step 4. Deploy a role on the target AWS account <a id="step-4"></a>
 
 Here we create an IAM role in account `Automation` that can be assumed by CodeBuild running in account `DevOps`:
 - Login to the AWS Console of the account `Automation`
@@ -112,7 +112,7 @@ Here we create an IAM role in account `Automation` that can be assumed by CodeBu
 
 Note the ARN of the new role, since you will refer to it in CodeBuild project as variable `DEPLOY_ENVIRONMENT_ROLE`.
 
-## Step 5 - Deploy software automation on DevOps account <a id="step-5"></a>
+## Step 5. Deploy software automation on DevOps account <a id="step-5"></a>
 
 Software automation is implemented with one single CodeBuild project and multiple triggers. In this setup, the `buildspec` does not come from the source code. We provide explicit content instead. from the AWS console, we create a basic CodeBuild project, then we iterate on it to finalize the setup.
 
@@ -287,7 +287,7 @@ Next we focus on the IAM service role that has been created aside de CodeBuild p
 
 At this stage you can start the project manually to ensure that it executes without errors. If successful, the only remaining step is to connect CodeCommit in account `CloudOps` with the CodeBuild project in account `Devops`.
 
-## Step 6 - Hook the pipeline into the private repository <a id="step-6"></a>
+## Step 6. Hook the pipeline into the private repository <a id="step-6"></a>
 
 When the private CodeCommit is updated, we trigger a Lambda function that starts the CodeBuild project.
 
@@ -448,7 +448,7 @@ Finally we run the Lambda function on every push to the main branch of the CodeC
 - Pick up the Lambda function that was created previously, e.g., `Spa-OnCodeCommitUpdate`
 - Click on button `Create trigger`
 
-## Step 7 - Validate the system end-to-end <a id="step-7"></a>
+## Step 7. Validate the system end-to-end <a id="step-7"></a>
 
 ### Change private settings and update SPA
 

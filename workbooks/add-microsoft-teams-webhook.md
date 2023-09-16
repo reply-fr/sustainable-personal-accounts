@@ -12,7 +12,7 @@ With this workbook you can forward consolidated alerts to a Microsoft Teams chan
 - You have access to the settings file of your deployed SPA
 - You have AWS credentials to deploy SPA
 
-## Step 1 - Understand Microsoft Teams Incoming Webhooks <a id="step-1"></a>
+## Step 1. Understand Microsoft Teams Incoming Webhooks <a id="step-1"></a>
 
 An Incoming Webhook lets external applications to share content in Microsoft Teams channels. The webhooks are used as tools to track and notify. The webhooks provide a unique URL, to send a JSON payload with a message in card format. Cards are user interface containers that include content and actions related to a single article. You can use cards in the following capabilities:
 - Bots
@@ -21,7 +21,7 @@ An Incoming Webhook lets external applications to share content in Microsoft Tea
 
 SPA is consolidating alerts emitted by accounts that it manages, such as billing alerts and failures of CodeBuild projects. With Microsoft Teams Incoming Webhooks, such alerts can be automatically forwarded to one specific channel. All people connected to this channel will receive information simultaneously, and can react through the channel itself.
 
-## Step 2 - Create a Microsoft Teams Incoming Webhook <a id="step-2"></a>
+## Step 2. Create a Microsoft Teams Incoming Webhook <a id="step-2"></a>
 
 Following activities take place from within Microsoft Teams itself:
 - Open the channel in which you want to add the webhook and select ••• from the top navigation bar.
@@ -35,7 +35,7 @@ At the end of this step, the webhook is available in the Teams channel, and you 
 Credit:
 - (Microsoft official documentation) [Create Incoming Webhooks](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
 
-## Step 3 - Configure the webhook in SPA <a id="step-3"></a>
+## Step 3. Configure the webhook in SPA <a id="step-3"></a>
 
 For this step you need to do the following:
 - Open the SPA settings file in the editor of your choice

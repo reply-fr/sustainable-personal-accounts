@@ -17,13 +17,13 @@ In this workbook we dive deep on notification management for AWS accounts. The o
 - You have credentials to access the AWS Console
 - You have the permission to access the CloudWatch Console of the `Automation` account (where SPA has been deployed)
 
-## Step 1 - Understand the notifications system <a id="step-1"></a>
+## Step 1. Understand the notifications system <a id="step-1"></a>
 
 In the context of SPA, notifications are email messages that can be confirmed by end-users. Notifications can be used for spreading terms and conditions to newcomers, and to collect validations automatically. Another use case is the transmission of important news and informative messages, through the same system.
 
 Multiple notifications can be setup in the system. In that case, SPA transmits one notification on each maintenance cycle, until all notifications have been processed. If you add a notification at some point, it will be transmitted on the next maintenance cycle.
 
-## Step 2 - Configure the origin email address in SPA settings <a id="step-2"></a>
+## Step 2. Configure the origin email address in SPA settings <a id="step-2"></a>
 
 This step can be completed with following activities:
 - Open the SPA settings file in the editor of your choice
@@ -32,7 +32,7 @@ This step can be completed with following activities:
 
 To validate the deployment, you can inspect Lambda functions `SpaOnMonthlyCostsReport` of SPA in the AWS account where SPA has been deployed. The environment variable `ORIGIN_EMAIL_RECIPIENT` should reflect the origin email address used by SES.
 
-## Step 3 - Prepare notifications <a id="step-3"></a>
+## Step 3. Prepare notifications <a id="step-3"></a>
 
 Notifications are email messages that are built from documents. Documents are regular Markdown files, with a YAML header. This format is also known as "frontmatter". In addition, Markdown content can feature placeholders for text that can come either from the frontmatter section, or from other sources.
 
@@ -47,7 +47,7 @@ This User Agreement ("Agreement") governs your use of the personal AWS sandbox a
 ...
 ```
 
-## Step 4 - Assign notifications to accounts <a id="step-4"></a>
+## Step 4. Assign notifications to accounts <a id="step-4"></a>
 
 Notifications are configured as named documents. Names are processed in alphabetical order. This may be important for you if you configure multiple notifications and want to manage the order of email messages ent to end-users. Here is an example of a notification for general terms of use of SPA:
 
@@ -69,7 +69,7 @@ The addition of notifications is performed by the modification of settings:
 - Use the command `make deploy` to update the SPA stack on AWS
 
 
-## Step 5 - Contextualize notifications <a id="step-5"></a>
+## Step 5. Contextualize notifications <a id="step-5"></a>
 
 Contextualization allows the re-use of documents, but with different content provided to end-users. For example, you manage one single document for Terms of Use, but the name of the entity in charge of your account can vary. Notifications can be contextualized globally, at Organizational Unit level, or at the account level.
 
@@ -116,11 +116,11 @@ organizational_units:
 
 ```
 
-## Step 6 - Inspect notifications <a id="step-6"></a>
+## Step 6. Inspect notifications <a id="step-6"></a>
 
 Notifications are persisted in a dedicated DynamoDB table. You can use the DynamoDB console to inspect most recent records of the table.
 
-## Step 7 - Inspect notifications reports <a id="step-7"></a>
+## Step 7. Inspect notifications reports <a id="step-7"></a>
 
 SPA creates one record for each notification that it sends. In addition, SPA updates these records on user confirmations. Notifications are reported at the end of each month for each cost center.
 
