@@ -1,6 +1,7 @@
 # Manage account costs
 
 ## Overview
+
 In this workbook we dive deep on cost management for AWS accounts. The objective is to explain automation brought by SPA, so that you can monitor costs at scale, detect abnormal spending, and also contribute to the FinOps processes of your enterprise.
 
 1. [Assign cost budget to every AWS account](#step-1)
@@ -11,8 +12,8 @@ In this workbook we dive deep on cost management for AWS accounts. The objective
 6. [Produce reports of account costs](#step-6)
 7. [Transmit cost reports over email to FinOps team ](#step-7)
 
-
 ## Prerequisites
+
 - You have credentials to access the AWS Console
 - You have the permission to access the CloudWatch Console of the `Automation` account (where SPA has been deployed)
 
@@ -21,6 +22,7 @@ In this workbook we dive deep on cost management for AWS accounts. The objective
 SPA provides an opportunity to set budget thresholds to every account that it manages. You can either define budgets for all accounts in one organizational unit (OU), or for an individual account. You can also set a default budget when this is not specified elsewhere.
 
 The excerpt below illustrates how a budget is set for accounts in one OU in the settings file:
+
 ```yaml
 # these are organizational units where accounts are managed by the solution
 organizational_units:
@@ -50,6 +52,7 @@ Note that we describe here standard behavior of SPA, powered by the default buil
 When a budget alert is raised by AWS, a message is sent automatically to the email address of the account. Therefore, when you use personal mail addresses for sandbox accounts managed by SPA, the account owners receive mail alerts right into their own mailboxes. By enforcing ownership of account holders, SPA facilitates their rapid reaction such as the deletion of unused resources, etc.
 
 In addition, SPA manages budget alerts centrally, with following options:
+
 - creation of incident records in AWS Incident Manager
 - publish alerts to subscribers of a SNS topic
 - push notifications to Microsoft Teams webhook
@@ -57,6 +60,7 @@ In addition, SPA manages budget alerts centrally, with following options:
 SPA consolidates budget alerts on the `Automation` account. One incident record is created in AWS Incident Manager for each budget alert. A cost report is attached automatically to each incident record for easier analysis of on-going costs. In other terms, SPA handles budget alerts with principles that were developed for professional management of corporate incidents.
 
 The settings excerpt below illustrates how SPA can forward alerts to selected email recipients:
+
 ```yaml
 features:  # that can be activated optionally
 
@@ -72,6 +76,7 @@ features:  # that can be activated optionally
 In this example, Alice and Bob will receive messages from Amazon to confirm their subscription after the deployment or update of SPA. After that, each of them will receive a copy of each budget alert.
 
 SPA creates a SNS topic to forward budget alerts. The addition of alert subscribers is managed by the modification of settings:
+
 - Open the settings file of SPA, e.g., `settings.yaml`, with you preferred text editor
 - In the section `features`, set the parameter `with_email_subscriptions_on_alerts` to the list of email recipients
 - Save and close the settings file
@@ -82,6 +87,7 @@ The [setup of a Microsoft Teams webhook](./add-microsoft-teams-webhook.md) is de
 ## Step 3. Assign a cost center to every AWS account <a id="step-3"></a>
 
 SPA can tag AWS accounts that it manages. The settings excerpt below shows how to set cost center and cost owner to each account of organizational units:
+
 ```yaml
 # these are organizational units where accounts are managed by the solution
 organizational_units:
@@ -108,6 +114,7 @@ organizational_units:
 Here we define one organizational unit for the business unit Alpha, and another one for the business unit Gamma. AWS accounts for collaborators of these business units are placed in respective business units. SPA tags all accounts of the Alpha business unit with the tag `cost-center` and the value `Alpha`. Similarly, accounts of the Gamma business units are tagged with `cost-center` and the value `Gamma`. This setup can accommodate hundreds of sandbox accounts spread over organizational units.
 
 The addition of tags related to cost management is managed by the modification of settings:
+
 - Open the settings file of SPA, e.g., `settings.yaml`, with you preferred text editor
 - In the section `organizational_units`, set tags for each OU managed collectively by SPA
 - In the section `accounts`, set tags for each OU managed individually by SPA
@@ -115,18 +122,19 @@ The addition of tags related to cost management is managed by the modification o
 - Save and close the settings file
 - Use the command `make deploy` to update the SPA stack on AWS
 
-
 ## Step 4. Automate cost monitoring and reporting <a id="step-4"></a>
 
 By default, SPA does not monitor account costs in the CloudWatch dashboard, and it does not report on costs every month. These have to be enabled explicitly if you want to benefit of automated cost management at account level.
 
 The monitoring and the reporting on costs is activated by specifying the cost center tag as follows:
+
 - Open the settings file of SPA, e.g., `settings.yaml`, with you preferred text editor
 - In the section `features`, set the parameter `with_cost_management_tag` to the tag used for cost center, e.g., `cost-center`
 - Save and close the settings file
 - Use the command `make deploy` to update the SPA stack on AWS
 
 An example of automation of the settings file:
+
 ```yaml
 # additional features that can be activated optionnally
 features:
@@ -151,12 +159,14 @@ Since SPA produces CloudWatch metrics, you can add your own custom alarms if you
 When the settings file mentions a cost management tag, SPA can query Cost Explorer and produce reports on a monthly basis. SPA checks tags attached to each AWS account to sum costs per cost center.
 
 Following reports are produced every month to support comprehensive FinOps requirements:
+
 - A Excel report for each cost center, that lists accounts and their consumption, and that can be checked by the owner of a cost center
 - A CSV report for each cost center, for easy integration in data processing chains
 - A summary Excel report, that lists accounts and cost types, and that can be checked by central FinOps team
 - A summary CSV report with similar information, for easy integration in data processing chains
 
 To get and to inspect some service usage report for a given cost center:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -168,6 +178,7 @@ To get and to inspect some service usage report for a given cost center:
 - There is also a CSV version of the file, for automated integration into downward processes
 
 To get and to inspect charge types across the entire AWS Organization:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -179,6 +190,7 @@ To get and to inspect charge types across the entire AWS Organization:
 - There is also a CSV version of the file, for automated integration into downward processes
 
 SPA can also produce summary report with additional currencies than USD. The excerpt below shows such settings:
+
 ```yaml
 features:  # that can be activated optionally
 
@@ -195,5 +207,3 @@ In this example, SPA produces each month one summary report in USD and another o
 ## Step 7. Transmit cost reports over email to FinOps team <a id="step-7"></a>
 
 SPA can use AWS SES to push summary files out of S3 bucket. Look at [Transmit reports over email](./transmit-reports-over-email.md) for more information.
-
-

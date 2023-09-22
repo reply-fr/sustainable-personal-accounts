@@ -3,6 +3,7 @@
 THIS PAGE IS UNDER CONSTRUCTION
 
 ## Overview
+
 In this workbook we dive deep on notification management for AWS accounts. The objective is to explain automation brought by SPA on notifications, so that you can collect confirmations from end users on key documents transmitted to them over email.
 
 1. [Understand the notifications system](#step-1)
@@ -14,6 +15,7 @@ In this workbook we dive deep on notification management for AWS accounts. The o
 7. [Inspect notifications reports](#step-7)
 
 ## Prerequisites
+
 - You have credentials to access the AWS Console
 - You have the permission to access the CloudWatch Console of the `Automation` account (where SPA has been deployed)
 
@@ -26,6 +28,7 @@ Multiple notifications can be setup in the system. In that case, SPA transmits o
 ## Step 2. Configure the origin email address in SPA settings <a id="step-2"></a>
 
 This step can be completed with following activities:
+
 - Open the SPA settings file in the editor of your choice
 - Look for the keyword `with_origin_email_recipient:` and paste the email address that was verified previously
 - Save the SPA settings file and deploy the new configuration with the command `make deploy`
@@ -61,6 +64,7 @@ defaults:  # applies to every account
 ```
 
 The addition of notifications is performed by the modification of settings:
+
 - Open the settings file of SPA, e.g., `settings.yaml`, with you preferred text editor
 - In the section `organizational_units`, set notifications for each OU managed collectively by SPA
 - In the section `accounts`, set notifications for each accounts managed individually by SPA
@@ -68,12 +72,12 @@ The addition of notifications is performed by the modification of settings:
 - Save and close the settings file
 - Use the command `make deploy` to update the SPA stack on AWS
 
-
 ## Step 5. Contextualize notifications <a id="step-5"></a>
 
 Contextualization allows the re-use of documents, but with different content provided to end-users. For example, you manage one single document for Terms of Use, but the name of the entity in charge of your account can vary. Notifications can be contextualized globally, at Organizational Unit level, or at the account level.
 
 Here is an example where you bind a generic template to your specific enterprise:
+
 ```yaml
 defaults:
 
@@ -125,6 +129,7 @@ Notifications are persisted in a dedicated DynamoDB table. You can use the Dynam
 SPA creates one record for each notification that it sends. In addition, SPA updates these records on user confirmations. Notifications are reported at the end of each month for each cost center.
 
 To get and to inspect some notification report for a given cost center:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`

@@ -1,6 +1,7 @@
 # Manage preventive controls
 
 ## Overview
+
 With this workbook you create effective guardrails and limits to what can be done within an AWS account assigned to a person.
 
 1. [Create a service control policy](#step-1)
@@ -13,6 +14,7 @@ With this workbook you create effective guardrails and limits to what can be don
 
 
 ## Prerequisites
+
 - You have a copy of the SPA git repository
 - You have the permission to manage IAM policies of the management account of the AWS Organization
 - You have the permission to configure Organizational Units of the AWS Organization
@@ -22,6 +24,7 @@ With this workbook you create effective guardrails and limits to what can be don
 The preventive controls that we are looking for are specifically adapted to the use case of AWS accounts used by individual persons. As a starting point, we can copy the sample policy that is provided with SPA and deploy it. Later on, we will come back to this policy and tune it where necessary.
 
 Complete following activities at this step:
+
 - In a web browser, open the AWS Console of the management account of the AWS organization
 - Go to the AWS Organizations Console
 - In the left pane, select 'Policies'
@@ -39,6 +42,7 @@ Complete following activities at this step:
 Since personal accounts are put in specific Organizational Units of the AWS Organization, we will deploy preventive controls there. If all personal accounts are grouped into a single tree of Organizational Units, then focus on the top-level Organizational Unit of this tree. Preventive controls will be cascaded to child Organizational Units and to the AWS accounts that they contain.
 
 This step can be completed with following activities:
+
 - From within the AWS Organizations Console, click on 'AWS Accounts'
 - Click on the Organizational Units that will contain personal accounts, for example, 'Sandboxes'
 - Click on the tab 'Policies'
@@ -52,6 +56,7 @@ This step can be completed with following activities:
 The normal usage of personal accounts is from Single Sign-On (SSO), controlled by corporate Identity provider. With this control we prevent actions that could be performed on direct authentication as an account root user.
 
 This control is implemented in statement `SpaDenyEverythingFromRootUser`, that is looking like this:
+
 ```json
 {
     "Sid": "SpaDenyEverythingFromRootUser",
@@ -77,6 +82,7 @@ If you need to perform a specific operation on an account that requires root aut
 The purge of personal accounts requires to visit multiple AWS regions. With this control we deny the creation of resources except on a limited set of well-defined regions. We also release the constraint for Control Tower itself, by checking the role that it is using across accounts.
 
 This control is implemented in statement `SpaDenyAllOutsideRequestedRegions`, that is looking like this:
+
 ```json
 {
     "Sid": "SpaDenyAllOutsideRequestedRegions",
@@ -113,6 +119,7 @@ If you want to change the set of regions supported in personal accounts, edit th
 While most AWS resources are inexpensive for short usage, the provisioning of some resources can induce costs of hundreds or thousands of dollars. With this control we deny the creation of such resources in personal accounts.
 
 This control is implemented in statement `SpaDenyCreationOfCostlyResources`, that is looking like this:
+
 ```json
 {
     "Sid": "SpaDenyCreationOfCostlyResources",
@@ -132,6 +139,7 @@ This control is implemented in statement `SpaDenyCreationOfCostlyResources`, tha
 Usually AWS resources are provisioned for short periods of time. However, some products and services can lead to commitments on months and years. With this control we deny the creation of such resources in personal accounts.
 
 This control is implemented in statement `SpaDenyContractCommitments`, that is looking like this:
+
 ```json
 {
     "Sid": "SpaDenyContractCommitments",
@@ -161,6 +169,7 @@ This control is implemented in statement `SpaDenyContractCommitments`, that is l
 The Resources Access Manager (RAM) is a fantastic capability to share selected AWS resources across accounts. With this control we deny the public sharing of resources a,d the sharing with AWS accounts that are not part of the same AWS organization of personal accounts.
 
 This control is implemented in statement `SpaDenyResourceShareOutsideOrganization`, that is looking like this:
+
 ```json
 {
     "Sid": "SpaDenyResourceShareOutsideOrganization",

@@ -1,6 +1,7 @@
 # Full setup of Sustainable Personal Accounts (SPA)
 
 ## Overview
+
 This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on one AWS account of a target AWS Organization.
 
 1. [Create or use an AWS Organization](#step-1)
@@ -16,8 +17,8 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 11. [Deploy SPA](#step-11)
 12. [Inspect the solution](#step-12)
 
-
 ## Prerequisites
+
 - You have credentials to access the AWS Console
 - You have received permissions to create a new AWS account
 
@@ -26,11 +27,13 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 SPA is leveraging AWS Organization for events management and for account management across AWS accounts.
 
 If you do not have an AWS Organizations yet, then you have to create one. There are multiple options to consider and you have to select the one that will work best for you:
+
 * The deployment of AWS Organizations can be managed by AWS Control Tower, and this is our recommended approach if you start from a single account.
 * You can use an alternative account management solution from some AWS Partner
 * You deploy a new AWS Organizations by yourself
 
 Reference:
+
 - [AWS Control Tower Workshops](https://controltower.aws-management.tools/)
 - [AWS Control Tower Documentation](https://docs.aws.amazon.com/controltower/)
 
@@ -39,6 +42,7 @@ Reference:
 SPA is using events related to multiple AWS accounts. The collection and aggregation of these events can be done by CloudTrail, but this needs explicit activation.
 
 When you have deployed Control Tower, this step can be completed with following activities:
+
 - From the AWS Console of the top-level account of the AWS Organization, select Control Tower service
 - In the left pane, click on `Landing zone settings`
 - Click on button `Modify settings`
@@ -65,6 +69,7 @@ SPA is using a limited set of AWS features related to AWS Organization, such as:
 From the top-level account of your AWS Organisation, visit the IAM Console and create a role that can be assumed from the `Automation` account. Take a note of the ARN of the role that you create, since you will enter it into the settings file used by SPA.
 
 Here is the full sequence of activities for this step:
+
 - From the AWS Console of the top-level account of the AWS Organization, select IAM service
 - In the left pane, click on `Policies`
 - Click on button `Create policy`
@@ -174,6 +179,7 @@ SPA is also assuming a role to act on the accounts that it manages. If you rely 
 Since organizational events are collected by the top-level account of the AWS Organization, we will forward these events to the default bus of the `Automation` account. Actually, we want to make this bus a global resource, accessible from any account. We modify the resource policy of the default bus so that events can be put from any account of the AWS Organization. This is based on Attribute-Based Access Control (ABAC), with a specific IAM condition.
 
 Following activities are related to this step:
+
 - From the AWS Console of the top-level account, select AWS Organizations service
 - In the left pane, copy the Organization ID, a string like `o-l7ht176sac`
 - Close the tab
@@ -232,6 +238,7 @@ After the update you can control that the resource-based policy for the default 
 Events related to AWS accounts are posted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region `us-east-1`, and not in the region of your choice. Therefore, we create an Eventbridge rule in the top-level account and in the `us-east-1` region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
 
 Following activities are related to this step:
+
 - From the AWS Console of the `Automation` account, select Amazon EventBridge service
 - In the left pane, click on `Event buses`
 - Take note of the `default` event bus ARN, something like `arn:aws:events:eu-west-1:123456789012:event-bus/default`
@@ -270,6 +277,7 @@ Following activities are related to this step:
 In some setup of CloudTrail the console logins are emitted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region where IAM Identity Center (previously, SSO) has been deployed. This region can be found from the settings of this service. Therefore the need to create an Eventbridge rule in the top-level account and in the SSO region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
 
 Following activities are related to this step:
+
 - From the AWS Console of the top-level account, select IAM Identity Center service
 - In the left pane, click on `Settings`
 - Look for the deployment region, for example: `eu-west-1`
@@ -356,11 +364,13 @@ Note: if CDK complains about assumed role, then ensure that the environment vari
 Use the AWS Console on the `Automation` account. There is a CloudWatch dashboard that reflects metrics for SPA. Code execution is reflected into the Lambda console. You can also inspect DynamoDB tables.
 
 Activities to on-board one account manually:
+
 - If you expect an AWS account to be handled by SPA, then you set tag `account-state` to the value `vanilla` from the AWS Organizations console of the top-level account.
 - Then move to the AWS Console of the `Automation` account and check the log of the Lambda function `SpaOnAccountEvent`. You should get the full sequence of state changes over a couple of minutes: `CreatedAccount`, `AssignedAccount`, `PreparedAccount` then `ReleasedAccount`.
 - After this sequence, you can go to the AWS Console of the personal account and inspect the budget that has been set by SPA. In addition, you can also review the Codebuild project that has been executed by SPA during the preparation phase.
 
 Activities to on-board existing accounts:
+
 - Move to the AWS Console of the `Automation` account
 - Select the Lambda service
 - Look for the Lambda function `SpaResetAccounts`

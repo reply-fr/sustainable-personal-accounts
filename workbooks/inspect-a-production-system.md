@@ -1,6 +1,7 @@
 # Inspect a production system
 
 ## Overview
+
 SPA features a distributed architecture, and it does not have a single interface that can be used to control everything. In this workbook we review the main components of the system and ways to inspect their behavior. We have written this for system engineers, our peers. And we hope they will find here useful guidance during their troubleshooting of production deployments.
 
 1. [Understand the components of the architecture](#step-1)
@@ -13,6 +14,7 @@ SPA features a distributed architecture, and it does not have a single interface
 8. [Inspect activity reports](#step-8)
 
 ## Prerequisites
+
 - You have credentials to access the AWS Console
 - You have received permissions to manage the AWS Organization where SPA has been deployed
 - You have received permissions to access the AWS account where SPA has been deployed
@@ -20,6 +22,7 @@ SPA features a distributed architecture, and it does not have a single interface
 ## Step 1. Understand the components of the architecture <a id="step-1"></a>
 
 In this workbook we focus on following components of the SPA architecture:
+
 * Account Tags
 * Event bus and event handlers
 * Monitoring Dashboard
@@ -28,6 +31,7 @@ In this workbook we focus on following components of the SPA architecture:
 * Cost Reports
 
 In following steps we assume following names for accounts and OU that we use:
+
 - `Management` is the top-level account of the AWS Organization
 - `Automation` is the account where SPA has been deployed
 - `Alice` and `Bob` are two personal accounts managed by SPA
@@ -38,6 +42,7 @@ In following steps we assume following names for accounts and OU that we use:
 SPA works by tagging AWS accounts, so by looking at account tags you can ensure proper transitions across account states. You can also set or change a tag by yourself to trigger actions from SPA.
 
 To inspect account tags:
+
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'AWS Organizations'
 - Search for the account `Alice` or unfold the OU `Sandboxes`
 - Select the account `Alice` to view account details
@@ -55,6 +60,7 @@ The tag `account-holder` reflects the email address assigned to the AWS account.
 SPA detects the creation, the move and the tagging of AWS accounts. When an AWS account has been properly on-boarded in SPA, you can track its state changes by inspecting the value of tag `account-state` over time. You can also change this tag manually to trigger a specific transaction, or to fix an issue by yourself.
 
 To change account tags:
+
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'AWS Organizations'
 - Search for the account `Alice` or unfold the OU `Sandboxes`
 - Select the account `Alice` to view account details
@@ -72,6 +78,7 @@ If you observe some anomalies, or if you have to change the states of several ac
 SPA listens events from the default bus of `Automation`, the account where it has been deployed. Events that match patterns defined in EventBridge rules are passed to Lambda functions. You can inspect the CloudWatch logs of each Lambda function to monitor activities of the system. The Lambda function `SpaOnAccountEvent` is seeing every transition of accounts, therefore it is a good place to start.
 
 Perform following activities to on-board an account and to monitor the process:
+
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'AWS Organizations'
 - Search for the account `Alice` or unfold the OU `Sandboxes`
 - Select the account `Alice` to view account details
@@ -86,33 +93,39 @@ Perform following activities to on-board an account and to monitor the process:
 If the Lambda function `SpaOnAccountEvent` has no CloudWatch logs despite the creation or tagging of AWS accounts, then it is likely that events emitted by AWS do not reach the event bus of SPA.
 
 To inspect the forwarding of AWS Organizations events to SPA:
+
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'Amazon EventBridge'
 - ⚠️ Select the region `US East (N. Virginia) us-east-1`
 - In the left panel, click on 'Rules'
 - Look for a rule that forward events from AWS Organizations to the default event bus of SPA
 
 A pattern that matches events from AWS Organizations:
+
 ```json
 {"detail":{"eventSource":["organizations.amazonaws.com"]}}
 ```
 
 The ARN of the default event bus should mention the region where SPA has been deployed, similar to the following:
+
 ```
 arn:aws:events:eu-west-1:123456789012:event-bus/default
 ```
 
 To inspect the forwarding of Console Login events to SPA:
+
 - From the AWS Console of `Management`, the top-level account of the AWS Organization, select the service 'Amazon EventBridge'
 - ⚠️ Select the region where your IAM Identity Center has been deployed, e.g., `Europe (Ireland) eu-west-1`
 - In the left panel, click on 'Rules'
 - Look for a rule that forward sign-in events to the default event bus of SPA
 
 A pattern that matches sign-in events from AWS:
+
 ```json
 {"detail":{"eventSource":["signin.amazonaws.com"],"eventName":["ConsoleLogin"]}}
 ```
 
 The ARN of the default event bus should mention the region where SPA has been deployed, similar to the following:
+
 ```
 arn:aws:events:eu-west-1:123456789012:event-bus/default
 ```
@@ -125,6 +138,7 @@ SPA comes with a monitoring dashboard that features a combination of technical a
 To ensure complete observability of SPA operations, visit the CloudWatch dashboard in the `Automation` account. Metrics for Lambda and DynamoDB should reflect your activities on personal accounts.
 
 To inspect the monitoring dashboard:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'CloudWatch'
 - In the left panel, click on 'Dashboards'
 - Select the custom dashboard that has been deployed with SPA, e.g., `SpaCockpit-eu-west-1`
@@ -162,6 +176,7 @@ The monitoring dashboard features a comprehensive set of widgets:
 SPA automates the work on AWS accounts as much as possible, so that human beings are involved only on exceptional situations. When this happens, SPA creates incident records in AWS Incident Manager.
 
 To inspect the monitoring dashboard:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'AWS Systems Manager'
 - In the left panel, click on 'Incident Manager'
 
@@ -189,6 +204,7 @@ SPA handles following exceptions:
 SPA produces inventories of AWS accounts that it manages. Inventories are useful for quick inspection of a large number of accounts.
 
 To inspect most recent inventory:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -200,6 +216,7 @@ To inspect most recent inventory:
 - Open the file with a tool adapted to CSV files
 
 For each AWS account, the inventory provides information that is useful on transverse analysis:
+
 - Account id - The 12 digits that are unique across AWS
 - Account name - Is account name aligned with corporate policies?
 - Account email - Is account email internal or external to the company?
@@ -217,6 +234,7 @@ The CSV format has been selected for easy integration with downwards processes. 
 SPA contributes to FinOps with the production of monthly reports. There are monthly reports for each cost center on their service usage, e.g., S3 and EC2 for the account of `Alice` and AppStream for the account of `Bob`. These reports are posted on the SPA S3 bucket both as CSV files and as Excel files. There are also summary reports that reflect monthly costs either by service or by charge type.
 
 To get and to inspect some service usage report for a given cost center:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -228,6 +246,7 @@ To get and to inspect some service usage report for a given cost center:
 - There is also a CSV version of the file, for automated integration into downward processes
 
 To get and to inspect a summary of service costs across the entire AWS Organization:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -239,6 +258,7 @@ To get and to inspect a summary of service costs across the entire AWS Organizat
 - There is also a CSV version of the file, for automated integration into downward processes
 
 To get and to inspect charge types across the entire AWS Organization:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -256,6 +276,7 @@ Note that they may have other versions of the same file if you have asked SPA to
 SPA creates a variety of activity records for accounts that it manages. The main objective of activity records is to report to each cost center the actual service provided by SPA. Activity records relates to account on-boarding, to account maintenance, but also to console logins, etc.
 
 To get and to inspect some activity report for a given cost center:
+
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
 - Click on prefix `SpaReports`
@@ -270,4 +291,3 @@ The CSV format has been selected for easy integration with downwards processes. 
 ## Follow-up
 
 * Inspect SCP set for the OU managed by SPA, with [the workbook on preventive controls](./manage-preventive-controls.md)
-
