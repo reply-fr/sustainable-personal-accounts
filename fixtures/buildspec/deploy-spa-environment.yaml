@@ -15,7 +15,7 @@
 version: 0.2
 
 env:
-  variables:
+  variables:  # default values here - override at project definition level, or pass values on project start
     CODE_GIT_URL: "https://github.com/reply-fr/sustainable-personal-accounts.git"
     CODE_GIT_BRANCH: "main"
     READ_SETTINGS_ROLE: "arn:aws:iam::123456789012:role/Spa-ReadSettingsRole"
