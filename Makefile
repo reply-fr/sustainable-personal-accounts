@@ -208,7 +208,7 @@ check-accounts:
 .PHONY: history
 history: venv/bin/activate
 	mkdir -p history
-	rm history/*.md
+	rm -f history/*.md
 	gh2md --multiple-files --no-prs --idempotent reply-fr/sustainable-personal-accounts history
 
 clean:
