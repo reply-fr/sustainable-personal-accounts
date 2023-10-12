@@ -36,7 +36,7 @@ Our GitOps implementation for SPA has specific flavor:
 
 In addition, our GitOps implementation spans multiple AWS accounts and is deliberately embracing serverless products from AWS. The following diagram represents the overall GitOps architecture put in place for the SPA use case.
 
-![Continuous deployment of SPA](./medias/continuous-deployment.png)
+![Continuous deployment of SPA](./medias/continuous-deployment.drawio.png)
 
 1. The code base of SPA is open source, and made available from GitHub. You do not want to update your SPA production environment on every update of this code base. Instead, you want to set explicitly which tag or commit you are using.
 
