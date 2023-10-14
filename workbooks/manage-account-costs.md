@@ -10,7 +10,7 @@ In this workbook we dive deep on cost management for AWS accounts. The objective
 4. [Automate cost monitoring and reporting](#step-4)
 5. [Monitor daily costs with custom CloudWatch metric](#step-5)
 6. [Produce reports of account costs](#step-6)
-7. [Transmit cost reports over email to FinOps team ](#step-7)
+7. [Transmit cost reports over email to FinOps team](#step-7)
 
 ## Prerequisites
 

@@ -28,9 +28,9 @@ SPA is leveraging AWS Organization for events management and for account managem
 
 If you do not have an AWS Organizations yet, then you have to create one. There are multiple options to consider and you have to select the one that will work best for you:
 
-* The deployment of AWS Organizations can be managed by AWS Control Tower, and this is our recommended approach if you start from a single account.
-* You can use an alternative account management solution from some AWS Partner
-* You deploy a new AWS Organizations by yourself
+- The deployment of AWS Organizations can be managed by AWS Control Tower, and this is our recommended approach if you start from a single account.
+- You can use an alternative account management solution from some AWS Partner
+- You deploy a new AWS Organizations by yourself
 
 Reference:
 
@@ -56,7 +56,7 @@ If you do not have Control Tower, then configure your landing zone to generate E
 
 ## Step 3. Select an AWS account and a region to deploy Sustainable Personal Account <a id="step-3"></a>
 
-We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organisational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams.
+We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organizational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams.
 
 We recommend to create an AWS account named `Automation` to host SPA code. This should be considered production level, and put in the appropriate Organizational Unit.
 
@@ -66,7 +66,7 @@ Take a note of the `Automation` account identifier, a string of 12 digits. This 
 
 SPA is using a limited set of AWS features related to AWS Organization, such as: list OU, list accounts in OU, tag an AWS account, and so on. SPA can also make good use of AWS Cost Explorer to compute costs based on account tags. And to act on managed accounts, SPA needs to assume a role on these accounts.
 
-From the top-level account of your AWS Organisation, visit the IAM Console and create a role that can be assumed from the `Automation` account. Take a note of the ARN of the role that you create, since you will enter it into the settings file used by SPA.
+From the top-level account of your AWS Organization, visit the IAM Console and create a role that can be assumed from the `Automation` account. Take a note of the ARN of the role that you create, since you will enter it into the settings file used by SPA.
 
 Here is the full sequence of activities for this step:
 
@@ -326,7 +326,7 @@ Note: this step is mandatory, and the deployment of SPA will fail if you do not 
 
 ## Step 9. Create Organizational Units for personal accounts <a id="step-9"></a>
 
-We recommend to create one general `Sandboxes` Organizational Unit, possibly with multiple child Organizational Units. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behaviour on AWS accounts that they contain. Take a note of OU identifiers that you create, since you will enter them into the settings file used by SPA.
+We recommend to create one general `Sandboxes` Organizational Unit, possibly with multiple child Organizational Units. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behavior on AWS accounts that they contain. Take a note of OU identifiers that you create, since you will enter them into the settings file used by SPA.
 
 The easiest way to create Organizational Units in the context of Control Tower is to do it directly from within the Control Tower Console. With this way of working, new OU are registered automatically in Control Tower. If you create OU from the AWS Organizations Console, or programmatically, then you have to register new OU in Control Tower anyway.
 

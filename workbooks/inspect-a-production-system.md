@@ -23,12 +23,12 @@ SPA features a distributed architecture, and it does not have a single interface
 
 In this workbook we focus on following components of the SPA architecture:
 
-* Account Tags
-* Event bus and event handlers
-* Monitoring Dashboard
-* Incident Manager
-* Account Inventories
-* Cost Reports
+- Account Tags
+- Event bus and event handlers
+- Monitoring Dashboard
+- Incident Manager
+- Account Inventories
+- Cost Reports
 
 In following steps we assume following names for accounts and OU that we use:
 
@@ -197,7 +197,6 @@ SPA handles following exceptions:
 - Failed on-boarding transaction - This happens when a vanilla event has been observed, but no released event. The operator should check potential failure in the preparation ran by CodeBuild on the target account.
 
 - Generic exception - This is used by experimental code for some situations.
-
 
 ## Step 6. Inspect account inventories <a id="step-6"></a>
 

@@ -13,7 +13,6 @@ Since the state of an account is contained in a tag attached to it, for such sit
 3. [Launch the Lambda function that releases AWS accounts](#step-3)
 4. [Launch the Lambda function that checks AWS accounts](#step-4)
 
-
 ## Prerequisites
 
 - You suspect that multiple AWS accounts are not in RELEASED state

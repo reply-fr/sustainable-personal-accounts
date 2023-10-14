@@ -10,7 +10,6 @@ With this workbook you can forward monthly reports to selected email recipients.
 4. [Configure in SPA the list of email recipients for reports](#step-4)
 5. [Request production usage of AWS SES](#step-5)
 
-
 ## Prerequisites
 
 - You have credentials to create a SES origin email address
@@ -48,7 +47,7 @@ This step can be completed with following activities:
 
 To validate the deployment, you can inspect Lambda functions `SpaOnMonthlyCostsReport` of SPA in the AWS account where SPA has been deployed. The environment variable `ORIGIN_EMAIL_RECIPIENT` should reflect the origin email address used by SES.
 
-## Step 3. Verify in AWS SES all email addresses of target recipients <a id="step-1-3"></a>
+## Step 3. Verify in AWS SES all email addresses of target recipients <a id="step-3"></a>
 
 This is similar to activities at step 1, but for each target recipients of reports:
 

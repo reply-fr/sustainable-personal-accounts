@@ -12,7 +12,6 @@ With this workbook you create effective guardrails and limits to what can be don
 6. [Prevent long commitments](#step-6)
 7. [Prevent resource sharing outside the organization](#step-7)
 
-
 ## Prerequisites
 
 - You have a copy of the SPA git repository
