@@ -7,16 +7,19 @@ With Sustainable Personal Accounts (SPA) you can control, purge and manage AWS a
 ![sustainable-personal-accounts](./media/sustainable-personal-accounts.svg)
 
 As a CTO/CCoE Leader/R&D Director:
+
 - I recognize that innovative companies distribute sandbox AWS accounts to their staff
 - I provide AWS accounts to cloud practitioners of my enterprise
 - I manage these corporate resources at scale with SPA
 
 As a person who benefits from a personal AWS account:
+
 - After authentication, I connect to my account with `AWSAdministratorAccess` permission,
 - A budget is set automatically to alert me by email,
-- Cloudbuild projects are executed on my behalf for purging cloud resources and for alignment with corporate policies.
+- CodeBuild projects are executed on my behalf for purging cloud resources and for alignment with corporate policies.
 
 As a DevOps in charge of SPA deployment:
+
 - I drive the behavior of SPA from a single YAML file with all settings,
 - I can adjust the Codebuild project used for account preparation to evolving corporate policies
 - I can adjust the Codebuild project used for account purge to evolving corporate policies
@@ -26,6 +29,7 @@ As a DevOps in charge of SPA deployment:
 - I can integrate tags from CSV files communicated by other teams (e.g., FinOps, Security, Enterprise Architecture)
 
 As a SRE in charge of SPA operations:
+
 - I can manage preventive controls on personal accounts with SCP
 - An automated CloudWatch dashboard covers technical and functional monitoring in one place
 - SPA activities, aka, console logins, account on-boarding, account maintenance, are reported as CSV files in S3 bucket every month
@@ -35,6 +39,7 @@ As a SRE in charge of SPA operations:
 - Inventories of accounts are produced as CSV files in S3 bucket every week
 
 As a FinOps engineer:
+
 - I receive cost reports every month in my mailbox
 - The Excel report consolidates costs per cost center and per organizational unit for easy analysis
 - The CSV report is processed with custom software for automated show-back and charge-back
@@ -42,18 +47,21 @@ As a FinOps engineer:
 ## SPA has been designed for AWS Organizations
 
 Mandatory requirements:
-* SPA is leveraging AWS Organization for events management and for account management across AWS accounts. The deployment of AWS Organizations can be managed by Amazon Control Tower, but Amazon Control Tower itself is not mandatory.
-* SPA should be deployed on a dedicated AWS account. This facilitates the management of permissions accross a large number of AWS accounts, and contributes to the separation of concerns.
-* SPA needs an assume role with permissions on the AWS Organization
-* SPA needs an assume role with permissions within each AWS account that it manages
+
+- SPA is leveraging AWS Organization for events management and for account management across AWS accounts. The deployment of AWS Organizations can be managed by Amazon Control Tower, but Amazon Control Tower itself is not mandatory.
+- SPA should be deployed on a dedicated AWS account. This facilitates the management of permissions accross a large number of AWS accounts, and contributes to the separation of concerns.
+- SPA needs an assume role with permissions on the AWS Organization
+- SPA needs an assume role with permissions within each AWS account that it manages
 
 We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO). However, this is not a requirement for SPA, and you can deploy and use the solution without Amazon Control Tower.
 
 ## Get started with Sustainable Personal Accounts
 
 A set of workbooks are available for common operations on Sustainable Personal Accounts, such as:
+
 - [Full Setup of SPA](./workbooks/full-setup-of-spa.md) - Start here for initial installation
-- [Inspect a SPA system](./workbooks/inspect-a-production-system.md) - Review the behaviour of SPA components
+- [Manage preparation tasks](./workbooks/manage-preparation-tasks.md) - Customize the preparation of accounts
+- [Inspect a SPA system](./workbooks/inspect-a-production-system.md) - Review the behavior of SPA components
 - [Manage preventive controls](./workbooks/manage-preventive-controls.md) - Define guardrails for personal accounts
 - [Create a personal account](./workbooks/create-a-personal-account.md) - Add manually an account handled by SPA
 - [Add Microsoft Teams webhook](./workbooks/add-microsoft-teams-webhook.md) - Forward SPA notifications to ChatOps channels
@@ -61,6 +69,8 @@ A set of workbooks are available for common operations on Sustainable Personal A
 - [Manage account states](./workbooks/manage-account-states.md) - Handle account tags by yourself
 - [Release all managed accounts](./workbooks/release-managed-accounts.md) - Set all state machines to RELEASED state
 - [Reset all managed accounts](./workbooks/reset-managed-accounts.md) - Set all state machines to VANILLA state
+- [Manage account costs](./workbooks/manage-account-costs.md) - Automate some FinOps activities with SPA
+- [Setup continuous deployment of SPA](./workbooks/setup-continuous-deployment.md) - Use GitOps principles to operate SPA
 
 ## Sustainable Personal Accounts features an event-driven serverless architecture
 
@@ -69,6 +79,7 @@ Persistence of states is done with tags set on AWS accounts. State transitions a
 ![architecture](./media/reference-architecture.svg)
 
 Sustainable Personal Accounts has been designed with following principles:
+
 - the entire solution is configured with one single YAML file
 - the entire infrastructure is deployed with python code and AWS CDK
 - the configuration of organizational units and accounts is store in SSM Parameter Store
@@ -111,6 +122,7 @@ Sustainable Personal Accounts provides a monitoring dashboard that can be checke
 ![incident-record](./media/incident-record.png)
 
 When an exceptional situation is encountered, Sustainable Personal Accounts creates an incident record in SSM Incident Manager. Examples of exceptions:
+
 - budget alert
 - console login with IAM User or with root credentials
 - failed maintenance transaction
@@ -148,4 +160,3 @@ In addition, part of the solution configuration can be delegated to CSV files. T
 ## Any other question?
 
 Please check the [Frequent Asked Questions page](./FAQ.md), maybe your point has already been addressed there.
-

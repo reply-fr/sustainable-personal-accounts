@@ -383,6 +383,7 @@ If you have to go deeper in the inspection of your SPA system, use the [Inspect 
 
 ## Follow-up
 
+- [Manage preparation tasks](./manage-preparation-tasks.md) with specific `buildspec` and related code
 - You can now [create new AWS accounts](./create-a-personal-account.md) and let SPA manage them automatically
 - You can also [on-board existing accounts](./reset-managed-accounts.md) by setting their states to VANILLA
 - [Manage and troubleshoot account states](./manage-account-states.md) to fix potential issues with the state machine
