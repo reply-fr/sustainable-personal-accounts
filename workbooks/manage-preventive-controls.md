@@ -98,6 +98,7 @@ This control is implemented in statement `SpaDenyAllOutsideRequestedRegions`, th
         "StringNotEquals": {
             "aws:RequestedRegion": [
                 "ap-east-1",
+                "ap-southeast-1",
                 "eu-central-1",
                 "eu-west-1",
                 "eu-west-3",
@@ -127,6 +128,7 @@ This control is implemented in statement `SpaDenyCreationOfCostlyResources`, tha
     "Action": [
         "acm-pca:CreateCertificateAuthority",
         "globalaccelerator:CreateAccelerator",
+        "bedrock:CreateModelCustomizationJob",
         "redshift:CreateCluster",
         "shield:CreateSubscription"
     ],
