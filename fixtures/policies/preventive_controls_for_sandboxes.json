@@ -46,6 +46,7 @@
       "Action": [
         "acm-pca:CreateCertificateAuthority",
         "globalaccelerator:CreateAccelerator",
+        "bedrock:CreateModelCustomizationJob",
         "redshift:CreateCluster",
         "shield:CreateSubscription"
       ],
