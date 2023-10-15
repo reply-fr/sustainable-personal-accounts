@@ -32,9 +32,14 @@ from worker import Worker
 
 @trap_exception
 def handle_tag_event(event, context, session=None):
-    logging.debug(json.dumps(event))
-    input = Events.decode_tag_account_event(event=event, match=State.ASSIGNED)
-    return handle_account(input.account, session=session)
+    for record in event['Records']:
+        detail = json.loads(record['body'])
+        logging.debug(detail)
+        item = dict(detail=detail)
+        logging.debug(json.dumps(item))
+        input = Events.decode_tag_account_event(event=item, match=State.ASSIGNED)
+        handle_account(input.account, session=session)
+    return '[OK]'
 
 
 def handle_account(account, session=None):

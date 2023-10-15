@@ -30,7 +30,7 @@ from types import SimpleNamespace
 from lambdas import Events, State
 from lambdas.on_assigned_account_handler import handle_tag_event
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 from account import Account  # accessible from monkeypatch
 from worker import Worker    # accessible from monkeypatch
 
@@ -115,12 +115,12 @@ def test_handle_tag_event(monkeypatch):
 
     monkeypatch.setattr(Account, 'describe', mock_account_describe)
 
-    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/queued-event-template.json",
                                             context=dict(account="123456789012",
                                                          new_state=State.ASSIGNED.value))
     with patch('lambdas.on_assigned_account_handler.prepare_topic', return_value='aws:arn'):
         result = handle_tag_event(event=event, context=None, session=context.session)
-    assert result["DetailType"] == 'AssignedAccount'
+    assert result == '[OK]'
     assert processed == ["123456789012"]
 
     # preparation has not been enabled on "567890123456"
@@ -131,11 +131,11 @@ def test_handle_tag_event(monkeypatch):
 
     monkeypatch.setattr(Account, 'set_state', mock_account_set_state)
 
-    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/queued-event-template.json",
                                             context=dict(account="567890123456",
                                                          new_state=State.ASSIGNED.value))
     result = handle_tag_event(event=event, context=None, session=context.session)
-    assert result["DetailType"] == 'AssignedAccount'
+    assert result == '[OK]'
     assert processed == ["567890123456"]
 
 
@@ -149,7 +149,7 @@ def test_handle_tag_event(monkeypatch):
 def test_handle_tag_event_on_unexpected_state():
     context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
 
-    event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
+    event = Events.load_event_from_template(template="fixtures/events/queued-event-template.json",
                                             context=dict(account="123456789012",
                                                          new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None, session=context.session)

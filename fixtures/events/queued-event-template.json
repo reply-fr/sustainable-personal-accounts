@@ -1,0 +1,20 @@
+{
+    "Records": [
+        {
+            "messageId": "322e13c2-xyzb-40ed-bdda-c480af2ef9dd",
+            "receiptHandle": "AQEBJycR",
+            "body": "{\"eventVersion\":\"1.08\",\"userIdentity\":{\"type\":\"AssumedRole\",\"principalId\":\"ARxxxxyyyyzzzzP3XWQIX:john.foo@example.com\",\"arn\":\"arn:aws:sts::111111111111:assumed-role/AWSAdministratorAccess/john.foo@example.com\",\"accountId\":\"111111111111\",\"accessKeyId\":\"ASIAVYNQ7SM5E2FMGPCC\",\"sessionContext\":{\"sessionIssuer\":{\"type\":\"Role\",\"principalId\":\"ARxxxxyyyyzzzzP3XWQIX\",\"arn\":\"arn:aws:iam::111111111111:role/aws-reserved/sso.amazonaws.com/us-east-1/AWSAdministratorAccess\",\"accountId\":\"111111111111\",\"userName\":\"AWSAdministratorAccess\"},\"webIdFederationData\":{},\"attributes\":{\"creationDate\":\"2023-10-15T20:41:34Z\",\"mfaAuthenticated\":\"false\"}}},\"eventTime\":\"2023-10-15T20:42:11Z\",\"eventSource\":\"organizations.amazonaws.com\",\"eventName\":\"TagResource\",\"awsRegion\":\"us-east-1\",\"sourceIPAddress\":\"19.151.117.123\",\"userAgent\":\"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36\",\"requestParameters\":{\"tags\":[{\"value\":\"___new_state___\",\"key\":\"account-state\"},{\"value\":\"alfa@omega.cloud\",\"key\":\"account-holder\"},{\"value\":\"1234\",\"key\":\"cost-center\"}],\"resourceId\":\"___account___\"},\"responseElements\":null,\"requestID\":\"3eb939af-xxxx-yyyy-zzzz-03663d42417b\",\"eventID\":\"ab3741ba-xxxx-yyyy-zzzz-9fb69a35faa4\",\"readOnly\":false,\"eventType\":\"AwsApiCall\",\"managementEvent\":true,\"recipientAccountId\":\"111111111111\",\"eventCategory\":\"Management\",\"tlsDetails\":{\"tlsVersion\":\"TLSv1.3\",\"cipherSuite\":\"TLS_AES_128_GCM_SHA256\",\"clientProvidedHostHeader\":\"organizations.us-east-1.amazonaws.com\"},\"sessionCredentialFromConsole\":\"true\"}",
+            "attributes": {
+                "ApproximateReceiveCount": "1",
+                "SentTimestamp": "1697402534621",
+                "SenderId": "AIDAJ2E4ZHTZPIG4AM4I6",
+                "ApproximateFirstReceiveTimestamp": "1697402534628"
+            },
+            "messageAttributes": {},
+            "md5OfBody": "2f8b4afe245777bb7b38f5921e8f7657",
+            "eventSource": "aws:sqs",
+            "eventSourceARN": "arn:aws:sqs:eu-west-1:792281704736:Spa-OnAssignedAccountQueueE1B3322A-hwpl347Bg279",
+            "awsRegion": "eu-west-1"
+        }
+    ]
+}

@@ -105,7 +105,7 @@ class Events:
         if len(decoded.account) != 12:
             raise ValueError(f"Invalid account identifier '{decoded.account}'")
 
-        decoded.label = event['detail-type']
+        decoded.label = event.get('detail-type')
         if match and match != decoded.label:
             raise ValueError(f"Unexpected event label '{decoded.label}'")
 
