@@ -43,7 +43,7 @@ def handle_account_event(event, context=None, emit=None):
 
 
 def update_shadow_on_account_event(input):
-    logging.info(f"Remembering {input.label} for {input.account}")
+    logging.info(f"Remembering '{input.label}' for '{input.account}'")
     shadows = get_table()
     shadow = shadows.retrieve(hash=str(input.account)) or {}
     try:
@@ -66,8 +66,6 @@ def update_shadow_on_account_event(input):
 def put_metrics(input):
     if input.__dict__.get('message', None):
         logging.info(f"Logging '{input.label}' '{input.account}'\n{input.message}")
-    else:
-        logging.info(f"Listening '{input.label}' '{input.account}'")
 
     put_metric_data(name='AccountEventsByAccount',
                     dimensions=[dict(Name='Account', Value=input.account),
