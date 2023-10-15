@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import patch, Mock
-from moto import mock_events
+from moto import mock_events, mock_organizations, mock_ssm
 import os
 import pytest
 
@@ -89,17 +89,20 @@ def valid_tags():
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
-def test_handle_organization_event(valid_tags):
+@mock_organizations
+@mock_ssm
+def test_handle_organization_event(valid_tags, given_a_small_setup):
+    context = given_a_small_setup()
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
-                                            context=dict(account="123456789012",
-                                                         destination_organizational_unit="ou-1234",
-                                                         origin_organizational_unit="ou-origin"))
+                                            context=dict(account=context.bob_account,
+                                                         destination_organizational_unit=context.sandbox_ou,
+                                                         origin_organizational_unit=context.unmanaged_ou))
     result = handle_organization_event(event=event, context=None, session=valid_tags)
     assert result['Source'] == 'SustainablePersonalAccounts'
     assert result['DetailType'] == 'CreatedAccount'
     details = json.loads(result['Detail'])
     assert details['Environment'] == 'envt1'
-    assert details['Account'] == '123456789012'
+    assert details['Account'] == context.bob_account
     assert details.get('Message') is None
 
 
@@ -110,16 +113,19 @@ def test_handle_organization_event(valid_tags):
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
 @mock_events
-def test_handle_tag_event(valid_tags):
+@mock_organizations
+@mock_ssm
+def test_handle_tag_event(valid_tags, given_a_small_setup):
+    context = given_a_small_setup()
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
-                                            context=dict(account="123456789012",
+                                            context=dict(account=context.bob_account,
                                                          new_state=State.VANILLA.value))
     result = handle_tag_event(event=event, context=None, session=valid_tags)
     assert result['Source'] == 'SustainablePersonalAccounts'
     assert result['DetailType'] == 'CreatedAccount'
     details = json.loads(result['Detail'])
     assert details['Environment'] == 'envt1'
-    assert details['Account'] == '123456789012'
+    assert details['Account'] == context.bob_account
     assert details.get('Message') is None
 
 

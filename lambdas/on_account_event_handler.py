@@ -164,11 +164,16 @@ def build_report(records):
     writer.writeheader()
     for record in records:
         item = record['value']
+        try:
+            ou_name = Account.get_organizational_unit_name(item['id'])
+        except Exception as exception:
+            logging.warning(exception)
+            ou_name = "Unknown"
         row = {'Account': item['id'],
                'Cost Center': Account.get_cost_center(item['tags']),
                'Cost Owner': item['tags']['cost-owner'],
                'Email': item['email'],
-               'Organizational Unit': Account.get_organizational_unit_name(item['id']),
+               'Organizational Unit': ou_name,
                'Name': item['name'],
                'State': item['tags']['account-state'],
                'Console Login': item.get('stamps', {}).get('ConsoleLogin') or '-'}

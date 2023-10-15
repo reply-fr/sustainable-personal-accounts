@@ -202,19 +202,15 @@ class Account:
     @classmethod
     def get_organizational_unit_details(cls, account, session=None):
         session = session or get_organizations_session()
-        try:
-            unit = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
-            if unit.startswith('r-'):
-                return dict(Id=unit, Name='Root')
-            cached = cls.ou_cache.get(unit)
-            if cached:
-                return cached
-            details = session.client('organizations').describe_organizational_unit(OrganizationalUnitId=unit)['OrganizationalUnit']
-            cls.ou_cache[unit] = details
-            return details
-        except botocore.exceptions.ClientError:
-            logging.warning(f"Unable to find parent of account '{account}'")
-            return {}
+        unit = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+        if unit.startswith('r-'):
+            return dict(Id=unit, Name='Root')
+        cached = cls.ou_cache.get(unit)
+        if cached:
+            return cached
+        details = session.client('organizations').describe_organizational_unit(OrganizationalUnitId=unit)['OrganizationalUnit']
+        cls.ou_cache[unit] = details
+        return details
 
     @classmethod
     def get_cost_management_tag(cls):
