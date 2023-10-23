@@ -4,7 +4,7 @@
 
 With Sustainable Personal Accounts (SPA) you can control, purge and manage AWS accounts assigned permanently to employees of your enterprise.
 
-![sustainable-personal-accounts](./media/sustainable-personal-accounts.svg)
+![sustainable-personal-accounts](./media/sustainable-personal-accounts.drawio.png)
 
 As a CTO/CCoE Leader/R&D Director:
 
@@ -76,7 +76,7 @@ A set of workbooks are available for common operations on Sustainable Personal A
 
 Persistence of states is done with tags set on AWS accounts. State transitions are handled with Eventbridge, Lambda, CodeBuild and DynamoDB. The management of the solution is done with CloudWatch, SSM Incident Manager, Cost Explorer and S3 reporting bucket.
 
-![architecture](./media/reference-architecture.svg)
+![architecture](./media/reference-architecture.drawio.png)
 
 Sustainable Personal Accounts has been designed with following principles:
 
@@ -113,7 +113,7 @@ The monitoring dashboard provides a combination of business indicators and of te
 
 ## Sustainable Personal Accounts interacts with human beings on exceptions
 
-![management-by-exception](./media/management-by-exception.svg)
+![management-by-exception](./media/management-by-exception.drawio.png)
 
 Sustainable Personal Accounts provides a monitoring dashboard that can be checked when you want. But you do not need to keep your eyes on the monitoring dashboard. On an exceptional situation, SPA can post a message in a Microsoft Teams channel. It can also send you an alert over e-mail. You can come back anytime to SSM Incident Manager, where SPA will push incident records with tags and with contextualised cost reports.
 
@@ -131,7 +131,7 @@ On exception, SPA queries cost explorer and produces a report for on-going costs
 
 ## Sustainable Personal Accounts automates reporting
 
-![automated-reporting](./media/automated-reporting.svg)
+![automated-reporting](./media/automated-reporting.drawio.png)
 
 Sustainable Personal Accounts produces following kinds of reports:
 
@@ -151,7 +151,7 @@ FinOps teams can get cost details per cost centers and per Organizational Units.
 
 ## Sustainable Personal Accounts is driven by configuration files
 
-![collaborative-configuration](./media/collaborative-configuration.svg)
+![collaborative-configuration](./media/collaborative-configuration.drawio.png)
 
 Sustainable Personal Accounts is provisioned and configured from a single YAML file. Settings cover every aspect of the solution, for example the cron expression that triggers the maintenance window, the buildspec files for CodeBuild tasks on accounts.
 

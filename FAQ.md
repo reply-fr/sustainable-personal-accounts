@@ -56,7 +56,7 @@ As a FinOps engineer:
 
 SPA is featuring an event-driven architecture, and serverless infrastructure. Centralised lambda functions take care of changing states of accounts. The preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These activities run directly into target accounts as CodeBuild projects.
 
-![architecture](./media/reference-architecture.svg)
+![architecture](./media/reference-architecture.drawio.png)
 
 Sustainable Personal Accounts has been designed with following principles:
 - the entire solution is configured with one single YAML file

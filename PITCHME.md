@@ -32,7 +32,7 @@ style: |
 <!-- _paginate: false -->
 <!-- _class: lead -->
 
-![bg left:40% 110%](./media/sustainable-personal-accounts.svg)
+![bg left:40% 110%](./media/sustainable-personal-accounts.drawio.png)
 
 ## __Sustainable Personal Accounts__
 
@@ -106,7 +106,7 @@ Heavy processing include: the update of guardrails, the update of corporate blue
 
 ---
 <!-- _paginate: false -->
-![bg contain](./media/reference-architecture.svg)
+![bg contain](./media/reference-architecture.drawio.png)
 
 ---
 <!-- _class: lead -->
