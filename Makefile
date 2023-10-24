@@ -69,6 +69,7 @@ setup-python:
 	@echo "Installing python virtual environment..."
 	python3 -m venv venv
 	. venv/bin/activate && python -m pip install --upgrade pip -r requirements.txt
+	cp -n fixtures/settings/settings.yaml ./settings.yaml || true
 
 setup-cdk:
 	@echo "Installing CDK and related NPM modules..."
@@ -77,8 +78,6 @@ setup-cdk:
 
 bootstrap-cdk:
 	@echo "Bootstrapping CDK..."
-	mkdir -p lambdas.out
-	cp -n fixtures/settings/settings.yaml ./settings.yaml || true
 	. venv/bin/activate && cdk bootstrap ${AWS_CURRENT_ACCOUNT}/${AWS_DEFAULT_REGION}
 
 setup-marp:

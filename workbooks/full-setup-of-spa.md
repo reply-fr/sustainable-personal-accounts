@@ -346,21 +346,26 @@ $ cd sustainable-personal-accounts
 $ make setup
 ```
 
-You can duplicate the file `fixtures/settings/settings.yaml` to `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. In the context of Control Tower, this can be `AWSControlTowerExecution`. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
+You can edit the file `settings.yaml` and reflect parameters for your own deployment. You should mention under key `role_arn_to_manage_accounts` the ARN of the role created in top-level account for SPA. You should mention under key `role_name_to_manage_codebuild` the name of the role that SPA will assume to act within each account that it manages. In the context of Control Tower, this can be `AWSControlTowerExecution`. You should also have one entry under `organisational_units` for every OU that SPA is looking after.
 
 Note: if you get an error message related to python `bdist wheel` then ensure that your workstation has a full python environment. For example for Ubuntu and WSL, you may have to add the package `python-dev` to pass the `make setup` command.
 
 ## Step 11. Deploy SPA <a id="step-11"></a>
 
-To deploy SPA from your workstation you need permissions to act on the `Automation` account. This can be done with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS Identity Center (previously, SSO), and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
+To deploy SPA from your workstation you need permissions to act on the `Automation` account. This can be done with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings.
 
 ```shell
 $ export AWS_PROFILE=automation-sso
 $ aws sso login
 $ aws sts get-caller-identity
+```
+
+One you have authenticated to AWS, maybe with AWS Identity Center (previously, SSO), and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
+
+```shell
 $ make shell
-(venv) make bootstrap-cdk
-(venv) make deploy
+$ make bootstrap-cdk
+$ make deploy
 ```
 
 Note: the [bootstrap of CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) is required if you have not used CDK yet on the target AWS account and region. This is an idempotent command; it can be run multiple times without inconvenience.
