@@ -72,7 +72,7 @@ setup-python:
 
 setup-cdk:
 	@echo "Installing CDK and related NPM modules..."
-	npm install -g aws-cdk
+	npm install -g aws-cdk --force
 	cdk --version
 
 bootstrap-cdk:
