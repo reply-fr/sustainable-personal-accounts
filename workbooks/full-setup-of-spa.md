@@ -188,20 +188,24 @@ Following activities are related to this step:
 - Click on the `default` event bus, the one that will be used by SPA
 - Take note of the event bus ARN, something like `arn:aws:events:eu-west-1:123456789012:event-bus/default`
 - Click on the button `Manage permissions`
-- Do not copy paste the following, but insert a statement in the policy, using the event bus ARN and the Organization ID, similar to the following one:
+- If there is already a policy, do not copy paste the following, but insert a statement in the policy, using the event bus ARN and the Organization ID, similar to the following one:
 
 ```json
 {
-  "Sid": "allow_all_accounts_from_organization_to_put_events",
-  "Effect": "Allow",
-  "Principal": "*",
-  "Action": "events:PutEvents",
-  "Resource": "arn:aws:events:eu-west-1:123456789012:event-bus/default",
-  "Condition": {
-    "StringEquals": {
-      "aws:PrincipalOrgID": "o-l7ht176sac"
+  "Version": "2012-10-17",
+  "Statement": [{
+      "Sid": "allow_all_accounts_from_organization_to_put_events",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "events:PutEvents",
+      "Resource": "arn:aws:events:eu-west-1:123456789012:event-bus/default",
+      "Condition": {
+        "StringEquals": {
+          "aws:PrincipalOrgID": "o-l7ht176sac"
+        }
+      }
     }
-  }
+  ]
 }
 ```
 
@@ -256,11 +260,11 @@ Following activities are related to this step:
 - For the event pattern, select event source `AWS services`, `Organizations`, `All events`
 - The event pattern displayed on the right is looking like this:
 
-```json
-{
-  "source": ["aws.organizations"]
-}
-```
+    ```json
+    {
+      "source": ["aws.organizations"]
+    }
+    ```
 
 - Click on the button `Next`
 - For a target, select radio button `EventBridge event bus`
@@ -268,13 +272,13 @@ Following activities are related to this step:
 - Paste the ARN of the default event bus in the `Automation` that you noted previously, something like `arn:aws:events:eu-west-1:123456789012:event-bus/default`
 - Select the radio button `Create a new role for this specific resource`
 - Click on the button `Next`
-- Add a neww tag, e.g., key `domain` and value `SustainablePersonalAccount`
+- Add a new tag, e.g., key `domain` and value `SustainablePersonalAccount`
 - Click on the button `Next`
 - Review the setup then click on button `Create rule`
 
 ## Step 7. Forward console logins to the Automation account <a id="step-7"></a>
 
-In some setup of CloudTrail the console logins are emitted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region where IAM Identity Center (previously, SSO) has been deployed. This region can be found from the settings of this service. Therefore the need to create an Eventbridge rule in the top-level account and in the SSO region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
+In some setup of CloudTrail the console logins are emitted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region where IAM Identity Center (previously, SSO) has been deployed. This region can be found from the settings of this service. Therefore the need to create an EventBridge rule in the top-level account and in the SSO region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
 
 Following activities are related to this step:
 
@@ -297,14 +301,14 @@ Following activities are related to this step:
 - Skip the Sample event section
 - For the event pattern, use following JSON::
 
-```json
-{
-  "detail": {
-    "eventSource": ["signin.amazonaws.com"],
-    "eventName": ["ConsoleLogin"]
-  }
-}
-```
+    ```json
+    {
+      "detail": {
+        "eventSource": ["signin.amazonaws.com"],
+        "eventName": ["ConsoleLogin"]
+      }
+    }
+    ```
 
 - Click on the button `Next`
 - For a target, select radio button `EventBridge event bus`
@@ -332,10 +336,12 @@ The easiest way to create Organizational Units in the context of Control Tower i
 
 ## Step 10. Clone the SPA repository on your workstation and configure the software <a id="step-10"></a>
 
-With following commands you will get a copy of the software on your workstation, and you will install software dependencies such as CDK. The setup relies on python3 and on npm, so you need these installed beforehand.
+Next steps of the setup rely on Linux shell and `make` commands. These should work natively on macOS and on most Linux systems. If you are on Windows, then you are advised to use the [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install). If you need a trusted virtual computer, then you can create an [AWS Cloud9](https://aws.amazon.com/pm/cloud9/) environment and use the terminal window there.
+
+With following shell commands you will get a copy of the software on your workstation, and you will install software dependencies such as CDK. The setup relies on python3 and on npm, so you need these installed beforehand.
 
 ```shell
-$ git clone git@github.com:reply-fr/sustainable-personal-accounts.git
+$ git clone https://github.com/reply-fr/sustainable-personal-accounts.git
 $ cd sustainable-personal-accounts
 $ make setup
 ```
@@ -346,7 +352,7 @@ Note: if you get an error message related to python `bdist wheel` then ensure th
 
 ## Step 11. Deploy SPA <a id="step-11"></a>
 
-To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS SSO, and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
+To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS Identity Center (previously, SSO), and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
 
 ```shell
 $ export AWS_PROFILE=automation-sso
