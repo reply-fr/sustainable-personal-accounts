@@ -211,6 +211,22 @@ def test_set_from_invalid_yaml(toggles):
 
 @pytest.mark.integration_tests
 @pytest.mark.slow
+def test_set_from_minimum_yaml(toggles):
+    Configuration.set_from_yaml('fixtures/settings/minimum-settings.yaml', toggles=toggles)
+    assert toggles.automation_account_id == '123456789012'
+    assert toggles.automation_cockpit_markdown_text.strip() == '# Sustainable Personal Accounts Dashboard\nCurrently under active development (beta)'
+    assert toggles.automation_maintenance_window_expression == 'cron(0 18 ? * SAT *)'
+    assert toggles.automation_region == 'eu-west-1'
+    assert toggles.automation_role_arn_to_manage_accounts == 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+    assert toggles.automation_role_name_to_manage_codebuild == 'AWSControlTowerExecution'
+    assert toggles.environment_identifier == 'SpaDemo'
+    assert list(toggles.organizational_units.keys()) == []
+    assert toggles.worker_preparation_buildspec_template_file == 'fixtures/buildspec/prepare-account-from-git.yaml'
+    assert toggles.worker_purge_buildspec_template_file == 'fixtures/buildspec/purge_account_with_awsweeper_template.yaml'
+
+
+@pytest.mark.integration_tests
+@pytest.mark.slow
 def test_set_from_csv_files(toggles):
     Configuration.set_from_yaml('fixtures/settings/settings-with-csv-files.yaml', toggles=toggles)
     assert toggles.automation_account_id == '123456789012'

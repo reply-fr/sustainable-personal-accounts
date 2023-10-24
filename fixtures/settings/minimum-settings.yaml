@@ -1,0 +1,45 @@
+# prefix for cloud resources and cloud stack
+environment_identifier: SpaDemo
+
+# parameters for resources deployed in the automation account
+automation:
+
+  # the target account for the deployment of the solution
+  account_id: "123456789012"
+
+  # the target region for the deployment of the solution
+  region: "eu-west-1"
+
+  # this is displayed in the monitoring dashboard
+  cockpit_markdown_text: |
+    # Sustainable Personal Accounts Dashboard
+    Currently under active development (beta)
+
+  # this expression defines when accounts are purged and prepared
+  # Reference:
+  # - https://docs.aws.amazon.com/lambda/latest/dg/services-cloudwatchevents-expressions.html
+  #
+  maintenance_window_expression: "cron(0 18 ? * SAT *)"
+
+  # this role is assumed by Lambda functions either to list AWS accounts in the OU, or to tag AWS accounts
+  role_arn_to_manage_accounts: 'arn:aws:iam::222222222222:role/SpaAccountsManagementRole'
+
+  # this role is assumed by Lambda functions to create CodeBuild projects and to start them
+  role_name_to_manage_codebuild: 'AWSControlTowerExecution'
+
+# parameters for resources deployed in managed accounts
+worker:
+
+  # this is the buildspec template for the preparation of an account managed by SPA
+  #
+  preparation_buildspec_template_file: "fixtures/buildspec/prepare-account-from-git.yaml"
+
+  # this is the buildspec tempalte for the purge of an account managed by SPA
+  #
+  purge_buildspec_template_file: "fixtures/buildspec/purge_account_with_awsweeper_template.yaml"
+
+# these are organizational units where accounts are managed by the solution
+organizational_units: []
+
+# these are specific settings for individual accounts managed by the solution
+accounts: []
