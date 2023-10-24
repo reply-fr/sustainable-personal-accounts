@@ -55,10 +55,11 @@ class OnAlert(Construct):
                                     resources=[self.topic.topic_arn])
         self.topic.add_to_resource_policy(statement)
 
-        for recipient in toggles.features_with_email_subscriptions_on_alerts:
-            self.topic.add_subscription(EmailSubscription(recipient))
+        if toggles.features_with_email_subscriptions_on_alerts:
+            for recipient in toggles.features_with_email_subscriptions_on_alerts:
+                self.topic.add_subscription(EmailSubscription(recipient))
 
-        self.queue = Queue(self, "Queue", queue_name=self.QUEUE_NAME, visibility_timeout = Duration.seconds(900))
+        self.queue = Queue(self, "Queue", queue_name=self.QUEUE_NAME, visibility_timeout=Duration.seconds(900))
 
         statement = PolicyStatement(effect=Effect.ALLOW,
                                     actions=['sqs:SendMessage'],
