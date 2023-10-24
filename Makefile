@@ -133,16 +133,16 @@ lint-json:
 	venv/bin/python -m json.tool cdk.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 	venv/bin/python -m json.tool package.json >> /dev/null && exit 0 || echo "NOT valid JSON"; exit 1
 
-all-tests: venv/bin/activate
+all-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -ra --durations=0 tests/
 
-unit-tests: venv/bin/activate
+unit-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -m unit_tests -v tests/
 
-integration-tests: venv/bin/activate
+integration-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -m integration_tests -v tests/
 
-wip-tests: venv/bin/activate
+wip-tests: venv/bin/activate lambdas.out
 	venv/bin/python -m pytest -m wip -v tests/
 
 define BROWSER_PYSCRIPT
