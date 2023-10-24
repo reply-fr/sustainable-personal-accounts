@@ -41,7 +41,7 @@ setuptools.setup(
         "xlsxwriter"
     ],
 
-    python_requires=">=3.9",
+    python_requires=">=3.8",
 
     classifiers=[  # as per https://pypi.org/classifiers/
         "Development Status :: 3 - Beta",
@@ -59,6 +59,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.8",  # because of Cloud9
 
         "Topic :: Internet",
         "Topic :: Scientific/Engineering",

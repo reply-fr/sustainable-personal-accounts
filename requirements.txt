@@ -1,7 +1,7 @@
-aws-cdk-lib>=2.69.0
-boto3
-constructs>=10.0.0
-pyyaml
+aws-cdk-lib>=2.102.0
+boto3>=1.28.69
+constructs>=10.3.0
+pyyaml>=6.0.1
 bandit
 coverage
 flake8
@@ -10,7 +10,7 @@ mccabe
 mock
 moto[all]
 pygount
-pytest
+pytest>=7.4.2
 pytest-cov
 setuptools>=38.6.0
 -e .
