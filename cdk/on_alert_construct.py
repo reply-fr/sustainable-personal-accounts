@@ -19,6 +19,7 @@ import boto3
 import logging
 
 from constructs import Construct
+from aws_cdk import Duration
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
 from aws_cdk.aws_iam import AnyPrincipal, Effect, PolicyStatement, ServicePrincipal
@@ -57,7 +58,7 @@ class OnAlert(Construct):
         for recipient in toggles.features_with_email_subscriptions_on_alerts:
             self.topic.add_subscription(EmailSubscription(recipient))
 
-        self.queue = Queue(self, "Queue", queue_name=self.QUEUE_NAME)
+        self.queue = Queue(self, "Queue", queue_name=self.QUEUE_NAME, visibility_timeout = Duration.seconds(900))
 
         statement = PolicyStatement(effect=Effect.ALLOW,
                                     actions=['sqs:SendMessage'],
