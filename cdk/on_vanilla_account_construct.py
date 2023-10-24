@@ -47,8 +47,7 @@ class OnVanillaAccount(Construct):
              event_pattern=EventPattern(
                  source=['aws.organizations'],
                  detail=dict(
-                     eventName=['CreateAccount', 'MoveAccount'],
-                     requestParameters=dict(destinationParentId=list(toggles.organizational_units.keys())))),
+                     eventName=['CreateAccount', 'MoveAccount'])),
              targets=[LambdaFunction(function)])
 
         return function
