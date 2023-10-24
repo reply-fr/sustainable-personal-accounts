@@ -78,7 +78,9 @@ setup-cdk:
 
 bootstrap-cdk:
 	@echo "Bootstrapping CDK..."
+	mkdir -p lambdas.out
 	. venv/bin/activate && cdk bootstrap ${AWS_CURRENT_ACCOUNT}/${AWS_DEFAULT_REGION}
+	rm -rf lambdas.out
 
 setup-marp:
 	@echo "Installing MARP locally..."
