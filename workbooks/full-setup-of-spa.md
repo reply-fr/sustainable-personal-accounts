@@ -352,7 +352,7 @@ Note: if you get an error message related to python `bdist wheel` then ensure th
 
 ## Step 11. Deploy SPA <a id="step-11"></a>
 
-To deploy SPA from your workstation you need strong permissions on the `Automation` account. Usually I do this with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS Identity Center (previously, SSO), and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
+To deploy SPA from your workstation you need permissions to act on the `Automation` account. This can be done with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings. One you have authenticated to AWS, maybe with AWS Identity Center (previously, SSO), and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
 
 ```shell
 $ export AWS_PROFILE=automation-sso
@@ -362,6 +362,8 @@ $ make shell
 (venv) make bootstrap-cdk
 (venv) make deploy
 ```
+
+Note: the [bootstrap of CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) is required if you have not used CDK yet on the target AWS account and region. This is an idempotent command; it can be run multiple times without inconvenience.
 
 Note: if CDK complains about assumed role, then ensure that the environment variable `AWS_DEFAULT_REGION` is not contradicting with the region set in settings file. You can unset the variable `AWS_DEFAULT_REGION` to be sure.
 
@@ -375,7 +377,7 @@ Activities to on-board one account manually:
 - Then move to the AWS Console of the `Automation` account and check the log of the Lambda function `SpaOnAccountEvent`. You should get the full sequence of state changes over a couple of minutes: `CreatedAccount`, `AssignedAccount`, `PreparedAccount` then `ReleasedAccount`.
 - After this sequence, you can go to the AWS Console of the personal account and inspect the budget that has been set by SPA. In addition, you can also review the Codebuild project that has been executed by SPA during the preparation phase.
 
-Activities to on-board existing accounts:
+Activities to on-board existing accounts in managed Organizational Units:
 
 - Move to the AWS Console of the `Automation` account
 - Select the Lambda service
