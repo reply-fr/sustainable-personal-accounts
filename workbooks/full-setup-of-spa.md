@@ -21,6 +21,8 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 
 - You have credentials to access the AWS Console
 - You have received permissions to create a new AWS account
+- You have a computer to run shell commands, `make` commands and python code (>= 3.8)
+- If you are on Windows, you can install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft, or you can create a [Cloud9](https://aws.amazon.com/pm/cloud9/) environment on AWS
 
 ## Step 1. Create or use an AWS Organization <a id="step-1"></a>
 
