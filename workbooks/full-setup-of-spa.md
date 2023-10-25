@@ -354,7 +354,7 @@ Note: if you get an error message related to python `bdist wheel` then ensure th
 
 ## Step 11. Deploy SPA <a id="step-11"></a>
 
-To deploy SPA from your workstation you need permissions to act on the `Automation` account. This can be done with a local profile in `~/.aws/config` that provides me `AWSAdministratorAccess` to `Automation`. In the example below, the local profile is named `automation-sso` so feel free to use your own name and settings.
+To deploy SPA from your workstation you need permissions to act on the `Automation` account. This can be done with [a local profile in `~/.aws/config`](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html) that provides me `AWSAdministratorAccess` to `Automation` via Identity Center. In the example below, the local profile is named `automation-sso`. Feel free to use your own name and settings.
 
 ```shell
 $ export AWS_PROFILE=automation-sso
@@ -369,6 +369,8 @@ $ make shell
 $ make bootstrap-cdk
 $ make deploy
 ```
+
+Note: the `make shell` command ensures that you are using the local virtual python environment that was created during the setup.
 
 Note: the [bootstrap of CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) is required if you have not used CDK yet on the target AWS account and region. This is an idempotent command; it can be run multiple times without inconvenience.
 
