@@ -117,7 +117,6 @@ organizational_units:
       # passed to Codebuild project for the preparation of an account
       variables:
         BUDGET_NAME: DataTeamBudget
-        WITH_START_STOP_EC2_INSTANCES: enabled
 
     purge: # of expired accounts
 
@@ -148,6 +147,7 @@ organizational_units:
         ALERT_THRESHOLD: 90 # percentage of budget
         BUDGET_AMOUNT: 300 # USD
         BUDGET_NAME: DevelopmentTeamBudget
+        WITH_START_STOP_EC2_INSTANCES: enabled
 
 
     purge: # of expired accounts

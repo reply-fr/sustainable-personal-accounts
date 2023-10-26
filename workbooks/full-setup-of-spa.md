@@ -21,8 +21,9 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 
 - You have credentials to access the AWS Console
 - You have received permissions to create a new AWS account
-- You have a computer to run shell commands, `make` commands and python code (>= 3.8)
-- If you are on Windows, you can install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft, or you can create a [Cloud9](https://aws.amazon.com/pm/cloud9/) environment on AWS
+- You have a computer to run shell commands, `make` commands, Node.js and python code (>= 3.8)
+- If you need a convenient place to work, then consider a [Cloud9](https://aws.amazon.com/pm/cloud9/) environment in the AWS account where SPA is deployed
+- If you are on Windows, take the time for a full setup of [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft, or use a [Cloud9](https://aws.amazon.com/pm/cloud9/) environment on AWS
 
 ## Step 1. Create or use an AWS Organization <a id="step-1"></a>
 
@@ -338,9 +339,9 @@ The easiest way to create Organizational Units in the context of Control Tower i
 
 ## Step 10. Clone the SPA repository on your workstation and configure the software <a id="step-10"></a>
 
-Next steps of the setup rely on Linux shell and `make` commands. These should work natively on macOS and on most Linux systems. If you are on Windows, then you are advised to use the [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install). If you need a trusted virtual computer, then you can create an [AWS Cloud9](https://aws.amazon.com/pm/cloud9/) environment and use the terminal window there.
+Next steps of the setup rely on Linux shell, on `git`, on `make`, on Node.js and on python. If one of these items is missing on your workstation, then please consider to create an [AWS Cloud9](https://aws.amazon.com/pm/cloud9/) environment directly in the account where SPA will be deployed. This is the easiest way to go, and the recommended solution for manual actions on a SPA deployment. If you are on Windows, then setup a full [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-With following shell commands you will get a copy of the software on your workstation, and you will install software dependencies such as CDK. The setup relies on python3 and on npm, so you need these installed beforehand.
+With following shell commands you copy SPA on your workstation, and you install software dependencies such as CDK.
 
 ```shell
 $ git clone https://github.com/reply-fr/sustainable-personal-accounts.git
@@ -354,7 +355,9 @@ Note: if you get an error message related to python `bdist wheel` then ensure th
 
 ## Step 11. Deploy SPA <a id="step-11"></a>
 
-To deploy SPA from your workstation you need permissions to act on the `Automation` account. This can be done with [a local profile in `~/.aws/config`](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html) that provides me `AWSAdministratorAccess` to `Automation` via Identity Center. In the example below, the local profile is named `automation-sso`. Feel free to use your own name and settings.
+To deploy SPA from your workstation you need permissions to act on the `Automation` account.
+
+If you have created a Cloud9 environment in the `Automation` account then this is done automatically. In other cases, you have to configure [a local profile in `~/.aws/config`](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html) that provides `AWSAdministratorAccess` permissions to `Automation`. In the example below, the local profile named `automation-sso` is linked with Identity Center. Feel free to use your own name and settings.
 
 ```shell
 $ export AWS_PROFILE=automation-sso
@@ -362,10 +365,11 @@ $ aws sso login
 $ aws sts get-caller-identity
 ```
 
-One you have authenticated to AWS, maybe with AWS Identity Center (previously, SSO), and have appropriate AWS credentials set on your workstation, you can bootstrap CDK (if not done yet) and then you can deploy SPA:
+One you have been authenticated, implicitly (Cloud9) or explicitly (local computer), you can bootstrap CDK (if not done yet). Pass in variable `AWS_DEFAULT_REGION` the same region that what you put in `settings.yaml`. Then you can deploy SPA:
 
 ```shell
 $ make shell
+$ export AWS_DEFAULT_REGION=<deployment-region>
 $ make bootstrap-cdk
 $ make deploy
 ```
@@ -373,8 +377,6 @@ $ make deploy
 Note: the `make shell` command ensures that you are using the local virtual python environment that was created during the setup.
 
 Note: the [bootstrap of CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) is required if you have not used CDK yet on the target AWS account and region. This is an idempotent command; it can be run multiple times without inconvenience.
-
-Note: if CDK complains about assumed role, then ensure that the environment variable `AWS_DEFAULT_REGION` is not contradicting with the region set in settings file. You can unset the variable `AWS_DEFAULT_REGION` to be sure.
 
 ## Step 12. Inspect the solution <a id="step-12"></a>
 
@@ -400,6 +402,7 @@ If you have to go deeper in the inspection of your SPA system, use the [Inspect 
 
 ## Follow-up
 
+- Copy the `settings.yaml` file to a safe place, on a shared file system, on a S3 bucket or in git.
 - [Manage preparation tasks](./manage-preparation-tasks.md) with specific `buildspec` and related code
 - You can now [create new AWS accounts](./create-a-personal-account.md) and let SPA manage them automatically
 - You can also [on-board existing accounts](./reset-managed-accounts.md) by setting their states to VANILLA
