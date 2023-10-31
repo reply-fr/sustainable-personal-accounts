@@ -16,6 +16,8 @@ With this workbook you can forward consolidated alerts to a Microsoft Teams chan
 
 ## Step 1. Understand Microsoft Teams Incoming Webhooks <a id="step-1"></a>
 
+![ChatOps architecture](./medias/chatops_integration.drawio.svg)
+
 An Incoming Webhook lets external applications to share content in Microsoft Teams channels. The webhooks are used as tools to track and notify. The webhooks provide a unique URL, to send a JSON payload with a message in card format. Cards are user interface containers that include content and actions related to a single article. You can use cards in the following capabilities:
 
 - Bots
