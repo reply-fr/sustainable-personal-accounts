@@ -100,7 +100,7 @@ def _given_a_small_setup(environment='Spa'):
 
     context.sandbox_ou_name = 'Sandbox'
     context.sandbox_ou = create_organizational_unit(parent=context.root_id, name=context.sandbox_ou_name, session=session)
-    context.alice_account = create_account(name='alice', ou=context.sandbox_ou, session=session, tags={'account-state': 'released'})
+    context.alice_account = create_account(name='alice', ou=context.sandbox_ou, session=session, tags={'account-holder': 'nobody@nowhere.com', 'account-state': 'released'})
     context.bob_account = create_account(name='bob', ou=context.sandbox_ou, session=session, tags={'account-state': 'expired'})
 
     context.settings_sandbox_ou = {

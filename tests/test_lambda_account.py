@@ -190,7 +190,7 @@ def test_describe(given_a_small_setup):
     assert item.email == 'alice@example.com'
     assert item.name == 'alice'
     assert item.is_active
-    assert item.tags.get('account-holder') == 'alice@example.com'
+    assert item.tags.get('account-holder') == 'nobody@nowhere.com'
     assert item.tags.get('account-state') == 'released'
     assert item.unit == context.sandbox_ou
     item = Account.describe(id=context.bob_account)

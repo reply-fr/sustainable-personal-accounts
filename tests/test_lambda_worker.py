@@ -29,7 +29,7 @@ from types import SimpleNamespace
 
 from lambdas import Worker
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -53,10 +53,18 @@ def test_deploy_project(session):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="JustForTest",
                              TOPIC_ARN='arn:aws:test'))
 def test_get_preparation_variables():
-    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
     settings = dict(preparation=dict(variables=dict(BUDGET_AMOUNT='500.0')))
     event_bus_arn = 'arn:aws:bus'
     topic_arn = 'arn:aws:topic'
+    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234', tags={'account-holder': 'someone@example.com'})
+    variables = Worker.get_preparation_variables(details=details, settings=settings, event_bus_arn=event_bus_arn, topic_arn=topic_arn)
+    assert variables == {'BUDGET_AMOUNT': '500.0',
+                         'BUDGET_EMAIL': 'someone@example.com',
+                         'ENVIRONMENT_IDENTIFIER': 'JustForTest',
+                         'EVENT_BUS_ARN': 'arn:aws:bus',
+                         'TOPIC_ARN': 'arn:aws:topic'}
+
+    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234', tags={})
     variables = Worker.get_preparation_variables(details=details, settings=settings, event_bus_arn=event_bus_arn, topic_arn=topic_arn)
     assert variables == {'BUDGET_AMOUNT': '500.0',
                          'BUDGET_EMAIL': 'a@b.com',
@@ -98,7 +106,7 @@ def test_grant_publishing_from_budgets():
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AUTOMATION_ACCOUNT="123456789012"))
 def test_prepare(session):
-    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234')
+    details = SimpleNamespace(id='123456789012', email='a@b.com', unit='ou-1234', tags={})
     Worker.prepare(details=details, settings={}, buildspec='hello_world', event_bus_arn='arn:aws', topic_arn='arn:aws', session=session)
 
 

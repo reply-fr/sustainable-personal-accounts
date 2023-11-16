@@ -278,8 +278,9 @@ class Worker:
 
     @staticmethod
     def get_preparation_variables(details, settings, event_bus_arn, topic_arn) -> dict:
+        email = details.tags.get('account-holder') or details.email
         variables = dict(BUDGET_AMOUNT=200,
-                         BUDGET_EMAIL=details.email)
+                         BUDGET_EMAIL=email)
         variables['ENVIRONMENT_IDENTIFIER'] = os.environ.get('ENVIRONMENT_IDENTIFIER', 'Spa')
         variables['EVENT_BUS_ARN'] = event_bus_arn
         variables['TOPIC_ARN'] = topic_arn
