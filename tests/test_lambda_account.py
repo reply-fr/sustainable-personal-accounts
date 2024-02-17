@@ -27,7 +27,7 @@ from types import SimpleNamespace
 
 from lambdas import Account, State
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture

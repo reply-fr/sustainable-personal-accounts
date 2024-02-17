@@ -18,8 +18,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 from constructs import Construct
 from aws_cdk.aws_events import EventPattern, Rule
 from aws_cdk.aws_events_targets import LambdaFunction
-from aws_cdk.aws_iam import Effect, ManagedPolicy, PolicyStatement
+from aws_cdk.aws_iam import AnyPrincipal, Effect, ManagedPolicy, PolicyStatement
 from aws_cdk.aws_lambda import Function, FunctionUrlAuthType
+from aws_cdk.aws_sns import Topic
+from aws_cdk.aws_sns_subscriptions import EmailSubscription
 from aws_cdk.aws_ssmincidents import CfnResponsePlan
 
 from cdk import LoggingFunction
@@ -28,6 +30,8 @@ from .parameters_construct import Parameters
 
 
 class OnException(Construct):
+
+    TOPIC_DISPLAY_NAME = "Topic for alerts identified in managed accounts"
 
     def __init__(self, scope: Construct, id: str, parameters={}) -> None:
         super().__init__(scope, id)
@@ -38,9 +42,28 @@ class OnException(Construct):
 
         self.web_endpoints = {}
 
+        self.TOPIC_NAME = "{}Alerts".format(toggles.environment_identifier)
+
+        self.topic = Topic(
+            self, "Topic",
+            display_name=self.TOPIC_DISPLAY_NAME,
+            topic_name=self.TOPIC_NAME)
+
+        statement = PolicyStatement(effect=Effect.ALLOW,
+                                    actions=['sns:Publish'],
+                                    conditions=dict(StringEquals={"aws:PrincipalOrgID": toggles.aws_organization_id}),
+                                    principals=[AnyPrincipal()],
+                                    resources=[self.topic.topic_arn])
+        self.topic.add_to_resource_policy(statement)
+
+        if toggles.features_with_email_subscriptions_on_alerts:
+            for recipient in toggles.features_with_email_subscriptions_on_alerts:
+                self.topic.add_subscription(EmailSubscription(recipient))
+
         parameters['environment']['RESPONSE_PLAN_ARN'] = self.plan.attr_arn
         parameters['environment']['REPORTING_EXCEPTIONS_PREFIX'] = toggles.reporting_exceptions_prefix
         parameters['environment']['WEB_ENDPOINTS_PARAMETER'] = Parameters.get_parameter(toggles.environment_identifier, Parameters.WEB_ENDPOINTS_PARAMETER)
+        parameters['environment']['TOPIC_ARN'] = self.topic.topic_arn
         parameters['reserved_concurrent_executions'] = 1  # throttle above 10 RPS
 
         self.functions = [self.on_exception(parameters=parameters),

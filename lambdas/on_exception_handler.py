@@ -40,6 +40,8 @@ SUMMARY_TEMPLATE = "# {}\n\n{}"  # markdown is supported
 def handle_exception(event, context=None, session=None):
     logging.debug(event)
     input = Events.decode_spa_event(event)
+    notification = build_notification(input)
+    publish_notification(notification=notification, session=session)
     incident_arn = start_incident(label=input.label, payload=input.payload, session=session)
     tag_incident(incident_arn=incident_arn, payload=input.payload, session=session)
     attach_cost_report(incident_arn=incident_arn, payload=input.payload, session=session)
@@ -112,6 +114,31 @@ def attach_cost_report(incident_arn, payload, session=None, day=None):
         logging.debug("Done")
     except botocore.exceptions.ClientError as exception:
         logging.error(exception)
+
+
+def build_notification(input):
+    title = input.payload.get('title', '*no title*')
+    message = input.payload.get('message', '*no message*')
+    return dict(Message=message, Subject=title)
+
+
+def publish_notification(notification, session=None):
+    logging.info(f"Publishing notification: {notification}")
+    session = session or Session()
+    publish_notification_on_microsoft_teams(notification=notification, session=session)
+    publish_notification_on_sns(notification=notification, session=session)
+
+
+def publish_notification_on_microsoft_teams(notification, session=None):
+    Events.emit_spa_event("MessageToMicrosoftTeams", payload=notification, session=session)
+
+
+def publish_notification_on_sns(notification, session=None):
+    topic_arn = os.environ.get('TOPIC_ARN', None)
+    if topic_arn:
+        logging.info(f"Publishing on SNS: {topic_arn}")
+        session = session or Session()
+        session.client('sns').publish(TopicArn=topic_arn, **notification)
 
 
 def get_report_path(label, day=None):

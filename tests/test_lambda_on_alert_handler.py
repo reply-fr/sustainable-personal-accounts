@@ -27,9 +27,9 @@ import pytest
 from types import SimpleNamespace
 
 from lambdas import Account, Events
-from lambdas.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_sqs_event, publish_notification_on_microsoft_teams
+from lambdas.on_alert_handler import get_codebuild_message, handle_codebuild_event, handle_sqs_event
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.mark.integration_tests
@@ -80,24 +80,6 @@ def test_handle_sqs_event(account_describe_mock):
     with patch.dict(os.environ, dict(TOPIC_ARN=topic['TopicArn'])):
         result = handle_sqs_event(event=queued_message, context=None, session=account_describe_mock)
         assert result == '[OK]'
-    account_describe_mock.client.return_value.publish.assert_called_with(TopicArn='arn:aws:sns:eu-west-1:123456789012:test-topic',
-                                                                         Message="You will find below a copy of the alert that has been sent automatically to the holder of account 'account-three (111111111111)':\n\n----\n\nsome message",
-                                                                         Subject="Budget alert on account 'account-three (111111111111)'")
-
-
-@pytest.mark.unit_tests
-@patch.dict(os.environ, dict(MICROSOFT_WEBHOOK_ON_ALERTS='https://webhook/'))
-@mock_aws
-def test_publish_notification_on_microsoft_teams():
-    mock = Mock()
-    notification = dict(Message='hello world',
-                        Subject='some subject')
-    publish_notification_on_microsoft_teams(notification=notification, session=mock)
-    mock.client.assert_called_with('events')
-    mock.client.return_value.put_events.assert_called_with(Entries=[{
-        'Detail': '{"ContentType": "application/json", "Environment": "Spa", "Payload": {"Message": "hello world", "Subject": "some subject"}}',
-        'DetailType': 'MessageToMicrosoftTeams',
-        'Source': 'SustainablePersonalAccounts'}])
 
 
 @pytest.mark.unit_tests

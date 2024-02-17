@@ -15,6 +15,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
+import boto3
 import builtins
 from csv import DictReader
 import json
@@ -108,6 +109,7 @@ class Configuration:
         else:
             cls.set_from_yaml(stream=toggles.settings_file, toggles=toggles)
         cls.set_aws_environment(toggles=toggles)
+        cls.set_aws_organization(toggles=toggles)
         toggles.state_tag = toggles.features_with_tag_prefix + 'state'  # for EventBridge rule
 
     @staticmethod
@@ -383,3 +385,12 @@ class Configuration:
 
         logging.info(f"Targeting AWS account '{toggles.automation_account_id}' in region '{toggles.automation_region}'")
         toggles.aws_environment = Environment(account=toggles.automation_account_id, region=toggles.automation_region)
+
+    @staticmethod
+    def set_aws_organization(toggles):
+        try:
+            details = boto3.client('organizations').describe_organization()
+            toggles.aws_organization_id = details['Organization']['Id']
+        except Exception as error:
+            logging.exception(error)
+            toggles.aws_organization_id = 'o-is-unknown'

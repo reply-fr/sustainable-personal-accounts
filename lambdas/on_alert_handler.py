@@ -15,10 +15,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from boto3.session import Session
 import json
 import logging
-import os
 
 from logger import setup_logging, trap_exception
 setup_logging()
@@ -75,39 +73,16 @@ def handle_sqs_record(record, session=None):
         body = json.loads(record['body'])
         account_id = body['TopicArn'].split(':')[4]
         label = Account.get_account_label(account=account_id, session=session)
-        title = get_subject(account=label)
-        message = get_notification_message(account=label, message=body['Message'])
-        publish_notification(notification=dict(Message=message, Subject=title), session=session)
         Events.emit_exception_event(label='BudgetAlertException',
                                     payload=dict(account=account_id,
                                                  message=get_notification_message(account=label, message=body['Message']),
                                                  title=get_subject(account=label)),
                                     session=session)
     except json.decoder.JSONDecodeError:
-        publish_notification(notification=dict(Message=message, Subject="Alert message"), session=session)
         Events.emit_spa_event(label='GenericException',
                               payload=dict(message=record['body'],
                                            title="Exception received over SQS"),
                               session=session)
-
-
-def publish_notification(notification, session=None):
-    logging.info(f"Publishing notification: {notification}")
-    session = session or Session()
-    publish_notification_on_microsoft_teams(notification=notification, session=session)
-    publish_notification_on_sns(notification=notification, session=session)
-
-
-def publish_notification_on_microsoft_teams(notification, session=None):
-    Events.emit_spa_event("MessageToMicrosoftTeams", payload=notification, session=session)
-
-
-def publish_notification_on_sns(notification, session=None):
-    topic_arn = os.environ.get('TOPIC_ARN', None)
-    if topic_arn:
-        logging.info(f"Publishing on SNS: {topic_arn}")
-        session = session or Session()
-        session.client('sns').publish(TopicArn=topic_arn, **notification)
 
 
 def get_codebuild_message(account, project, status) -> str:

@@ -28,9 +28,9 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_exception_handler import handle_exception, handle_attachment_request, download_attachment
+from lambdas.on_exception_handler import handle_exception, handle_attachment_request, download_attachment, publish_notification_on_microsoft_teams
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 sample_payload = json.dumps(
@@ -78,6 +78,21 @@ def test_handle_exception_on_unexpected_environment():
                                                          environment="alien*environment"))
     mock = Mock()
     assert handle_exception(event=event, context=None, session=mock) == "[DEBUG] Unexpected environment 'alien*environment'"
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(MICROSOFT_WEBHOOK_ON_ALERTS='https://webhook/'))
+@mock_aws
+def test_publish_notification_on_microsoft_teams():
+    mock = Mock()
+    notification = dict(Message='hello world',
+                        Subject='some subject')
+    publish_notification_on_microsoft_teams(notification=notification, session=mock)
+    mock.client.assert_called_with('events')
+    mock.client.return_value.put_events.assert_called_with(Entries=[{
+        'Detail': '{"ContentType": "application/json", "Environment": "Spa", "Payload": {"Message": "hello world", "Subject": "some subject"}}',
+        'DetailType': 'MessageToMicrosoftTeams',
+        'Source': 'SustainablePersonalAccounts'}])
 
 
 @pytest.mark.integration_tests
