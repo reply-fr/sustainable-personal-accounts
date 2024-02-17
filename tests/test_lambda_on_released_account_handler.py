@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import Mock, patch
-from moto import mock_events
+from moto import mock_aws
 import os
 import pytest
 
@@ -84,7 +84,7 @@ def session():
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              PREPARATION_BUILDSPEC_PARAMETER="parameter-name",
                              VERBOSITY='DEBUG'))
-@mock_events
+@mock_aws
 def test_handle_tag_event(session):
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",
                                             context=dict(account="123456789012",

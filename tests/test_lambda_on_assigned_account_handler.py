@@ -22,7 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 from boto3.session import Session
 import json
 from unittest.mock import Mock, patch
-from moto import mock_events, mock_ssm
+from moto import mock_aws
 import os
 import pytest
 from types import SimpleNamespace
@@ -96,8 +96,7 @@ def given_some_context(prefix='/Fake/'):
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              TOPIC_ARN='arn:aws',
                              VERBOSITY='DEBUG'))
-@mock_events
-@mock_ssm
+@mock_aws
 def test_handle_tag_event(monkeypatch):
     context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
 
@@ -145,7 +144,7 @@ def test_handle_tag_event(monkeypatch):
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='INFO'))
-@mock_ssm
+@mock_aws
 def test_handle_tag_event_on_unexpected_state():
     context = given_some_context(prefix="/{}/".format(os.environ['ENVIRONMENT_IDENTIFIER']))
 

@@ -19,7 +19,7 @@ import logging
 logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
-from moto import mock_organizations, mock_ssm
+from moto import mock_aws
 import pytest
 
 from lambdas.on_maintenance_window_handler import handle_schedule_event
@@ -29,8 +29,7 @@ from account import Account  # accessible from monkeypatch
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_schedule_event(given_a_small_setup, monkeypatch):
     context = given_a_small_setup()
 

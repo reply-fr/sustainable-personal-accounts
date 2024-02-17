@@ -23,7 +23,7 @@ import boto3
 from datetime import date
 import json
 from unittest.mock import patch
-from moto import mock_cloudwatch, mock_dynamodb, mock_s3
+from moto import mock_aws
 import os
 import pytest
 
@@ -50,8 +50,7 @@ sample_payload = json.dumps(
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_dynamodb
-@mock_cloudwatch
+@mock_aws
 def test_store_end_report(given_an_empty_table):
     given_an_empty_table()
 
@@ -70,8 +69,7 @@ def test_store_end_report(given_an_empty_table):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_dynamodb
-@mock_cloudwatch
+@mock_aws
 def test_handle_record(given_an_empty_table):
     given_an_empty_table()
 
@@ -100,8 +98,7 @@ def test_handle_record_on_unexpected_environment():
                              REPORTS_BUCKET_NAME="my_bucket",
                              REPORTING_ACTIVITIES_PREFIX="my_activities",
                              VERBOSITY='INFO'))
-@mock_dynamodb
-@mock_s3
+@mock_aws
 def test_handle_monthly_report(given_a_table_of_activities):
     given_a_table_of_activities()
     s3 = boto3.client("s3")
@@ -121,8 +118,7 @@ def test_handle_monthly_report(given_a_table_of_activities):
                              REPORTS_BUCKET_NAME="my_bucket",
                              REPORTING_ACTIVITIES_PREFIX="my_activities",
                              VERBOSITY='INFO'))
-@mock_dynamodb
-@mock_s3
+@mock_aws
 def test_handle_ongoing_report(given_a_table_of_activities):
     given_a_table_of_activities()
     s3 = boto3.client("s3")
@@ -140,7 +136,7 @@ def test_handle_ongoing_report(given_a_table_of_activities):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_ACTIVITIES_DATASTORE="my_table",
                              VERBOSITY='INFO'))
-@mock_dynamodb
+@mock_aws
 def test_build_reports(given_a_table_of_activities):
     given_a_table_of_activities()
     records = KeyValueStore(table_name="my_table").scan()

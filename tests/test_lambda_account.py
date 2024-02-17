@@ -20,14 +20,14 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import Mock, patch
-from moto import mock_organizations, mock_ssm
+from moto import mock_aws
 import os
 import pytest
 from types import SimpleNamespace
 
 from lambdas import Account, State
 
-# pytestmark = pytest.mark.wip
+pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
@@ -79,8 +79,7 @@ def test_get_tag_key():
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_enumerate_all_accounts(given_a_small_setup):
     context = given_a_small_setup()
     ids = {x['Id'] for x in Account.enumerate_all_accounts()}
@@ -88,8 +87,7 @@ def test_enumerate_all_accounts(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_scan_all_accounts(given_a_small_setup):
     context = given_a_small_setup()
     ids = set(Account.scan_all_accounts().keys())
@@ -163,16 +161,14 @@ def test_set_state_raises_exception():
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_untag(given_a_small_setup):
     context = given_a_small_setup()
     Account.untag(account=context.alice_account, keys=['account-holder'])
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_list(given_a_small_setup):
     context = given_a_small_setup()
     result = {x for x in Account.list(parent=context.committed_ou)}
@@ -180,8 +176,7 @@ def test_list(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_describe(given_a_small_setup):
     context = given_a_small_setup()
     item = Account.describe(id=context.alice_account)
@@ -205,8 +200,7 @@ def test_describe(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_name(given_a_small_setup):
     context = given_a_small_setup()
     assert Account.get_name(account=context.root_account) == "Example Corporation"
@@ -214,8 +208,7 @@ def test_get_name(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_organizational_unit(given_a_small_setup):
     context = given_a_small_setup()
     assert Account.get_organizational_unit(account=context.root_account).startswith('r-')
@@ -223,8 +216,7 @@ def test_get_organizational_unit(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_organizational_unit_name(given_a_small_setup):
     context = given_a_small_setup()
     assert Account.get_organizational_unit_name(account=context.root_account) == 'Root'

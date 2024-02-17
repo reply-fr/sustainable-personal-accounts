@@ -22,7 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 import boto3
 from datetime import date
 from unittest.mock import patch
-from moto import mock_cloudwatch, mock_dynamodb, mock_events, mock_organizations, mock_s3, mock_ssm
+from moto import mock_aws
 import os
 import pytest
 
@@ -42,9 +42,7 @@ from lambdas.key_value_store import KeyValueStore
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_dynamodb
-@mock_cloudwatch
-@mock_organizations
+@mock_aws
 def test_handle_account_event(given_an_empty_table):
     given_an_empty_table()
 
@@ -67,9 +65,7 @@ def test_handle_account_event(given_an_empty_table):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_cloudwatch
-@mock_dynamodb
-@mock_organizations
+@mock_aws
 def test_handle_preparation_report_event(given_an_empty_table):
     given_an_empty_table()
 
@@ -85,9 +81,7 @@ def test_handle_preparation_report_event(given_an_empty_table):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_cloudwatch
-@mock_dynamodb
-@mock_organizations
+@mock_aws
 def test_handle_purge_report_event(given_an_empty_table):
     given_an_empty_table()
 
@@ -113,9 +107,7 @@ def test_handle_account_event_on_unexpected_environment():
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-@mock_events
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_console_login_event_for_account_root(given_a_small_setup):
     context = given_a_small_setup(environment="envt1")
     event = Events.load_event_from_template(template="fixtures/events/signin-console-login-for-account-root-template.json",
@@ -127,10 +119,7 @@ def test_handle_console_login_event_for_account_root(given_a_small_setup):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='INFO'))
-@mock_dynamodb
-@mock_events
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_console_login_event_for_assumed_role(given_a_small_setup, given_an_empty_table):
     context = given_a_small_setup(environment='envt1')
     given_an_empty_table()
@@ -164,9 +153,7 @@ def test_update_shadow_on_console_login():
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-@mock_events
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_console_login_event_for_iam_user(given_a_small_setup):
     context = given_a_small_setup(environment='envt1')
 
@@ -192,9 +179,7 @@ def test_handle_console_login_event_for_unknown_identity_type():
                              REPORTS_BUCKET_NAME="my_bucket",
                              REPORTING_INVENTORIES_PREFIX="my_inventories",
                              VERBOSITY='INFO'))
-@mock_dynamodb
-@mock_organizations
-@mock_s3
+@mock_aws
 def test_handle_report(given_a_table_of_shadows):
     given_a_table_of_shadows()
     s3 = boto3.client("s3")
@@ -220,8 +205,7 @@ def test_handle_report(given_a_table_of_shadows):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_SHADOWS_DATASTORE="my_table",
                              VERBOSITY='INFO'))
-@mock_dynamodb
-@mock_organizations
+@mock_aws
 def test_build_report(given_a_table_of_shadows):
     given_a_table_of_shadows()
     records = KeyValueStore(table_name="my_table").scan()

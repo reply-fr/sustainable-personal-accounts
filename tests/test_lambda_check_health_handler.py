@@ -20,7 +20,7 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import os
-from moto import mock_organizations, mock_ssm
+from moto import mock_aws
 import pytest
 from unittest.mock import patch
 
@@ -31,8 +31,7 @@ from lambdas.check_health_handler import handle_event
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(VERBOSITY='DEBUG'))
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_event(given_a_small_setup):
     given_a_small_setup()
     assert handle_event(event=None, context=None) == '[OK]'

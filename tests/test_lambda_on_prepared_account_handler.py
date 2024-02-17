@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import Mock, patch
-from moto import mock_events
+from moto import mock_aws
 import os
 import pytest
 
@@ -77,7 +77,7 @@ def session():
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
                              VERBOSITY='DEBUG'))
-@mock_events
+@mock_aws
 def test_handle_codebuild_event(session):
     event = Events.load_event_from_template(template="fixtures/events/codebuild-template.json",
                                             context=dict(account="123456789012",
@@ -118,7 +118,7 @@ def test_handle_codebuild_event_on_unexpected_status(session):
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
-@mock_events
+@mock_aws
 def test_handle_account(session):
     result = handle_account('123456789012', session=session)
     assert result['Source'] == 'SustainablePersonalAccounts'

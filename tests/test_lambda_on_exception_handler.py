@@ -23,7 +23,7 @@ from base64 import b64encode
 import boto3
 import json
 from unittest.mock import Mock, patch
-from moto import mock_organizations, mock_s3, mock_ssm, mock_sts
+from moto import mock_aws
 import os
 import pytest
 
@@ -45,10 +45,7 @@ sample_payload = json.dumps(
                              RESPONSE_PLAN_ARN="arn:plan",
                              VERBOSITY='DEBUG',
                              WEB_ENDPOINTS_PARAMETER="my_endpoints"))
-@mock_organizations
-@mock_s3
-@mock_ssm
-@mock_sts
+@mock_aws
 def test_handle_exception():
 
     s3 = boto3.client("s3")
@@ -87,7 +84,7 @@ def test_handle_exception_on_unexpected_environment():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              REPORTING_EXCEPTIONS_PREFIX="exceptions",
                              REPORTS_BUCKET_NAME="my_bucket"))
-@mock_s3
+@mock_aws
 def test_handle_attachment_request():
 
     s3 = boto3.client("s3")
@@ -108,7 +105,7 @@ def test_handle_attachment_request():
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              REPORTING_EXCEPTIONS_PREFIX="exceptions",
                              REPORTS_BUCKET_NAME="my_bucket"))
-@mock_s3
+@mock_aws
 def test_download_attachment():
 
     s3 = boto3.client("s3")

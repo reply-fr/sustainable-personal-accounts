@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import io
 from unittest.mock import patch
-from moto import mock_cloudwatch, mock_dynamodb, mock_events, mock_organizations
+from moto import mock_aws
 import os
 from cProfile import Profile
 from pstats import Stats
@@ -37,9 +37,7 @@ from lambdas.on_transaction_metering_handler import handle_account_event, handle
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_cloudwatch
-@mock_dynamodb
-@mock_organizations
+@mock_aws
 def test_handle_account_event_for_maintenance_transaction(given_an_empty_table):
     given_an_empty_table()
 
@@ -72,9 +70,7 @@ def test_handle_account_event_for_maintenance_transaction(given_an_empty_table):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='DEBUG'))
-@mock_cloudwatch
-@mock_dynamodb
-@mock_organizations
+@mock_aws
 def test_handle_account_event_for_on_boarding_transaction(given_an_empty_table):
     given_an_empty_table()
 
@@ -105,10 +101,7 @@ def test_handle_account_event_for_on_boarding_transaction(given_an_empty_table):
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              METERING_TRANSACTIONS_DATASTORE="my_table",
                              VERBOSITY='INFO'))
-@mock_cloudwatch
-@mock_dynamodb
-@mock_events
-@mock_organizations
+@mock_aws
 def test_handle_account_event(given_an_empty_table):
     given_an_empty_table()
 
@@ -134,7 +127,7 @@ def test_handle_account_event_on_unexpected_environment():
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-@mock_events
+@mock_aws
 def test_handle_stream_event_on_expired_transaction():
     event = Events.load_event_from_template(template="fixtures/events/dynamodb-expiration-event-template.json", context={})
     assert handle_stream_event(event=event) == "[OK]"
@@ -143,7 +136,7 @@ def test_handle_stream_event_on_expired_transaction():
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='INFO'))
-@mock_events
+@mock_aws
 def test_handle_stream_event_on_malformed_expired_transaction():
 
     def do_not_call_me(label, payload):

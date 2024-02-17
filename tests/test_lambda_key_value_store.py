@@ -16,7 +16,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import boto3
-from moto import mock_dynamodb
+from moto import mock_aws
 import pytest
 
 from lambdas import KeyValueStore
@@ -25,7 +25,7 @@ from lambdas import KeyValueStore
 
 
 @pytest.mark.unit_tests
-@mock_dynamodb
+@mock_aws
 def test_key_value_store(given_an_empty_table):
     given_an_empty_table()
 
@@ -56,7 +56,7 @@ def test_key_value_store(given_an_empty_table):
 
 
 @pytest.mark.unit_tests
-@mock_dynamodb
+@mock_aws
 def test_enumerate(given_an_empty_table):
     given_an_empty_table()
 
@@ -77,7 +77,7 @@ def test_enumerate(given_an_empty_table):
 
 
 @pytest.mark.unit_tests
-@mock_dynamodb
+@mock_aws
 def test_scan(given_an_empty_table):
     given_an_empty_table()
 
@@ -94,7 +94,7 @@ def test_scan(given_an_empty_table):
 
 
 @pytest.mark.unit_tests
-@mock_dynamodb
+@mock_aws
 def test_scan_from_fixture(given_a_table_of_shadows):
     count = given_a_table_of_shadows()
     store = KeyValueStore(table_name='my_table')

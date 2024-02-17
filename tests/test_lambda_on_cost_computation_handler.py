@@ -23,7 +23,7 @@ logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 import boto3
 from datetime import date
 from unittest.mock import Mock, patch
-from moto import mock_s3, mock_ses
+from moto import mock_aws
 import os
 import pytest
 
@@ -42,7 +42,7 @@ from lambdas.on_cost_computation_handler import (build_charge_reports_per_cost_c
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
                              REPORTS_BUCKET_NAME="my_bucket",
                              COST_EXTRA_CURRENCIES="EUR,ZYX"))
-@mock_s3
+@mock_aws
 def test_build_charge_reports_per_cost_center(sample_chunk_monthly_charges_per_account, sample_accounts):
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
@@ -57,7 +57,7 @@ def test_build_charge_reports_per_cost_center(sample_chunk_monthly_charges_per_a
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
                              REPORTS_BUCKET_NAME="my_bucket"))
-@mock_s3
+@mock_aws
 def test_build_service_reports_per_cost_center(sample_chunk_monthly_services_per_account, sample_accounts):
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",
@@ -73,8 +73,7 @@ def test_build_service_reports_per_cost_center(sample_chunk_monthly_services_per
 @patch.dict(os.environ, dict(COST_EMAIL_RECIPIENTS='alice@example.com, bob@example.com',
                              ORIGIN_EMAIL_RECIPIENT='costs@example.com',
                              REPORTING_COSTS_PREFIX="costs"))
-@mock_s3
-@mock_ses
+@mock_aws
 def test_email_reports():
     day = date(2023, 3, 31)
     path = get_report_path(cost_center='Summary', label='services', day=day, suffix='test')
@@ -132,7 +131,7 @@ def test_get_report_path():
 @patch.dict(os.environ, dict(COST_EMAIL_RECIPIENTS='alice@example.com, bob@example.com',
                              ORIGIN_EMAIL_RECIPIENT='costs@example.com',
                              REPORTS_BUCKET_NAME="my_bucket"))
-@mock_s3
+@mock_aws
 def test_store_report():
     s3 = boto3.client("s3")
     s3.create_bucket(Bucket="my_bucket",

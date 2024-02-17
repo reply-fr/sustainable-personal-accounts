@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import json
 from unittest.mock import patch, Mock
-from moto import mock_events, mock_organizations, mock_ssm
+from moto import mock_aws
 import os
 import pytest
 
@@ -88,9 +88,7 @@ def valid_tags():
                              ENVIRONMENT_IDENTIFIER="envt1",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
-@mock_events
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_organization_event(valid_tags, given_a_small_setup):
     context = given_a_small_setup()
     event = Events.load_event_from_template(template="fixtures/events/move-account-template.json",
@@ -112,9 +110,7 @@ def test_handle_organization_event(valid_tags, given_a_small_setup):
                              ENVIRONMENT_IDENTIFIER="envt1",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
-@mock_events
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_handle_tag_event(valid_tags, given_a_small_setup):
     context = given_a_small_setup()
     event = Events.load_event_from_template(template="fixtures/events/tag-account-template.json",

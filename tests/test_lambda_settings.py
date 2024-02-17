@@ -20,7 +20,7 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 from unittest.mock import patch
-from moto import mock_organizations, mock_ssm
+from moto import mock_aws
 import os
 import pytest
 
@@ -30,8 +30,7 @@ from lambdas import Settings
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_enumerate_all_managed_accounts(given_a_small_setup):
     context = given_a_small_setup()
     accounts = {i for i in Settings.enumerate_all_managed_accounts()}
@@ -39,8 +38,7 @@ def test_enumerate_all_managed_accounts(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_enumerate_accounts(given_a_small_setup):
     context = given_a_small_setup()
     accounts = {i for i in Settings.enumerate_accounts()}
@@ -48,8 +46,7 @@ def test_enumerate_accounts(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_enumerate_organizational_units(given_a_small_setup):
     context = given_a_small_setup()
     accounts = {i for i in Settings.enumerate_organizational_units()}
@@ -77,8 +74,7 @@ def test_get_organizational_unit_parameter_name():
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_account_settings(given_a_small_setup):
     context = given_a_small_setup()
     settings = Settings.get_account_settings(identifier=context.crm_account)
@@ -86,8 +82,7 @@ def test_get_account_settings(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_organizational_unit_settings(given_a_small_setup):
     context = given_a_small_setup()
     settings = Settings.get_organizational_unit_settings(identifier=context.sandbox_ou)
@@ -95,8 +90,7 @@ def test_get_organizational_unit_settings(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_settings_for_account(given_a_small_setup):
     context = given_a_small_setup()
     settings = Settings.get_settings_for_account(identifier=context.alice_account)
@@ -104,8 +98,7 @@ def test_get_settings_for_account(given_a_small_setup):
 
 
 @pytest.mark.integration_tests
-@mock_organizations
-@mock_ssm
+@mock_aws
 def test_get_settings_for_account_for_alien_account(given_a_small_setup):
     given_a_small_setup()
     with pytest.raises(ValueError):

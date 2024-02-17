@@ -21,7 +21,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 
 import boto3
 from unittest.mock import Mock, patch
-from moto import mock_events, mock_sns
+from moto import mock_aws
 import os
 import pytest
 from types import SimpleNamespace
@@ -33,7 +33,7 @@ from lambdas.on_alert_handler import get_codebuild_message, handle_codebuild_eve
 
 
 @pytest.mark.integration_tests
-@mock_events
+@mock_aws
 def test_handle_codebuild_event(monkeypatch):
 
     def mock_account_describe(id, *args, **kwargs):
@@ -52,8 +52,7 @@ def test_handle_codebuild_event(monkeypatch):
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
-@mock_events
-@mock_sns
+@mock_aws
 def test_handle_sqs_event(account_describe_mock):
 
     queued_message = {
@@ -88,7 +87,7 @@ def test_handle_sqs_event(account_describe_mock):
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(MICROSOFT_WEBHOOK_ON_ALERTS='https://webhook/'))
-@mock_events
+@mock_aws
 def test_publish_notification_on_microsoft_teams():
     mock = Mock()
     notification = dict(Message='hello world',
@@ -109,8 +108,7 @@ def test_get_codebuild_message():
 
 """
 @pytest.mark.integration_tests
-@mock_sqs
-@mock_sns
+@mock_aws
 def test_high_number_of_topics_per_queue():
     ''' unique test to ensure that up to 10,000 topics can subscribe to the same queue '''
     queue_url = boto3.client('sqs').create_queue(QueueName='queue')['QueueUrl']

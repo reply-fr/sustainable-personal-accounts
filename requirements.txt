@@ -8,7 +8,7 @@ flake8
 gh2md
 mccabe
 mock
-moto[all]
+moto[all]>=5.0.0
 pygount
 pytest>=7.4.2
 pytest-cov

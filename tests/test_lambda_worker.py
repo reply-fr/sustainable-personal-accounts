@@ -22,7 +22,7 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 from boto3 import Session
 import json
 from unittest.mock import Mock, patch
-from moto import mock_sns
+from moto import mock_aws
 import os
 import pytest
 from types import SimpleNamespace
@@ -87,7 +87,7 @@ def test_get_purge_variables():
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
-@mock_sns
+@mock_aws
 def test_grant_publishing_from_budgets():
     session = Session()
     topic_arn = session.client('sns').create_topic(Name='test')['TopicArn']

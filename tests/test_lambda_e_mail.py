@@ -19,7 +19,7 @@ from base64 import b64decode
 import boto3
 import botocore
 from unittest.mock import ANY, Mock
-from moto import mock_s3, mock_ses
+from moto import mock_aws
 import pytest
 
 from lambdas import Email
@@ -73,7 +73,7 @@ def test_get_mime_message():
 
 
 @pytest.mark.integration_tests
-@mock_s3
+@mock_aws
 def test_get_object_as_mime_attachment():
 
     s3 = boto3.client("s3")
@@ -97,8 +97,7 @@ def test_get_object_as_mime_attachment():
 
 
 @pytest.mark.integration_tests
-@mock_s3
-@mock_ses
+@mock_aws
 def test_send_objects():
 
     s3 = boto3.client("s3")
@@ -148,7 +147,7 @@ def test_send_objects():
 
 
 @pytest.mark.integration_tests
-@mock_ses
+@mock_aws
 def test_send_text():
 
     ses = boto3.client('ses')
