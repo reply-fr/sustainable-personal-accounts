@@ -260,3 +260,7 @@ compute-monthly-cost-report:
                       --cli-binary-format raw-in-base64-out \
                       output.log
 	rm output.log
+
+cost-estimation:
+	cdk synth >cost-estimation.yaml
+	aws cloudformation estimate-template-cost --template-body file://cost-estimation.yaml
