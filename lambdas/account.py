@@ -202,7 +202,11 @@ class Account:
     @classmethod
     def get_organizational_unit_details(cls, account, session=None):
         session = session or get_organizations_session()
-        unit = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+        try:
+            unit = session.client('organizations').list_parents(ChildId=account)['Parents'][0]['Id']
+        except botocore.exceptions.ClientError:
+            logging.warning(f"Unable to find parents of account '{account}'")
+            return dict()
         if unit.startswith('r-'):
             return dict(Id=unit, Name='Root')
         cached = cls.ou_cache.get(unit)

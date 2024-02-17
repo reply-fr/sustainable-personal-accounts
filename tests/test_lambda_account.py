@@ -205,6 +205,9 @@ def test_get_name(given_a_small_setup):
     context = given_a_small_setup()
     assert Account.get_name(account=context.root_account) == "Example Corporation"
     assert Account.get_name(account=context.alice_account) == "alice"
+    assert Account.get_name(account='210987654321') == "Unknown"
+    assert Account.get_name(account='333333333333') == "Unknown"
+    assert Account.get_name(account='*unknown*') == "Unknown"
 
 
 @pytest.mark.integration_tests
@@ -221,6 +224,9 @@ def test_get_organizational_unit_name(given_a_small_setup):
     context = given_a_small_setup()
     assert Account.get_organizational_unit_name(account=context.root_account) == 'Root'
     assert Account.get_organizational_unit_name(account=context.alice_account) == context.sandbox_ou_name
+    assert Account.get_organizational_unit_name(account='210987654321') == "Unknown"
+    assert Account.get_organizational_unit_name(account='333333333333') == "Unknown"
+    assert Account.get_organizational_unit_name(account='*unknown*') == "Unknown"
 
 
 @pytest.mark.unit_tests
