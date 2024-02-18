@@ -39,7 +39,10 @@ SUMMARY_TEMPLATE = "# {}\n\n{}"  # markdown is supported
 @trap_exception
 def handle_exception(event, context=None, session=None):
     logging.debug(event)
-    input = Events.decode_spa_event(event)
+    try:
+        input = Events.decode_spa_event(event)
+    except KeyError:
+        input = Events.get_sample_decoded_spa_event()
     notification = build_notification(input)
     publish_notification(notification=notification, session=session)
     incident_arn = start_incident(label=input.label, payload=input.payload, session=session)

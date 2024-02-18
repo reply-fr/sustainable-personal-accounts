@@ -162,6 +162,15 @@ class Events:
 
         return decoded
 
+    @classmethod
+    def get_sample_decoded_spa_event(cls, detail_type=None, payload=None):
+        decoded = SimpleNamespace()
+        decoded.environment = cls.get_environment()
+        decoded.label = detail_type or 'GenericException'
+        decoded.content_type = cls.DEFAULT_CONTENT_TYPE
+        decoded.payload = payload or dict(title='an exception has occurred', message='this is a sample exception')
+        return decoded
+
     @staticmethod
     def decode_tag_account_event(event, match=None):
         decoded = SimpleNamespace()

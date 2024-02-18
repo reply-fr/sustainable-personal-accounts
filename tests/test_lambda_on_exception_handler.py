@@ -28,7 +28,13 @@ import os
 import pytest
 
 from lambdas import Events
-from lambdas.on_exception_handler import handle_exception, handle_attachment_request, download_attachment, publish_notification_on_microsoft_teams
+from lambdas.on_exception_handler import (handle_exception,
+                                          handle_attachment_request,
+                                          download_attachment,
+                                          get_report_path,
+                                          publish_notification_on_microsoft_teams,
+                                          publish_notification_on_sns,
+                                          store_report)
 
 pytestmark = pytest.mark.wip
 
@@ -67,6 +73,12 @@ def test_handle_exception():
         mock.client.return_value.get_cost_and_usage.return_value = dict(ResultsByTime=[])
         assert handle_exception(event=event, context=None, session=mock) == f"[OK] {label}"
 
+    event = {}
+    mock = Mock()
+    mock.client.return_value.start_incident.return_value = dict(incidentRecordArn="arn:incidents:123")
+    mock.client.return_value.get_cost_and_usage.return_value = dict(ResultsByTime=[])
+    assert handle_exception(event=event, context=None, session=mock) == "[OK] GenericException"
+
 
 @pytest.mark.unit_tests
 @patch.dict(os.environ, dict(ENVIRONMENT_IDENTIFIER="envt1",
@@ -93,6 +105,36 @@ def test_publish_notification_on_microsoft_teams():
         'Detail': '{"ContentType": "application/json", "Environment": "Spa", "Payload": {"Message": "hello world", "Subject": "some subject"}}',
         'DetailType': 'MessageToMicrosoftTeams',
         'Source': 'SustainablePersonalAccounts'}])
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(TOPIC_ARN='aws:topic'))
+@mock_aws
+def test_publish_notification_on_sns():
+    mock = Mock()
+    notification = dict(Message='hello world',
+                        Subject='some subject')
+    publish_notification_on_sns(notification=notification, session=mock)
+    mock.client.assert_called_with('sns')
+    mock.client.return_value.publish.assert_called_with(TopicArn='aws:topic', Message='hello world', Subject='some subject')
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(REPORTING_EXCEPTIONS_PREFIX='fake-prefix'))
+def test_get_report_path():
+    result = get_report_path(label='fake-label')
+    assert 'fake-prefix' in result
+    assert 'fake-label' in result
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(REPORTS_BUCKET_NAME="my_bucket"))
+@mock_aws
+def test_store_report():
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
+    store_report(path="path/hello.txt", report="hello world") == '[OK]'
 
 
 @pytest.mark.integration_tests
