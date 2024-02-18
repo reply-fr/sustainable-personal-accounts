@@ -109,7 +109,7 @@ class Costs:
     def _enumerate_monthly_costs_per_account_for_dimension(cls, dimension, label, filter=None, day=None, session=None):
         if dimension not in ['RECORD_TYPE', 'SERVICE', 'USAGE_TYPE']:
             raise ValueError("Invalid dimension, should be RECORD_TYPE or SERVICE")
-        logging.info(f"Fetching monthly information per account for dimension {dimension}")
+        logging.debug(f"Fetching monthly information per account for dimension {dimension}")
         label = label or dimension.lower()
         day = day or date.today()
         start = day.replace(day=1)                         # first day of this month is included
@@ -165,7 +165,6 @@ class Costs:
 
     @classmethod
     def _get_costs_per_cost_center(cls, map_function, accounts, day=None, session=None):
-        print(map_function)
         costs = {}
         for account, breakdown in map_function(day=day, session=session):
             logging.debug(f"Processing costs for account '{account}'")
@@ -232,7 +231,7 @@ class Costs:
 
     @classmethod
     def _build_breakdown_of_amounts_csv_report_for_cost_center_per_dimension(cls, cost_center, day, breakdown, dimension, label):
-        logging.info(f"Building CSV report: breakdown of services for cost center '{cost_center}'")
+        logging.info(f"Building CSV report: breakdown for cost center '{cost_center}'")
         buffer = io.StringIO()
         writer = DictWriter(buffer, fieldnames=['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Name', label, 'Amount (USD)'])
         writer.writeheader()
