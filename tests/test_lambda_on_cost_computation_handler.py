@@ -29,6 +29,7 @@ import pytest
 
 from lambdas.on_cost_computation_handler import (build_charge_reports_per_cost_center,
                                                  build_service_reports_per_cost_center,
+                                                 build_usage_reports_per_cost_center,
                                                  email_reports,
                                                  get_currency_rates,
                                                  get_json_from_url,
@@ -67,6 +68,21 @@ def test_build_service_reports_per_cost_center(sample_chunk_monthly_services_per
     mock = Mock()
     mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_services_per_account
     build_service_reports_per_cost_center(accounts=sample_accounts, day=day, session=mock)
+
+
+@pytest.mark.unit_tests
+@patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs",
+                             REPORTS_BUCKET_NAME="my_bucket"))
+@mock_aws
+def test_build_usage_reports_per_cost_center(sample_chunk_monthly_usages_per_account, sample_accounts):
+    s3 = boto3.client("s3")
+    s3.create_bucket(Bucket="my_bucket",
+                     CreateBucketConfiguration=dict(LocationConstraint='eu-west-3'))
+
+    day = date(2023, 3, 31)
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_usages_per_account
+    build_usage_reports_per_cost_center(accounts=sample_accounts, day=day, session=mock)
 
 
 @pytest.mark.unit_tests

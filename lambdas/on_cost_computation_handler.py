@@ -87,6 +87,8 @@ def build_monthly_reports(event=None, context=None, session=None):
     accounts = Account.scan_all_accounts()
 
     build_service_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
+    build_usage_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
+
     reports = build_charge_reports_per_cost_center(accounts=accounts, day=last_day_of_previous_month, session=session)
     logging.debug(reports)
     return last_day_of_previous_month, reports
@@ -136,6 +138,14 @@ def build_service_reports_per_cost_center(accounts, day, session):
                  path=get_report_path(cost_center='Summary', label='services', day=day))
     path = get_report_path(cost_center='Summary', label='services', day=day, suffix='xlsx')
     store_report(report=Costs.build_summary_of_services_excel_report(costs=services, day=day), path=path)
+
+
+def build_usage_reports_per_cost_center(accounts, day, session):
+    logging.info(f"Computing usage reports per cost center for month {day.isoformat()[:7]}")
+    usages = Costs.get_usages_per_cost_center(accounts=accounts, day=day, session=session)
+    for cost_center in usages.keys():
+        store_report(report=Costs.build_breakdown_of_usages_csv_report_for_cost_center(cost_center=cost_center, day=day, breakdown=usages[cost_center]),
+                     path=get_report_path(cost_center=cost_center, label='usages', day=day))
 
 
 def email_reports(day, objects):

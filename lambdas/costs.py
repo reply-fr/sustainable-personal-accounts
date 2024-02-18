@@ -28,6 +28,7 @@ from session import get_account_session, get_organizations_session
 
 class Costs:
 
+    # record types that are only visible to member accounts
     COSTLY_RECORDS = ['Usage', 'Upfront', 'Recurring', 'Support', 'Tax', 'Other']
 
     @classmethod
@@ -86,40 +87,30 @@ class Costs:
 
     @classmethod
     def enumerate_monthly_charges_per_account(cls, day=None, session=None):
-        logging.info("Fetching monthly cost and charges information per account")
-        day = day or date.today()
-        start = day.replace(day=1)                         # first day of this month is included
-        end = (start + timedelta(days=32)).replace(day=1)  # first day of next month is excluded
-        session = session or get_organizations_session()
-        costs = session.client('ce')
-        parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
-                          Granularity='MONTHLY',
-                          Metrics=['UnblendedCost'],
-                          GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
-                                   dict(Type='DIMENSION', Key='RECORD_TYPE')])
-        chunk = costs.get_cost_and_usage(**parameters)
-        logging.debug(chunk)
-        charges_per_account = {}
-        while chunk.get('ResultsByTime'):
-            for result in chunk['ResultsByTime']:
-                for group in result['Groups']:
-                    account = group['Keys'][0]
-                    charge = group['Keys'][1]
-                    amount = group['Metrics']['UnblendedCost']['Amount']
-                    cumulated = charges_per_account.get(account, [])
-                    cumulated.append(dict(account=account, charge=charge, amount=amount))
-                    charges_per_account[account] = cumulated
-            if chunk.get('NextPageToken'):
-                chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
-                logging.debug(chunk)
-            else:
-                break
-        for account, charges in charges_per_account.items():
-            yield account, charges
+        logging.info("Fetching monthly charges per account")
+        for account, breakdown in cls._enumerate_monthly_costs_per_account_for_dimension(dimension='RECORD_TYPE', label='charge', day=day, session=session):
+            yield account, breakdown
 
     @classmethod
     def enumerate_monthly_services_per_account(cls, day=None, session=None):
-        logging.info("Fetching monthly cost and service information per account")
+        logging.info("Fetching monthly service costs per account")
+        filter = dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS))  # same data as seen from member accounts
+        for account, breakdown in cls._enumerate_monthly_costs_per_account_for_dimension(dimension='SERVICE', label='service', filter=filter, day=day, session=session):
+            yield account, breakdown
+
+    @classmethod
+    def enumerate_monthly_usages_per_account(cls, day=None, session=None):
+        logging.info("Fetching monthly usage types per account")
+        filter = dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS))  # same data as seen from member accounts
+        for account, breakdown in cls._enumerate_monthly_costs_per_account_for_dimension(dimension='USAGE_TYPE', label='usage', filter=filter, day=day, session=session):
+            yield account, breakdown
+
+    @classmethod
+    def _enumerate_monthly_costs_per_account_for_dimension(cls, dimension, label, filter=None, day=None, session=None):
+        if dimension not in ['RECORD_TYPE', 'SERVICE', 'USAGE_TYPE']:
+            raise ValueError("Invalid dimension, should be RECORD_TYPE or SERVICE")
+        logging.info(f"Fetching monthly information per account for dimension {dimension}")
+        label = label or dimension.lower()
         day = day or date.today()
         start = day.replace(day=1)                         # first day of this month is included
         end = (start + timedelta(days=32)).replace(day=1)  # first day of next month is excluded
@@ -128,9 +119,10 @@ class Costs:
         parameters = dict(TimePeriod=dict(Start=start.isoformat()[:10], End=end.isoformat()[:10]),
                           Granularity='MONTHLY',
                           Metrics=['UnblendedCost'],
-                          Filter=dict(Dimensions=dict(Key='RECORD_TYPE', Values=cls.COSTLY_RECORDS)),
                           GroupBy=[dict(Type='DIMENSION', Key='LINKED_ACCOUNT'),
-                                   dict(Type='DIMENSION', Key='SERVICE')])
+                                   dict(Type='DIMENSION', Key=dimension)])
+        if filter:
+            parameters['Filter'] = filter
         chunk = costs.get_cost_and_usage(**parameters)
         logging.debug(chunk)
         breakdowns_per_account = {}
@@ -138,42 +130,45 @@ class Costs:
             for result in chunk['ResultsByTime']:
                 for group in result['Groups']:
                     account = group['Keys'][0]
-                    service = group['Keys'][1]
+                    breakdown = group['Keys'][1]
                     amount = group['Metrics']['UnblendedCost']['Amount']
                     cumulated = breakdowns_per_account.get(account, [])
-                    cumulated.append(dict(account=account, service=service, amount=amount))
+                    cumulated.append({'account': account, label: breakdown, 'amount': amount})
                     breakdowns_per_account[account] = cumulated
             if chunk.get('NextPageToken'):
                 chunk = costs.get_cost_and_usage(NextPageToken=chunk.get('NextPageToken'), **parameters)
                 logging.debug(chunk)
             else:
                 break
-        for account, breakdown in breakdowns_per_account.items():
-            yield account, breakdown
+        return breakdowns_per_account.items()
 
     @classmethod
     def get_charges_per_cost_center(cls, accounts, day=None, session=None):
-        costs = {}
-        for account, charges in cls.enumerate_monthly_charges_per_account(day=day, session=session):
-            logging.debug(f"Processing charges for account '{account}'")
-            attributes = accounts.get(str(account), {})
-            more = dict(name=attributes.get('name') or Account.get_name(account),
-                        unit=attributes.get('unit_name') or Account.get_organizational_unit_name(account))
-            for item in charges:
-                item.update(more)
-            logging.debug(charges)
-            attributes = accounts.get(str(account), {})
-            cost_center = Account.get_cost_center(tags=attributes.get('tags', {}))
-            cumulated = costs.get(cost_center, [])
-            cumulated.extend(charges)
-            costs[cost_center] = cumulated
-        return costs
+        return cls._get_costs_per_cost_center(map_function=cls.enumerate_monthly_charges_per_account,
+                                              accounts=accounts,
+                                              day=day,
+                                              session=session)
 
     @classmethod
     def get_services_per_cost_center(cls, accounts, day=None, session=None):
+        return cls._get_costs_per_cost_center(map_function=cls.enumerate_monthly_services_per_account,
+                                              accounts=accounts,
+                                              day=day,
+                                              session=session)
+
+    @classmethod
+    def get_usages_per_cost_center(cls, accounts, day=None, session=None):
+        return cls._get_costs_per_cost_center(map_function=cls.enumerate_monthly_usages_per_account,
+                                              accounts=accounts,
+                                              day=day,
+                                              session=session)
+
+    @classmethod
+    def _get_costs_per_cost_center(cls, map_function, accounts, day=None, session=None):
+        print(map_function)
         costs = {}
-        for account, breakdown in cls.enumerate_monthly_services_per_account(day=day, session=session):
-            logging.debug(f"Processing services for account '{account}'")
+        for account, breakdown in map_function(day=day, session=session):
+            logging.debug(f"Processing costs for account '{account}'")
             attributes = accounts.get(str(account), {})
             more = dict(name=attributes.get('name') or Account.get_name(account),
                         unit=attributes.get('unit_name') or Account.get_organizational_unit_name(account))
@@ -220,8 +215,26 @@ class Costs:
     @classmethod
     def build_breakdown_of_services_csv_report_for_cost_center(cls, cost_center, day, breakdown):
         logging.info(f"Building CSV report: breakdown of services for cost center '{cost_center}'")
+        return cls._build_breakdown_of_amounts_csv_report_for_cost_center_per_dimension(cost_center=cost_center,
+                                                                                        day=day,
+                                                                                        breakdown=breakdown,
+                                                                                        dimension='service',
+                                                                                        label='Service')
+
+    @classmethod
+    def build_breakdown_of_usages_csv_report_for_cost_center(cls, cost_center, day, breakdown):
+        logging.info(f"Building CSV report: breakdown of usages for cost center '{cost_center}'")
+        return cls._build_breakdown_of_amounts_csv_report_for_cost_center_per_dimension(cost_center=cost_center,
+                                                                                        day=day,
+                                                                                        breakdown=breakdown,
+                                                                                        dimension='usage',
+                                                                                        label='Usage')
+
+    @classmethod
+    def _build_breakdown_of_amounts_csv_report_for_cost_center_per_dimension(cls, cost_center, day, breakdown, dimension, label):
+        logging.info(f"Building CSV report: breakdown of services for cost center '{cost_center}'")
         buffer = io.StringIO()
-        writer = DictWriter(buffer, fieldnames=['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Name', 'Service', 'Amount (USD)'])
+        writer = DictWriter(buffer, fieldnames=['Month', 'Cost Center', 'Organizational Unit', 'Account', 'Name', label, 'Amount (USD)'])
         writer.writeheader()
         total = 0.0
         for item in breakdown:
@@ -232,7 +245,7 @@ class Costs:
                    'Account': item['account'],
                    'Name': item.get('name', ''),
                    'Organizational Unit': item.get('unit', ''),
-                   'Service': item['service'],
+                   label: item[dimension],
                    'Amount (USD)': amount}
             writer.writerow(row)
         row = {'Month': day.isoformat()[:7],
@@ -240,7 +253,7 @@ class Costs:
                'Account': 'TOTAL',
                'Name': '',
                'Organizational Unit': '',
-               'Service': '',
+               label: '',
                'Amount (USD)': total}
         writer.writerow(row)
         return buffer.getvalue()
@@ -338,7 +351,7 @@ class Costs:
         row = 1
         month = day.isoformat()[:7]
         for cost_center in sorted(charges.keys()):
-            units = cls.set_breakdowns_per_unit_and_per_account(items=charges[cost_center])
+            units = cls._set_breakdowns_per_unit_and_per_account(items=charges[cost_center])
             accounts_subs = []
             for unit in sorted(units.keys()):
                 unit_head = row
@@ -358,14 +371,14 @@ class Costs:
                     for index in range(len(data)):
                         widths[index] = max(widths[index], len(str(data[index])))
                     row += 1
-                cls.set_unit_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), unit=unit, unit_head=unit_head, columns=len(labels))
+                cls._set_unit_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), unit=unit, unit_head=unit_head, columns=len(labels))
                 accounts_subs.append([xl_rowcol_to_cell(row, 4 + delta) for delta in range(1 + len(labels))])
                 row += 1
-            cls.set_cost_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), subs=accounts_subs)
+            cls._set_cost_row(worksheet=worksheet, row=row, month=month, cost=str(cost_center), subs=accounts_subs)
             units_subs.append([xl_rowcol_to_cell(row, 4 + delta) for delta in range(1 + len(labels))])
             row += 1
-        cls.set_total_row(worksheet=worksheet, row=row, month=month, subs=units_subs)
-        cls.set_columns(workbook=workbook, worksheet=worksheet, widths=widths)
+        cls._set_total_row(worksheet=worksheet, row=row, month=month, subs=units_subs)
+        cls._set_columns(workbook=workbook, worksheet=worksheet, widths=widths)
         workbook.close()
         return buffer.getvalue()
 
@@ -450,8 +463,8 @@ class Costs:
         workbook.close()
         return buffer.getvalue()
 
-    @classmethod
-    def set_breakdowns_per_unit_and_per_account(cls, items):
+    @staticmethod
+    def _set_breakdowns_per_unit_and_per_account(items):
         units = {}
         for item in items:
             accounts = units.get(item['unit']) or {}
@@ -462,8 +475,8 @@ class Costs:
             units[item['unit']] = accounts
         return units
 
-    @classmethod
-    def set_columns(cls, workbook, worksheet, widths):
+    @staticmethod
+    def _set_columns(workbook, worksheet, widths):
         amount_format = workbook.add_format({'num_format': '# ##0.00'})
         amount_format.set_align('right')
         for index in range(len(widths)):
@@ -472,8 +485,8 @@ class Costs:
             else:
                 worksheet.set_column(index, index, widths[index])
 
-    @classmethod
-    def set_cost_row(cls, worksheet, row, month, cost, subs):
+    @staticmethod
+    def _set_cost_row(worksheet, row, month, cost, subs):
         data = [month, cost, '', '']
         columns = len(subs[0])
         verticals = []
@@ -488,8 +501,8 @@ class Costs:
         worksheet.write_row(row, 0, data)
         worksheet.set_row(row, None, None, {'level': 1, 'collapsed': True})
 
-    @classmethod
-    def set_total_row(cls, worksheet, row, month, subs):
+    @staticmethod
+    def _set_total_row(worksheet, row, month, subs):
         data = [month, 'TOTAL', '', '']
         columns = len(subs[0])
         verticals = []
@@ -503,8 +516,8 @@ class Costs:
         logging.debug(data)
         worksheet.write_row(row, 0, data)
 
-    @classmethod
-    def set_unit_row(cls, worksheet, row, month, cost, unit, unit_head, columns):
+    @staticmethod
+    def _set_unit_row(worksheet, row, month, cost, unit, unit_head, columns):
         data = [month, cost, unit, '']
         for delta in range(1 + columns):
             data.append(f"=SUM({xl_rowcol_to_cell(unit_head, 4 + delta)}:{xl_rowcol_to_cell(row - 1, 4 + delta)})")

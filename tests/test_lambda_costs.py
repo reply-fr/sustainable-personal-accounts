@@ -460,6 +460,14 @@ def test_enumerate_monthly_services_per_account(sample_chunk_monthly_services_pe
 
 
 @pytest.mark.unit_tests
+def test_enumerate_monthly_usages_per_account(sample_chunk_monthly_usages_per_account):
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_usages_per_account
+    results = {account for account, cost in Costs.enumerate_monthly_usages_per_account(session=mock)}
+    assert results == {'123456789012'}
+
+
+@pytest.mark.unit_tests
 def test_get_charges_per_cost_center(sample_chunk_monthly_charges_per_account, sample_accounts):
     mock = Mock()
     mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_charges_per_account
@@ -506,6 +514,34 @@ def test_get_services_per_cost_center(sample_chunk_monthly_services_per_account,
                                       {'account': '123456789012', 'service': 'Tax', 'amount': '2', 'name': 'alice@example.com', 'unit': 'Committed'}]}
 
 
+sample_breakdown_of_usages = [{'account': '123456789012', 'usage': 'EU-EBS:VolumeUsage.gp3', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-DataTransfer-Out-Bytes', 'amount': '0.621', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EU-BoxUsage:r6a.2xlarge', 'amount': '0.2375000019', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-TimedStorage-INT-FA-ByteHrs', 'amount': '0.0007388303', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-Airflow-SmallEnvironment', 'amount': '0.1911111092', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUC1-VpcEndpoint-Hours', 'amount': '7.03337', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-Endpoint-Hour', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EU-NatGateway-Hours', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-ResolverNetworkInterface', 'amount': '0.0012142925', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'USE1-KendraDeveloperEdition', 'amount': '0.00575622', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'QS-User-Enterprise-Month', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-CloudWAN-CoreNetworkEdge-Hours', 'amount': '0', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-TimedStorage-ByteHrs', 'amount': '0.0181906402', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'APS1-CloudWAN-CoreNetworkEdge-Hours', 'amount': '2.2405013391', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-BoxUsage:m5.xlarge', 'amount': '0.000353', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUC1-Redshift:ServerlessUsage', 'amount': '0.005', 'name': 'alice@example.com', 'unit': 'Committed'},
+                              {'account': '123456789012', 'usage': 'EUW3-Traffic-GB-Processed', 'amount': '2', 'name': 'alice@example.com', 'unit': 'Committed'}]
+
+
+@pytest.mark.unit_tests
+def test_get_usages_per_cost_center(sample_chunk_monthly_usages_per_account, sample_accounts):
+    mock = Mock()
+    mock.client.return_value.get_cost_and_usage.return_value = sample_chunk_monthly_usages_per_account
+    usages = Costs.get_usages_per_cost_center(accounts=sample_accounts, session=mock)
+    print(usages)
+    assert usages == {'Product A': sample_breakdown_of_usages}
+
+
 @pytest.mark.unit_tests
 def test_build_breakdown_of_costs_excel_report_for_account():
     report = Costs.build_breakdown_of_costs_excel_report_for_account(account='123456789012', breakdown=sample_breakdown_of_services, day=date(2023, 3, 23))
@@ -516,6 +552,13 @@ def test_build_breakdown_of_costs_excel_report_for_account():
 def test_build_breakdown_of_services_csv_report_for_cost_center():
     report = Costs.build_breakdown_of_services_csv_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown_of_services, day=date(2023, 3, 23))
     assert len(report.strip().split('\n')) == 46
+
+
+@pytest.mark.unit_tests
+def test_build_breakdown_of_usages_csv_report_for_cost_center():
+    report = Costs.build_breakdown_of_usages_csv_report_for_cost_center(cost_center="BU", breakdown=sample_breakdown_of_usages, day=date(2023, 3, 23))
+    print(report)
+    assert len(report.strip().split('\n')) == 19
 
 
 @pytest.mark.unit_tests

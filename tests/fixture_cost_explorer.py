@@ -308,7 +308,9 @@ def sample_chunk_monthly_charges_per_account():
                 "Value": "123456789012",
                 "Attributes": {"description": "alice@example.com"},
             },
-            {"Value": "456789012345", "Attributes": {"description": "bob@example.com"}},
+            {
+                "Value": "456789012345",
+                "Attributes": {"description": "bob@example.com"}},
             {
                 "Value": "789012345678",
                 "Attributes": {"description": "charles@reply.com"},
@@ -437,6 +439,131 @@ def sample_chunk_monthly_services_per_account():
                     },
                     {
                         "Keys": ["123456789012", "Tax"],
+                        "Metrics": {"UnblendedCost": {"Amount": "2", "Unit": "USD"}},
+                    },
+                ],
+                "Estimated": True,
+            }
+        ],
+        "DimensionValueAttributes": [
+            {"Value": "123456789012", "Attributes": {"description": "Automation"}}
+        ],
+        "ResponseMetadata": {
+            "RequestId": "bb61aa02-dda7-40b4-a74c-b2edc61ee577",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {
+                "date": "Sat, 08 Apr 2023 21:02:05 GMT",
+                "content-type": "application/x-amz-json-1.1",
+                "content-length": "2166",
+                "connection": "keep-alive",
+                "x-amzn-requestid": "bb61aa02-dda7-40b4-a74c-b2edc61ee577",
+                "cache-control": "no-cache",
+            },
+            "RetryAttempts": 0,
+        },
+    }
+
+
+@pytest.fixture
+def sample_chunk_monthly_usages_per_account():
+    return {
+        "GroupDefinitions": [
+            {"Type": "DIMENSION", "Key": "LINKED_ACCOUNT"},
+            {"Type": "DIMENSION", "Key": "USAGE_TYPE"},
+        ],
+        "ResultsByTime": [
+            {
+                "TimePeriod": {"Start": "2023-04-01", "End": "2023-05-01"},
+                "Total": {},
+                "Groups": [
+                    {
+                        "Keys": ["123456789012", "EU-EBS:VolumeUsage.gp3"],
+                        "Metrics": {"UnblendedCost": {"Amount": "0", "Unit": "USD"}},
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-DataTransfer-Out-Bytes"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.621", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EU-BoxUsage:r6a.2xlarge"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.2375000019", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-TimedStorage-INT-FA-ByteHrs"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.0007388303", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-Airflow-SmallEnvironment"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.1911111092", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUC1-VpcEndpoint-Hours"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "7.03337", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-Endpoint-Hour"],
+                        "Metrics": {"UnblendedCost": {"Amount": "0", "Unit": "USD"}},
+                    },
+                    {
+                        "Keys": ["123456789012", "EU-NatGateway-Hours"],
+                        "Metrics": {"UnblendedCost": {"Amount": "0", "Unit": "USD"}},
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-ResolverNetworkInterface"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.0012142925", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "USE1-KendraDeveloperEdition"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.00575622", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "QS-User-Enterprise-Month"],
+                        "Metrics": {"UnblendedCost": {"Amount": "0", "Unit": "USD"}},
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-CloudWAN-CoreNetworkEdge-Hours"],
+                        "Metrics": {"UnblendedCost": {"Amount": "0", "Unit": "USD"}},
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-TimedStorage-ByteHrs"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.0181906402", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "APS1-CloudWAN-CoreNetworkEdge-Hours"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "2.2405013391", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-BoxUsage:m5.xlarge"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.000353", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUC1-Redshift:ServerlessUsage"],
+                        "Metrics": {
+                            "UnblendedCost": {"Amount": "0.005", "Unit": "USD"}
+                        },
+                    },
+                    {
+                        "Keys": ["123456789012", "EUW3-Traffic-GB-Processed"],
                         "Metrics": {"UnblendedCost": {"Amount": "2", "Unit": "USD"}},
                     },
                 ],

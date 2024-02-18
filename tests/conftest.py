@@ -25,4 +25,5 @@ from fixture_cost_explorer import (sample_accounts,
                                    sample_chunk_daily_costs_per_account,
                                    sample_chunk_monthly_costs_for_account,
                                    sample_chunk_monthly_charges_per_account,
-                                   sample_chunk_monthly_services_per_account)
+                                   sample_chunk_monthly_services_per_account,
+                                   sample_chunk_monthly_usages_per_account)
