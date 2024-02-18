@@ -36,7 +36,7 @@ from lambdas.on_exception_handler import (handle_exception,
                                           publish_notification_on_sns,
                                           store_report)
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 sample_payload = json.dumps(

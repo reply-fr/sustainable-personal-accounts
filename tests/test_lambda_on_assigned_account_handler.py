@@ -30,7 +30,7 @@ from types import SimpleNamespace
 from lambdas import Events, State
 from lambdas.on_assigned_account_handler import handle_tag_event
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 from account import Account  # accessible from monkeypatch
 from worker import Worker    # accessible from monkeypatch
 

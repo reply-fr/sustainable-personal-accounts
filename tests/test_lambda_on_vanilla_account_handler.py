@@ -28,7 +28,7 @@ import pytest
 from lambdas import Events, State
 from lambdas.on_vanilla_account_handler import handle_organization_event, handle_tag_event
 
-pytestmark = pytest.mark.wip
+# pytestmark = pytest.mark.wip
 
 
 @pytest.fixture
