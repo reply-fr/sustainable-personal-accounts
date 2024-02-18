@@ -161,7 +161,7 @@ When the settings file mentions a cost management tag, SPA can query Cost Explor
 Following reports are produced every month to support comprehensive FinOps requirements:
 
 - A Excel report for each cost center, that lists accounts and their consumption, and that can be checked by the owner of a cost center
-- A CSV report for each cost center, for easy integration in data processing chains
+- CSV reports for each cost center, for easy integration in data processing chains
 - A summary Excel report, that lists accounts and cost types, and that can be checked by central FinOps team
 - A summary CSV report with similar information, for easy integration in data processing chains
 
