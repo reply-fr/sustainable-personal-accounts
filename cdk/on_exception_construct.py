@@ -42,7 +42,7 @@ class OnException(Construct):
 
         self.web_endpoints = {}
 
-        self.TOPIC_NAME = "{}Alerts".format(toggles.environment_identifier)
+        self.TOPIC_NAME = "{}Exceptions".format(toggles.environment_identifier)
 
         self.topic = Topic(
             self, "Topic",
