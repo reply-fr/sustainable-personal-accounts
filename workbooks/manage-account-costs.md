@@ -163,9 +163,10 @@ Following reports are produced every month to support comprehensive FinOps requi
 - A Excel report for each cost center, that lists accounts and their consumption, and that can be checked by the owner of a cost center
 - CSV reports for each cost center, for easy integration in data processing chains
 - A summary Excel report, that lists accounts and cost types, and that can be checked by central FinOps team
+- Summary Excel reports in various currencies, e.g., EUR
 - A summary CSV report with similar information, for easy integration in data processing chains
 
-To get and to inspect some service usage report for a given cost center:
+To get and to inspect some report for a given cost center:
 
 - From the AWS Console of `Automation`, the AWS account where SPA has been deployed, select the service 'S3'
 - Select the reporting S3 bucket that is created with SPA
