@@ -16,6 +16,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
 import boto3
+import json
 from moto import mock_aws
 import pytest
 
@@ -70,10 +71,15 @@ def test_enumerate(given_an_empty_table):
                                            Select='ALL_ATTRIBUTES')
     assert len(result['Items']) == 4
 
-    assert list(store.enumerate(hash='a')) == [{'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
-                                               {'hash': 'a', 'range': 'world', 'value': {'hello': 'world'}}]
-    assert list(store.enumerate(hash='b')) == [{'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
-                                               {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]
+    scanned = sorted([json.dumps(item) for item in store.enumerate(hash='a')])
+    result = [json.loads(text) for text in scanned]
+    assert result == [{'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
+                      {'hash': 'a', 'range': 'world', 'value': {'hello': 'world'}}]
+
+    scanned = sorted([json.dumps(item) for item in store.enumerate(hash='b')])
+    result = [json.loads(text) for text in scanned]
+    assert result == [{'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
+                      {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]
 
 
 @pytest.mark.unit_tests
@@ -87,10 +93,12 @@ def test_scan(given_an_empty_table):
     store.remember(hash='b', range='good', value=dict(life='is good'))
     store.remember(hash='b', range='short', value=dict(life='is short'))
 
-    assert list(store.scan()) == [{'hash': 'a', 'range': 'world', 'value': {'hello': 'world'}},
-                                  {'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
-                                  {'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
-                                  {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]
+    scanned = sorted([json.dumps(item) for item in store.scan()])
+    result = [json.loads(text) for text in scanned]
+    assert result == [{'hash': 'a', 'range': 'universe', 'value': {'hello': 'universe'}},
+                      {'hash': 'a', 'range': 'world', 'value': {'hello': 'world'}},
+                      {'hash': 'b', 'range': 'good', 'value': {'life': 'is good'}},
+                      {'hash': 'b', 'range': 'short', 'value': {'life': 'is short'}}]
 
 
 @pytest.mark.unit_tests
