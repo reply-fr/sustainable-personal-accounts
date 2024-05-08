@@ -1,0 +1,26 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "SpaPreventDeletionOfDataStores",
+            "Effect": "Deny",
+            "Action": [
+                "codecommit:DeleteRepository",
+                "elasticfilesystem:DeleteFileSystem",
+                "rds:DeleteDBCluster",
+                "rds:DeleteDBInstance",
+                "s3:DeleteBucket"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "SpaPreventDeletionOfComplexResources",
+            "Effect": "Deny",
+            "Action": [
+                "connect:DeleteInstance",
+                "ds:DeleteDirectory"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
