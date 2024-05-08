@@ -130,7 +130,7 @@ class ServerlessStack(Stack):
             code=AssetCode("lambdas.out"),  # code and dependencies are copied there in Makefile
             environment=environment,
             timeout=Duration.seconds(900),
-            runtime=Runtime.PYTHON_3_11,
+            runtime=Runtime.PYTHON_3_12,
             runtime_management_mode=RuntimeManagementMode.FUNCTION_UPDATE,
             tracing=Tracing.ACTIVE)
         return parameters
