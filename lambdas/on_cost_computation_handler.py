@@ -38,24 +38,24 @@ from metric import put_metric_data
 def handle_daily_metrics(event=None, context=None, session=None):
     logging.debug(event)
     if event and event.get('date'):
-        yesterday = date.fromisoformat(event['date'])
+        this_day = date.fromisoformat(event['date'])
     else:
-        yesterday = date.today() - timedelta(days=1)
-    logging.info(f"Computing daily cost metrics per cost center for '{yesterday}'")
+        this_day = date.today() - timedelta(days=2)  # AWS needs 24 hours or more to provide accurate data
+    logging.info(f"Computing daily cost metrics per cost center for '{this_day}'")
     accounts = Account.scan_all_accounts()
     costs = {}
-    for account, amount in Costs.enumerate_daily_costs_per_account(day=yesterday, session=session):
-        logging.info(f"Costs for account '{account}' are {amount:.2f} on {yesterday}")
+    for account, amount in Costs.enumerate_daily_costs_per_account(day=this_day, session=session):
+        logging.info(f"Costs for account '{account}' are {amount:.2f} on {this_day}")
         cost_center = Account.get_cost_center(tags=accounts.get(str(account), {}).get('tags', {}))
         costs[cost_center] = costs.get(cost_center, 0.0) + float(amount)
     for cost_center in costs.keys():
         amount = costs[cost_center]
-        logging.info(f"Cost for cost center '{cost_center}' are {amount:.2f} on {yesterday}")
+        logging.info(f"Cost for cost center '{cost_center}' are {amount:.2f} on {this_day}")
         logging.debug(costs[cost_center])
         put_metric_data(name='DailyCostsByCostCenter',
                         dimensions=[dict(Name='CostCenter', Value=cost_center),
                                     dict(Name='Environment', Value=Events.get_environment())],
-                        timestamp=yesterday.isoformat(),
+                        timestamp=this_day.isoformat(),
                         value=amount,
                         unit='None',
                         session=session)
