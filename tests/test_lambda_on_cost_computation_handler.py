@@ -140,7 +140,7 @@ def test_get_json_from_url():
 @patch.dict(os.environ, dict(REPORTING_COSTS_PREFIX="costs"))
 def test_get_report_path():
     result = get_report_path(cost_center='product-a', label='charges', day=date(2023, 3, 25), suffix='xyz')
-    assert result == 'costs/product-a/2023-03-product-a-charges.xyz'
+    assert result == 'costs/product-a/2023/2023-03-product-a-charges.xyz'
 
 
 @pytest.mark.unit_tests

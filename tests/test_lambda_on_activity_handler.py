@@ -160,6 +160,6 @@ def test_get_hashes():
 @patch.dict(os.environ, dict(REPORTING_ACTIVITIES_PREFIX="all/the/activities"))
 def test_get_report_path():
     key = get_report_path("CostCenterOne", date(2022, 12, 25))
-    assert key == "all/the/activities/CostCenterOne/2022-12-CostCenterOne-activities.csv"
+    assert key == "all/the/activities/CostCenterOne/2022/2022-12-CostCenterOne-activities.csv"
     key = get_report_path("CostCenterTwo", date(2023, 1, 2))
-    assert key == "all/the/activities/CostCenterTwo/2023-01-CostCenterTwo-activities.csv"
+    assert key == "all/the/activities/CostCenterTwo/2023/2023-01-CostCenterTwo-activities.csv"

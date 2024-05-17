@@ -149,4 +149,5 @@ def get_report_path(label, day=None):
     day = day or date.today()
     return '/'.join([os.environ["REPORTING_ACTIVITIES_PREFIX"],
                      label,
+                     f"{day.year:04d}",
                      f"{day.year:04d}-{day.month:02d}-{label}-activities.csv"])

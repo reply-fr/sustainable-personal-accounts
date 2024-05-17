@@ -191,6 +191,7 @@ def get_report_path(cost_center, label, day=None, suffix='csv'):
     day = day or date.today()
     return '/'.join([os.environ["REPORTING_COSTS_PREFIX"],
                      cost_center,
+                     f"{day.year:04d}",
                      f"{day.year:04d}-{day.month:02d}-{cost_center}-{label}.{suffix}"])
 
 
