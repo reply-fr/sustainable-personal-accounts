@@ -1,11 +1,11 @@
 # Frequently Asked Questions
 
 
-## Q. What is Sustainable Personal Accounts (SPA)?
+## Q: What is Sustainable Personal Accounts (SPA)?
 
 Sustainable Personal Accounts automates operations on AWS accounts assigned to individual employees. Sustainable Personal Accounts is a serverless solution written in python and powered by Lambda, CodeBuild, EventBridge. Sustainable Personal Accounts is deployed and configured with YAML and CSV files, using CDK.
 
-## Q. What can you do with SPA?
+## Q: What can you do with SPA?
 
 As a CTO/CCoE Leader/R&D Director:
 - I recognize that innovative companies distribute sandbox AWS accounts to their staff
@@ -52,7 +52,7 @@ As a FinOps engineer:
 - The Excel report consolidates costs per cost center and per organizational unit for easy analysis
 - The CSV report is processed with custom software for automated show-back and charge-back
 
-## Q. How is this implemented?
+## Q: How is this implemented?
 
 SPA is featuring an event-driven architecture, and serverless infrastructure. Centralised lambda functions take care of changing states of accounts. The preparation of assigned accounts and the purge of expired accounts require heavy computing capabilities that are not compatible with Lambda. These activities run directly into target accounts as CodeBuild projects.
 
@@ -72,7 +72,7 @@ Sustainable Personal Accounts has been designed with following principles:
 - monitoring is implemented with a CloudWatch dashboard deployed automatically
 - system can be extended to specific needs via custom event processing
 
-## Q. What do you need to deploy SPA in your environment?
+## Q: What do you need to deploy SPA in your environment?
 
 Mandatory requirements:
 * SPA is leveraging AWS Organization for events management and for account management across AWS accounts. The deployment of AWS Organizations can be managed by Amazon Control Tower, but Amazon Control Tower itself is not mandatory.
@@ -82,7 +82,7 @@ Mandatory requirements:
 
 We recommend to deploy Amazon Control Tower and to benefit from cloud automation at scale on top of AWS Organizations, of AWS Service Catalog and of AWS IAM Identity Center (successor to AWS SSO).
 
-## Q. What are account states managed by SPA?
+## Q: What are account states managed by SPA?
 
 Since we want to clean AWS accounts assigned to individuals, this can be represented as a state machine with following states and transitions.
 
@@ -106,14 +106,14 @@ Since we want to clean AWS accounts assigned to individuals, this can be represe
 Note that the scope of SPA is limited to the effective part of AWS accounts life cycle. Since the creation and the deletion of accounts are not specified, there are multiple options available for actual implementation. If SPA is deployed within an environment managed by Control Tower, then you can benefit from the account factory and other tools exposed to you. For other environments, it is up to you to create new accounts and to delete them when appropriate.
 
 
-### Q. Can I use SPA for temporary accounts?
+### Q: Can I use SPA for temporary accounts?
 
 No. If you are looking for a vending machine of temporary accounts, then you can consider following solutions or similar:
 - [AWS Samples - Sandbox Accounts for Events](https://github.com/awslabs/sandbox-accounts-for-events)
 - [Disposable Cloud Environment (DCE)](https://dce.readthedocs.io/en/latest/index.html)
 - [superwerker - automated best practices for AWS](https://github.com/superwerker/superwerker)
 
-### Q. Can I use this software for my company?
+### Q: Can I use this software for my company?
 
 Yes. Sustainable Personal Account is copyright from [Reply](http://www.reply.com) and licensed with [Apache License Version 2.0](./LICENSE)
 
@@ -131,17 +131,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-### Q. How many accounts can be managed in a single SPA state machine?
+### Q: How many accounts can be managed in a single SPA state machine?
 
 Enterprise accounts may have thousands of software engineers. Purpose of the SPA is that each of them can get access to a personal AWS account to foster innovation and agility. Today the solution can accomodate for 100 AWS accounts or more. Our long-term objective is that up to 10,000 AWS accounts are purged and prepared on a weekly basis. In addition, the design of the system is as simple as possible, so that it should be convenient even for a single team of some developers.
 
-### Q. How are transitions detected and managed?
+### Q: How are transitions detected and managed?
 
 When an AWS account is created into an Organisation Unit, or moved to an OU, this is detected as an event originated by AWS Organizations, and forwarded to an Amazon EventBridge bus. Similarly, when some AWS account is tagged, this is detected by AWS Organizations and forwarded to an event bus. From there, multiple rules and subscribers can be activated to handle each event appropriately.
 
 In addition, events generated by the code of Sustainable Personal Account itself are also emitted on the same bus. Generally speaking, we compensate the fragmentation of code by centralising events into a single event bus for the entire system.
 
-### Q. How are preparation and purge activities handled in the system?
+### Q: How are preparation and purge activities handled in the system?
 
 CodeBuild has been selected for heavy processing of personal AWS accounts. CodeBuild matches all requirements that we could think about:
 
@@ -157,7 +157,7 @@ Credit:
 - (1Strategy blog) [Automated Clean-up with AWS-Nuke in Multiple Accounts](https://www.1strategy.com/blog/2019/07/16/automated-clean-up-with-aws-nuke-in-multiple-accounts/)
 - (AWS blog) [Using AWS CodeBuild to execute administrative tasks](https://aws.amazon.com/blogs/devops/using-aws-codebuild-to-execute-administrative-tasks/)
 
-### Q. Can you list components of the SPA architecture?
+### Q: Can you list components of the SPA architecture?
 
 Sure. Sustainable Personal Accounts features following building blocks:
 
@@ -185,7 +185,7 @@ Sure. Sustainable Personal Accounts features following building blocks:
 
 - **Incident Manager** - SPA turns exceptions into incident records in SSM Incident Manager
 
-### Q. What are the guiding principles for Sustainable Personal Accounts?
+### Q: What are the guiding principles for Sustainable Personal Accounts?
 
 **We drive innovation by experimentations** - Professionals who can access the AWS console, APIs or SDK have a strong advantage to build systems out of available software and data constructs, and to prove the business opportunity or to fail fast. Large enterprises are advised to connect thousands of employees to AWS native capabilities so as to foster innovation at scale. A key performance indicator is the number of AWS accounts assigned to individuals across the corporation.
 
@@ -195,7 +195,7 @@ Sure. Sustainable Personal Accounts features following building blocks:
 
 **We scale with automated guardrails and with insourced blueprints** - Jeff Bezos has a saying: “Good intentions don't work. Mechanisms do.” In the context of this project, guardrails mean that corporate policies should apply automatically to personal cloud accounts. In addition, these accounts are recycled periodically. These cycles are giving security teams periodic opportunities to update security controls and, therefore, to adapt continuously to cyber-threats. On the other hand, the tooling provided to employees working on the cloud is specific to each enterprise. Also, this tooling is evolving over time. In the context of this project, we provide complete freedom regarding the execution of custom software on each personal cloud account. In addition, with periodic recycling of these accounts there is an opportunity to continuously update the toolbox provided to employees.
 
-### Q. Can I get a presentation of this project and of the architecture?
+### Q: Can I get a presentation of this project and of the architecture?
 
 Yes. An interactive presentation of Sustainable Personal Accounts is included with this repository.
 You may have to install the MARP toolbox if this not available at your workstation.
@@ -219,7 +219,7 @@ If you do need to export overview slides, then following will produce a file tha
 $ make pptx
 ```
 
-### Q. How to run the presentation of project within Cloud9?
+### Q: How to run the presentation of project within Cloud9?
 
 If you have access to the AWS Console, then you are encouraged to work within a Cloud9 environment for this project. Here are the steps to upload and run the presentation:
 - Got to AWS Cloud9 Console

@@ -20,9 +20,9 @@ SPA relies on EventBridge for the emission, transmission and routing of events; 
 
 ![AWS events used by SPA](./medias/eventbridge-overview.drawio.png)
 
-## Step 1. Inspect EventBridge metrics <a id="step-1"></a>
+## Step 1: Inspect EventBridge metrics <a id="step-1"></a>
 
-## Step 2. Inspect EventBridge errors <a id="step-2"></a>
+## Step 2: Inspect EventBridge errors <a id="step-2"></a>
 
 Use this validation workflow to isolate the problem:
 
@@ -39,9 +39,9 @@ Learn more:
 - Amazon EventBridge: [Event retry policy and using dead-letter queues](https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-rule-dlq.html)
 - [Debug failed invocations for AWS EventBridge rules](https://medium.com/@mr.mornesnyman/debug-failed-invocations-for-aws-eventbridge-rules-27689ec4fe09)
 
-## Step 3. Inspect events on account tagging <a id="step-3"></a>
+## Step 3: Inspect events on account tagging <a id="step-3"></a>
 
-## Step 4. Inspect events on console login <a id="step-4"></a>
+## Step 4: Inspect events on console login <a id="step-4"></a>
 
 
 ## Follow-up

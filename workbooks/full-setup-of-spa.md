@@ -25,7 +25,7 @@ This workbook is for the entire setup of Sustainable Personal Accounts (SPA) on 
 - If you need a convenient place to work, then consider a [Cloud9](https://aws.amazon.com/pm/cloud9/) environment in the AWS account where SPA is deployed
 - If you are on Windows, take the time for a full setup of [WSL](https://learn.microsoft.com/en-us/windows/wsl/install) from Microsoft, or use a [Cloud9](https://aws.amazon.com/pm/cloud9/) environment on AWS
 
-## Step 1. Create or use an AWS Organization <a id="step-1"></a>
+## Step 1: Create or use an AWS Organization <a id="step-1"></a>
 
 SPA is leveraging AWS Organization for events management and for account management across AWS accounts.
 
@@ -40,7 +40,7 @@ Reference:
 - [AWS Control Tower Workshops](https://controltower.aws-management.tools/)
 - [AWS Control Tower Documentation](https://docs.aws.amazon.com/controltower/)
 
-## Step 2. Ensure that all organizational events are collected in CloudTrail <a id="step-2"></a>
+## Step 2: Ensure that all organizational events are collected in CloudTrail <a id="step-2"></a>
 
 SPA is using events related to multiple AWS accounts. The collection and aggregation of these events can be done by CloudTrail, but this needs explicit activation.
 
@@ -57,7 +57,7 @@ When you have deployed Control Tower, this step can be completed with following 
 
 If you do not have Control Tower, then configure your landing zone to generate EventBridge events related to AWS Organizations.
 
-## Step 3. Select an AWS account and a region to deploy Sustainable Personal Account <a id="step-3"></a>
+## Step 3: Select an AWS account and a region to deploy Sustainable Personal Account <a id="step-3"></a>
 
 We do not want to execute code in the top-level account of the AWS Organization. In case of error the blast radius could just kill our entire business. Also the two accounts in the Security organizational units should be limited to read-only and reporting operations. We want to not intermix regular business operations and security operations, but isolate these two as different streams.
 
@@ -65,7 +65,7 @@ We recommend to create an AWS account named `Automation` to host SPA code. This 
 
 Take a note of the `Automation` account identifier, a string of 12 digits. This will be used in the next step to create a trusted relationship with the top-level account of the AWS Organization.
 
-## Step 4. Create a role for SPA automation <a id="step-4"></a>
+## Step 4: Create a role for SPA automation <a id="step-4"></a>
 
 SPA is using a limited set of AWS features related to AWS Organization, such as: list OU, list accounts in OU, tag an AWS account, and so on. SPA can also make good use of AWS Cost Explorer to compute costs based on account tags. And to act on managed accounts, SPA needs to assume a role on these accounts.
 
@@ -177,7 +177,7 @@ Here is the full sequence of activities for this step:
 
 SPA is also assuming a role to act on the accounts that it manages. If you rely on AWS Control Tower then you may want to leverage the role `AWSControlTowerExecutionRole` and there is additional no IAM setup. If you fear the super-power given to SPA across all of your AWS Organization, then you can add a condition that limits the permission to selected Organizational Unit. You can also deploy a specific role via a AWS StackSet to a limited number of accounts and/or Organizational Units. When the setup is not correct, then access denied is reported into the logs of the Lambda functions `OnAssignedAccount` and `OnExpiredAccount`.
 
-## Step 5. Receive events on Automation account <a id="step-5"></a>
+## Step 5: Receive events on Automation account <a id="step-5"></a>
 
 Since organizational events are collected by the top-level account of the AWS Organization, we will forward these events to the default bus of the `Automation` account. Actually, we want to make this bus a global resource, accessible from any account. We modify the resource policy of the default bus so that events can be put from any account of the AWS Organization. This is based on Attribute-Based Access Control (ABAC), with a specific IAM condition.
 
@@ -240,7 +240,7 @@ After the update you can control that the resource-based policy for the default 
 ...
 ```
 
-## Step 6. Forward organization events to the Automation account <a id="step-6"></a>
+## Step 6: Forward organization events to the Automation account <a id="step-6"></a>
 
 Events related to AWS accounts are posted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region `us-east-1`, and not in the region of your choice. Therefore, we create an Eventbridge rule in the top-level account and in the `us-east-1` region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
 
@@ -279,7 +279,7 @@ Following activities are related to this step:
 - Click on the button `Next`
 - Review the setup then click on button `Create rule`
 
-## Step 7. Forward console logins to the Automation account <a id="step-7"></a>
+## Step 7: Forward console logins to the Automation account <a id="step-7"></a>
 
 In some setup of CloudTrail the console logins are emitted on the default bus of the top-level account of the AWS Organization. In addition, these events are generated in the region where IAM Identity Center (previously, SSO) has been deployed. This region can be found from the settings of this service. Therefore the need to create an EventBridge rule in the top-level account and in the SSO region to forward events to the default bus in the `Automation` account and in the region where you will deploy SPA.
 
@@ -323,7 +323,7 @@ Following activities are related to this step:
 - Click on the button `Next`
 - Review the setup then click on button `Create rule`
 
-## Step 8. Activate AWS Incident Manager <a id="step-8"></a>
+## Step 8: Activate AWS Incident Manager <a id="step-8"></a>
 
 AWS Incident Manager is used by SPA to record budget alerts and other operational exceptions, and to support easy handling of these. This is a great building block for serverless application, that can be integrated into ServiceNow and to Jira if needed.
 
@@ -331,13 +331,13 @@ Before SPA can use it programmatically, you have to enable the usage of the serv
 
 Note: this step is mandatory, and the deployment of SPA will fail if you do not activate AWS Incident Manager manually.
 
-## Step 9. Create Organizational Units for personal accounts <a id="step-9"></a>
+## Step 9: Create Organizational Units for personal accounts <a id="step-9"></a>
 
 We recommend to create one general `Sandboxes` Organizational Unit, possibly with multiple child Organizational Units. Each OU can feature specific SCP and specific settings in SPA. In other terms, SPA is aligning with the structure of OU to provide differentiated behavior on AWS accounts that they contain. Take a note of OU identifiers that you create, since you will enter them into the settings file used by SPA.
 
 The easiest way to create Organizational Units in the context of Control Tower is to do it directly from within the Control Tower Console. With this way of working, new OU are registered automatically in Control Tower. If you create OU from the AWS Organizations Console, or programmatically, then you have to register new OU in Control Tower anyway.
 
-## Step 10. Clone the SPA repository on your workstation and configure the software <a id="step-10"></a>
+## Step 10: Clone the SPA repository on your workstation and configure the software <a id="step-10"></a>
 
 Next steps of the setup rely on Linux shell, on `git`, on `make`, on Node.js and on python. If one of these items is missing on your workstation, then please consider to create an [AWS Cloud9](https://aws.amazon.com/pm/cloud9/) environment directly in the account where SPA will be deployed. This is the easiest way to go, and the recommended solution for manual actions on a SPA deployment. If you are on Windows, then setup a full [Windows Subsystem for Linux (WSL)](https://learn.microsoft.com/en-us/windows/wsl/install).
 
@@ -353,7 +353,7 @@ You can edit the file `settings.yaml` and reflect parameters for your own deploy
 
 Note: if you get an error message related to python `bdist wheel` then ensure that your workstation has a full python environment. For example for Ubuntu and WSL, you may have to add the package `python-dev` to pass the `make setup` command.
 
-## Step 11. Deploy SPA <a id="step-11"></a>
+## Step 11: Deploy SPA <a id="step-11"></a>
 
 To deploy SPA from your workstation you need permissions to act on the `Automation` account.
 
@@ -365,11 +365,11 @@ $ aws sso login
 $ aws sts get-caller-identity
 ```
 
-One you have been authenticated, implicitly (Cloud9) or explicitly (local computer), you can bootstrap CDK (if not done yet). Pass in variable `AWS_DEFAULT_REGION` the same region that what you put in `settings.yaml`. Then you can deploy SPA:
+One you have been authenticated, implicitly (Cloud9) or explicitly (local computer), you can bootstrap CDK (if not done yet). Pass in variable `AWS_REGION` the same region that what you put in `settings.yaml`. Then you can deploy SPA:
 
 ```shell
 $ make shell
-$ export AWS_DEFAULT_REGION=<deployment-region>
+$ export AWS_REGION=<deployment-region>
 $ make bootstrap-cdk
 $ make deploy
 ```
@@ -378,7 +378,7 @@ Note: the `make shell` command ensures that you are using the local virtual pyth
 
 Note: the [bootstrap of CDK](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) is required if you have not used CDK yet on the target AWS account and region. This is an idempotent command; it can be run multiple times without inconvenience.
 
-## Step 12. Inspect the solution <a id="step-12"></a>
+## Step 12: Inspect the solution <a id="step-12"></a>
 
 Use the AWS Console on the `Automation` account. There is a CloudWatch dashboard that reflects metrics for SPA. Code execution is reflected into the Lambda console. You can also inspect DynamoDB tables.
 

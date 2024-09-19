@@ -17,7 +17,7 @@ Note: The integration of an existing AWS account has proven painful. It is a far
 - You have credentials to access the AWS Console for the Master Account of the target AWS Organization.
 - You have needed permissions to manage Control Tower and Account Factory
 
-## Step 1. Validate capabilities of the requester <a id="step-1"></a>
+## Step 1: Validate capabilities of the requester <a id="step-1"></a>
 
 Accessing an AWS account is equivalent, in the virtual world, or accessing freely a data center in the physical world. You can rack servers, deploy networks and a variety of appliances, etc. With such powers come great responsibilities, including the prevention of security breaches and the containing of costs.
 
@@ -26,7 +26,7 @@ Therefore, we suggest to provide AWS account only to people who are in capacity 
 - The person has been certified by AWS at Associate level or more. This includes all AWS Associate, Professional and Specialty certifications. For example, AWS Solution Architect Associate is valid. But AWS Cloud Practitioner is not. AWS Partner badges are not valid either.
 - Alternatively, a practice for 2+ years of the AWS Console, SDK and APIs is a valid alternative of the certification.
 
-## Step 2. Validate the request for an AWS account <a id="step-2"></a>
+## Step 2: Validate the request for an AWS account <a id="step-2"></a>
 
 Following details have to be provided to provision a new personal AWS account:
 
@@ -37,7 +37,7 @@ Following details have to be provided to provision a new personal AWS account:
 
 Ideally, the request should be submitted by the owner of cloud budget, for proper separation of duties. Also, the request should be accepted by the team in charge of SPA operations.
 
-## Step 3. Create a new AWS account <a id="step-3"></a>
+## Step 3: Create a new AWS account <a id="step-3"></a>
 
 We recommend to use the Account Factory of the Control Tower to create new AWS accounts. In the background, Control Tower is leveraging provisioned products from AWS Service Catalog.
 
@@ -53,7 +53,7 @@ Guided activities for the creation of a new personal AWS account include:
 
 ![Example Account Creation](./medias/enroll-account-in-account-factory.png)
 
-## Step 4. Activate the new AWS account <a id="step-4"></a>
+## Step 4: Activate the new AWS account <a id="step-4"></a>
 
 The person will receive messages over e-mail for the connection to new AWS account.
 
@@ -61,7 +61,7 @@ The person will receive messages over e-mail for the connection to new AWS accou
 2. The other message from SSO that is mentioning the Start URL is the one to be used
 3. Follow the process for initial connection, including the setup of Multiple Factor Authentication (MFA). A popular approach is to install Google Authenticator application on smartphone with personal GMail address.
 
-## Step 5. Validate access to the AWS Console <a id="step-5"></a>
+## Step 5: Validate access to the AWS Console <a id="step-5"></a>
 
 The person who created the account should arrange a quick enablement session with the person receiving an account. During this interactive session:
 

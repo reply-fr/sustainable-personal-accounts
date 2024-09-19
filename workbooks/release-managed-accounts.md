@@ -18,14 +18,14 @@ Since the state of an account is contained in a tag attached to it, for such sit
 - You suspect that multiple AWS accounts are not in RELEASED state
 - You have AWS credentials to access the AWS account where SPA has been deployed
 
-## Step 1. Go to the Lambda console where SPA has been deployed <a id="step-1"></a>
+## Step 1: Go to the Lambda console where SPA has been deployed <a id="step-1"></a>
 
 For this step you have to do the following:
 
 - From the AWS Console of the `Automation` account, select Lambda service
 - Check that you are connected to the AWS region where SPA has been deployed
 
-## Step 2. Launch the Lambda function that checks AWS accounts <a id="step-2"></a>
+## Step 2: Launch the Lambda function that checks AWS accounts <a id="step-2"></a>
 
 In this step you launch a Lambda function to list all managed accounts and to spot accounts with anomalies:
 
@@ -36,7 +36,7 @@ In this step you launch a Lambda function to list all managed accounts and to sp
 
 If no transient state is reported, or if no specific message is displayed, then all accounts are in RELEASED mode. There is no need to go further and you can stop this workbook there. Else move to the next step.
 
-## Step 3. Launch the Lambda function that releases AWS accounts <a id="step-3"></a>
+## Step 3: Launch the Lambda function that releases AWS accounts <a id="step-3"></a>
 
 In this step you launch a Lambda function that tags every account with state RELEASED:
 
@@ -48,7 +48,7 @@ In this step you launch a Lambda function that tags every account with state REL
 The function will skip inactive AWS accounts, and it ignores AWS accounts that are already in RELEASED state. All other accounts are tagged as RELEASED.
 You can review the log and ensure that no error happens during this execution.
 
-## Step 4. Launch the Lambda function that checks AWS accounts (Optional) <a id="step-4"></a>
+## Step 4: Launch the Lambda function that checks AWS accounts (Optional) <a id="step-4"></a>
 
 After the previous step, all accounts are back to the normal state of operations, and will be handled during next maintenance window. If you want extra assurance about the state of accounts managed by SPA, then you can launch again the Lambda function that cheks all accounts:
 

@@ -8,7 +8,7 @@ SPA prepares an AWS account by running a CodeBuild project in it. This is happen
 2. [Put shell commands directly in CodeBuild project](#step-2)
 3. [Launch separate shell scripts in CodeBuild project](#step-3)
 
-## Step 1. Set the `buildspec` that SPA will use for preparation of accounts <a id="step-1"></a>
+## Step 1: Set the `buildspec` that SPA will use for preparation of accounts <a id="step-1"></a>
 
 SPA loads its configuration from the file mentioned in the environment variable `SETTINGS` or, by default, from `settings.yaml`.
 The `buildspec` for the preparation of accounts is set in key `preparation_buildspec_template_file` in section `worker`.
@@ -27,7 +27,7 @@ Of course, you can prepare a preparation `buildspec` for the exact requirements 
 If the preparation of an account requires a limited number of shell commands, then you can put all of them in the `buildspec` directly.
 Alternatively, code in the `buildspec` can load scripts from trusted sources and execute it. The two options are described below.
 
-## Step 2. Put shell commands directly in CodeBuild project <a id="step-2"></a>
+## Step 2: Put shell commands directly in CodeBuild project <a id="step-2"></a>
 
 For example, if the preparation consists only into the configuration of a budget alert, then related statements can fit into a single `buildspec` file.
 
@@ -144,7 +144,7 @@ phases:
     - aws iam update-account-password-policy --minimum-password-length 24 --require-numbers --require-uppercase-characters --require-lowercase-characters --require-symbols --max-password-age 90 --password-reuse-prevention 12 --hard-expiry
 ```
 
-## Step 3. Launch separate shell scripts in CodeBuild project <a id="step-3"></a>
+## Step 3: Launch separate shell scripts in CodeBuild project <a id="step-3"></a>
 
 When multiple shell commands are needed for the preparation of an account, you can load them from a git repository or from a S3 bucket before they are executed. Git is available by default in any CodeBuild project.
 

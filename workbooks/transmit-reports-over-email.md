@@ -16,7 +16,7 @@ With this workbook you can forward monthly reports to selected email recipients.
 - You have access to the settings file of your deployed SPA
 - You have AWS credentials to deploy SPA
 
-## Step 1. Verify the origin email address in AWS SES <a id="step-1"></a>
+## Step 1: Verify the origin email address in AWS SES <a id="step-1"></a>
 
 AWS Simple Email Service, or SES, is a managed service that allows the transmission of messages to email recipients. In order to prevent spam and to protect the reputation of AWS email services, you have to pass through multiple steps before you can use an origin email recipient with SPA.
 
@@ -37,7 +37,7 @@ Learn more:
 
 - [AWS SES: Creating an email address identity](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html#verify-email-addresses-procedure)
 
-## Step 2. Configure the origin email address in SPA settings <a id="step-2"></a>
+## Step 2: Configure the origin email address in SPA settings <a id="step-2"></a>
 
 This step can be completed with following activities:
 
@@ -47,7 +47,7 @@ This step can be completed with following activities:
 
 To validate the deployment, you can inspect Lambda functions `SpaOnMonthlyCostsReport` of SPA in the AWS account where SPA has been deployed. The environment variable `ORIGIN_EMAIL_RECIPIENT` should reflect the origin email address used by SES.
 
-## Step 3. Verify in AWS SES all email addresses of target recipients <a id="step-3"></a>
+## Step 3: Verify in AWS SES all email addresses of target recipients <a id="step-3"></a>
 
 This is similar to activities at step 1, but for each target recipients of reports:
 
@@ -62,7 +62,7 @@ This is similar to activities at step 1, but for each target recipients of repor
 - A congratulation page is displayed in your web browser on successful verification
 - Go back to the SES Console, refresh the page, and ensure that the Identity status is now `Verified`
 
-## Step 4. Configure in SPA the list of email recipients for reports <a id="step-4"></a>
+## Step 4: Configure in SPA the list of email recipients for reports <a id="step-4"></a>
 
 This step can be completed with following activities:
 
@@ -73,7 +73,7 @@ This step can be completed with following activities:
 
 To validate the deployment, you can inspect Lambda functions `SpaOnMonthlyCostsReport` of SPA in the AWS account where SPA has been deployed. The environment variable `COST_EMAIL_RECIPIENTS` should reflect the destination email addresses for reports.
 
-## Step 5. Request production usage of AWS SES <a id="step-5"></a>
+## Step 5: Request production usage of AWS SES <a id="step-5"></a>
 
 Initially AWS SES is limiting the sending of email messages. Such sandboxing is useful for tests, however now you are ready for production:
 
