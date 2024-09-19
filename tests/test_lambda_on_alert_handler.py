@@ -51,7 +51,7 @@ def test_handle_codebuild_event(monkeypatch):
 
 
 @pytest.mark.integration_tests
-@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
+@patch.dict(os.environ, dict(AWS_REGION='eu-west-1'))
 @mock_aws
 def test_handle_sqs_event(account_describe_mock):
 

@@ -84,7 +84,7 @@ def valid_tags():
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
-                             AWS_DEFAULT_REGION='eu-west-1',
+                             AWS_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))
@@ -106,7 +106,7 @@ def test_handle_organization_event(valid_tags, given_a_small_setup):
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
-                             AWS_DEFAULT_REGION='eu-west-1',
+                             AWS_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",
                              VERBOSITY='DEBUG'))

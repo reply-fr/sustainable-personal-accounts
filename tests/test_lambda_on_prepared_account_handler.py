@@ -75,7 +75,7 @@ def session():
 
 
 @pytest.mark.integration_tests
-@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+@patch.dict(os.environ, dict(AWS_REGION='eu-west-1',
                              VERBOSITY='DEBUG'))
 @mock_aws
 def test_handle_codebuild_event(session):
@@ -115,7 +115,7 @@ def test_handle_codebuild_event_on_unexpected_status(session):
 
 
 @pytest.mark.unit_tests
-@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1',
+@patch.dict(os.environ, dict(AWS_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
                              VERBOSITY='DEBUG'))
 @mock_aws

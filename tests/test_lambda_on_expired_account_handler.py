@@ -87,7 +87,7 @@ def given_some_context(prefix='/Fake/'):
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
-                             AWS_DEFAULT_REGION='eu-west-1',
+                             AWS_REGION='eu-west-1',
                              PURGE_BUILDSPEC_PARAMETER="buildspec",
                              ENVIRONMENT_IDENTIFIER='Fake',
                              EVENT_BUS_ARN='arn:aws',

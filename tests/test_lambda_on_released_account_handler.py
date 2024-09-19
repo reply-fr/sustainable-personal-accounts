@@ -78,7 +78,7 @@ def session():
 
 @pytest.mark.integration_tests
 @patch.dict(os.environ, dict(ACCOUNTS_PARAMETER="Accounts",
-                             AWS_DEFAULT_REGION='eu-west-1',
+                             AWS_REGION='eu-west-1',
                              ENVIRONMENT_IDENTIFIER="envt1",
                              EVENT_BUS_ARN='arn:aws',
                              ORGANIZATIONAL_UNITS_PARAMETER="OrganizationalUnits",

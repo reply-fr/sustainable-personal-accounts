@@ -44,7 +44,7 @@ help:
 AWS_CURRENT_ACCOUNT ?= $(shell aws sts get-caller-identity --query "Account" --output text)
 
 # by default, use this AWS region -- mostly useful for "make all-tests" in a pipeline
-AWS_DEFAULT_REGION ?= eu-west-1
+AWS_REGION ?= eu-west-1
 
 # determine which shell is used for commands launched by make
 MAKESHELL ?= /bin/bash
@@ -79,7 +79,7 @@ setup-cdk:
 bootstrap-cdk:
 	@echo "Bootstrapping CDK..."
 	mkdir -p lambdas.out
-	. venv/bin/activate && cdk bootstrap ${AWS_CURRENT_ACCOUNT}/${AWS_DEFAULT_REGION}
+	. venv/bin/activate && cdk bootstrap ${AWS_CURRENT_ACCOUNT}/${AWS_REGION}
 	rm -rf lambdas.out
 
 setup-marp:

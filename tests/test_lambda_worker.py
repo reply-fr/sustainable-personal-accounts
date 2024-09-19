@@ -86,7 +86,7 @@ def test_get_purge_variables():
 
 
 @pytest.mark.unit_tests
-@patch.dict(os.environ, dict(AWS_DEFAULT_REGION='eu-west-1'))
+@patch.dict(os.environ, dict(AWS_REGION='eu-west-1'))
 @mock_aws
 def test_grant_publishing_from_budgets():
     session = Session()
