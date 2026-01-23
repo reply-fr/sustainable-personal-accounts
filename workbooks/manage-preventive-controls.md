@@ -4,13 +4,16 @@
 
 With this workbook you create effective guardrails and limits to what can be done within an AWS account assigned to a person.
 
-1. [Create a service control policy](#step-1)
-2. [Apply preventive controls at Organizational Unit level](#step-2)
-3. [Prevent usage of account root user](#step-3)
-4. [Prevent deployments anywhere](#step-4)
-5. [Prevent the creation of costly resources](#step-5)
-6. [Prevent long commitments](#step-6)
-7. [Prevent resource sharing outside the organization](#step-7)
+- [Manage preventive controls](#manage-preventive-controls)
+  - [Overview](#overview)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Create a service control policy ](#step-1-create-a-service-control-policy-)
+  - [Step 2: Apply preventive controls at Organizational Unit level ](#step-2-apply-preventive-controls-at-organizational-unit-level-)
+  - [Step 3: Prevent usage of account root user ](#step-3-prevent-usage-of-account-root-user-)
+  - [Step 4: Prevent deployments anywhere ](#step-4-prevent-deployments-anywhere-)
+  - [Step 5: Prevent the creation of costly resources ](#step-5-prevent-the-creation-of-costly-resources-)
+  - [Step 6: Prevent long commitments ](#step-6-prevent-long-commitments-)
+  - [Step 7: Prevent resource sharing outside the organization ](#step-7-prevent-resource-sharing-outside-the-organization-)
 
 ## Prerequisites
 
@@ -31,10 +34,11 @@ Complete following activities at this step:
 - Click on the button 'Create policy'
 - Give a memorable name to the policy, such as `SpaServiceControlPolicy`
 - Enter a description, e.g., `Guardrails for personal accounts`
-- Navigate the SPA git repository and look for the file `fixtures/policies/preventive_controls_for_sandboxes.json`
-- Open the file and copy its content
+- Navigate the SPA git repository and look for the file `fixtures/policies/general_guardails.json`
+- Open the files and copy its content
 - Switch to the web console, select the entire text of the policy, and paste the content
 - Click on the bottom button 'Create policy'
+- Repeat previous steps with the policy `fixtures/policies/resource_preventive_controls_for_sandboxes.json`
 
 ## Step 2: Apply preventive controls at Organizational Unit level <a id="step-2"></a>
 

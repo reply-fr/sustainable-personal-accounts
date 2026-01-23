@@ -1,0 +1,56 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "SpaDenyAmazonQDeveloperOutsideEU",
+      "Effect": "Deny",
+      "Action": [
+        "codewhisperer:GenerateRecommendations",
+        "q:SendMessage",
+        "q:GenerateCodeFromCommands",
+        "sqlworkbench:GetQSqlRecommendations"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringNotEquals": {
+          "aws:RequestedRegion": [
+            "eu-central-1"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "SpaDenyCreationOfCostlyResources",
+      "Effect": "Deny",
+      "Action": [
+        "acm-pca:CreateCertificateAuthority",
+        "globalaccelerator:CreateAccelerator",
+        "bedrock:CreateModelCustomizationJob",
+        "redshift:CreateCluster",
+        "shield:CreateSubscription"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SpaDenyDurableCommitments",
+      "Effect": "Deny",
+      "Action": [
+        "ec2:AcceptReservedInstancesExchangeQuote",
+        "ec2:CreateCapacityReservation",
+        "ec2:CreateReservedInstancesListing",
+        "ec2:PurchaseHostReservation",
+        "ec2:PurchaseReservedInstancesOffering",
+        "ec2:PurchaseScheduledInstances",
+        "rds:PurchaseReservedDBInstancesOffering",
+        "redshift:PurchaseReservedNodeOffering",
+        "route53domains:RegisterDomain",
+        "route53domains:TransferDomain",
+        "s3:PutBucketObjectLockConfiguration",
+        "s3:PutObjectLegalHold",
+        "s3:PutObjectRetention",
+        "savingsplans:*"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
