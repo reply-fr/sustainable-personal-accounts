@@ -25,6 +25,10 @@
             "eu-central-1",
             "us-east-1",
             "ap-east-1"
+          ],
+          "aws:PrincipalAccount": [
+            "607520773871",
+            "261635107903"
           ]
         },
         "ArnNotLike": {
